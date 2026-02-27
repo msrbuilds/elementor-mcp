@@ -98,6 +98,8 @@
 			var appPassword = document.getElementById( 'elementor-mcp-b64-app-password' );
 
 			if ( ! username || ! appPassword || ! username.value.trim() || ! appPassword.value.trim() ) {
+				/* global alert */
+				alert( 'Please enter both username and application password.' );
 				return;
 			}
 
@@ -120,7 +122,7 @@
 			var codeBlock = document.getElementById( 'elementor-mcp-vscode-code' );
 			var copySource = document.getElementById( 'vscode-config' );
 
-			if ( codeBlock && copySource && typeof elementorMcpAdmin.mcpEndpoint === 'string' ) {
+			if ( codeBlock && copySource && typeof elementorMcpAdmin !== 'undefined' && elementorMcpAdmin.mcpEndpoint ) {
 				var config = {
 					servers: {
 						'elementor-mcp': {
@@ -140,6 +142,31 @@
 	}
 
 	/**
+	 * Copy text to clipboard with fallback for non-HTTPS contexts.
+	 *
+	 * @param {string} text The text to copy.
+	 * @returns {Promise} Resolves when copied.
+	 */
+	function copyToClipboard( text ) {
+		if ( navigator.clipboard && navigator.clipboard.writeText ) {
+			return navigator.clipboard.writeText( text );
+		}
+
+		// Fallback for HTTP (non-secure) contexts.
+		return new Promise( function ( resolve ) {
+			var textarea = document.createElement( 'textarea' );
+			textarea.value = text;
+			textarea.style.position = 'fixed';
+			textarea.style.opacity = '0';
+			document.body.appendChild( textarea );
+			textarea.select();
+			document.execCommand( 'copy' );
+			document.body.removeChild( textarea );
+			resolve();
+		} );
+	}
+
+	/**
 	 * Connection tab — Copy to clipboard buttons.
 	 */
 	function initCopyButtons() {
@@ -151,9 +178,11 @@
 					return;
 				}
 
-				navigator.clipboard.writeText( source.value ).then( function () {
+				var copiedText = ( typeof elementorMcpAdmin !== 'undefined' && elementorMcpAdmin.copied ) ? elementorMcpAdmin.copied : 'Copied!';
+
+				copyToClipboard( source.value ).then( function () {
 					var original = btn.textContent;
-					btn.textContent = elementorMcpAdmin.copied;
+					btn.textContent = copiedText;
 					setTimeout( function () {
 						btn.textContent = original;
 					}, 2000 );
