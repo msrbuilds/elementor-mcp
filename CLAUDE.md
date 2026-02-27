@@ -38,6 +38,7 @@ elementor-mcp/
 │   ├── class-elementor-data.php               # Data access layer wrapping Elementor documents, widgets, element tree
 │   ├── class-element-factory.php              # Builds valid Elementor JSON element structures (container, widget, section, column)
 │   ├── class-id-generator.php                 # 7-char hex unique IDs via random_bytes()
+│   ├── class-openverse-client.php             # HTTP client for Openverse image search API
 │   ├── abilities/
 │   │   ├── class-ability-registrar.php        # Coordinates registration of all ability groups across all phases
 │   │   ├── class-query-abilities.php          # P0: 7 read-only tools (list-widgets, get-widget-schema, get-page-structure, etc.)
@@ -46,7 +47,8 @@ elementor-mcp/
 │   │   ├── class-widget-abilities.php         # P1/P2: 2 universal + 9 core + 6 Pro convenience widget tools
 │   │   ├── class-template-abilities.php       # P2: 2 template tools (save-as-template, apply-template)
 │   │   ├── class-global-abilities.php         # P2: 2 global tools (update-global-colors, update-global-typography)
-│   │   └── class-composite-abilities.php      # P2: 1 composite tool (build-page)
+│   │   ├── class-composite-abilities.php      # P2: 1 composite tool (build-page)
+│   │   └── class-stock-image-abilities.php    # 3 stock image tools (search-images, sideload-image, add-stock-image)
 │   ├── schemas/
 │   │   ├── class-schema-generator.php         # Generates JSON Schema from Elementor widget controls
 │   │   └── class-control-mapper.php           # Maps individual Elementor control types → JSON Schema fragments
@@ -100,8 +102,11 @@ The MCP Adapter converts ability names like `elementor-mcp/list-widgets` to tool
 | Template management | `edit_posts` |
 | Global settings | `manage_options` |
 | Delete operations | `delete_posts` + ownership check |
+| Stock image search | `edit_posts` |
+| Stock image sideload | `upload_files` |
+| Stock image add | `edit_posts` + `upload_files` + ownership check |
 
-## All Implemented Tools (~37 total)
+## All Implemented Tools (~40 total)
 
 ### P0 — Query/Discovery (7 read-only)
 
@@ -176,6 +181,14 @@ The MCP Adapter converts ability names like `elementor-mcp/list-widgets` to tool
 |---|---|
 | `elementor-mcp/build-page` | Create complete page from declarative structure in one call |
 
+### Stock Images (3 tools)
+
+| Ability Name | Purpose |
+|---|---|
+| `elementor-mcp/search-images` | Search Openverse (WordPress.org) for Creative Commons images by keyword |
+| `elementor-mcp/sideload-image` | Download an external image URL into the WordPress Media Library |
+| `elementor-mcp/add-stock-image` | Search + sideload + add image widget to page in one call |
+
 ## Connecting to the MCP Server
 
 ### Prerequisites
@@ -195,7 +208,7 @@ The MCP Adapter includes a built-in WP-CLI stdio bridge. No HTTP round-trip, no 
     "elementor-mcp": {
       "type": "stdio",
       "command": "wp",
-      "args": ["mcp-adapter", "serve", "--server=elementor-mcp-server", "--user=admin", "--path=C:/laragon/www/msrplugins"]
+      "args": ["mcp-adapter", "serve", "--server=elementor-mcp-server", "--user=admin", "--path=/path/to/wordpress"]
     }
   }
 }
@@ -207,13 +220,13 @@ The MCP Adapter includes a built-in WP-CLI stdio bridge. No HTTP round-trip, no 
   "mcpServers": {
     "elementor-mcp": {
       "command": "wp",
-      "args": ["mcp-adapter", "serve", "--server=elementor-mcp-server", "--user=admin", "--path=C:/laragon/www/msrplugins"]
+      "args": ["mcp-adapter", "serve", "--server=elementor-mcp-server", "--user=admin", "--path=/path/to/wordpress"]
     }
   }
 }
 ```
 
-**Verify:** `wp mcp-adapter list --path=C:/laragon/www/msrplugins` should show `elementor-mcp-server`.
+**Verify:** `wp mcp-adapter list --path=/path/to/wordpress` should show `elementor-mcp-server`.
 
 ### Option B: Node.js HTTP proxy (remote sites)
 
@@ -242,7 +255,7 @@ For remote WordPress sites or environments without WP-CLI, use the bundled proxy
   "servers": {
     "elementor-mcp": {
       "type": "http",
-      "url": "http://msrplugins.test/wp-json/mcp/elementor-mcp-server",
+      "url": "https://your-site.com/wp-json/mcp/elementor-mcp-server",
       "headers": {
         "Authorization": "Basic BASE64_ENCODED_CREDENTIALS"
       }
@@ -254,7 +267,7 @@ For remote WordPress sites or environments without WP-CLI, use the bundled proxy
 ### Testing with MCP Inspector
 
 ```bash
-npx @modelcontextprotocol/inspector wp mcp-adapter serve --server=elementor-mcp-server --user=admin --path=C:/laragon/www/msrplugins
+npx @modelcontextprotocol/inspector wp mcp-adapter serve --server=elementor-mcp-server --user=admin --path=/path/to/wordpress
 ```
 
 ### Troubleshooting
@@ -262,7 +275,7 @@ npx @modelcontextprotocol/inspector wp mcp-adapter serve --server=elementor-mcp-
 - **"No MCP servers registered"**: Ensure Elementor MCP plugin is active and dependencies are met
 - **HTTP 401**: Check Application Password is correct and user has `edit_posts` capability
 - **Session errors**: The HTTP endpoint requires `Mcp-Session-Id` header after `initialize`; the proxy handles this automatically
-- **WP-CLI not found on Windows**: Use full path: `C:\laragon\bin\php\php-8.x\php.exe C:\path\to\wp-cli.phar`
+- **WP-CLI not found on Windows**: Use full path to `php.exe` and `wp-cli.phar`
 
 See `mcp-config-examples.json` for copy-paste configs for all supported clients.
 
