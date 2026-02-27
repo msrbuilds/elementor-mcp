@@ -85,7 +85,25 @@
 	}
 
 	/**
-	 * Connection tab — Base64 credential generator for VS Code config.
+	 * Populate a code block and its hidden copy source.
+	 *
+	 * @param {string} codeId  The ID of the <code> element.
+	 * @param {string} copyId  The ID of the <textarea> copy source.
+	 * @param {string} json    The JSON string to display.
+	 */
+	function setConfigBlock( codeId, copyId, json ) {
+		var codeEl = document.getElementById( codeId );
+		var copyEl = document.getElementById( copyId );
+		if ( codeEl ) {
+			codeEl.textContent = json;
+		}
+		if ( copyEl ) {
+			copyEl.value = json;
+		}
+	}
+
+	/**
+	 * Connection tab — Generate credentials and populate all HTTP config blocks.
 	 */
 	function initBase64Generator() {
 		var generateBtn = document.getElementById( 'elementor-mcp-generate-b64' );
@@ -118,26 +136,71 @@
 				resultCopy.value = headerValue;
 			}
 
-			// Update the VS Code config block with the real value.
-			var codeBlock = document.getElementById( 'elementor-mcp-vscode-code' );
-			var copySource = document.getElementById( 'vscode-config' );
+			if ( typeof elementorMcpAdmin === 'undefined' || ! elementorMcpAdmin.mcpEndpoint ) {
+				return;
+			}
 
-			if ( codeBlock && copySource && typeof elementorMcpAdmin !== 'undefined' && elementorMcpAdmin.mcpEndpoint ) {
-				var config = {
-					servers: {
-						'elementor-mcp': {
-							type: 'http',
-							url: elementorMcpAdmin.mcpEndpoint,
-							headers: {
-								Authorization: headerValue
-							}
+			var endpoint = elementorMcpAdmin.mcpEndpoint;
+
+			// Show the config blocks container.
+			var configsDiv = document.getElementById( 'elementor-mcp-http-configs' );
+			if ( configsDiv ) {
+				configsDiv.style.display = '';
+			}
+
+			// Claude Code (.mcp.json) — uses type: http.
+			var claudeCodeConfig = {
+				mcpServers: {
+					'elementor-mcp': {
+						type: 'http',
+						url: endpoint,
+						headers: {
+							Authorization: headerValue
 						}
 					}
-				};
-				var configJson = JSON.stringify( config, null, 4 );
-				codeBlock.textContent = configJson;
-				copySource.value = configJson;
-			}
+				}
+			};
+			setConfigBlock(
+				'elementor-mcp-claude-code-http-code',
+				'claude-code-http',
+				JSON.stringify( claudeCodeConfig, null, 4 )
+			);
+
+			// Claude Desktop — uses stdio proxy with env vars.
+			var claudeDesktopConfig = {
+				mcpServers: {
+					'elementor-mcp': {
+						type: 'http',
+						url: endpoint,
+						headers: {
+							Authorization: headerValue
+						}
+					}
+				}
+			};
+			setConfigBlock(
+				'elementor-mcp-claude-desktop-http-code',
+				'claude-desktop-http',
+				JSON.stringify( claudeDesktopConfig, null, 4 )
+			);
+
+			// VS Code / Cursor.
+			var vscodeConfig = {
+				servers: {
+					'elementor-mcp': {
+						type: 'http',
+						url: endpoint,
+						headers: {
+							Authorization: headerValue
+						}
+					}
+				}
+			};
+			setConfigBlock(
+				'elementor-mcp-vscode-code',
+				'vscode-config',
+				JSON.stringify( vscodeConfig, null, 4 )
+			);
 		} );
 	}
 

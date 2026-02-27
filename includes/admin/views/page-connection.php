@@ -143,11 +143,11 @@ $wp_path         = str_replace( '\\', '/', ABSPATH );
 		</div>
 	</div>
 
-	<!-- HTTP Proxy (Remote) -->
+	<!-- HTTP Direct (Remote) -->
 	<div class="elementor-mcp-section">
-		<h2><?php esc_html_e( 'HTTP Proxy — Remote Connection', 'elementor-mcp' ); ?></h2>
+		<h2><?php esc_html_e( 'HTTP — Remote Connection', 'elementor-mcp' ); ?></h2>
 		<p class="description">
-			<?php esc_html_e( 'Connect to a remote WordPress site via the included Node.js proxy. Requires Node.js and a WordPress Application Password.', 'elementor-mcp' ); ?>
+			<?php esc_html_e( 'Connect to this site from any AI client using HTTP. No proxy or Node.js needed — just an Application Password.', 'elementor-mcp' ); ?>
 		</p>
 		<p class="description">
 			<?php
@@ -159,74 +159,9 @@ $wp_path         = str_replace( '\\', '/', ABSPATH );
 			?>
 		</p>
 
-		<h3><?php esc_html_e( 'Claude Desktop Config', 'elementor-mcp' ); ?></h3>
+		<h3><?php esc_html_e( 'Step 1: Generate Your Credentials', 'elementor-mcp' ); ?></h3>
 		<p class="description">
-			<?php esc_html_e( 'Claude Desktop requires the full path to the proxy script since it runs from its own directory.', 'elementor-mcp' ); ?>
-		</p>
-		<?php
-		$claude_desktop_remote = wp_json_encode(
-			array(
-				'mcpServers' => array(
-					'elementor-mcp' => array(
-						'command' => 'node',
-						'args'    => array( $plugin_dir . 'bin/mcp-proxy.mjs' ),
-						'env'     => array(
-							'WP_URL'          => $site_url,
-							'WP_USERNAME'     => 'admin',
-							'WP_APP_PASSWORD' => 'xxxx xxxx xxxx xxxx xxxx xxxx',
-						),
-					),
-				),
-			),
-			JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES
-		);
-		?>
-		<div class="elementor-mcp-code-block">
-			<pre><code><?php echo esc_html( $claude_desktop_remote ); ?></code></pre>
-			<button type="button" class="button elementor-mcp-copy-btn" data-target="claude-desktop-remote"><?php esc_html_e( 'Copy', 'elementor-mcp' ); ?></button>
-			<textarea id="claude-desktop-remote" class="elementor-mcp-copy-source"><?php echo esc_textarea( $claude_desktop_remote ); ?></textarea>
-		</div>
-
-		<h3><?php esc_html_e( 'Claude Code Config (.mcp.json)', 'elementor-mcp' ); ?></h3>
-		<p class="description">
-			<?php esc_html_e( 'Place in your project root. Uses a relative path since Claude Code runs from the project directory.', 'elementor-mcp' ); ?>
-		</p>
-		<?php
-		$claude_code_remote = wp_json_encode(
-			array(
-				'mcpServers' => array(
-					'elementor-mcp' => array(
-						'type'    => 'stdio',
-						'command' => 'node',
-						'args'    => array( 'bin/mcp-proxy.mjs' ),
-						'env'     => array(
-							'WP_URL'          => $site_url,
-							'WP_USERNAME'     => 'admin',
-							'WP_APP_PASSWORD' => 'xxxx xxxx xxxx xxxx xxxx xxxx',
-						),
-					),
-				),
-			),
-			JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES
-		);
-		?>
-		<div class="elementor-mcp-code-block">
-			<pre><code><?php echo esc_html( $claude_code_remote ); ?></code></pre>
-			<button type="button" class="button elementor-mcp-copy-btn" data-target="claude-code-remote"><?php esc_html_e( 'Copy', 'elementor-mcp' ); ?></button>
-			<textarea id="claude-code-remote" class="elementor-mcp-copy-source"><?php echo esc_textarea( $claude_code_remote ); ?></textarea>
-		</div>
-	</div>
-
-	<!-- VS Code MCP -->
-	<div class="elementor-mcp-section">
-		<h2><?php esc_html_e( 'VS Code — Direct HTTP', 'elementor-mcp' ); ?></h2>
-		<p class="description">
-			<?php esc_html_e( 'Add to your VS Code settings for direct HTTP connection. Requires Authorization header with Base64-encoded credentials.', 'elementor-mcp' ); ?>
-		</p>
-
-		<h3><?php esc_html_e( 'Generate Base64 Credentials', 'elementor-mcp' ); ?></h3>
-		<p class="description">
-			<?php esc_html_e( 'Enter your WordPress username and Application Password to generate the Base64 authorization string.', 'elementor-mcp' ); ?>
+			<?php esc_html_e( 'Enter your username and Application Password to generate the Base64 authorization string needed for HTTP connections.', 'elementor-mcp' ); ?>
 		</p>
 		<table class="form-table elementor-mcp-base64-form">
 			<tr>
@@ -253,7 +188,7 @@ $wp_path         = str_replace( '\\', '/', ABSPATH );
 			<tr>
 				<th></th>
 				<td>
-					<button type="button" class="button button-primary" id="elementor-mcp-generate-b64"><?php esc_html_e( 'Generate', 'elementor-mcp' ); ?></button>
+					<button type="button" class="button button-primary" id="elementor-mcp-generate-b64"><?php esc_html_e( 'Generate Configs', 'elementor-mcp' ); ?></button>
 				</td>
 			</tr>
 			<tr id="elementor-mcp-b64-result-row" style="display: none;">
@@ -266,26 +201,46 @@ $wp_path         = str_replace( '\\', '/', ABSPATH );
 			</tr>
 		</table>
 
-		<?php
-		$vscode_config = wp_json_encode(
-			array(
-				'servers' => array(
-					'elementor-mcp' => array(
-						'type'    => 'http',
-						'url'     => $mcp_endpoint,
-						'headers' => array(
-							'Authorization' => 'Basic BASE64_OF_USERNAME:APP_PASSWORD',
-						),
-					),
-				),
-			),
-			JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES
-		);
-		?>
-		<div class="elementor-mcp-code-block">
-			<pre><code id="elementor-mcp-vscode-code"><?php echo esc_html( $vscode_config ); ?></code></pre>
-			<button type="button" class="button elementor-mcp-copy-btn" data-target="vscode-config"><?php esc_html_e( 'Copy', 'elementor-mcp' ); ?></button>
-			<textarea id="vscode-config" class="elementor-mcp-copy-source"><?php echo esc_textarea( $vscode_config ); ?></textarea>
+		<div id="elementor-mcp-http-configs" style="display: none;">
+
+			<h3><?php esc_html_e( 'Step 2: Copy Your Config', 'elementor-mcp' ); ?></h3>
+			<p class="description">
+				<?php esc_html_e( 'Choose the config for your AI client and paste it into the appropriate config file.', 'elementor-mcp' ); ?>
+			</p>
+
+			<h4><?php esc_html_e( 'Claude Code (.mcp.json)', 'elementor-mcp' ); ?></h4>
+			<p class="description">
+				<?php esc_html_e( 'Place as .mcp.json in your project root:', 'elementor-mcp' ); ?>
+			</p>
+			<div class="elementor-mcp-code-block">
+				<pre><code id="elementor-mcp-claude-code-http-code"></code></pre>
+				<button type="button" class="button elementor-mcp-copy-btn" data-target="claude-code-http"><?php esc_html_e( 'Copy', 'elementor-mcp' ); ?></button>
+				<textarea id="claude-code-http" class="elementor-mcp-copy-source"></textarea>
+			</div>
+
+			<h4><?php esc_html_e( 'Claude Desktop', 'elementor-mcp' ); ?></h4>
+			<p class="description">
+				<?php
+				printf(
+					/* translators: %s: config file path */
+					esc_html__( 'Add to %s:', 'elementor-mcp' ),
+					'<code>%APPDATA%\\Claude\\claude_desktop_config.json</code> (Windows) / <code>~/Library/Application Support/Claude/claude_desktop_config.json</code> (macOS)'
+				);
+				?>
+			</p>
+			<div class="elementor-mcp-code-block">
+				<pre><code id="elementor-mcp-claude-desktop-http-code"></code></pre>
+				<button type="button" class="button elementor-mcp-copy-btn" data-target="claude-desktop-http"><?php esc_html_e( 'Copy', 'elementor-mcp' ); ?></button>
+				<textarea id="claude-desktop-http" class="elementor-mcp-copy-source"></textarea>
+			</div>
+
+			<h4><?php esc_html_e( 'VS Code / Cursor', 'elementor-mcp' ); ?></h4>
+			<div class="elementor-mcp-code-block">
+				<pre><code id="elementor-mcp-vscode-code"></code></pre>
+				<button type="button" class="button elementor-mcp-copy-btn" data-target="vscode-config"><?php esc_html_e( 'Copy', 'elementor-mcp' ); ?></button>
+				<textarea id="vscode-config" class="elementor-mcp-copy-source"></textarea>
+			</div>
+
 		</div>
 	</div>
 
