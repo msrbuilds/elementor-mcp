@@ -199,7 +199,11 @@ class Elementor_MCP_Template_Abilities {
 		wp_set_object_terms( $template_id, $template_type, 'elementor_library_type' );
 
 		// Save the element data to the template.
-		$this->data->save_page_data( $template_id, $elements_data );
+		$save_result = $this->data->save_page_data( $template_id, $elements_data );
+
+		if ( is_wp_error( $save_result ) ) {
+			return $save_result;
+		}
 
 		return array(
 			'template_id' => $template_id,
@@ -305,8 +309,19 @@ class Elementor_MCP_Template_Abilities {
 		if ( ! empty( $parent_id ) ) {
 			// Insert each template element into the parent.
 			foreach ( $template_data as $i => $element ) {
-				$pos = ( $position >= 0 ) ? $position + $i : -1;
-				$this->data->insert_element( $page_data, $parent_id, $element, $pos );
+				$pos      = ( $position >= 0 ) ? $position + $i : -1;
+				$inserted = $this->data->insert_element( $page_data, $parent_id, $element, $pos );
+
+				if ( ! $inserted ) {
+					return new \WP_Error(
+						'parent_not_found',
+						sprintf(
+							/* translators: %s: parent element ID */
+							__( 'Parent element "%s" not found.', 'elementor-mcp' ),
+							$parent_id
+						)
+					);
+				}
 			}
 		} else {
 			// Top-level insertion.

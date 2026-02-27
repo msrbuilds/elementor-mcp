@@ -48,6 +48,9 @@ class Elementor_MCP_Data {
 	/**
 	 * Gets the element tree for an Elementor page.
 	 *
+	 * Tries the Elementor document API first, falls back to reading raw
+	 * post meta if the document returns empty data (common in CLI contexts).
+	 *
 	 * @since 1.0.0
 	 *
 	 * @param int $post_id The post ID.
@@ -62,7 +65,21 @@ class Elementor_MCP_Data {
 
 		$data = $document->get_elements_data();
 
-		return is_array( $data ) ? $data : array();
+		if ( is_array( $data ) && ! empty( $data ) ) {
+			return $data;
+		}
+
+		// Fallback: read from raw post meta (handles CLI/proxy contexts).
+		$raw = get_post_meta( $post_id, '_elementor_data', true );
+
+		if ( ! empty( $raw ) && is_string( $raw ) ) {
+			$decoded = json_decode( $raw, true );
+			if ( is_array( $decoded ) ) {
+				return $decoded;
+			}
+		}
+
+		return array();
 	}
 
 	/**
@@ -166,7 +183,9 @@ class Elementor_MCP_Data {
 	/**
 	 * Saves page data using Elementor's native save mechanism.
 	 *
-	 * Uses the document save() method to ensure CSS regeneration and cache busting.
+	 * Tries document save() first (triggers CSS regeneration). If that fails
+	 * (e.g. non-browser context like WP-CLI or REST API), falls back to direct
+	 * meta update and manual CSS cache invalidation.
 	 *
 	 * @since 1.0.0
 	 *
@@ -181,13 +200,47 @@ class Elementor_MCP_Data {
 			return $document;
 		}
 
-		$document->save( array( 'elements' => $data ) );
+		// Attempt native Elementor save (handles CSS regen, cache busting).
+		$result = $document->save( array( 'elements' => $data ) );
+
+		if ( false === $result ) {
+			// Fallback: direct meta write for non-browser contexts (CLI, REST proxy).
+			$json = wp_json_encode( $data );
+
+			if ( false === $json ) {
+				return new \WP_Error(
+					'json_encode_failed',
+					__( 'Failed to encode element data as JSON.', 'elementor-mcp' )
+				);
+			}
+
+			update_post_meta( $post_id, '_elementor_data', wp_slash( $json ) );
+
+			// Ensure Elementor meta flags are set.
+			update_post_meta( $post_id, '_elementor_edit_mode', 'builder' );
+
+			if ( defined( 'ELEMENTOR_VERSION' ) ) {
+				update_post_meta( $post_id, '_elementor_version', ELEMENTOR_VERSION );
+			}
+
+			// Invalidate Elementor CSS cache so it regenerates on next page view.
+			delete_post_meta( $post_id, '_elementor_css' );
+
+			$upload_dir = wp_get_upload_dir();
+			$css_path   = $upload_dir['basedir'] . '/elementor/css/post-' . $post_id . '.css';
+			if ( file_exists( $css_path ) ) {
+				wp_delete_file( $css_path );
+			}
+		}
 
 		return true;
 	}
 
 	/**
 	 * Saves page-level settings.
+	 *
+	 * Tries native Elementor save first, falls back to direct meta for
+	 * non-browser contexts (WP-CLI, REST API proxy).
 	 *
 	 * @since 1.0.0
 	 *
@@ -202,7 +255,21 @@ class Elementor_MCP_Data {
 			return $document;
 		}
 
-		$document->save( array( 'settings' => $settings ) );
+		$result = $document->save( array( 'settings' => $settings ) );
+
+		if ( false === $result ) {
+			// Fallback: merge settings into existing page settings meta.
+			$existing = get_post_meta( $post_id, '_elementor_page_settings', true );
+			if ( ! is_array( $existing ) ) {
+				$existing = array();
+			}
+
+			$merged = array_merge( $existing, $settings );
+			update_post_meta( $post_id, '_elementor_page_settings', $merged );
+
+			// Invalidate CSS cache.
+			delete_post_meta( $post_id, '_elementor_css' );
+		}
 
 		return true;
 	}
@@ -282,16 +349,6 @@ class Elementor_MCP_Data {
 	}
 
 	/**
-	 * Updates settings for a specific element in the tree.
-	 *
-	 * @since 1.0.0
-	 *
-	 * @param array  $data       The element tree (passed by reference).
-	 * @param string $element_id The element ID to update.
-	 * @param array  $settings   The settings to merge.
-	 * @return bool True if updated, false if not found.
-	 */
-	/**
 	 * Recursively reassigns fresh IDs to all elements in a tree.
 	 *
 	 * @since 1.0.0
@@ -349,6 +406,19 @@ class Elementor_MCP_Data {
 		return $count;
 	}
 
+	/**
+	 * Updates settings for a specific element in the tree.
+	 *
+	 * Modifies `$data` by reference. Returns true if element was found
+	 * and updated, false if the element ID was not found.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param array  $data       The element tree (passed by reference).
+	 * @param string $element_id The element ID to update.
+	 * @param array  $settings   The settings to merge.
+	 * @return bool True if updated, false if not found.
+	 */
 	public function update_element_settings( array &$data, string $element_id, array $settings ): bool {
 		foreach ( $data as &$item ) {
 			if ( isset( $item['id'] ) && $item['id'] === $element_id ) {

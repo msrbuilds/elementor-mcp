@@ -33,11 +33,12 @@ class Elementor_MCP_Element_Factory {
 		);
 
 		return array(
-			'id'       => Elementor_MCP_Id_Generator::generate(),
-			'elType'   => 'container',
-			'isInner'  => false,
-			'settings' => array_merge( $defaults, $settings ),
-			'elements' => $children,
+			'id'         => Elementor_MCP_Id_Generator::generate(),
+			'elType'     => 'container',
+			'widgetType' => null,
+			'isInner'    => false,
+			'settings'   => array_merge( $defaults, $settings ),
+			'elements'   => $children,
 		);
 	}
 
@@ -72,11 +73,12 @@ class Elementor_MCP_Element_Factory {
 	 */
 	public function create_section( array $settings = array(), array $columns = array() ): array {
 		return array(
-			'id'       => Elementor_MCP_Id_Generator::generate(),
-			'elType'   => 'section',
-			'isInner'  => false,
-			'settings' => $settings,
-			'elements' => $columns,
+			'id'         => Elementor_MCP_Id_Generator::generate(),
+			'elType'     => 'section',
+			'widgetType' => null,
+			'isInner'    => false,
+			'settings'   => $settings,
+			'elements'   => $columns,
 		);
 	}
 
@@ -95,11 +97,12 @@ class Elementor_MCP_Element_Factory {
 		);
 
 		return array(
-			'id'       => Elementor_MCP_Id_Generator::generate(),
-			'elType'   => 'column',
-			'isInner'  => false,
-			'settings' => array_merge( $defaults, $settings ),
-			'elements' => $widgets,
+			'id'         => Elementor_MCP_Id_Generator::generate(),
+			'elType'     => 'column',
+			'widgetType' => null,
+			'isInner'    => false,
+			'settings'   => array_merge( $defaults, $settings ),
+			'elements'   => $widgets,
 		);
 	}
 }

@@ -234,10 +234,14 @@ class Elementor_MCP_Page_Abilities {
 
 		// Save initial content if provided.
 		if ( ! empty( $input['content'] ) && is_array( $input['content'] ) ) {
-			$this->data->save_page_data( $post_id, $input['content'] );
+			$save_result = $this->data->save_page_data( $post_id, $input['content'] );
 		} else {
 			// Save empty Elementor data to initialize.
-			$this->data->save_page_data( $post_id, array() );
+			$save_result = $this->data->save_page_data( $post_id, array() );
+		}
+
+		if ( is_wp_error( $save_result ) ) {
+			return $save_result;
 		}
 
 		$edit_url    = admin_url( 'post.php?post=' . $post_id . '&action=elementor' );

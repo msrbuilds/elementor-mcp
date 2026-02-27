@@ -162,7 +162,7 @@ class Elementor_MCP_Stock_Image_Abilities {
 						'aspect_ratio' => array(
 							'type'        => 'string',
 							'enum'        => array( 'tall', 'wide', 'square' ),
-							'description' => __( 'Filter by aspect ratio.', 'elementor-mcp' ),
+							'description' => __( 'Filter by aspect ratio. Use "wide" for landscape images (recommended for hero banners, cards, and most page layouts). Use "tall" for portrait/sidebar images. Use "square" for avatars and thumbnails.', 'elementor-mcp' ),
 						),
 						'size'         => array(
 							'type'        => 'string',
@@ -455,7 +455,7 @@ class Elementor_MCP_Stock_Image_Abilities {
 			'elementor-mcp/add-stock-image',
 			array(
 				'label'               => __( 'Add Stock Image', 'elementor-mcp' ),
-				'description'         => __( 'Searches Openverse for an image, downloads it to the Media Library, and adds it as an image widget to the page — all in one step. Combines search-images + sideload-image + add-image.', 'elementor-mcp' ),
+				'description'         => __( 'Searches Openverse for an image, downloads it to the Media Library, and adds it as an image widget to the page — all in one step. Defaults to landscape (wide) images for consistent layouts. Combines search-images + sideload-image + add-image.', 'elementor-mcp' ),
 				'category'            => 'elementor-mcp',
 				'execute_callback'    => array( $this, 'execute_add_stock_image' ),
 				'permission_callback' => array( $this, 'check_combined_permission' ),
@@ -495,6 +495,11 @@ class Elementor_MCP_Stock_Image_Abilities {
 						'caption'    => array(
 							'type'        => 'string',
 							'description' => __( 'Caption override. Defaults to Openverse attribution.', 'elementor-mcp' ),
+						),
+						'aspect_ratio' => array(
+							'type'        => 'string',
+							'enum'        => array( 'wide', 'tall', 'square', 'any' ),
+							'description' => __( 'Image aspect ratio filter. Default: wide (landscape). Use "wide" for hero banners and card images, "tall" for sidebar/portrait, "square" for thumbnails, "any" for no filter.', 'elementor-mcp' ),
 						),
 						'alt_text'   => array(
 							'type'        => 'string',
@@ -551,11 +556,21 @@ class Elementor_MCP_Stock_Image_Abilities {
 			return new \WP_Error( 'missing_params', __( 'post_id, parent_id, and query are required.', 'elementor-mcp' ) );
 		}
 
-		// Step 1: Search for images.
-		$search_result = $this->execute_search_images( array(
+		// Default to wide/landscape images for better layout compatibility.
+		$aspect_ratio = sanitize_key( $input['aspect_ratio'] ?? 'wide' );
+
+		$search_params = array(
 			'query'     => $query,
 			'page_size' => min( $index + 3, 20 ), // Fetch a few extra for safety.
-		) );
+		);
+
+		// Apply aspect ratio filter (wide = landscape, best for most layouts).
+		if ( ! empty( $aspect_ratio ) && 'any' !== $aspect_ratio ) {
+			$search_params['aspect_ratio'] = $aspect_ratio;
+		}
+
+		// Step 1: Search for images.
+		$search_result = $this->execute_search_images( $search_params );
 
 		if ( is_wp_error( $search_result ) ) {
 			return $search_result;

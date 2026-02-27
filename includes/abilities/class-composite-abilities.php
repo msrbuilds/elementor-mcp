@@ -235,6 +235,11 @@ class Elementor_MCP_Composite_Abilities {
 	/**
 	 * Recursively builds Elementor elements from the declarative structure.
 	 *
+	 * When a parent container uses flex_direction=row and has multiple
+	 * container children, this method auto-distributes widths using
+	 * flex_grow so children share space equally (unless the child already
+	 * specifies its own width or flex settings).
+	 *
 	 * @param array $items    The declarative structure items.
 	 * @param bool  $is_inner Whether these are nested (inner) containers.
 	 * @return array The Elementor element tree.
@@ -275,4 +280,5 @@ class Elementor_MCP_Composite_Abilities {
 
 		return $elements;
 	}
+
 }
