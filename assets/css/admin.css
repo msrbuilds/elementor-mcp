@@ -1,0 +1,293 @@
+/**
+ * Elementor MCP — Admin Settings Styles
+ *
+ * @package Elementor_MCP
+ * @since   1.0.0
+ */
+
+/* -------------------------------------------------------------------------
+ * Layout
+ * ----------------------------------------------------------------------- */
+
+.elementor-mcp-admin .tab-content {
+	margin-top: 20px;
+}
+
+/* -------------------------------------------------------------------------
+ * Bulk actions
+ * ----------------------------------------------------------------------- */
+
+.elementor-mcp-bulk-actions {
+	margin: 15px 0;
+	display: flex;
+	gap: 8px;
+}
+
+/* -------------------------------------------------------------------------
+ * Category sections
+ * ----------------------------------------------------------------------- */
+
+.elementor-mcp-category {
+	margin-bottom: 30px;
+}
+
+.elementor-mcp-category-header {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding-bottom: 8px;
+	border-bottom: 1px solid #c3c4c7;
+	font-size: 1.1em;
+}
+
+.elementor-mcp-category-count {
+	color: #646970;
+	font-weight: normal;
+	font-size: 0.85em;
+}
+
+.elementor-mcp-category-actions {
+	margin-left: auto;
+	font-size: 0.8em;
+	font-weight: normal;
+}
+
+.elementor-mcp-separator {
+	color: #c3c4c7;
+	margin: 0 2px;
+}
+
+/* -------------------------------------------------------------------------
+ * Tool cards
+ * ----------------------------------------------------------------------- */
+
+.elementor-mcp-tools-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+	gap: 8px;
+	margin-top: 12px;
+}
+
+.elementor-mcp-tool-card {
+	display: flex;
+	align-items: flex-start;
+	gap: 10px;
+	padding: 12px 14px;
+	background: #fff;
+	border: 1px solid #c3c4c7;
+	border-radius: 4px;
+	cursor: pointer;
+	transition: border-color 0.15s, background-color 0.15s;
+}
+
+.elementor-mcp-tool-card:hover {
+	border-color: #2271b1;
+}
+
+.elementor-mcp-tool-card.is-disabled {
+	background: #f6f7f7;
+	opacity: 0.7;
+}
+
+.elementor-mcp-tool-card.is-disabled:hover {
+	opacity: 1;
+}
+
+.elementor-mcp-tool-card input[type="checkbox"] {
+	margin-top: 2px;
+	flex-shrink: 0;
+}
+
+.elementor-mcp-tool-info {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	min-width: 0;
+}
+
+.elementor-mcp-tool-name {
+	font-weight: 600;
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	flex-wrap: wrap;
+}
+
+.elementor-mcp-tool-desc {
+	color: #646970;
+	font-size: 12px;
+	line-height: 1.4;
+}
+
+.elementor-mcp-tool-slug {
+	font-size: 11px;
+	color: #8c8f94;
+	background: #f0f0f1;
+	padding: 1px 5px;
+	border-radius: 2px;
+	display: inline-block;
+}
+
+/* -------------------------------------------------------------------------
+ * Badges
+ * ----------------------------------------------------------------------- */
+
+.elementor-mcp-badge {
+	display: inline-block;
+	padding: 1px 7px;
+	border-radius: 3px;
+	font-size: 10px;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+	line-height: 1.6;
+}
+
+.elementor-mcp-badge--read-only {
+	background: #e7f3ff;
+	color: #135e96;
+}
+
+.elementor-mcp-badge--destructive {
+	background: #fcf0f1;
+	color: #8a2424;
+}
+
+.elementor-mcp-badge--pro {
+	background: #f0e6ff;
+	color: #6b21a8;
+}
+
+/* -------------------------------------------------------------------------
+ * Connection page
+ * ----------------------------------------------------------------------- */
+
+.elementor-mcp-connection {
+	max-width: 800px;
+}
+
+.elementor-mcp-section {
+	margin-bottom: 30px;
+	padding-bottom: 20px;
+	border-bottom: 1px solid #f0f0f1;
+}
+
+.elementor-mcp-section:last-child {
+	border-bottom: none;
+}
+
+.elementor-mcp-section h2 {
+	margin-bottom: 8px;
+}
+
+.elementor-mcp-section h3 {
+	margin-top: 16px;
+	margin-bottom: 8px;
+	font-size: 13px;
+}
+
+/* -------------------------------------------------------------------------
+ * Status indicators
+ * ----------------------------------------------------------------------- */
+
+.elementor-mcp-status-table th {
+	width: 200px;
+	padding: 8px 10px 8px 0;
+}
+
+.elementor-mcp-status-table td {
+	padding: 8px 10px;
+}
+
+.elementor-mcp-status {
+	display: inline-block;
+	padding: 2px 8px;
+	border-radius: 3px;
+	font-size: 12px;
+	font-weight: 600;
+}
+
+.elementor-mcp-status--active {
+	background: #edfaef;
+	color: #1e6e27;
+}
+
+.elementor-mcp-status--inactive {
+	background: #fcf0f1;
+	color: #8a2424;
+}
+
+/* -------------------------------------------------------------------------
+ * Code blocks with copy button
+ * ----------------------------------------------------------------------- */
+
+.elementor-mcp-code-block {
+	position: relative;
+	margin: 8px 0 16px;
+}
+
+.elementor-mcp-code-block pre {
+	background: #1d2327;
+	color: #e0e0e0;
+	padding: 14px 16px;
+	border-radius: 4px;
+	overflow-x: auto;
+	margin: 0;
+	font-size: 12px;
+	line-height: 1.5;
+	white-space: pre-wrap;
+	word-break: break-all;
+}
+
+.elementor-mcp-code-block code {
+	background: none;
+	color: inherit;
+	font-size: inherit;
+}
+
+.elementor-mcp-copy-btn {
+	position: absolute;
+	top: 8px;
+	right: 8px;
+	font-size: 11px !important;
+	padding: 2px 10px !important;
+	min-height: 24px !important;
+	background: rgba(255, 255, 255, 0.1) !important;
+	border-color: rgba(255, 255, 255, 0.2) !important;
+	color: #e0e0e0 !important;
+}
+
+.elementor-mcp-copy-btn:hover {
+	background: rgba(255, 255, 255, 0.2) !important;
+	border-color: rgba(255, 255, 255, 0.3) !important;
+	color: #fff !important;
+}
+
+/* Hidden textarea for copy source */
+.elementor-mcp-copy-source {
+	position: absolute;
+	left: -9999px;
+	top: -9999px;
+	width: 1px;
+	height: 1px;
+	opacity: 0;
+}
+
+/* -------------------------------------------------------------------------
+ * Responsive
+ * ----------------------------------------------------------------------- */
+
+@media screen and (max-width: 782px) {
+	.elementor-mcp-tools-grid {
+		grid-template-columns: 1fr;
+	}
+
+	.elementor-mcp-category-header {
+		flex-wrap: wrap;
+	}
+
+	.elementor-mcp-category-actions {
+		margin-left: 0;
+		width: 100%;
+	}
+}

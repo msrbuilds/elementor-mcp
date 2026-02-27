@@ -1,0 +1,9 @@
+{
+    "name": "developer/elementor-mcp",
+    "description": "Elementor MCP Plugin",
+    "type": "wordpress-plugin",
+    "license": "GPL-2.0-or-later",
+    "require-dev": {
+        "phpunit/phpunit": "^9 || ^10"
+    }
+}

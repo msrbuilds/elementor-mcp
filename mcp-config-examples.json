@@ -1,0 +1,78 @@
+{
+  "_comment": "Copy-paste MCP configurations for connecting to the Elementor MCP server. Pick the one that matches your client and environment.",
+
+  "claude_desktop_local_wpcli": {
+    "_description": "Claude Desktop — local WordPress via WP-CLI (fastest, recommended for local dev)",
+    "_config_path_windows": "%APPDATA%\\Claude\\claude_desktop_config.json",
+    "_config_path_macos": "~/Library/Application Support/Claude/claude_desktop_config.json",
+    "mcpServers": {
+      "elementor-mcp": {
+        "command": "wp",
+        "args": [
+          "mcp-adapter",
+          "serve",
+          "--server=elementor-mcp-server",
+          "--user=admin",
+          "--path=C:/laragon/www/msrplugins"
+        ]
+      }
+    }
+  },
+
+  "claude_desktop_remote_proxy": {
+    "_description": "Claude Desktop — remote WordPress via Node.js HTTP proxy (absolute path required for Desktop)",
+    "mcpServers": {
+      "elementor-mcp": {
+        "command": "node",
+        "args": [
+          "/path/to/wp-content/plugins/elementor-mcp/bin/mcp-proxy.mjs"
+        ],
+        "env": {
+          "WP_URL": "https://your-site.com",
+          "WP_USERNAME": "admin",
+          "WP_APP_PASSWORD": "xxxx xxxx xxxx xxxx xxxx xxxx"
+        }
+      }
+    }
+  },
+
+  "claude_code_mcp_json": {
+    "_description": "Claude Code — place as .mcp.json in project root",
+    "mcpServers": {
+      "elementor-mcp": {
+        "type": "stdio",
+        "command": "wp",
+        "args": [
+          "mcp-adapter",
+          "serve",
+          "--server=elementor-mcp-server",
+          "--user=admin",
+          "--path=C:/laragon/www/msrplugins"
+        ]
+      }
+    }
+  },
+
+  "vscode_mcp_direct_http": {
+    "_description": "VS Code MCP extension — direct HTTP connection (add to VS Code settings)",
+    "servers": {
+      "elementor-mcp": {
+        "type": "http",
+        "url": "http://msrplugins.test/wp-json/mcp/elementor-mcp-server",
+        "headers": {
+          "Authorization": "Basic BASE64_OF_USERNAME:APP_PASSWORD"
+        }
+      }
+    }
+  },
+
+  "mcp_inspector_wpcli": {
+    "_description": "MCP Inspector — test and debug tools via WP-CLI",
+    "_command": "npx @modelcontextprotocol/inspector wp mcp-adapter serve --server=elementor-mcp-server --user=admin --path=C:/laragon/www/msrplugins"
+  },
+
+  "mcp_inspector_proxy": {
+    "_description": "MCP Inspector — test and debug tools via HTTP proxy",
+    "_command": "npx @modelcontextprotocol/inspector -e WP_URL=http://msrplugins.test -e WP_USERNAME=admin -e WP_APP_PASSWORD=xxxx node bin/mcp-proxy.mjs"
+  }
+}

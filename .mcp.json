@@ -1,0 +1,28 @@
+{
+  "mcpServers": {
+    "elementor-mcp-local": {
+      "type": "stdio",
+      "command": "C:/wp-cli/wp.bat",
+      "args": [
+        "mcp-adapter",
+        "serve",
+        "--server=elementor-mcp-server",
+        "--user=admin",
+        "--path=${WP_PATH}"
+      ],
+      "env": {
+        "WP_PATH": "C:/laragon/www/msrplugins"
+      }
+    },
+    "elementor-mcp-remote": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["bin/mcp-proxy.mjs"],
+      "env": {
+        "WP_URL": "http://msrplugins.test",
+        "WP_USERNAME": "admin",
+        "WP_APP_PASSWORD": "QbKY iIRU J3bQ 3EGJ D4z3 XUM2"
+      }
+    }
+  }
+}

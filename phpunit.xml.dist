@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<phpunit
+	bootstrap="tests/bootstrap.php"
+	backupGlobals="false"
+	colors="true"
+	cacheDirectory=".phpunit.cache"
+>
+	<testsuites>
+		<testsuite name="unit">
+			<directory suffix="Test.php">tests/unit</directory>
+		</testsuite>
+	</testsuites>
+</phpunit>

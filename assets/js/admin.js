@@ -1,0 +1,177 @@
+/**
+ * Elementor MCP — Admin Settings Scripts
+ *
+ * @package Elementor_MCP
+ * @since   1.0.0
+ */
+
+(function () {
+	'use strict';
+
+	/**
+	 * Tools tab — Enable/Disable all toggles.
+	 */
+	function initToolsForm() {
+		var form = document.getElementById( 'elementor-mcp-tools-form' );
+		if ( ! form ) {
+			return;
+		}
+
+		// Global enable/disable all.
+		var enableAll = form.querySelector( '.elementor-mcp-enable-all' );
+		var disableAll = form.querySelector( '.elementor-mcp-disable-all' );
+
+		if ( enableAll ) {
+			enableAll.addEventListener( 'click', function () {
+				form.querySelectorAll( 'input[type="checkbox"]' ).forEach( function ( cb ) {
+					cb.checked = true;
+				} );
+				updateCards( form );
+			} );
+		}
+
+		if ( disableAll ) {
+			disableAll.addEventListener( 'click', function () {
+				form.querySelectorAll( 'input[type="checkbox"]' ).forEach( function ( cb ) {
+					cb.checked = false;
+				} );
+				updateCards( form );
+			} );
+		}
+
+		// Per-category enable/disable.
+		form.querySelectorAll( '.elementor-mcp-category' ).forEach( function ( cat ) {
+			var catEnableAll = cat.querySelector( '.elementor-mcp-cat-enable-all' );
+			var catDisableAll = cat.querySelector( '.elementor-mcp-cat-disable-all' );
+
+			if ( catEnableAll ) {
+				catEnableAll.addEventListener( 'click', function () {
+					cat.querySelectorAll( 'input[type="checkbox"]' ).forEach( function ( cb ) {
+						cb.checked = true;
+					} );
+					updateCards( form );
+				} );
+			}
+
+			if ( catDisableAll ) {
+				catDisableAll.addEventListener( 'click', function () {
+					cat.querySelectorAll( 'input[type="checkbox"]' ).forEach( function ( cb ) {
+						cb.checked = false;
+					} );
+					updateCards( form );
+				} );
+			}
+		} );
+
+		// Toggle card visual state on checkbox change.
+		form.addEventListener( 'change', function ( e ) {
+			if ( e.target.type === 'checkbox' ) {
+				updateCards( form );
+			}
+		} );
+	}
+
+	/**
+	 * Update card visual state based on checkbox.
+	 *
+	 * @param {HTMLElement} form The form element.
+	 */
+	function updateCards( form ) {
+		form.querySelectorAll( '.elementor-mcp-tool-card' ).forEach( function ( card ) {
+			var cb = card.querySelector( 'input[type="checkbox"]' );
+			card.classList.toggle( 'is-enabled', cb.checked );
+			card.classList.toggle( 'is-disabled', ! cb.checked );
+		} );
+	}
+
+	/**
+	 * Connection tab — Base64 credential generator for VS Code config.
+	 */
+	function initBase64Generator() {
+		var generateBtn = document.getElementById( 'elementor-mcp-generate-b64' );
+		if ( ! generateBtn ) {
+			return;
+		}
+
+		generateBtn.addEventListener( 'click', function () {
+			var username = document.getElementById( 'elementor-mcp-b64-username' );
+			var appPassword = document.getElementById( 'elementor-mcp-b64-app-password' );
+
+			if ( ! username || ! appPassword || ! username.value.trim() || ! appPassword.value.trim() ) {
+				return;
+			}
+
+			var credentials = username.value.trim() + ':' + appPassword.value.trim();
+			var base64 = btoa( credentials );
+			var headerValue = 'Basic ' + base64;
+
+			// Show the result row.
+			var resultRow = document.getElementById( 'elementor-mcp-b64-result-row' );
+			var resultCode = document.getElementById( 'elementor-mcp-b64-result' );
+			var resultCopy = document.getElementById( 'elementor-mcp-b64-result-copy' );
+
+			if ( resultRow && resultCode && resultCopy ) {
+				resultRow.style.display = '';
+				resultCode.textContent = headerValue;
+				resultCopy.value = headerValue;
+			}
+
+			// Update the VS Code config block with the real value.
+			var codeBlock = document.getElementById( 'elementor-mcp-vscode-code' );
+			var copySource = document.getElementById( 'vscode-config' );
+
+			if ( codeBlock && copySource && typeof elementorMcpAdmin.mcpEndpoint === 'string' ) {
+				var config = {
+					servers: {
+						'elementor-mcp': {
+							type: 'http',
+							url: elementorMcpAdmin.mcpEndpoint,
+							headers: {
+								Authorization: headerValue
+							}
+						}
+					}
+				};
+				var configJson = JSON.stringify( config, null, 4 );
+				codeBlock.textContent = configJson;
+				copySource.value = configJson;
+			}
+		} );
+	}
+
+	/**
+	 * Connection tab — Copy to clipboard buttons.
+	 */
+	function initCopyButtons() {
+		document.querySelectorAll( '.elementor-mcp-copy-btn' ).forEach( function ( btn ) {
+			btn.addEventListener( 'click', function () {
+				var targetId = this.getAttribute( 'data-target' );
+				var source = document.getElementById( targetId );
+				if ( ! source ) {
+					return;
+				}
+
+				navigator.clipboard.writeText( source.value ).then( function () {
+					var original = btn.textContent;
+					btn.textContent = elementorMcpAdmin.copied;
+					setTimeout( function () {
+						btn.textContent = original;
+					}, 2000 );
+				} );
+			} );
+		} );
+	}
+
+	// Initialize on DOM ready.
+	if ( document.readyState === 'loading' ) {
+		document.addEventListener( 'DOMContentLoaded', function () {
+			initToolsForm();
+			initBase64Generator();
+			initCopyButtons();
+		} );
+	} else {
+		initToolsForm();
+		initBase64Generator();
+		initCopyButtons();
+	}
+})();
