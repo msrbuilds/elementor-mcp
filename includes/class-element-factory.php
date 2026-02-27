@@ -32,12 +32,25 @@ class Elementor_MCP_Element_Factory {
 			'content_width'  => 'boxed',
 		);
 
+		$merged = array_merge( $defaults, $settings );
+
+		// Force nowrap on row containers to prevent children from wrapping
+		// to the next line. Elementor's CSS default (--flex-wrap: initial)
+		// should be nowrap, but explicitly setting it prevents any
+		// accidental wrap from the AI agent or theme overrides.
+		$direction = $merged['flex_direction'] ?? '';
+		if ( 'row' === $direction || 'row-reverse' === $direction ) {
+			if ( ! isset( $settings['flex_wrap'] ) ) {
+				$merged['flex_wrap'] = 'nowrap';
+			}
+		}
+
 		return array(
 			'id'         => Elementor_MCP_Id_Generator::generate(),
 			'elType'     => 'container',
 			'widgetType' => null,
 			'isInner'    => false,
-			'settings'   => array_merge( $defaults, $settings ),
+			'settings'   => $merged,
 			'elements'   => $children,
 		);
 	}
