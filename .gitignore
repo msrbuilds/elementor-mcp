@@ -1,0 +1,24 @@
+# Dependencies
+vendor/
+
+# Composer
+composer.lock
+
+# IDE / Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# PHPUnit cache
+.phpunit.cache/
+
+# Claude Code local settings
+.claude/settings.local.json
+
+#Tests
+tests/*
