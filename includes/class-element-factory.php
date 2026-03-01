@@ -34,22 +34,17 @@ class Elementor_MCP_Element_Factory {
 
 		$merged = array_merge( $defaults, $settings );
 
+		// Strip flex_wrap and _flex_size — these settings cause layout
+		// overflow issues. Elementor's defaults handle flex correctly.
+		unset( $merged['flex_wrap'] );
+		unset( $merged['_flex_size'] );
+
 		$direction = $merged['flex_direction'] ?? '';
 		$is_row    = ( 'row' === $direction || 'row-reverse' === $direction );
 
-		// Row containers: force nowrap to prevent children from wrapping
-		// to the next line. Elementor's CSS default (--flex-wrap: initial)
-		// should be nowrap, but explicitly setting it prevents any
-		// accidental wrap from the AI agent or theme overrides.
-		if ( $is_row ) {
-			if ( ! isset( $settings['flex_wrap'] ) ) {
-				$merged['flex_wrap'] = 'nowrap';
-			}
-		}
-
-		// Auto-center alignment for containers with centered content.
-		// Column containers default to center horizontal alignment so
-		// widgets like headings, icons, and text are centered on the page.
+		// Auto-center alignment for column containers so widgets like
+		// headings, icons, and text are centered on the page. Row
+		// containers rely on Elementor's default flex behavior.
 		if ( ! $is_row && ! isset( $settings['align_items'] ) ) {
 			$merged['align_items'] = 'center';
 		}

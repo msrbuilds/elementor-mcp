@@ -3,7 +3,7 @@ Contributors: developer
 Tags: elementor, mcp, ai, page-builder, automation
 Requires at least: 6.8
 Tested up to: 6.8
-Stable tag: 1.2.0
+Stable tag: 1.2.3
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -112,6 +112,21 @@ The plugin enforces WordPress capability checks on every tool. Read operations r
 
 == Changelog ==
 
+= 1.2.3 =
+* Fix: Factory now strips `flex_wrap` and `_flex_size` from container settings — prevents AI agents from setting these values that cause layout overflow.
+* Fix: Tool descriptions now include background color instructions (`background_background=classic`, `background_color=#hex`) so AI agents apply colors correctly.
+* Improved: Stronger "NEVER set flex_wrap" guidance in build-page and add-container tool descriptions.
+
+= 1.2.2 =
+* Fix: Row container children now use `content_width: full` with percentage widths (e.g. 25% for 4 columns) matching Elementor's native column layout pattern.
+* Fix: Removed all `flex_wrap` and `_flex_size` auto-overrides from factory and build-page — Elementor defaults handle layout correctly.
+* Improved: Tool descriptions updated with correct multi-column layout guidance.
+
+= 1.2.1 =
+* Fix: Row containers now use `flex_wrap: wrap` instead of `nowrap` to prevent children from overflowing.
+* Fix: `build-page` auto-sets percentage widths on row children (e.g. 50% for 2 columns, 33.33% for 3) instead of using `_flex_size: grow` which caused layout overflow.
+* Improved: Tool descriptions updated with correct layout guidance for multi-column layouts.
+
 = 1.2.0 =
 * New: 14 free widget convenience tools — accordion, alert, counter, Google Maps, icon list, image box, image carousel, progress bar, social icons, star rating, tabs, testimonial, toggle, HTML.
 * New: 10 Pro widget convenience tools — call to action, slides, testimonial carousel, price list, gallery, share buttons, table of contents, blockquote, Lottie animation, hotspot.
@@ -144,6 +159,15 @@ The plugin enforces WordPress capability checks on every tool. Read operations r
 * Node.js HTTP proxy for remote connections.
 
 == Upgrade Notice ==
+
+= 1.2.3 =
+Factory now strips flex_wrap and _flex_size from settings to prevent layout overflow. Background color guidance added to tool descriptions.
+
+= 1.2.2 =
+Fixes row layout — inner containers use content_width=full with percentage widths, no flex_wrap or _flex_size overrides.
+
+= 1.2.1 =
+Fixes row container overflow — children now use percentage widths and flex-wrap for correct multi-column layouts.
 
 = 1.2.0 =
 24 new widget convenience tools covering all major Elementor free and Pro widgets.

@@ -92,7 +92,7 @@ class Elementor_MCP_Composite_Abilities {
 			'elementor-mcp/build-page',
 			array(
 				'label'               => __( 'Build Page', 'elementor-mcp' ),
-				'description'         => __( 'Creates a complete Elementor page from a declarative structure in a single call. Supports nested containers and any widget types. IMPORTANT LAYOUT RULES: (1) For side-by-side items (columns, cards, pricing tables), use a parent container with flex_direction=row and put each item in its own child container — children auto-grow to fill space equally. (2) Column containers (default direction) auto-center content horizontally. (3) Row containers auto-set nowrap. (4) For hero sections with background images, set background_image on the container settings. (5) Use the search-images and sideload-image tools to find and add real images before building the page. (6) Text alignment uses text_align setting on text/heading widgets (left, center, right).', 'elementor-mcp' ),
+				'description'         => __( 'Creates a complete Elementor page from a declarative structure in a single call. Supports nested containers and any widget types. IMPORTANT LAYOUT RULES: (1) For side-by-side columns, use a parent container with flex_direction=row — children are auto-set to content_width=full with equal percentage widths (e.g. 2 children = 50%, 3 = 33.33%). (2) NEVER set flex_wrap or _flex_size in settings — these cause layout overflow. The tool handles layout automatically. (3) Background colors: set background_background=classic and background_color=#hex on containers. (4) Background images: set background_background=classic, background_image={url,id}, background_size=cover. (5) Background overlay: background_overlay_background=classic, background_overlay_color=#hex, background_overlay_opacity={size:0.7,unit:px}. (6) Text alignment: text_align on text/heading widgets. (7) Use search-images and sideload-image tools to get real images before building.', 'elementor-mcp' ),
 				'category'            => 'elementor-mcp',
 				'execute_callback'    => array( $this, 'execute_build_page' ),
 				'permission_callback' => array( $this, 'check_create_permission' ),
@@ -236,9 +236,10 @@ class Elementor_MCP_Composite_Abilities {
 	 * Recursively builds Elementor elements from the declarative structure.
 	 *
 	 * When a parent container uses flex_direction=row and has multiple
-	 * children, this method auto-distributes widths using flex_grow so
-	 * children share space equally (unless the child already specifies
-	 * its own width or flex settings).
+	 * children, this method auto-sets each child container to
+	 * content_width=full with an equal percentage width (e.g. 25% for
+	 * 4 children). This matches Elementor's native column layout
+	 * pattern. No flex_wrap or _flex_size overrides are applied.
 	 *
 	 * @param array  $items            The declarative structure items.
 	 * @param bool   $is_inner         Whether these are nested (inner) containers.
@@ -248,6 +249,12 @@ class Elementor_MCP_Composite_Abilities {
 	private function build_elements( array $items, bool $is_inner = false, string $parent_direction = '' ): array {
 		$elements  = array();
 		$is_in_row = ( 'row' === $parent_direction || 'row-reverse' === $parent_direction );
+
+		// Calculate equal width percentage for row children.
+		$child_count = count( $items );
+		if ( $is_in_row && $child_count > 1 ) {
+			$equal_width = round( 100 / $child_count, 2 );
+		}
 
 		foreach ( $items as $item ) {
 			$type = $item['type'] ?? '';
@@ -259,6 +266,21 @@ class Elementor_MCP_Composite_Abilities {
 				// Determine this container's direction for its children.
 				$direction = $settings['flex_direction'] ?? '';
 
+				// Inner containers inside a row parent need content_width=full
+				// with a percentage width so they act as proper columns.
+				if ( $is_in_row && $child_count > 1 ) {
+					$has_width = isset( $settings['width'] )
+						|| isset( $settings['_flex_size'] )
+						|| isset( $settings['_flex_grow'] );
+					if ( ! $has_width ) {
+						$settings['content_width'] = 'full';
+						$settings['width']         = array(
+							'size' => $equal_width,
+							'unit' => '%',
+						);
+					}
+				}
+
 				// Recursively build children with this container's direction.
 				$child_elements = $this->build_elements( $children, true, $direction );
 
@@ -266,19 +288,6 @@ class Elementor_MCP_Composite_Abilities {
 
 				if ( $is_inner ) {
 					$container['isInner'] = true;
-				}
-
-				// Auto-grow inner containers in a row parent.
-				// Elementor's _flex_size is a CHOOSE control with values:
-				// '' (default), 'none', 'grow', 'shrink', 'custom'.
-				// 'grow' sets --flex-grow:1; --flex-shrink:0.
-				if ( $is_in_row && count( $items ) > 1 ) {
-					$has_flex = isset( $settings['_flex_size'] )
-						|| isset( $settings['_flex_grow'] )
-						|| isset( $settings['width'] );
-					if ( ! $has_flex ) {
-						$container['settings']['_flex_size'] = 'grow';
-					}
 				}
 
 				$this->elements_created++;
@@ -289,17 +298,6 @@ class Elementor_MCP_Composite_Abilities {
 				$settings    = $item['settings'] ?? array();
 
 				if ( ! empty( $widget_type ) ) {
-					// Auto-grow widgets in a row parent so they fill
-					// available space equally (e.g. price tables).
-					if ( $is_in_row && count( $items ) > 1 ) {
-						$has_flex = isset( $settings['_flex_size'] )
-							|| isset( $settings['_flex_grow'] )
-							|| isset( $settings['width'] );
-						if ( ! $has_flex ) {
-							$settings['_flex_size'] = 'grow';
-						}
-					}
-
 					$widget = $this->factory->create_widget( $widget_type, $settings );
 					$this->elements_created++;
 					$elements[] = $widget;
