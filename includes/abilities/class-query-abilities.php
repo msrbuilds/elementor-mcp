@@ -735,7 +735,7 @@ class Elementor_MCP_Query_Abilities {
 				'permission_callback' => array( $this, 'check_read_permission' ),
 				'input_schema'        => array(
 					'type'       => 'object',
-					'properties' => array(),
+					'properties' => new \stdClass(),
 				),
 				'output_schema'       => array(
 					'type'       => 'object',

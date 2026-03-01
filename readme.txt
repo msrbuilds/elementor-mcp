@@ -3,7 +3,7 @@ Contributors: developer
 Tags: elementor, mcp, ai, page-builder, automation
 Requires at least: 6.8
 Tested up to: 6.8
-Stable tag: 1.0.2
+Stable tag: 1.2.0
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -112,6 +112,23 @@ The plugin enforces WordPress capability checks on every tool. Read operations r
 
 == Changelog ==
 
+= 1.2.0 =
+* New: 14 free widget convenience tools — accordion, alert, counter, Google Maps, icon list, image box, image carousel, progress bar, social icons, star rating, tabs, testimonial, toggle, HTML.
+* New: 10 Pro widget convenience tools — call to action, slides, testimonial carousel, price list, gallery, share buttons, table of contents, blockquote, Lottie animation, hotspot.
+* Total widget tools increased from 17 to 41 (~64 MCP tools overall).
+
+= 1.1.1 =
+* Fix: Container flex layout — row children auto-grow with `_flex_size: grow` for equal distribution.
+* Fix: Column containers auto-center content horizontally (`align_items: center`).
+* Fix: Row containers auto-set `flex_wrap: nowrap` to prevent wrapping.
+* Fix: `_flex_size` now correctly uses string value (`grow`) instead of array — prevents fatal error in Elementor CSS generator.
+* Fix: `get-global-settings` input schema uses `stdClass` for empty properties to serialize as JSON `{}` instead of `[]`.
+* New: Connection tab configs for Cursor, Windsurf, and Antigravity IDE clients.
+* New: 3 stock image tools — `search-images`, `sideload-image`, `add-stock-image` (Openverse API).
+* New: SVG icon tool — `add-svg-icon` for custom SVG icons.
+* Improved: `build-page` description with detailed layout rules for row/column containers.
+* Improved: Admin connection tab streamlined — removed WP-CLI local section, unified HTTP config workflow.
+
 = 1.0.0 =
 * Initial release.
 * 7 read-only query/discovery tools.
@@ -127,6 +144,12 @@ The plugin enforces WordPress capability checks on every tool. Read operations r
 * Node.js HTTP proxy for remote connections.
 
 == Upgrade Notice ==
+
+= 1.2.0 =
+24 new widget convenience tools covering all major Elementor free and Pro widgets.
+
+= 1.1.1 =
+Container layout fixes, stock image tools, multi-IDE connection configs. Fixes fatal error with `_flex_size` on row containers.
 
 = 1.0.0 =
 Initial release.

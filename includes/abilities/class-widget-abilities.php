@@ -102,6 +102,22 @@ class Elementor_MCP_Widget_Abilities {
 		$this->register_add_divider();
 		$this->register_add_icon_box();
 
+		// Extended core widget convenience tools.
+		$this->register_add_accordion();
+		$this->register_add_alert();
+		$this->register_add_counter();
+		$this->register_add_google_maps();
+		$this->register_add_icon_list();
+		$this->register_add_image_box();
+		$this->register_add_image_carousel();
+		$this->register_add_progress();
+		$this->register_add_social_icons();
+		$this->register_add_star_rating();
+		$this->register_add_tabs();
+		$this->register_add_testimonial();
+		$this->register_add_toggle();
+		$this->register_add_html();
+
 		// Pro widget convenience tools (only if Pro is active).
 		if ( defined( 'ELEMENTOR_PRO_VERSION' ) ) {
 			$this->register_add_form();
@@ -110,6 +126,16 @@ class Elementor_MCP_Widget_Abilities {
 			$this->register_add_price_table();
 			$this->register_add_flip_box();
 			$this->register_add_animated_headline();
+			$this->register_add_call_to_action();
+			$this->register_add_slides();
+			$this->register_add_testimonial_carousel();
+			$this->register_add_price_list();
+			$this->register_add_gallery();
+			$this->register_add_share_buttons();
+			$this->register_add_table_of_contents();
+			$this->register_add_blockquote();
+			$this->register_add_lottie();
+			$this->register_add_hotspot();
 		}
 	}
 
@@ -641,6 +667,309 @@ class Elementor_MCP_Widget_Abilities {
 	}
 
 	// =========================================================================
+	// Extended core convenience tools
+	// =========================================================================
+
+	private function register_add_accordion(): void {
+		$this->register_convenience_tool(
+			'add-accordion',
+			__( 'Add Accordion', 'elementor-mcp' ),
+			__( 'Adds an accordion widget with collapsible sections. Each tab has a title and content.', 'elementor-mcp' ),
+			array(
+				'tabs'                 => array(
+					'type'        => 'array',
+					'description' => __( 'Array of accordion items with tab_title and tab_content.', 'elementor-mcp' ),
+					'items'       => array(
+						'type'       => 'object',
+						'properties' => array(
+							'tab_title'   => array( 'type' => 'string' ),
+							'tab_content' => array( 'type' => 'string' ),
+						),
+					),
+				),
+				'selected_icon'        => array( 'type' => 'object', 'description' => __( 'Icon when collapsed. Default: fas fa-plus.', 'elementor-mcp' ) ),
+				'selected_active_icon' => array( 'type' => 'object', 'description' => __( 'Icon when expanded. Default: fas fa-minus.', 'elementor-mcp' ) ),
+				'title_html_tag'       => array( 'type' => 'string', 'enum' => array( 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'div' ), 'description' => __( 'Title HTML tag. Default: div.', 'elementor-mcp' ) ),
+				'faq_schema'           => array( 'type' => 'string', 'enum' => array( 'yes', '' ), 'description' => __( 'Enable FAQ schema markup.', 'elementor-mcp' ) ),
+			),
+			array( 'tabs' ),
+			'accordion',
+			array( 'title_html_tag' => 'div' )
+		);
+	}
+
+	private function register_add_alert(): void {
+		$this->register_convenience_tool(
+			'add-alert',
+			__( 'Add Alert', 'elementor-mcp' ),
+			__( 'Adds an alert/notice widget with type, title, and description.', 'elementor-mcp' ),
+			array(
+				'alert_type'        => array( 'type' => 'string', 'enum' => array( 'info', 'success', 'warning', 'danger' ), 'description' => __( 'Alert type. Default: info.', 'elementor-mcp' ) ),
+				'alert_title'       => array( 'type' => 'string', 'description' => __( 'Alert title.', 'elementor-mcp' ) ),
+				'alert_description' => array( 'type' => 'string', 'description' => __( 'Alert description/content.', 'elementor-mcp' ) ),
+				'show_dismiss'      => array( 'type' => 'string', 'enum' => array( 'show', '' ), 'description' => __( 'Show dismiss button. Default: show.', 'elementor-mcp' ) ),
+			),
+			array( 'alert_title' ),
+			'alert',
+			array( 'alert_type' => 'info', 'show_dismiss' => 'show' )
+		);
+	}
+
+	private function register_add_counter(): void {
+		$this->register_convenience_tool(
+			'add-counter',
+			__( 'Add Counter', 'elementor-mcp' ),
+			__( 'Adds an animated counter widget that counts up to a number.', 'elementor-mcp' ),
+			array(
+				'starting_number'    => array( 'type' => 'integer', 'description' => __( 'Start value. Default: 0.', 'elementor-mcp' ) ),
+				'ending_number'      => array( 'type' => 'integer', 'description' => __( 'End value. Default: 100.', 'elementor-mcp' ) ),
+				'prefix'             => array( 'type' => 'string', 'description' => __( 'Text before number (e.g. "$").', 'elementor-mcp' ) ),
+				'suffix'             => array( 'type' => 'string', 'description' => __( 'Text after number (e.g. "%", "+").', 'elementor-mcp' ) ),
+				'duration'           => array( 'type' => 'integer', 'description' => __( 'Animation duration in ms. Default: 2000.', 'elementor-mcp' ) ),
+				'thousand_separator' => array( 'type' => 'string', 'enum' => array( 'yes', '' ), 'description' => __( 'Show thousand separators.', 'elementor-mcp' ) ),
+				'title'              => array( 'type' => 'string', 'description' => __( 'Counter label/title.', 'elementor-mcp' ) ),
+			),
+			array( 'ending_number' ),
+			'counter',
+			array( 'starting_number' => 0, 'ending_number' => 100, 'duration' => 2000 )
+		);
+	}
+
+	private function register_add_google_maps(): void {
+		$this->register_convenience_tool(
+			'add-google-maps',
+			__( 'Add Google Maps', 'elementor-mcp' ),
+			__( 'Adds an embedded Google Maps widget with address, zoom, and height.', 'elementor-mcp' ),
+			array(
+				'address' => array( 'type' => 'string', 'description' => __( 'Location address or search query.', 'elementor-mcp' ) ),
+				'zoom'    => array( 'type' => 'object', 'description' => __( 'Zoom level: { "size": 10, "unit": "px" }. Range 1-20.', 'elementor-mcp' ) ),
+				'height'  => array( 'type' => 'object', 'description' => __( 'Map height: { "size": 300, "unit": "px" }.', 'elementor-mcp' ) ),
+			),
+			array( 'address' ),
+			'google_maps',
+			array( 'zoom' => array( 'size' => 10, 'unit' => 'px' ) )
+		);
+	}
+
+	private function register_add_icon_list(): void {
+		$this->register_convenience_tool(
+			'add-icon-list',
+			__( 'Add Icon List', 'elementor-mcp' ),
+			__( 'Adds a list widget with icons and text. Great for feature lists, checklists, and contact info.', 'elementor-mcp' ),
+			array(
+				'icon_list' => array(
+					'type'        => 'array',
+					'description' => __( 'Array of list items with text, selected_icon, and optional link.', 'elementor-mcp' ),
+					'items'       => array(
+						'type'       => 'object',
+						'properties' => array(
+							'text'          => array( 'type' => 'string' ),
+							'selected_icon' => array( 'type' => 'object' ),
+							'link'          => array( 'type' => 'object' ),
+						),
+					),
+				),
+				'view'      => array( 'type' => 'string', 'enum' => array( 'traditional', 'inline' ), 'description' => __( 'Layout: traditional (vertical) or inline. Default: traditional.', 'elementor-mcp' ) ),
+			),
+			array( 'icon_list' ),
+			'icon-list',
+			array( 'view' => 'traditional' )
+		);
+	}
+
+	private function register_add_image_box(): void {
+		$this->register_convenience_tool(
+			'add-image-box',
+			__( 'Add Image Box', 'elementor-mcp' ),
+			__( 'Adds an image box widget with image, title, and description. Great for service cards.', 'elementor-mcp' ),
+			array(
+				'image'            => array( 'type' => 'object', 'description' => __( 'Image object with url and optional id.', 'elementor-mcp' ) ),
+				'title_text'       => array( 'type' => 'string', 'description' => __( 'Box title.', 'elementor-mcp' ) ),
+				'description_text' => array( 'type' => 'string', 'description' => __( 'Box description.', 'elementor-mcp' ) ),
+				'link'             => array( 'type' => 'object', 'description' => __( 'Link object with url key.', 'elementor-mcp' ) ),
+				'title_size'       => array( 'type' => 'string', 'enum' => array( 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'div', 'span', 'p' ), 'description' => __( 'Title HTML tag. Default: h3.', 'elementor-mcp' ) ),
+			),
+			array( 'title_text' ),
+			'image-box',
+			array( 'title_size' => 'h3' )
+		);
+	}
+
+	private function register_add_image_carousel(): void {
+		$this->register_convenience_tool(
+			'add-image-carousel',
+			__( 'Add Image Carousel', 'elementor-mcp' ),
+			__( 'Adds a rotating image carousel/slider widget.', 'elementor-mcp' ),
+			array(
+				'carousel'       => array(
+					'type'        => 'array',
+					'description' => __( 'Array of image objects with url and optional id.', 'elementor-mcp' ),
+					'items'       => array(
+						'type'       => 'object',
+						'properties' => array(
+							'url' => array( 'type' => 'string' ),
+							'id'  => array( 'type' => 'integer' ),
+						),
+					),
+				),
+				'slides_to_show' => array( 'type' => 'string', 'enum' => array( '1', '2', '3', '4', '5', '6', '7', '8', '9', '10' ), 'description' => __( 'Number of slides visible.', 'elementor-mcp' ) ),
+				'navigation'     => array( 'type' => 'string', 'enum' => array( 'both', 'arrows', 'dots', 'none' ), 'description' => __( 'Navigation type. Default: both.', 'elementor-mcp' ) ),
+				'autoplay'       => array( 'type' => 'string', 'enum' => array( 'yes', '' ), 'description' => __( 'Autoplay slides. Default: yes.', 'elementor-mcp' ) ),
+				'autoplay_speed' => array( 'type' => 'integer', 'description' => __( 'Autoplay interval in ms. Default: 5000.', 'elementor-mcp' ) ),
+				'infinite'       => array( 'type' => 'string', 'enum' => array( 'yes', '' ), 'description' => __( 'Infinite loop. Default: yes.', 'elementor-mcp' ) ),
+			),
+			array( 'carousel' ),
+			'image-carousel',
+			array( 'navigation' => 'both', 'autoplay' => 'yes', 'infinite' => 'yes', 'autoplay_speed' => 5000 )
+		);
+	}
+
+	private function register_add_progress(): void {
+		$this->register_convenience_tool(
+			'add-progress',
+			__( 'Add Progress Bar', 'elementor-mcp' ),
+			__( 'Adds an animated progress bar widget with label and percentage.', 'elementor-mcp' ),
+			array(
+				'title'              => array( 'type' => 'string', 'description' => __( 'Progress bar label.', 'elementor-mcp' ) ),
+				'progress_type'      => array( 'type' => 'string', 'enum' => array( '', 'info', 'success', 'warning', 'danger' ), 'description' => __( 'Color preset type.', 'elementor-mcp' ) ),
+				'percent'            => array( 'type' => 'object', 'description' => __( 'Progress percentage: { "size": 50, "unit": "%" }.', 'elementor-mcp' ) ),
+				'display_percentage' => array( 'type' => 'string', 'enum' => array( 'yes', '' ), 'description' => __( 'Show percentage value. Default: yes.', 'elementor-mcp' ) ),
+				'inner_text'         => array( 'type' => 'string', 'description' => __( 'Text inside the progress bar.', 'elementor-mcp' ) ),
+			),
+			array(),
+			'progress',
+			array( 'percent' => array( 'size' => 50, 'unit' => '%' ), 'display_percentage' => 'yes' )
+		);
+	}
+
+	private function register_add_social_icons(): void {
+		$this->register_convenience_tool(
+			'add-social-icons',
+			__( 'Add Social Icons', 'elementor-mcp' ),
+			__( 'Adds social media icon links. Great for headers and footers.', 'elementor-mcp' ),
+			array(
+				'social_icon_list' => array(
+					'type'        => 'array',
+					'description' => __( 'Array of social items with social_icon and link.', 'elementor-mcp' ),
+					'items'       => array(
+						'type'       => 'object',
+						'properties' => array(
+							'social_icon' => array( 'type' => 'object', 'description' => __( 'Icon: { "value": "fab fa-facebook", "library": "fa-brands" }.', 'elementor-mcp' ) ),
+							'link'        => array( 'type' => 'object', 'description' => __( 'URL object with url key.', 'elementor-mcp' ) ),
+						),
+					),
+				),
+				'shape'            => array( 'type' => 'string', 'enum' => array( 'rounded', 'square', 'circle' ), 'description' => __( 'Icon shape. Default: rounded.', 'elementor-mcp' ) ),
+				'columns'          => array( 'type' => 'integer', 'description' => __( 'Grid columns. 0 = auto.', 'elementor-mcp' ) ),
+				'align'            => array( 'type' => 'string', 'enum' => array( 'left', 'center', 'right' ), 'description' => __( 'Alignment. Default: center.', 'elementor-mcp' ) ),
+			),
+			array( 'social_icon_list' ),
+			'social-icons',
+			array( 'shape' => 'rounded' )
+		);
+	}
+
+	private function register_add_star_rating(): void {
+		$this->register_convenience_tool(
+			'add-star-rating',
+			__( 'Add Star Rating', 'elementor-mcp' ),
+			__( 'Adds a star rating display widget.', 'elementor-mcp' ),
+			array(
+				'rating_scale' => array( 'type' => 'string', 'enum' => array( '5', '10' ), 'description' => __( 'Rating scale. Default: 5.', 'elementor-mcp' ) ),
+				'rating'       => array( 'type' => 'object', 'description' => __( 'Rating value: { "size": 5, "unit": "px" }. Step: 0.1.', 'elementor-mcp' ) ),
+				'star_style'   => array( 'type' => 'string', 'enum' => array( 'star_fontawesome', 'star_unicode' ), 'description' => __( 'Star icon style.', 'elementor-mcp' ) ),
+				'title'        => array( 'type' => 'string', 'description' => __( 'Optional rating title.', 'elementor-mcp' ) ),
+			),
+			array(),
+			'star-rating',
+			array( 'rating_scale' => '5', 'rating' => array( 'size' => 5, 'unit' => 'px' ) )
+		);
+	}
+
+	private function register_add_tabs(): void {
+		$this->register_convenience_tool(
+			'add-tabs',
+			__( 'Add Tabs', 'elementor-mcp' ),
+			__( 'Adds a tabbed content widget with horizontal or vertical layout.', 'elementor-mcp' ),
+			array(
+				'tabs' => array(
+					'type'        => 'array',
+					'description' => __( 'Array of tab items with tab_title and tab_content.', 'elementor-mcp' ),
+					'items'       => array(
+						'type'       => 'object',
+						'properties' => array(
+							'tab_title'   => array( 'type' => 'string' ),
+							'tab_content' => array( 'type' => 'string' ),
+						),
+					),
+				),
+				'type' => array( 'type' => 'string', 'enum' => array( 'horizontal', 'vertical' ), 'description' => __( 'Tab layout direction. Default: horizontal.', 'elementor-mcp' ) ),
+			),
+			array( 'tabs' ),
+			'tabs',
+			array( 'type' => 'horizontal' )
+		);
+	}
+
+	private function register_add_testimonial(): void {
+		$this->register_convenience_tool(
+			'add-testimonial',
+			__( 'Add Testimonial', 'elementor-mcp' ),
+			__( 'Adds a testimonial widget with quote, author name, job title, and image.', 'elementor-mcp' ),
+			array(
+				'testimonial_content'        => array( 'type' => 'string', 'description' => __( 'Testimonial/quote text.', 'elementor-mcp' ) ),
+				'testimonial_image'          => array( 'type' => 'object', 'description' => __( 'Author image object with url and optional id.', 'elementor-mcp' ) ),
+				'testimonial_name'           => array( 'type' => 'string', 'description' => __( 'Author name.', 'elementor-mcp' ) ),
+				'testimonial_job'            => array( 'type' => 'string', 'description' => __( 'Author job title/role.', 'elementor-mcp' ) ),
+				'testimonial_image_position' => array( 'type' => 'string', 'enum' => array( 'aside', 'top' ), 'description' => __( 'Image position. Default: aside.', 'elementor-mcp' ) ),
+			),
+			array( 'testimonial_content', 'testimonial_name' ),
+			'testimonial',
+			array( 'testimonial_image_position' => 'aside' )
+		);
+	}
+
+	private function register_add_toggle(): void {
+		$this->register_convenience_tool(
+			'add-toggle',
+			__( 'Add Toggle', 'elementor-mcp' ),
+			__( 'Adds a toggle/expandable content widget. Similar to accordion but multiple items can be open.', 'elementor-mcp' ),
+			array(
+				'tabs'                 => array(
+					'type'        => 'array',
+					'description' => __( 'Array of toggle items with tab_title and tab_content.', 'elementor-mcp' ),
+					'items'       => array(
+						'type'       => 'object',
+						'properties' => array(
+							'tab_title'   => array( 'type' => 'string' ),
+							'tab_content' => array( 'type' => 'string' ),
+						),
+					),
+				),
+				'selected_icon'        => array( 'type' => 'object', 'description' => __( 'Icon when collapsed.', 'elementor-mcp' ) ),
+				'selected_active_icon' => array( 'type' => 'object', 'description' => __( 'Icon when expanded.', 'elementor-mcp' ) ),
+				'title_html_tag'       => array( 'type' => 'string', 'enum' => array( 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'div' ), 'description' => __( 'Title HTML tag. Default: div.', 'elementor-mcp' ) ),
+			),
+			array( 'tabs' ),
+			'toggle',
+			array( 'title_html_tag' => 'div' )
+		);
+	}
+
+	private function register_add_html(): void {
+		$this->register_convenience_tool(
+			'add-html',
+			__( 'Add HTML', 'elementor-mcp' ),
+			__( 'Adds a custom HTML code widget.', 'elementor-mcp' ),
+			array(
+				'html' => array( 'type' => 'string', 'description' => __( 'Custom HTML/code content.', 'elementor-mcp' ) ),
+			),
+			array( 'html' ),
+			'html'
+		);
+	}
+
+	// =========================================================================
 	// Pro convenience tools (only when ELEMENTOR_PRO_VERSION is defined)
 	// =========================================================================
 
@@ -780,6 +1109,259 @@ class Elementor_MCP_Widget_Abilities {
 			array(),
 			'animated-headline',
 			array( 'headline_style' => 'highlight', 'tag' => 'h3' )
+		);
+	}
+
+	private function register_add_call_to_action(): void {
+		$this->register_convenience_tool(
+			'add-call-to-action',
+			__( 'Add Call to Action (Pro)', 'elementor-mcp' ),
+			__( 'Adds a call-to-action widget with title, description, button, and optional graphic/ribbon.', 'elementor-mcp' ),
+			array(
+				'title'           => array( 'type' => 'string', 'description' => __( 'CTA heading text.', 'elementor-mcp' ) ),
+				'description'     => array( 'type' => 'string', 'description' => __( 'CTA description text.', 'elementor-mcp' ) ),
+				'button'          => array( 'type' => 'string', 'description' => __( 'Button text. Default: Click Here.', 'elementor-mcp' ) ),
+				'link'            => array( 'type' => 'object', 'description' => __( 'Button link object with url key.', 'elementor-mcp' ) ),
+				'graphic_element' => array( 'type' => 'string', 'enum' => array( 'none', 'image', 'icon' ), 'description' => __( 'Graphic type.', 'elementor-mcp' ) ),
+				'graphic_image'   => array( 'type' => 'object', 'description' => __( 'Image object with url and optional id.', 'elementor-mcp' ) ),
+				'selected_icon'   => array( 'type' => 'object', 'description' => __( 'Icon object with value and library.', 'elementor-mcp' ) ),
+				'ribbon_title'    => array( 'type' => 'string', 'description' => __( 'Optional ribbon/badge text.', 'elementor-mcp' ) ),
+				'title_tag'       => array( 'type' => 'string', 'enum' => array( 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'div', 'span', 'p' ), 'description' => __( 'Title HTML tag. Default: h2.', 'elementor-mcp' ) ),
+			),
+			array( 'title' ),
+			'call-to-action',
+			array( 'title_tag' => 'h2', 'button' => 'Click Here' )
+		);
+	}
+
+	private function register_add_slides(): void {
+		$this->register_convenience_tool(
+			'add-slides',
+			__( 'Add Slides (Pro)', 'elementor-mcp' ),
+			__( 'Adds a full-width slides/slider widget with heading, description, button, and background per slide.', 'elementor-mcp' ),
+			array(
+				'slides'           => array(
+					'type'        => 'array',
+					'description' => __( 'Array of slide items.', 'elementor-mcp' ),
+					'items'       => array(
+						'type'       => 'object',
+						'properties' => array(
+							'heading'          => array( 'type' => 'string' ),
+							'description'      => array( 'type' => 'string' ),
+							'button_text'      => array( 'type' => 'string' ),
+							'link'             => array( 'type' => 'object' ),
+							'background_color' => array( 'type' => 'string' ),
+							'background_image' => array( 'type' => 'object' ),
+						),
+					),
+				),
+				'navigation'       => array( 'type' => 'string', 'enum' => array( 'both', 'arrows', 'dots', 'none' ), 'description' => __( 'Navigation type.', 'elementor-mcp' ) ),
+				'autoplay'         => array( 'type' => 'string', 'enum' => array( 'yes', '' ), 'description' => __( 'Autoplay. Default: yes.', 'elementor-mcp' ) ),
+				'autoplay_speed'   => array( 'type' => 'integer', 'description' => __( 'Autoplay interval in ms. Default: 5000.', 'elementor-mcp' ) ),
+				'infinite'         => array( 'type' => 'string', 'enum' => array( 'yes', '' ), 'description' => __( 'Infinite loop. Default: yes.', 'elementor-mcp' ) ),
+				'transition'       => array( 'type' => 'string', 'enum' => array( 'slide', 'fade' ), 'description' => __( 'Transition effect.', 'elementor-mcp' ) ),
+				'transition_speed' => array( 'type' => 'integer', 'description' => __( 'Transition speed in ms.', 'elementor-mcp' ) ),
+			),
+			array( 'slides' ),
+			'slides',
+			array( 'autoplay' => 'yes', 'autoplay_speed' => 5000, 'infinite' => 'yes' )
+		);
+	}
+
+	private function register_add_testimonial_carousel(): void {
+		$this->register_convenience_tool(
+			'add-testimonial-carousel',
+			__( 'Add Testimonial Carousel (Pro)', 'elementor-mcp' ),
+			__( 'Adds a testimonial carousel/slider widget with multiple testimonials.', 'elementor-mcp' ),
+			array(
+				'slides'          => array(
+					'type'        => 'array',
+					'description' => __( 'Array of testimonial items with content, image, name, and title.', 'elementor-mcp' ),
+					'items'       => array(
+						'type'       => 'object',
+						'properties' => array(
+							'content' => array( 'type' => 'string' ),
+							'image'   => array( 'type' => 'object' ),
+							'name'    => array( 'type' => 'string' ),
+							'title'   => array( 'type' => 'string' ),
+						),
+					),
+				),
+				'skin'            => array( 'type' => 'string', 'enum' => array( 'default', 'bubble' ), 'description' => __( 'Skin variant. Default: default.', 'elementor-mcp' ) ),
+				'layout'          => array( 'type' => 'string', 'enum' => array( 'image_inline', 'image_stacked', 'image_above', 'image_left', 'image_right' ), 'description' => __( 'Layout mode.', 'elementor-mcp' ) ),
+				'slides_per_view' => array( 'type' => 'string', 'enum' => array( '1', '2', '3', '4' ), 'description' => __( 'Slides visible at once.', 'elementor-mcp' ) ),
+				'autoplay'        => array( 'type' => 'string', 'enum' => array( 'yes', '' ), 'description' => __( 'Autoplay. Default: yes.', 'elementor-mcp' ) ),
+				'autoplay_speed'  => array( 'type' => 'integer', 'description' => __( 'Autoplay interval in ms.', 'elementor-mcp' ) ),
+			),
+			array( 'slides' ),
+			'testimonial-carousel',
+			array( 'skin' => 'default', 'layout' => 'image_inline', 'slides_per_view' => '1', 'autoplay' => 'yes' )
+		);
+	}
+
+	private function register_add_price_list(): void {
+		$this->register_convenience_tool(
+			'add-price-list',
+			__( 'Add Price List (Pro)', 'elementor-mcp' ),
+			__( 'Adds a price list widget for menus, services, or product lists with title, price, and description.', 'elementor-mcp' ),
+			array(
+				'price_list' => array(
+					'type'        => 'array',
+					'description' => __( 'Array of list items with title, price, item_description, image, and link.', 'elementor-mcp' ),
+					'items'       => array(
+						'type'       => 'object',
+						'properties' => array(
+							'title'            => array( 'type' => 'string' ),
+							'price'            => array( 'type' => 'string' ),
+							'item_description' => array( 'type' => 'string' ),
+							'image'            => array( 'type' => 'object' ),
+							'link'             => array( 'type' => 'object' ),
+						),
+					),
+				),
+				'title_tag'  => array( 'type' => 'string', 'enum' => array( 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'div', 'span', 'p' ), 'description' => __( 'Title HTML tag. Default: span.', 'elementor-mcp' ) ),
+			),
+			array( 'price_list' ),
+			'price-list',
+			array( 'title_tag' => 'span' )
+		);
+	}
+
+	private function register_add_gallery(): void {
+		$this->register_convenience_tool(
+			'add-gallery',
+			__( 'Add Gallery (Pro)', 'elementor-mcp' ),
+			__( 'Adds an advanced gallery widget with grid, justified, or masonry layout.', 'elementor-mcp' ),
+			array(
+				'gallery'        => array(
+					'type'        => 'array',
+					'description' => __( 'Array of image objects with id and url.', 'elementor-mcp' ),
+					'items'       => array(
+						'type'       => 'object',
+						'properties' => array(
+							'id'  => array( 'type' => 'integer' ),
+							'url' => array( 'type' => 'string' ),
+						),
+					),
+				),
+				'gallery_layout' => array( 'type' => 'string', 'enum' => array( 'grid', 'justified', 'masonry' ), 'description' => __( 'Gallery layout. Default: grid.', 'elementor-mcp' ) ),
+				'columns'        => array( 'type' => 'integer', 'description' => __( 'Number of columns. Default: 4.', 'elementor-mcp' ) ),
+				'gap'            => array( 'type' => 'object', 'description' => __( 'Gap between items: { "size": 10, "unit": "px" }.', 'elementor-mcp' ) ),
+				'link_to'        => array( 'type' => 'string', 'enum' => array( 'file', 'custom', 'none' ), 'description' => __( 'Link behavior.', 'elementor-mcp' ) ),
+			),
+			array( 'gallery' ),
+			'gallery',
+			array( 'gallery_layout' => 'grid', 'columns' => 4 )
+		);
+	}
+
+	private function register_add_share_buttons(): void {
+		$this->register_convenience_tool(
+			'add-share-buttons',
+			__( 'Add Share Buttons (Pro)', 'elementor-mcp' ),
+			__( 'Adds social share buttons for sharing the current page.', 'elementor-mcp' ),
+			array(
+				'share_buttons' => array(
+					'type'        => 'array',
+					'description' => __( 'Array of share buttons with button (network name) and optional text.', 'elementor-mcp' ),
+					'items'       => array(
+						'type'       => 'object',
+						'properties' => array(
+							'button' => array( 'type' => 'string', 'description' => __( 'Network: facebook, twitter, linkedin, pinterest, reddit, etc.', 'elementor-mcp' ) ),
+							'text'   => array( 'type' => 'string' ),
+						),
+					),
+				),
+				'view'          => array( 'type' => 'string', 'enum' => array( 'icon-text', 'icon', 'text' ), 'description' => __( 'Display mode. Default: icon-text.', 'elementor-mcp' ) ),
+				'skin'          => array( 'type' => 'string', 'enum' => array( 'gradient', 'minimal', 'framed', 'boxed', 'flat' ), 'description' => __( 'Button skin/style.', 'elementor-mcp' ) ),
+				'shape'         => array( 'type' => 'string', 'enum' => array( 'square', 'rounded', 'circle' ), 'description' => __( 'Button shape. Default: square.', 'elementor-mcp' ) ),
+				'columns'       => array( 'type' => 'integer', 'description' => __( 'Number of columns.', 'elementor-mcp' ) ),
+			),
+			array( 'share_buttons' ),
+			'share-buttons',
+			array( 'view' => 'icon-text', 'shape' => 'square' )
+		);
+	}
+
+	private function register_add_table_of_contents(): void {
+		$this->register_convenience_tool(
+			'add-table-of-contents',
+			__( 'Add Table of Contents (Pro)', 'elementor-mcp' ),
+			__( 'Adds an auto-generated table of contents widget based on page headings.', 'elementor-mcp' ),
+			array(
+				'title'             => array( 'type' => 'string', 'description' => __( 'TOC title. Default: Table of Contents.', 'elementor-mcp' ) ),
+				'headings_by_tags'  => array( 'type' => 'array', 'description' => __( 'Which heading tags to include (e.g. ["h2", "h3"]).', 'elementor-mcp' ) ),
+				'marker_view'       => array( 'type' => 'string', 'enum' => array( 'numbers', 'bullets', 'none' ), 'description' => __( 'Marker style. Default: numbers.', 'elementor-mcp' ) ),
+				'hierarchical_view' => array( 'type' => 'string', 'enum' => array( 'yes', '' ), 'description' => __( 'Hierarchical display. Default: yes.', 'elementor-mcp' ) ),
+			),
+			array(),
+			'table-of-contents',
+			array( 'title' => 'Table of Contents', 'marker_view' => 'numbers', 'hierarchical_view' => 'yes' )
+		);
+	}
+
+	private function register_add_blockquote(): void {
+		$this->register_convenience_tool(
+			'add-blockquote',
+			__( 'Add Blockquote (Pro)', 'elementor-mcp' ),
+			__( 'Adds a styled blockquote widget with quote text, author, and optional tweet button.', 'elementor-mcp' ),
+			array(
+				'blockquote_content' => array( 'type' => 'string', 'description' => __( 'Quote/blockquote text.', 'elementor-mcp' ) ),
+				'author_name'        => array( 'type' => 'string', 'description' => __( 'Author/attribution name.', 'elementor-mcp' ) ),
+				'blockquote_skin'    => array( 'type' => 'string', 'enum' => array( 'border', 'quotation', 'boxed', 'clean' ), 'description' => __( 'Skin variant. Default: border.', 'elementor-mcp' ) ),
+				'tweet_button'       => array( 'type' => 'string', 'enum' => array( 'yes', '' ), 'description' => __( 'Show tweet button.', 'elementor-mcp' ) ),
+			),
+			array( 'blockquote_content' ),
+			'blockquote',
+			array( 'blockquote_skin' => 'border' )
+		);
+	}
+
+	private function register_add_lottie(): void {
+		$this->register_convenience_tool(
+			'add-lottie',
+			__( 'Add Lottie Animation (Pro)', 'elementor-mcp' ),
+			__( 'Adds a Lottie animation widget from an external URL or media file.', 'elementor-mcp' ),
+			array(
+				'source'              => array( 'type' => 'string', 'enum' => array( 'media_file', 'external_url' ), 'description' => __( 'Source type. Default: external_url.', 'elementor-mcp' ) ),
+				'source_external_url' => array( 'type' => 'string', 'description' => __( 'External Lottie JSON URL.', 'elementor-mcp' ) ),
+				'trigger'             => array( 'type' => 'string', 'enum' => array( 'arriving_to_viewport', 'on_click', 'on_hover', 'bind_to_scroll', 'none' ), 'description' => __( 'Animation trigger. Default: arriving_to_viewport.', 'elementor-mcp' ) ),
+				'loop'                => array( 'type' => 'string', 'enum' => array( 'yes', '' ), 'description' => __( 'Loop animation. Default: yes.', 'elementor-mcp' ) ),
+				'play_speed'          => array( 'type' => 'object', 'description' => __( 'Playback speed: { "size": 1, "unit": "px" }.', 'elementor-mcp' ) ),
+			),
+			array(),
+			'lottie',
+			array( 'source' => 'external_url', 'trigger' => 'arriving_to_viewport', 'loop' => 'yes' )
+		);
+	}
+
+	private function register_add_hotspot(): void {
+		$this->register_convenience_tool(
+			'add-hotspot',
+			__( 'Add Hotspot (Pro)', 'elementor-mcp' ),
+			__( 'Adds an image hotspot widget with clickable/hoverable points on an image.', 'elementor-mcp' ),
+			array(
+				'image'   => array( 'type' => 'object', 'description' => __( 'Background image object with url and optional id.', 'elementor-mcp' ) ),
+				'hotspot' => array(
+					'type'        => 'array',
+					'description' => __( 'Array of hotspot items.', 'elementor-mcp' ),
+					'items'       => array(
+						'type'       => 'object',
+						'properties' => array(
+							'hotspot_label'           => array( 'type' => 'string' ),
+							'hotspot_link'            => array( 'type' => 'object' ),
+							'hotspot_icon'            => array( 'type' => 'object' ),
+							'hotspot_horizontal'      => array( 'type' => 'string', 'description' => __( 'left or right.', 'elementor-mcp' ) ),
+							'hotspot_offset_x'        => array( 'type' => 'object' ),
+							'hotspot_vertical'        => array( 'type' => 'string', 'description' => __( 'top or bottom.', 'elementor-mcp' ) ),
+							'hotspot_offset_y'        => array( 'type' => 'object' ),
+							'hotspot_tooltip_content' => array( 'type' => 'string' ),
+						),
+					),
+				),
+			),
+			array( 'image', 'hotspot' ),
+			'hotspot'
 		);
 	}
 }

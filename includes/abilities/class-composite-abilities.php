@@ -92,7 +92,7 @@ class Elementor_MCP_Composite_Abilities {
 			'elementor-mcp/build-page',
 			array(
 				'label'               => __( 'Build Page', 'elementor-mcp' ),
-				'description'         => __( 'Creates a complete Elementor page from a declarative structure in a single call. Supports nested containers and any widget types.', 'elementor-mcp' ),
+				'description'         => __( 'Creates a complete Elementor page from a declarative structure in a single call. Supports nested containers and any widget types. IMPORTANT LAYOUT RULES: (1) For side-by-side items (columns, cards, pricing tables), use a parent container with flex_direction=row and put each item in its own child container — children auto-grow to fill space equally. (2) Column containers (default direction) auto-center content horizontally. (3) Row containers auto-set nowrap. (4) For hero sections with background images, set background_image on the container settings. (5) Use the search-images and sideload-image tools to find and add real images before building the page. (6) Text alignment uses text_align setting on text/heading widgets (left, center, right).', 'elementor-mcp' ),
 				'category'            => 'elementor-mcp',
 				'execute_callback'    => array( $this, 'execute_build_page' ),
 				'permission_callback' => array( $this, 'check_create_permission' ),
@@ -236,16 +236,18 @@ class Elementor_MCP_Composite_Abilities {
 	 * Recursively builds Elementor elements from the declarative structure.
 	 *
 	 * When a parent container uses flex_direction=row and has multiple
-	 * container children, this method auto-distributes widths using
-	 * flex_grow so children share space equally (unless the child already
-	 * specifies its own width or flex settings).
+	 * children, this method auto-distributes widths using flex_grow so
+	 * children share space equally (unless the child already specifies
+	 * its own width or flex settings).
 	 *
-	 * @param array $items    The declarative structure items.
-	 * @param bool  $is_inner Whether these are nested (inner) containers.
+	 * @param array  $items            The declarative structure items.
+	 * @param bool   $is_inner         Whether these are nested (inner) containers.
+	 * @param string $parent_direction The parent container's flex_direction.
 	 * @return array The Elementor element tree.
 	 */
-	private function build_elements( array $items, bool $is_inner = false ): array {
-		$elements = array();
+	private function build_elements( array $items, bool $is_inner = false, string $parent_direction = '' ): array {
+		$elements  = array();
+		$is_in_row = ( 'row' === $parent_direction || 'row-reverse' === $parent_direction );
 
 		foreach ( $items as $item ) {
 			$type = $item['type'] ?? '';
@@ -254,13 +256,29 @@ class Elementor_MCP_Composite_Abilities {
 				$settings = $item['settings'] ?? array();
 				$children = $item['children'] ?? array();
 
-				// Recursively build children.
-				$child_elements = $this->build_elements( $children, true );
+				// Determine this container's direction for its children.
+				$direction = $settings['flex_direction'] ?? '';
+
+				// Recursively build children with this container's direction.
+				$child_elements = $this->build_elements( $children, true, $direction );
 
 				$container = $this->factory->create_container( $settings, $child_elements );
 
 				if ( $is_inner ) {
 					$container['isInner'] = true;
+				}
+
+				// Auto-grow inner containers in a row parent.
+				// Elementor's _flex_size is a CHOOSE control with values:
+				// '' (default), 'none', 'grow', 'shrink', 'custom'.
+				// 'grow' sets --flex-grow:1; --flex-shrink:0.
+				if ( $is_in_row && count( $items ) > 1 ) {
+					$has_flex = isset( $settings['_flex_size'] )
+						|| isset( $settings['_flex_grow'] )
+						|| isset( $settings['width'] );
+					if ( ! $has_flex ) {
+						$container['settings']['_flex_size'] = 'grow';
+					}
 				}
 
 				$this->elements_created++;
@@ -271,6 +289,17 @@ class Elementor_MCP_Composite_Abilities {
 				$settings    = $item['settings'] ?? array();
 
 				if ( ! empty( $widget_type ) ) {
+					// Auto-grow widgets in a row parent so they fill
+					// available space equally (e.g. price tables).
+					if ( $is_in_row && count( $items ) > 1 ) {
+						$has_flex = isset( $settings['_flex_size'] )
+							|| isset( $settings['_flex_grow'] )
+							|| isset( $settings['width'] );
+						if ( ! $has_flex ) {
+							$settings['_flex_size'] = 'grow';
+						}
+					}
+
 					$widget = $this->factory->create_widget( $widget_type, $settings );
 					$this->elements_created++;
 					$elements[] = $widget;

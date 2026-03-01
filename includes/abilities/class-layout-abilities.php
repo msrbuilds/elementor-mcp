@@ -101,7 +101,7 @@ class Elementor_MCP_Layout_Abilities {
 			'elementor-mcp/add-container',
 			array(
 				'label'               => __( 'Add Container', 'elementor-mcp' ),
-				'description'         => __( 'Adds a flexbox container to a page. Omit parent_id for top-level, or provide a parent container ID for nesting.', 'elementor-mcp' ),
+				'description'         => __( 'Adds a flexbox container to a page. Omit parent_id for top-level, or provide a parent container ID for nesting. Layout tips: Use flex_direction=row for side-by-side children (nowrap is auto-applied). Column containers (default) auto-center content. For multi-column layouts, nest child containers inside a row parent — children auto-grow to fill space equally. Set content_width=boxed (default) for centered content.', 'elementor-mcp' ),
 				'category'            => 'elementor-mcp',
 				'execute_callback'    => array( $this, 'execute_add_container' ),
 				'permission_callback' => array( $this, 'check_edit_permission' ),

@@ -34,15 +34,24 @@ class Elementor_MCP_Element_Factory {
 
 		$merged = array_merge( $defaults, $settings );
 
-		// Force nowrap on row containers to prevent children from wrapping
+		$direction = $merged['flex_direction'] ?? '';
+		$is_row    = ( 'row' === $direction || 'row-reverse' === $direction );
+
+		// Row containers: force nowrap to prevent children from wrapping
 		// to the next line. Elementor's CSS default (--flex-wrap: initial)
 		// should be nowrap, but explicitly setting it prevents any
 		// accidental wrap from the AI agent or theme overrides.
-		$direction = $merged['flex_direction'] ?? '';
-		if ( 'row' === $direction || 'row-reverse' === $direction ) {
+		if ( $is_row ) {
 			if ( ! isset( $settings['flex_wrap'] ) ) {
 				$merged['flex_wrap'] = 'nowrap';
 			}
+		}
+
+		// Auto-center alignment for containers with centered content.
+		// Column containers default to center horizontal alignment so
+		// widgets like headings, icons, and text are centered on the page.
+		if ( ! $is_row && ! isset( $settings['align_items'] ) ) {
+			$merged['align_items'] = 'center';
 		}
 
 		return array(

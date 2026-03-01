@@ -377,9 +377,79 @@ class Elementor_MCP_Admin {
 						'description' => __( 'Adds a horizontal divider/separator widget.', 'elementor-mcp' ),
 						'badges'      => array(),
 					),
-					'elementor-mcp/add-icon-box'    => array(
+					'elementor-mcp/add-icon-box'        => array(
 						'label'       => __( 'Add Icon Box', 'elementor-mcp' ),
 						'description' => __( 'Adds an icon box widget (icon + title + description).', 'elementor-mcp' ),
+						'badges'      => array(),
+					),
+					'elementor-mcp/add-accordion'       => array(
+						'label'       => __( 'Add Accordion', 'elementor-mcp' ),
+						'description' => __( 'Adds a collapsible accordion widget.', 'elementor-mcp' ),
+						'badges'      => array(),
+					),
+					'elementor-mcp/add-alert'           => array(
+						'label'       => __( 'Add Alert', 'elementor-mcp' ),
+						'description' => __( 'Adds an alert/notice widget.', 'elementor-mcp' ),
+						'badges'      => array(),
+					),
+					'elementor-mcp/add-counter'         => array(
+						'label'       => __( 'Add Counter', 'elementor-mcp' ),
+						'description' => __( 'Adds an animated counter widget.', 'elementor-mcp' ),
+						'badges'      => array(),
+					),
+					'elementor-mcp/add-google-maps'     => array(
+						'label'       => __( 'Add Google Maps', 'elementor-mcp' ),
+						'description' => __( 'Adds an embedded Google Maps widget.', 'elementor-mcp' ),
+						'badges'      => array(),
+					),
+					'elementor-mcp/add-icon-list'       => array(
+						'label'       => __( 'Add Icon List', 'elementor-mcp' ),
+						'description' => __( 'Adds an icon list widget for feature lists and checklists.', 'elementor-mcp' ),
+						'badges'      => array(),
+					),
+					'elementor-mcp/add-image-box'       => array(
+						'label'       => __( 'Add Image Box', 'elementor-mcp' ),
+						'description' => __( 'Adds an image box widget (image + title + description).', 'elementor-mcp' ),
+						'badges'      => array(),
+					),
+					'elementor-mcp/add-image-carousel'  => array(
+						'label'       => __( 'Add Image Carousel', 'elementor-mcp' ),
+						'description' => __( 'Adds a rotating image carousel widget.', 'elementor-mcp' ),
+						'badges'      => array(),
+					),
+					'elementor-mcp/add-progress'        => array(
+						'label'       => __( 'Add Progress Bar', 'elementor-mcp' ),
+						'description' => __( 'Adds an animated progress bar widget.', 'elementor-mcp' ),
+						'badges'      => array(),
+					),
+					'elementor-mcp/add-social-icons'    => array(
+						'label'       => __( 'Add Social Icons', 'elementor-mcp' ),
+						'description' => __( 'Adds social media icon links.', 'elementor-mcp' ),
+						'badges'      => array(),
+					),
+					'elementor-mcp/add-star-rating'     => array(
+						'label'       => __( 'Add Star Rating', 'elementor-mcp' ),
+						'description' => __( 'Adds a star rating display widget.', 'elementor-mcp' ),
+						'badges'      => array(),
+					),
+					'elementor-mcp/add-tabs'            => array(
+						'label'       => __( 'Add Tabs', 'elementor-mcp' ),
+						'description' => __( 'Adds a tabbed content widget.', 'elementor-mcp' ),
+						'badges'      => array(),
+					),
+					'elementor-mcp/add-testimonial'     => array(
+						'label'       => __( 'Add Testimonial', 'elementor-mcp' ),
+						'description' => __( 'Adds a testimonial widget with quote and author.', 'elementor-mcp' ),
+						'badges'      => array(),
+					),
+					'elementor-mcp/add-toggle'          => array(
+						'label'       => __( 'Add Toggle', 'elementor-mcp' ),
+						'description' => __( 'Adds a toggle/expandable content widget.', 'elementor-mcp' ),
+						'badges'      => array(),
+					),
+					'elementor-mcp/add-html'            => array(
+						'label'       => __( 'Add HTML', 'elementor-mcp' ),
+						'description' => __( 'Adds a custom HTML code widget.', 'elementor-mcp' ),
 						'badges'      => array(),
 					),
 				),
@@ -412,9 +482,59 @@ class Elementor_MCP_Admin {
 						'description' => __( 'Adds a flip box widget with front/back sides.', 'elementor-mcp' ),
 						'badges'      => array( 'pro' ),
 					),
-					'elementor-mcp/add-animated-headline' => array(
+					'elementor-mcp/add-animated-headline'    => array(
 						'label'       => __( 'Add Animated Headline', 'elementor-mcp' ),
 						'description' => __( 'Adds an animated headline widget.', 'elementor-mcp' ),
+						'badges'      => array( 'pro' ),
+					),
+					'elementor-mcp/add-call-to-action'       => array(
+						'label'       => __( 'Add Call to Action', 'elementor-mcp' ),
+						'description' => __( 'Adds a call-to-action widget with title, description, and button.', 'elementor-mcp' ),
+						'badges'      => array( 'pro' ),
+					),
+					'elementor-mcp/add-slides'               => array(
+						'label'       => __( 'Add Slides', 'elementor-mcp' ),
+						'description' => __( 'Adds a full-width slides/slider widget.', 'elementor-mcp' ),
+						'badges'      => array( 'pro' ),
+					),
+					'elementor-mcp/add-testimonial-carousel'  => array(
+						'label'       => __( 'Add Testimonial Carousel', 'elementor-mcp' ),
+						'description' => __( 'Adds a testimonial carousel/slider widget.', 'elementor-mcp' ),
+						'badges'      => array( 'pro' ),
+					),
+					'elementor-mcp/add-price-list'           => array(
+						'label'       => __( 'Add Price List', 'elementor-mcp' ),
+						'description' => __( 'Adds a price list widget for menus and services.', 'elementor-mcp' ),
+						'badges'      => array( 'pro' ),
+					),
+					'elementor-mcp/add-gallery'              => array(
+						'label'       => __( 'Add Gallery', 'elementor-mcp' ),
+						'description' => __( 'Adds an advanced gallery widget with grid/masonry layout.', 'elementor-mcp' ),
+						'badges'      => array( 'pro' ),
+					),
+					'elementor-mcp/add-share-buttons'        => array(
+						'label'       => __( 'Add Share Buttons', 'elementor-mcp' ),
+						'description' => __( 'Adds social share buttons widget.', 'elementor-mcp' ),
+						'badges'      => array( 'pro' ),
+					),
+					'elementor-mcp/add-table-of-contents'    => array(
+						'label'       => __( 'Add Table of Contents', 'elementor-mcp' ),
+						'description' => __( 'Adds an auto-generated table of contents widget.', 'elementor-mcp' ),
+						'badges'      => array( 'pro' ),
+					),
+					'elementor-mcp/add-blockquote'           => array(
+						'label'       => __( 'Add Blockquote', 'elementor-mcp' ),
+						'description' => __( 'Adds a styled blockquote widget.', 'elementor-mcp' ),
+						'badges'      => array( 'pro' ),
+					),
+					'elementor-mcp/add-lottie'               => array(
+						'label'       => __( 'Add Lottie Animation', 'elementor-mcp' ),
+						'description' => __( 'Adds a Lottie animation widget.', 'elementor-mcp' ),
+						'badges'      => array( 'pro' ),
+					),
+					'elementor-mcp/add-hotspot'              => array(
+						'label'       => __( 'Add Hotspot', 'elementor-mcp' ),
+						'description' => __( 'Adds an image hotspot widget with interactive points.', 'elementor-mcp' ),
 						'badges'      => array( 'pro' ),
 					),
 				),

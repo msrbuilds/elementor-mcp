@@ -3,7 +3,7 @@
  * Plugin Name:       Elementor MCP
  * Plugin URI:        https://developer.suspended.suspended/elementor-mcp
  * Description:       Extends the WordPress MCP Adapter to expose Elementor data, widgets, and page design tools as MCP tools for AI agents.
- * Version:           1.1.0
+ * Version:           1.2.0
  * Requires at least: 6.8
  * Tested up to:      6.8
  * Requires PHP:      7.4
@@ -20,7 +20,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Plugin constants.
-define( 'ELEMENTOR_MCP_VERSION', '1.1.0' );
+define( 'ELEMENTOR_MCP_VERSION', '1.2.0' );
 define( 'ELEMENTOR_MCP_DIR', plugin_dir_path( __FILE__ ) );
 define( 'ELEMENTOR_MCP_URL', plugin_dir_url( __FILE__ ) );
 define( 'ELEMENTOR_MCP_BASENAME', plugin_basename( __FILE__ ) );

@@ -148,7 +148,7 @@
 				configsDiv.style.display = '';
 			}
 
-			// Claude Code (.mcp.json) — uses type: http.
+			// Claude Code (.mcp.json) — uses type: http, url field.
 			var claudeCodeConfig = {
 				mcpServers: {
 					'elementor-mcp': {
@@ -166,29 +166,17 @@
 				JSON.stringify( claudeCodeConfig, null, 4 )
 			);
 
-			// Claude Desktop — uses stdio proxy with env vars.
-			var claudeDesktopConfig = {
-				mcpServers: {
-					'elementor-mcp': {
-						type: 'http',
-						url: endpoint,
-						headers: {
-							Authorization: headerValue
-						}
-					}
-				}
-			};
+			// Claude Desktop — same format as Claude Code.
 			setConfigBlock(
 				'elementor-mcp-claude-desktop-http-code',
 				'claude-desktop-http',
-				JSON.stringify( claudeDesktopConfig, null, 4 )
+				JSON.stringify( claudeCodeConfig, null, 4 )
 			);
 
-			// VS Code / Cursor.
-			var vscodeConfig = {
-				servers: {
+			// Cursor — uses url field, no type needed.
+			var cursorConfig = {
+				mcpServers: {
 					'elementor-mcp': {
-						type: 'http',
 						url: endpoint,
 						headers: {
 							Authorization: headerValue
@@ -197,9 +185,33 @@
 				}
 			};
 			setConfigBlock(
-				'elementor-mcp-vscode-code',
-				'vscode-config',
-				JSON.stringify( vscodeConfig, null, 4 )
+				'elementor-mcp-cursor-code',
+				'cursor-config',
+				JSON.stringify( cursorConfig, null, 4 )
+			);
+
+			// Windsurf — uses serverUrl field.
+			var windsurfConfig = {
+				mcpServers: {
+					'elementor-mcp': {
+						serverUrl: endpoint,
+						headers: {
+							Authorization: headerValue
+						}
+					}
+				}
+			};
+			setConfigBlock(
+				'elementor-mcp-windsurf-code',
+				'windsurf-config',
+				JSON.stringify( windsurfConfig, null, 4 )
+			);
+
+			// Antigravity — uses serverUrl field.
+			setConfigBlock(
+				'elementor-mcp-antigravity-code',
+				'antigravity-config',
+				JSON.stringify( windsurfConfig, null, 4 )
 			);
 		} );
 	}

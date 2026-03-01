@@ -4,9 +4,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Elementor MCP Plugin — a WordPress plugin that extends the official WordPress MCP Adapter to expose Elementor data, widgets, structures, and methods as MCP (Model Context Protocol) tools. This enables AI tools (Claude, Cursor, etc.) to create and manipulate Elementor page designs programmatically via ~37 MCP tools.
+Elementor MCP Plugin — a WordPress plugin that extends the official WordPress MCP Adapter to expose Elementor data, widgets, structures, and methods as MCP (Model Context Protocol) tools. This enables AI tools (Claude, Cursor, etc.) to create and manipulate Elementor page designs programmatically via ~64 MCP tools.
 
-**Current status: All phases implemented (P0/P1/P2).** Foundation layer, 7 read-only query tools, page CRUD, layout, widget, template, global, and composite tools are all complete (~37 MCP tools total). See `PLAN.md` for the full architectural specification.
+**Current status: All phases implemented (P0/P1/P2).** Foundation layer, 7 read-only query tools, page CRUD, layout, widget, template, global, composite tools, stock images, SVG icons, and full widget coverage are all complete (~64 MCP tools total). See `PLAN.md` for the full architectural specification.
 
 ## Dependencies & Requirements
 
@@ -106,7 +106,7 @@ The MCP Adapter converts ability names like `elementor-mcp/list-widgets` to tool
 | Stock image sideload | `upload_files` |
 | Stock image add | `edit_posts` + `upload_files` + ownership check |
 
-## All Implemented Tools (~40 total)
+## All Implemented Tools (~64 total)
 
 ### P0 — Query/Discovery (7 read-only)
 
@@ -139,7 +139,7 @@ The MCP Adapter converts ability names like `elementor-mcp/list-widgets` to tool
 | `elementor-mcp/remove-element` | Remove an element and all children (destructive) |
 | `elementor-mcp/duplicate-element` | Duplicate element with fresh IDs |
 
-### P1/P2 — Widgets (2 universal + 9 core + 6 Pro convenience)
+### P1/P2 — Widgets (2 universal + 23 core + 16 Pro convenience)
 
 | Ability Name | Purpose |
 |---|---|
@@ -154,12 +154,36 @@ The MCP Adapter converts ability names like `elementor-mcp/list-widgets` to tool
 | `elementor-mcp/add-spacer` | Convenience: spacer widget |
 | `elementor-mcp/add-divider` | Convenience: divider widget |
 | `elementor-mcp/add-icon-box` | Convenience: icon box widget |
+| `elementor-mcp/add-accordion` | Convenience: collapsible accordion widget |
+| `elementor-mcp/add-alert` | Convenience: alert/notice widget |
+| `elementor-mcp/add-counter` | Convenience: animated counter widget |
+| `elementor-mcp/add-google-maps` | Convenience: embedded Google Maps widget |
+| `elementor-mcp/add-icon-list` | Convenience: icon list for features/checklists |
+| `elementor-mcp/add-image-box` | Convenience: image box (image + title + description) |
+| `elementor-mcp/add-image-carousel` | Convenience: rotating image carousel |
+| `elementor-mcp/add-progress` | Convenience: animated progress bar |
+| `elementor-mcp/add-social-icons` | Convenience: social media icon links |
+| `elementor-mcp/add-star-rating` | Convenience: star rating display |
+| `elementor-mcp/add-tabs` | Convenience: tabbed content widget |
+| `elementor-mcp/add-testimonial` | Convenience: testimonial with quote and author |
+| `elementor-mcp/add-toggle` | Convenience: toggle/expandable content |
+| `elementor-mcp/add-html` | Convenience: custom HTML code widget |
 | `elementor-mcp/add-form` | Pro: form widget |
 | `elementor-mcp/add-posts-grid` | Pro: posts grid widget |
 | `elementor-mcp/add-countdown` | Pro: countdown timer widget |
 | `elementor-mcp/add-price-table` | Pro: price table widget |
 | `elementor-mcp/add-flip-box` | Pro: flip box widget |
 | `elementor-mcp/add-animated-headline` | Pro: animated headline widget |
+| `elementor-mcp/add-call-to-action` | Pro: call-to-action widget |
+| `elementor-mcp/add-slides` | Pro: full-width slides/slider |
+| `elementor-mcp/add-testimonial-carousel` | Pro: testimonial carousel/slider |
+| `elementor-mcp/add-price-list` | Pro: price list for menus/services |
+| `elementor-mcp/add-gallery` | Pro: advanced gallery (grid/masonry/justified) |
+| `elementor-mcp/add-share-buttons` | Pro: social share buttons |
+| `elementor-mcp/add-table-of-contents` | Pro: auto-generated table of contents |
+| `elementor-mcp/add-blockquote` | Pro: styled blockquote widget |
+| `elementor-mcp/add-lottie` | Pro: Lottie animation widget |
+| `elementor-mcp/add-hotspot` | Pro: image hotspot widget |
 
 ### P2 — Templates (2 tools)
 
