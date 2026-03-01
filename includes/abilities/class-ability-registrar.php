@@ -124,6 +124,11 @@ class Elementor_MCP_Ability_Registrar {
 		$stock_images->register();
 		$this->ability_names = array_merge( $this->ability_names, $stock_images->get_ability_names() );
 
+		// SVG icon abilities (upload SVG for use as Elementor icons).
+		$svg_icons = new Elementor_MCP_Svg_Icon_Abilities( $this->data, $this->factory );
+		$svg_icons->register();
+		$this->ability_names = array_merge( $this->ability_names, $svg_icons->get_ability_names() );
+
 		/**
 		 * Filters the registered ability names.
 		 *

@@ -157,10 +157,16 @@ class Elementor_MCP_Control_Mapper {
 			case 'icons':
 			case 'icon':
 				return array(
-					'type'       => 'object',
-					'properties' => array(
-						'value'   => array( 'type' => 'string' ),
-						'library' => array( 'type' => 'string' ),
+					'type'        => 'object',
+					'description' => 'Font Awesome: { "value": "fas fa-star", "library": "fa-solid" }. SVG: { "value": { "id": 123, "url": "..." }, "library": "svg" }.',
+					'properties'  => array(
+						'value'   => array(
+							'description' => 'Font Awesome class string (e.g. "fas fa-star") or SVG object { "id": attachment_id, "url": "..." }.',
+						),
+						'library' => array(
+							'type'        => 'string',
+							'description' => 'Icon library: fa-solid, fa-regular, fa-brands, or svg.',
+						),
 					),
 				);
 

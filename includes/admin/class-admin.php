@@ -479,6 +479,16 @@ class Elementor_MCP_Admin {
 					),
 				),
 			),
+			'svg_icons'        => array(
+				'label' => __( 'SVG Icons', 'elementor-mcp' ),
+				'tools' => array(
+					'elementor-mcp/upload-svg-icon'  => array(
+						'label'       => __( 'Upload SVG Icon', 'elementor-mcp' ),
+						'description' => __( 'Uploads an SVG icon (from URL or raw markup) for use with icon/icon-box widgets.', 'elementor-mcp' ),
+						'badges'      => array(),
+					),
+				),
+			),
 		);
 	}
 

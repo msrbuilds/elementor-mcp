@@ -4,7 +4,7 @@ A WordPress plugin that extends the [WordPress MCP Adapter](https://github.com/d
 
 ## Features
 
-- **~37 MCP Tools** covering the full Elementor page-building workflow
+- **~42 MCP Tools** covering the full Elementor page-building workflow
 - **Query & Discovery** — List widgets, inspect page structures, read element settings, browse templates, view global design tokens
 - **Page Management** — Create pages, update settings, clear content, import/export templates
 - **Layout Tools** — Add flexbox containers, move/remove/duplicate elements
@@ -29,10 +29,11 @@ A WordPress plugin that extends the [WordPress MCP Adapter](https://github.com/d
 ## Installation
 
 1. Install and activate [Elementor](https://wordpress.org/plugins/elementor/) (version 3.20+).
-2. Install and activate the [WordPress MCP Adapter](https://github.com/developer/wordpress-mcp-adapter) plugin.
-3. Upload the `elementor-mcp` folder to `/wp-content/plugins/`.
-4. Activate the plugin through the **Plugins** menu in WordPress.
-5. Go to **Settings > Elementor MCP** to configure tools and view connection info.
+2. Install and activate the [WordPress MCP Adapter](https://github.com/WordPress/mcp-adapter) plugin.
+3. Download the latest release zip from the [Releases page](https://github.com/msrbuilds/elementor-mcp/releases/).
+4. In WordPress, go to **Plugins > Add New > Upload Plugin** and upload the downloaded zip file.
+5. Activate the plugin through the **Plugins** menu in WordPress.
+6. Go to **Settings > Elementor MCP** to configure tools and view connection info.
 
 ## Connecting to the MCP Server
 
@@ -209,6 +210,12 @@ npx @modelcontextprotocol/inspector wp mcp-adapter serve \
 | `search-images` | Search Openverse for Creative Commons images by keyword |
 | `sideload-image` | Download an external image URL into the WordPress Media Library |
 | `add-stock-image` | Search + sideload + add image widget to page in one call |
+
+### SVG Icons (1 tool)
+
+| Tool | Description |
+|---|---|
+| `upload-svg-icon` | Upload an SVG icon (from URL or raw markup) for use with icon/icon-box widgets |
 
 > All tool names are prefixed with `elementor-mcp/` in the MCP namespace (e.g., `elementor-mcp/list-widgets`). The MCP Adapter converts these to `elementor-mcp-list-widgets` for transport.
 

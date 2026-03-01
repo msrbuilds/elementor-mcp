@@ -569,9 +569,9 @@ class Elementor_MCP_Widget_Abilities {
 		$this->register_convenience_tool(
 			'add-icon',
 			__( 'Add Icon', 'elementor-mcp' ),
-			__( 'Adds an icon widget with Font Awesome or custom icon, view mode, shape, and color options.', 'elementor-mcp' ),
+			__( 'Adds an icon widget. Supports Font Awesome icons and custom SVG icons. For SVG icons, first use the upload-svg-icon tool to upload the SVG and get the icon_object, then pass it as selected_icon.', 'elementor-mcp' ),
 			array(
-				'selected_icon' => array( 'type' => 'object', 'description' => __( 'Icon object: { "value": "fas fa-star", "library": "fa-solid" }.', 'elementor-mcp' ) ),
+				'selected_icon' => array( 'type' => 'object', 'description' => __( 'Icon object. Font Awesome: { "value": "fas fa-star", "library": "fa-solid" }. SVG (from upload-svg-icon): { "value": { "id": 123, "url": "https://..." }, "library": "svg" }. Libraries: fa-solid, fa-regular, fa-brands.', 'elementor-mcp' ) ),
 				'view'          => array( 'type' => 'string', 'enum' => array( 'default', 'stacked', 'framed' ), 'description' => __( 'Icon view mode.', 'elementor-mcp' ) ),
 				'shape'         => array( 'type' => 'string', 'enum' => array( 'circle', 'square' ), 'description' => __( 'Icon shape (for stacked/framed).', 'elementor-mcp' ) ),
 				'primary_color' => array( 'type' => 'string', 'description' => __( 'Primary color (hex).', 'elementor-mcp' ) ),
@@ -621,9 +621,9 @@ class Elementor_MCP_Widget_Abilities {
 		$this->register_convenience_tool(
 			'add-icon-box',
 			__( 'Add Icon Box', 'elementor-mcp' ),
-			__( 'Adds an icon box widget combining an icon, title, and description.', 'elementor-mcp' ),
+			__( 'Adds an icon box widget combining an icon, title, and description. Supports Font Awesome and SVG icons. For SVG, first use upload-svg-icon to get the icon_object.', 'elementor-mcp' ),
 			array(
-				'selected_icon'  => array( 'type' => 'object', 'description' => __( 'Icon object: { "value": "fas fa-star", "library": "fa-solid" }.', 'elementor-mcp' ) ),
+				'selected_icon'  => array( 'type' => 'object', 'description' => __( 'Icon object. Font Awesome: { "value": "fas fa-star", "library": "fa-solid" }. SVG (from upload-svg-icon): { "value": { "id": 123, "url": "https://..." }, "library": "svg" }. Libraries: fa-solid, fa-regular, fa-brands.', 'elementor-mcp' ) ),
 				'title_text'     => array( 'type' => 'string', 'description' => __( 'Box title.', 'elementor-mcp' ) ),
 				'description_text' => array( 'type' => 'string', 'description' => __( 'Box description.', 'elementor-mcp' ) ),
 				'view'           => array( 'type' => 'string', 'enum' => array( 'default', 'stacked', 'framed' ), 'description' => __( 'Icon view mode.', 'elementor-mcp' ) ),
