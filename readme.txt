@@ -3,7 +3,7 @@ Contributors: developer
 Tags: elementor, mcp, ai, page-builder, automation
 Requires at least: 6.8
 Tested up to: 6.9
-Stable tag: 1.3.1
+Stable tag: 1.3.2
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -66,6 +66,29 @@ Add to your MCP client configuration:
 }
 `
 
+= npx mcp-remote Connection (Local) =
+
+For local development, use `mcp-remote` to bridge your AI client to the WordPress HTTP endpoint:
+
+`
+{
+  "mcpServers": {
+    "elementor-mcp": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "mcp-remote",
+        "http://localhost:10003/wp-json/mcp/elementor-mcp-server",
+        "--header",
+        "Authorization: Basic BASE64_ENCODED_CREDENTIALS"
+      ]
+    }
+  }
+}
+`
+
+Replace `localhost:10003` with your local WordPress address and `BASE64_ENCODED_CREDENTIALS` with your Base64-encoded `username:app-password`.
+
 = HTTP Proxy Connection (Remote) =
 
 1. Create a WordPress Application Password at Users > Profile > Application Passwords.
@@ -115,6 +138,13 @@ The plugin enforces WordPress capability checks on every tool. Read operations r
 2. Connection configuration page with copy-paste configs.
 
 == Changelog ==
+
+= 1.3.2 =
+* Renamed plugin to "MCP Tools for Elementor" to comply with WordPress.org trademark guidelines.
+* Updated admin menu label to "EMCP Tools" for brevity.
+* Fixed WPCS issues: prefixed all global variables in view templates, escaped integer output, added missing translators comments.
+* Updated "Tested up to" to WordPress 6.9.
+* Added languages/ directory for Domain Path header.
 
 = 1.3.1 =
 * New: Prompts tab in admin dashboard — browse and one-click copy 5 sample landing page prompts.
@@ -175,6 +205,9 @@ The plugin enforces WordPress capability checks on every tool. Read operations r
 * Node.js HTTP proxy for remote connections.
 
 == Upgrade Notice ==
+
+= 1.3.2 =
+Plugin renamed to "MCP Tools for Elementor". WPCS fixes and WordPress 6.9 compatibility.
 
 = 1.3.1 =
 New Prompts tab in admin — browse and copy sample landing page prompts directly from WordPress.
