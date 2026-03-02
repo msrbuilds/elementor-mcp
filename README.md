@@ -31,7 +31,7 @@ A WordPress plugin that extends the [WordPress MCP Adapter](https://github.com/W
 - **Admin Dashboard** — Toggle individual tools on/off and view connection configs for all supported MCP clients
 
 
-# Get 50+ Premium Prompts to Buld High Quality Landing Pages
+# Get 50+ Premium Prompts to Build High Quality Landing Pages
 ## [I Want This](https://wpacademy.gumroad.com/l/vlrihk)
 <img width="1280" height="720" alt="banner" src="https://github.com/user-attachments/assets/03e02c73-9fa8-40af-997b-99515352ebbb" />
 
