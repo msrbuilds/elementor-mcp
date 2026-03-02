@@ -213,6 +213,27 @@
 				'antigravity-config',
 				JSON.stringify( windsurfConfig, null, 4 )
 			);
+
+			// npx mcp-remote — bridges HTTP endpoint via stdio.
+			var mcpRemoteConfig = {
+				mcpServers: {
+					'elementor-mcp': {
+						command: 'npx',
+						args: [
+							'-y',
+							'mcp-remote',
+							endpoint,
+							'--header',
+							'Authorization: ' + headerValue
+						]
+					}
+				}
+			};
+			setConfigBlock(
+				'elementor-mcp-mcp-remote-code',
+				'mcp-remote-config',
+				JSON.stringify( mcpRemoteConfig, null, 4 )
+			);
 		} );
 	}
 

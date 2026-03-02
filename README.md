@@ -149,7 +149,30 @@ Add to `~/.gemini/antigravity/mcp_config.json`:
 }
 ```
 
-### WP-CLI stdio (local development)
+### npx mcp-remote (Local Development)
+
+For local development, you can use [`mcp-remote`](https://www.npmjs.com/package/mcp-remote) to bridge your AI client to the WordPress HTTP endpoint via stdio. This works with any MCP client that supports stdio transport:
+
+```json
+{
+    "mcpServers": {
+        "elementor-mcp": {
+            "command": "npx",
+            "args": [
+                "-y",
+                "mcp-remote",
+                "http://localhost:10003/wp-json/mcp/elementor-mcp-server",
+                "--header",
+                "Authorization: Basic BASE64_ENCODED_CREDENTIALS"
+            ]
+        }
+    }
+}
+```
+
+Replace `localhost:10003` with your local WordPress address and `BASE64_ENCODED_CREDENTIALS` with your Base64-encoded `username:app-password`.
+
+### WP-CLI stdio (Local Development)
 
 For local development with WP-CLI available, you can use the stdio transport (no HTTP auth needed):
 

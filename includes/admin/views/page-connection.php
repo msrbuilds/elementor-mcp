@@ -182,6 +182,16 @@ $elementor_mcp_has_adapter   = class_exists( '\WP\MCP\Core\McpAdapter' );
 				<textarea id="antigravity-config" class="elementor-mcp-copy-source"></textarea>
 			</div>
 
+			<!-- npx mcp-remote -->
+			<div class="elementor-mcp-config-card">
+				<div class="elementor-mcp-config-card-header">
+					<span class="elementor-mcp-config-card-title"><?php esc_html_e( 'npx mcp-remote', 'elementor-mcp' ); ?> <span style="font-weight: 400; color: var(--mcp-gray-400);">&mdash; <?php esc_html_e( 'any stdio client', 'elementor-mcp' ); ?></span></span>
+					<button type="button" class="button elementor-mcp-copy-btn" data-target="mcp-remote-config"><?php esc_html_e( 'Copy', 'elementor-mcp' ); ?></button>
+				</div>
+				<pre><code id="elementor-mcp-mcp-remote-code"></code></pre>
+				<textarea id="mcp-remote-config" class="elementor-mcp-copy-source"></textarea>
+			</div>
+
 		</div>
 	</div>
 
