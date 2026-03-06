@@ -221,7 +221,7 @@ class Elementor_MCP_Admin {
 					<p class="elementor-mcp-header-subtitle"><?php esc_html_e( 'AI-powered page building tools for Elementor via Model Context Protocol.', 'elementor-mcp' ); ?></p>
 				</div>
 				<div class="elementor-mcp-header-actions">
-					<a href="https://www.youtube.com/@WPAcademyPK" class="elementor-mcp-header-btn elementor-mcp-header-btn--secondary" target="_blank" rel="noopener noreferrer">
+					<a href="https://www.youtube.com/watch?v=tXCpGa-hqxk" class="elementor-mcp-header-btn elementor-mcp-header-btn--secondary" target="_blank" rel="noopener noreferrer">
 						<svg viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"/></svg>
 						<?php esc_html_e( 'Watch Tutorial', 'elementor-mcp' ); ?>
 					</a>
@@ -290,6 +290,10 @@ class Elementor_MCP_Admin {
 				   class="nav-tab <?php echo esc_attr( 'prompts' === $active_tab ? 'nav-tab-active' : '' ); ?>">
 					<?php esc_html_e( 'Prompts', 'elementor-mcp' ); ?>
 				</a>
+				<a href="<?php echo esc_url( admin_url( 'options-general.php?page=' . self::PAGE_SLUG . '&tab=changelog' ) ); ?>"
+				   class="nav-tab <?php echo esc_attr( 'changelog' === $active_tab ? 'nav-tab-active' : '' ); ?>">
+					<?php esc_html_e( 'Changelog', 'elementor-mcp' ); ?>
+				</a>
 			</nav>
 
 			<!-- Content -->
@@ -299,6 +303,8 @@ class Elementor_MCP_Admin {
 					include ELEMENTOR_MCP_DIR . 'includes/admin/views/page-connection.php';
 				} elseif ( 'prompts' === $active_tab ) {
 					include ELEMENTOR_MCP_DIR . 'includes/admin/views/page-prompts.php';
+				} elseif ( 'changelog' === $active_tab ) {
+					include ELEMENTOR_MCP_DIR . 'includes/admin/views/page-changelog.php';
 				} else {
 					include ELEMENTOR_MCP_DIR . 'includes/admin/views/page-tools.php';
 				}

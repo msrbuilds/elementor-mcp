@@ -1,9 +1,9 @@
 === MCP Tools for Elementor ===
-Contributors: developer
+Contributors: mianshahzadraza
 Tags: elementor, mcp, ai, page-builder, automation
-Requires at least: 6.8
+Requires at least: 6.7
 Tested up to: 6.9
-Stable tag: 1.3.2
+Stable tag: 1.4.0
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -151,6 +151,17 @@ The plugin enforces WordPress capability checks on every tool. Read operations r
 
 == Changelog ==
 
+= 1.4.0 =
+* New: 22 Pro widget convenience tools — nav menu, loop grid, loop carousel, media carousel, nested tabs, nested accordion, and more.
+* New: 5 WooCommerce widget tools — products, add-to-cart, cart, checkout, menu cart (conditional on WooCommerce).
+* New: 4 layout tools — update-container, update-element, batch-update, reorder-elements.
+* New: 6 template/theme builder tools — create-theme-template, set-template-conditions, list-dynamic-tags, set-dynamic-tag, create-popup, set-popup-settings.
+* New: 2 query tools — get-container-schema, find-element.
+* New: 4 extended core widget tools — menu-anchor, shortcode, rating, text-path.
+* Total MCP tools increased from 70 to 92.
+* Improved: Settings validator with stricter schema enforcement.
+* Improved: Element factory with enhanced container support.
+
 = 1.3.2 =
 * Renamed plugin to "MCP Tools for Elementor" to comply with WordPress.org trademark guidelines.
 * Updated admin menu label to "EMCP Tools" for brevity.
@@ -217,6 +228,9 @@ The plugin enforces WordPress capability checks on every tool. Read operations r
 * Node.js HTTP proxy for remote connections.
 
 == Upgrade Notice ==
+
+= 1.4.0 =
+Major update: 22 new tools including theme builder, dynamic tags, popup builder, WooCommerce widgets, and enhanced layout management. Total tools now 92.
 
 = 1.3.2 =
 Plugin renamed to "MCP Tools for Elementor". WPCS fixes and WordPress 6.9 compatibility.

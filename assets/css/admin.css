@@ -1149,6 +1149,120 @@
 }
 
 /* =========================================================================
+ * Changelog Tab
+ * ========================================================================= */
+
+.elementor-mcp-changelog-intro {
+	margin-bottom: 24px;
+}
+
+.elementor-mcp-changelog-intro h2 {
+	margin: 0 0 8px;
+	font-size: 20px;
+	font-weight: 600;
+	color: var(--mcp-gray-900);
+}
+
+.elementor-mcp-changelog-intro .description {
+	color: var(--mcp-gray-500);
+	font-size: 14px;
+	margin: 0;
+}
+
+.elementor-mcp-changelog-list {
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+}
+
+.elementor-mcp-changelog-version {
+	background: var(--mcp-white);
+	border: 1px solid var(--mcp-gray-200);
+	border-radius: var(--mcp-radius-lg);
+	padding: 20px 24px;
+	transition: border-color var(--mcp-transition);
+}
+
+.elementor-mcp-changelog-version:hover {
+	border-color: var(--mcp-gray-300);
+}
+
+.elementor-mcp-changelog-version.is-latest {
+	border-color: var(--mcp-primary);
+	border-width: 2px;
+}
+
+.elementor-mcp-changelog-version-header {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	margin-bottom: 12px;
+}
+
+.elementor-mcp-changelog-version-header h3 {
+	margin: 0;
+	font-size: 16px;
+	font-weight: 600;
+	color: var(--mcp-gray-900);
+}
+
+.elementor-mcp-changelog-badge {
+	display: inline-block;
+	padding: 2px 10px;
+	font-size: 11px;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+	color: var(--mcp-white);
+	background: var(--mcp-primary);
+	border-radius: 99px;
+}
+
+.elementor-mcp-changelog-items {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.elementor-mcp-changelog-items li {
+	position: relative;
+	padding: 6px 0 6px 20px;
+	font-size: 13px;
+	line-height: 1.6;
+	color: var(--mcp-gray-700);
+	border-bottom: 1px solid var(--mcp-gray-100);
+}
+
+.elementor-mcp-changelog-items li:last-child {
+	border-bottom: none;
+	padding-bottom: 0;
+}
+
+.elementor-mcp-changelog-items li::before {
+	content: "";
+	position: absolute;
+	left: 0;
+	top: 14px;
+	width: 6px;
+	height: 6px;
+	border-radius: 50%;
+	background: var(--mcp-gray-300);
+}
+
+.elementor-mcp-changelog-items li strong {
+	color: var(--mcp-gray-900);
+}
+
+.elementor-mcp-changelog-items li code {
+	padding: 1px 6px;
+	font-size: 12px;
+	background: var(--mcp-gray-50);
+	border: 1px solid var(--mcp-gray-200);
+	border-radius: 3px;
+	font-family: monospace;
+}
+
+/* =========================================================================
  * Responsive
  * ========================================================================= */
 
@@ -1230,5 +1344,9 @@
 
 	.elementor-mcp-prompts-cta {
 		padding: 24px 16px;
+	}
+
+	.elementor-mcp-changelog-version {
+		padding: 16px;
 	}
 }

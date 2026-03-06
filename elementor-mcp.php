@@ -1,14 +1,14 @@
 <?php
 /**
  * Plugin Name:       MCP Tools for Elementor
- * Plugin URI:        https://developer.suspended.suspended/elementor-mcp
+ * Plugin URI:        https://github.com/msrbuilds/elementor-mcpelementor-mcp
  * Description:       Extends the WordPress MCP Adapter to expose Elementor data, widgets, and page design tools as MCP tools for AI agents.
- * Version:           1.3.2
- * Requires at least: 6.8
+ * Version:           1.4.0
+ * Requires at least: 6.7
  * Tested up to:      6.9
  * Requires PHP:      7.4
- * Author:            developer
- * Author URI:        https://developer.suspended.suspended
+ * Author:            Mian Shahzad Raza
+ * Author URI:        https://msrbuilds.com
  * License:           GPL-2.0-or-later
  * License URI:       https://www.gnu.org/licenses/gpl-2.0.html
  * Text Domain:       elementor-mcp
@@ -20,7 +20,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Plugin constants.
-define( 'ELEMENTOR_MCP_VERSION', '1.3.2' );
+define( 'ELEMENTOR_MCP_VERSION', '1.4.0' );
 define( 'ELEMENTOR_MCP_DIR', plugin_dir_path( __FILE__ ) );
 define( 'ELEMENTOR_MCP_URL', plugin_dir_url( __FILE__ ) );
 define( 'ELEMENTOR_MCP_BASENAME', plugin_basename( __FILE__ ) );

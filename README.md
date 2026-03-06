@@ -1,6 +1,6 @@
 # MCP Tools for Elementor
 
-[![Version](https://img.shields.io/badge/version-1.3.2-blue.svg)](https://github.com/msrbuilds/elementor-mcp/releases)
+[![Version](https://img.shields.io/badge/version-1.4.0-blue.svg)](https://github.com/msrbuilds/elementor-mcp/releases)
 [![License](https://img.shields.io/badge/license-GPL--3.0-green.svg)](LICENSE)
 [![PHP](https://img.shields.io/badge/PHP-%3E%3D7.4-8892BF.svg)](https://php.net)
 [![WordPress](https://img.shields.io/badge/WordPress-%3E%3D6.8-21759B.svg)](https://wordpress.org)
