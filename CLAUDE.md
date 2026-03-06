@@ -4,9 +4,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-MCP Tools for Elementor Plugin — a WordPress plugin that extends the official WordPress MCP Adapter to expose Elementor data, widgets, structures, and methods as MCP (Model Context Protocol) tools. This enables AI tools (Claude, Cursor, etc.) to create and manipulate Elementor page designs programmatically via 70 MCP tools.
+MCP Tools for Elementor Plugin — a WordPress plugin that extends the official WordPress MCP Adapter to expose Elementor data, widgets, structures, and methods as MCP (Model Context Protocol) tools. This enables AI tools (Claude, Cursor, etc.) to create and manipulate Elementor page designs programmatically via 92 MCP tools.
 
-**Current status: All phases implemented (P0/P1/P2).** Foundation layer, 7 read-only query tools, page CRUD, layout, widget, template, global, composite tools, stock images, SVG icons, custom code tools, and full widget coverage are all complete (70 MCP tools total). See `PLAN.md` for the full architectural specification.
+**Current status: All phases implemented (P0/P1/P2).** Foundation layer, 7 read-only query tools, page CRUD, layout, widget, template, global, composite tools, stock images, SVG icons, custom code tools, and full widget coverage are all complete (92 MCP tools total). See `PLAN.md` for the full architectural specification.
 
 ## Dependencies & Requirements
 
@@ -123,7 +123,7 @@ The MCP Adapter converts ability names like `elementor-mcp/list-widgets` to tool
 | Code snippets (create) | `manage_options` + `unfiltered_html` |
 | Code snippets (list) | `manage_options` |
 
-## All Implemented Tools (70 total)
+## All Implemented Tools (92 total)
 
 ### P0 — Query/Discovery (7 read-only)
 
