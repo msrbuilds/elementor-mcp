@@ -58,8 +58,10 @@ class Elementor_MCP_Query_Abilities {
 		return array(
 			'elementor-mcp/list-widgets',
 			'elementor-mcp/get-widget-schema',
+			'elementor-mcp/get-container-schema',
 			'elementor-mcp/get-page-structure',
 			'elementor-mcp/get-element-settings',
+			'elementor-mcp/find-element',
 			'elementor-mcp/list-pages',
 			'elementor-mcp/list-templates',
 			'elementor-mcp/get-global-settings',
@@ -76,8 +78,10 @@ class Elementor_MCP_Query_Abilities {
 	public function register(): void {
 		$this->register_list_widgets();
 		$this->register_get_widget_schema();
+		$this->register_get_container_schema();
 		$this->register_get_page_structure();
 		$this->register_get_element_settings();
+		$this->register_find_element();
 		$this->register_list_pages();
 		$this->register_list_templates();
 		$this->register_get_global_settings();
@@ -267,6 +271,119 @@ class Elementor_MCP_Query_Abilities {
 			'title'       => $widget->get_title(),
 			'schema'      => $schema,
 		);
+	}
+
+	// -------------------------------------------------------------------------
+	// get-container-schema
+	// -------------------------------------------------------------------------
+
+	private function register_get_container_schema(): void {
+		wp_register_ability(
+			'elementor-mcp/get-container-schema',
+			array(
+				'label'               => __( 'Get Container Schema', 'elementor-mcp' ),
+				'description'         => __( 'Returns JSON Schema for all container controls (flex + grid), including flex_direction, justify_content, align_items, flex_wrap, gap, content_width, min_height, container_type, grid controls, background, border, padding, and more.', 'elementor-mcp' ),
+				'category'            => 'elementor-mcp',
+				'execute_callback'    => array( $this, 'execute_get_container_schema' ),
+				'permission_callback' => array( $this, 'check_read_permission' ),
+				'input_schema'        => array(
+					'type'       => 'object',
+					'properties' => array(),
+				),
+				'output_schema'       => array(
+					'type'       => 'object',
+					'properties' => array(
+						'schema' => array( 'type' => 'object' ),
+					),
+				),
+				'meta'                => array(
+					'annotations'  => array(
+						'readonly'    => true,
+						'destructive' => false,
+						'idempotent'  => true,
+					),
+					'show_in_rest' => true,
+				),
+			)
+		);
+	}
+
+	public function execute_get_container_schema( $input ) {
+		// Get a temporary container element to introspect its controls.
+		$document = \Elementor\Plugin::$instance->documents->get_current();
+
+		// Create a temporary container element to get its controls.
+		$element_type = \Elementor\Plugin::$instance->elements_manager->get_element_types( 'container' );
+
+		if ( ! $element_type ) {
+			return new \WP_Error( 'container_not_found', __( 'Container element type not available.', 'elementor-mcp' ) );
+		}
+
+		$controls = $element_type->get_controls();
+		$schema   = array(
+			'type'       => 'object',
+			'description' => 'Settings for the Container element.',
+			'properties' => array(),
+		);
+
+		foreach ( $controls as $control_id => $control ) {
+			$prop = array(
+				'type' => $this->map_control_type( $control['type'] ?? 'text' ),
+			);
+
+			if ( ! empty( $control['label'] ) ) {
+				$prop['description'] = $control['label'];
+			}
+
+			if ( isset( $control['default'] ) ) {
+				$prop['default'] = $control['default'];
+			}
+
+			if ( ! empty( $control['options'] ) && is_array( $control['options'] ) ) {
+				$prop['enum'] = array_keys( $control['options'] );
+			}
+
+			$schema['properties'][ $control_id ] = $prop;
+		}
+
+		return array( 'schema' => $schema );
+	}
+
+	/**
+	 * Maps Elementor control types to JSON Schema types.
+	 *
+	 * @param string $control_type The Elementor control type.
+	 * @return string The JSON Schema type.
+	 */
+	private function map_control_type( string $control_type ): string {
+		$type_map = array(
+			'text'       => 'string',
+			'textarea'   => 'string',
+			'wysiwyg'    => 'string',
+			'code'       => 'string',
+			'url'        => 'object',
+			'media'      => 'object',
+			'color'      => 'string',
+			'select'     => 'string',
+			'select2'    => 'string',
+			'choose'     => 'string',
+			'font'       => 'string',
+			'switcher'   => 'string',
+			'number'     => 'number',
+			'slider'     => 'object',
+			'dimensions' => 'object',
+			'image_dimensions' => 'object',
+			'repeater'   => 'array',
+			'gallery'    => 'array',
+			'icons'      => 'object',
+			'icon'       => 'string',
+			'hidden'     => 'string',
+			'heading'    => 'string',
+			'raw_html'   => 'string',
+			'popover_toggle' => 'string',
+		);
+
+		return $type_map[ $control_type ] ?? 'string';
 	}
 
 	/**
@@ -523,6 +640,185 @@ class Elementor_MCP_Query_Abilities {
 			'widgetType' => $element['widgetType'] ?? '',
 			'settings'   => $element['settings'] ?? array(),
 		);
+	}
+
+	// -------------------------------------------------------------------------
+	// find-element
+	// -------------------------------------------------------------------------
+
+	private function register_find_element(): void {
+		wp_register_ability(
+			'elementor-mcp/find-element',
+			array(
+				'label'               => __( 'Find Element', 'elementor-mcp' ),
+				'description'         => __( 'Searches elements on a page by type, widget type, or settings content. Returns matching element IDs, types, and a settings preview.', 'elementor-mcp' ),
+				'category'            => 'elementor-mcp',
+				'execute_callback'    => array( $this, 'execute_find_element' ),
+				'permission_callback' => array( $this, 'check_read_permission' ),
+				'input_schema'        => array(
+					'type'       => 'object',
+					'properties' => array(
+						'post_id'       => array(
+							'type'        => 'integer',
+							'description' => __( 'The post/page ID to search.', 'elementor-mcp' ),
+						),
+						'widget_type'   => array(
+							'type'        => 'string',
+							'description' => __( 'Filter by widget type (e.g. "heading", "button"). Leave empty for all.', 'elementor-mcp' ),
+						),
+						'element_type'  => array(
+							'type'        => 'string',
+							'enum'        => array( 'container', 'widget' ),
+							'description' => __( 'Filter by element type.', 'elementor-mcp' ),
+						),
+						'search_text'   => array(
+							'type'        => 'string',
+							'description' => __( 'Search for text content in settings values (case-insensitive).', 'elementor-mcp' ),
+						),
+						'setting_key'   => array(
+							'type'        => 'string',
+							'description' => __( 'Filter by setting key existence (e.g. "title_color").', 'elementor-mcp' ),
+						),
+						'setting_value' => array(
+							'type'        => 'string',
+							'description' => __( 'Filter by setting value (requires setting_key).', 'elementor-mcp' ),
+						),
+					),
+					'required'   => array( 'post_id' ),
+				),
+				'output_schema'       => array(
+					'type'       => 'object',
+					'properties' => array(
+						'matches' => array(
+							'type'  => 'array',
+							'items' => array(
+								'type'       => 'object',
+								'properties' => array(
+									'element_id'  => array( 'type' => 'string' ),
+									'elType'      => array( 'type' => 'string' ),
+									'widgetType'  => array( 'type' => 'string' ),
+									'settings_preview' => array( 'type' => 'object' ),
+								),
+							),
+						),
+						'count'   => array( 'type' => 'integer' ),
+					),
+				),
+				'meta'                => array(
+					'annotations'  => array(
+						'readonly'    => true,
+						'destructive' => false,
+						'idempotent'  => true,
+					),
+					'show_in_rest' => true,
+				),
+			)
+		);
+	}
+
+	public function execute_find_element( $input ) {
+		$post_id       = absint( $input['post_id'] ?? 0 );
+		$widget_type   = sanitize_text_field( $input['widget_type'] ?? '' );
+		$element_type  = sanitize_text_field( $input['element_type'] ?? '' );
+		$search_text   = $input['search_text'] ?? '';
+		$setting_key   = sanitize_text_field( $input['setting_key'] ?? '' );
+		$setting_value = $input['setting_value'] ?? null;
+
+		if ( ! $post_id ) {
+			return new \WP_Error( 'missing_post_id', __( 'The post_id parameter is required.', 'elementor-mcp' ) );
+		}
+
+		$data = $this->data->get_page_data( $post_id );
+
+		if ( is_wp_error( $data ) ) {
+			return $data;
+		}
+
+		$matches = array();
+		$this->search_elements( $data, $widget_type, $element_type, $search_text, $setting_key, $setting_value, $matches );
+
+		return array(
+			'matches' => $matches,
+			'count'   => count( $matches ),
+		);
+	}
+
+	/**
+	 * Recursively searches the element tree for matching elements.
+	 *
+	 * @param array  $elements      The elements to search.
+	 * @param string $widget_type   Widget type filter.
+	 * @param string $element_type  Element type filter.
+	 * @param string $search_text   Text to search in settings values.
+	 * @param string $setting_key   Setting key filter.
+	 * @param mixed  $setting_value Setting value filter.
+	 * @param array  &$matches      Results array (by reference).
+	 */
+	private function search_elements( array $elements, string $widget_type, string $element_type, string $search_text, string $setting_key, $setting_value, array &$matches ): void {
+		foreach ( $elements as $element ) {
+			$el_type    = $element['elType'] ?? '';
+			$wt         = $element['widgetType'] ?? '';
+			$settings   = $element['settings'] ?? array();
+			$is_match   = true;
+
+			// Filter by element type.
+			if ( $element_type && $el_type !== $element_type ) {
+				$is_match = false;
+			}
+
+			// Filter by widget type.
+			if ( $is_match && $widget_type && $wt !== $widget_type ) {
+				$is_match = false;
+			}
+
+			// Filter by setting key.
+			if ( $is_match && $setting_key ) {
+				if ( ! array_key_exists( $setting_key, $settings ) ) {
+					$is_match = false;
+				} elseif ( null !== $setting_value && (string) ( $settings[ $setting_key ] ?? '' ) !== (string) $setting_value ) {
+					$is_match = false;
+				}
+			}
+
+			// Filter by search text in settings values.
+			if ( $is_match && $search_text ) {
+				$found = false;
+				$search_lower = strtolower( $search_text );
+				foreach ( $settings as $val ) {
+					if ( is_string( $val ) && str_contains( strtolower( $val ), $search_lower ) ) {
+						$found = true;
+						break;
+					}
+				}
+				if ( ! $found ) {
+					$is_match = false;
+				}
+			}
+
+			if ( $is_match ) {
+				// Build a preview of key settings (first 5 string values).
+				$preview = array();
+				$count   = 0;
+				foreach ( $settings as $k => $v ) {
+					if ( is_string( $v ) && '' !== $v && $count < 5 ) {
+						$preview[ $k ] = strlen( $v ) > 100 ? substr( $v, 0, 100 ) . '...' : $v;
+						$count++;
+					}
+				}
+
+				$matches[] = array(
+					'element_id'       => $element['id'] ?? '',
+					'elType'           => $el_type,
+					'widgetType'       => $wt,
+					'settings_preview' => $preview,
+				);
+			}
+
+			// Recurse into children.
+			if ( ! empty( $element['elements'] ) && is_array( $element['elements'] ) ) {
+				$this->search_elements( $element['elements'], $widget_type, $element_type, $search_text, $setting_key, $setting_value, $matches );
+			}
+		}
 	}
 
 	/**

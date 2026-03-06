@@ -221,7 +221,7 @@ class Elementor_MCP_Admin {
 					<p class="elementor-mcp-header-subtitle"><?php esc_html_e( 'AI-powered page building tools for Elementor via Model Context Protocol.', 'elementor-mcp' ); ?></p>
 				</div>
 				<div class="elementor-mcp-header-actions">
-					<a href="https://www.youtube.com/watch?v=tXCpGa-hqxk" class="elementor-mcp-header-btn elementor-mcp-header-btn--secondary" target="_blank" rel="noopener noreferrer">
+					<a href="https://www.youtube.com/@WPAcademyPK" class="elementor-mcp-header-btn elementor-mcp-header-btn--secondary" target="_blank" rel="noopener noreferrer">
 						<svg viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"/></svg>
 						<?php esc_html_e( 'Watch Tutorial', 'elementor-mcp' ); ?>
 					</a>
@@ -405,9 +405,39 @@ class Elementor_MCP_Admin {
 						'description' => __( 'Removes an element and all its children from the page.', 'elementor-mcp' ),
 						'badges'      => array( 'destructive' ),
 					),
-					'elementor-mcp/duplicate-element'  => array(
+					'elementor-mcp/duplicate-element'    => array(
 						'label'       => __( 'Duplicate Element', 'elementor-mcp' ),
 						'description' => __( 'Creates a deep copy of an element and inserts it after the original.', 'elementor-mcp' ),
+						'badges'      => array(),
+					),
+					'elementor-mcp/update-container'     => array(
+						'label'       => __( 'Update Container', 'elementor-mcp' ),
+						'description' => __( 'Updates settings on an existing container element.', 'elementor-mcp' ),
+						'badges'      => array(),
+					),
+					'elementor-mcp/get-container-schema' => array(
+						'label'       => __( 'Get Container Schema', 'elementor-mcp' ),
+						'description' => __( 'Returns the JSON schema for container settings.', 'elementor-mcp' ),
+						'badges'      => array( 'read-only' ),
+					),
+					'elementor-mcp/find-element'         => array(
+						'label'       => __( 'Find Element', 'elementor-mcp' ),
+						'description' => __( 'Finds elements by type, settings, or CSS class within a page.', 'elementor-mcp' ),
+						'badges'      => array( 'read-only' ),
+					),
+					'elementor-mcp/update-element'       => array(
+						'label'       => __( 'Update Element', 'elementor-mcp' ),
+						'description' => __( 'Updates settings on any element (widget or container) by ID.', 'elementor-mcp' ),
+						'badges'      => array(),
+					),
+					'elementor-mcp/batch-update'         => array(
+						'label'       => __( 'Batch Update', 'elementor-mcp' ),
+						'description' => __( 'Applies multiple element updates in a single call.', 'elementor-mcp' ),
+						'badges'      => array(),
+					),
+					'elementor-mcp/reorder-elements'     => array(
+						'label'       => __( 'Reorder Elements', 'elementor-mcp' ),
+						'description' => __( 'Reorders child elements within a container.', 'elementor-mcp' ),
 						'badges'      => array(),
 					),
 				),
@@ -545,6 +575,26 @@ class Elementor_MCP_Admin {
 						'description' => __( 'Adds a custom HTML code widget.', 'elementor-mcp' ),
 						'badges'      => array(),
 					),
+					'elementor-mcp/add-menu-anchor'     => array(
+						'label'       => __( 'Add Menu Anchor', 'elementor-mcp' ),
+						'description' => __( 'Adds an invisible anchor for one-page navigation links.', 'elementor-mcp' ),
+						'badges'      => array(),
+					),
+					'elementor-mcp/add-shortcode'       => array(
+						'label'       => __( 'Add Shortcode', 'elementor-mcp' ),
+						'description' => __( 'Adds a shortcode widget to embed WordPress shortcodes.', 'elementor-mcp' ),
+						'badges'      => array(),
+					),
+					'elementor-mcp/add-rating'          => array(
+						'label'       => __( 'Add Rating', 'elementor-mcp' ),
+						'description' => __( 'Adds a rating widget with customizable scale and icons.', 'elementor-mcp' ),
+						'badges'      => array(),
+					),
+					'elementor-mcp/add-text-path'       => array(
+						'label'       => __( 'Add Text Path', 'elementor-mcp' ),
+						'description' => __( 'Adds a text-on-path widget for curved/circular text.', 'elementor-mcp' ),
+						'badges'      => array(),
+					),
 				),
 			),
 			'widget_pro'       => array(
@@ -630,6 +680,36 @@ class Elementor_MCP_Admin {
 						'description' => __( 'Adds an image hotspot widget with interactive points.', 'elementor-mcp' ),
 						'badges'      => array( 'pro' ),
 					),
+					'elementor-mcp/add-nav-menu'             => array(
+						'label'       => __( 'Add Nav Menu', 'elementor-mcp' ),
+						'description' => __( 'Adds a navigation menu widget from registered WordPress menus.', 'elementor-mcp' ),
+						'badges'      => array( 'pro' ),
+					),
+					'elementor-mcp/add-loop-grid'            => array(
+						'label'       => __( 'Add Loop Grid', 'elementor-mcp' ),
+						'description' => __( 'Adds a loop grid widget for dynamic post/CPT listings.', 'elementor-mcp' ),
+						'badges'      => array( 'pro' ),
+					),
+					'elementor-mcp/add-loop-carousel'        => array(
+						'label'       => __( 'Add Loop Carousel', 'elementor-mcp' ),
+						'description' => __( 'Adds a loop carousel widget for dynamic post/CPT carousels.', 'elementor-mcp' ),
+						'badges'      => array( 'pro' ),
+					),
+					'elementor-mcp/add-media-carousel'       => array(
+						'label'       => __( 'Add Media Carousel', 'elementor-mcp' ),
+						'description' => __( 'Adds a media carousel widget for images and videos.', 'elementor-mcp' ),
+						'badges'      => array( 'pro' ),
+					),
+					'elementor-mcp/add-nested-tabs'          => array(
+						'label'       => __( 'Add Nested Tabs', 'elementor-mcp' ),
+						'description' => __( 'Adds nested tabs widget where each tab is a container.', 'elementor-mcp' ),
+						'badges'      => array( 'pro' ),
+					),
+					'elementor-mcp/add-nested-accordion'     => array(
+						'label'       => __( 'Add Nested Accordion', 'elementor-mcp' ),
+						'description' => __( 'Adds nested accordion widget where each item is a container.', 'elementor-mcp' ),
+						'badges'      => array( 'pro' ),
+					),
 				),
 			),
 			'template'         => array(
@@ -640,10 +720,40 @@ class Elementor_MCP_Admin {
 						'description' => __( 'Saves the current page content as a reusable template.', 'elementor-mcp' ),
 						'badges'      => array(),
 					),
-					'elementor-mcp/apply-template'   => array(
+					'elementor-mcp/apply-template'       => array(
 						'label'       => __( 'Apply Template', 'elementor-mcp' ),
 						'description' => __( 'Applies a saved template to a target page.', 'elementor-mcp' ),
 						'badges'      => array(),
+					),
+					'elementor-mcp/create-theme-template' => array(
+						'label'       => __( 'Create Theme Template', 'elementor-mcp' ),
+						'description' => __( 'Creates a theme builder template (header, footer, single, archive, etc).', 'elementor-mcp' ),
+						'badges'      => array( 'pro' ),
+					),
+					'elementor-mcp/set-template-conditions' => array(
+						'label'       => __( 'Set Template Conditions', 'elementor-mcp' ),
+						'description' => __( 'Sets display conditions on a theme builder template.', 'elementor-mcp' ),
+						'badges'      => array( 'pro' ),
+					),
+					'elementor-mcp/list-dynamic-tags'    => array(
+						'label'       => __( 'List Dynamic Tags', 'elementor-mcp' ),
+						'description' => __( 'Lists all available dynamic tags and their categories.', 'elementor-mcp' ),
+						'badges'      => array( 'pro', 'read-only' ),
+					),
+					'elementor-mcp/set-dynamic-tag'      => array(
+						'label'       => __( 'Set Dynamic Tag', 'elementor-mcp' ),
+						'description' => __( 'Sets a dynamic tag on a specific element setting.', 'elementor-mcp' ),
+						'badges'      => array( 'pro' ),
+					),
+					'elementor-mcp/create-popup'         => array(
+						'label'       => __( 'Create Popup', 'elementor-mcp' ),
+						'description' => __( 'Creates an Elementor popup template.', 'elementor-mcp' ),
+						'badges'      => array( 'pro' ),
+					),
+					'elementor-mcp/set-popup-settings'   => array(
+						'label'       => __( 'Set Popup Settings', 'elementor-mcp' ),
+						'description' => __( 'Sets triggers, conditions, and timing on a popup template.', 'elementor-mcp' ),
+						'badges'      => array( 'pro' ),
 					),
 				),
 			),

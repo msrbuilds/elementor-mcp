@@ -5,24 +5,27 @@
 [![PHP](https://img.shields.io/badge/PHP-%3E%3D7.4-8892BF.svg)](https://php.net)
 [![WordPress](https://img.shields.io/badge/WordPress-%3E%3D6.8-21759B.svg)](https://wordpress.org)
 [![Elementor](https://img.shields.io/badge/Elementor-%3E%3D3.20-92003B.svg)](https://elementor.com)
-[![MCP Tools](https://img.shields.io/badge/MCP_Tools-70-orange.svg)](#available-tools)
+[![MCP Tools](https://img.shields.io/badge/MCP_Tools-92-orange.svg)](#available-tools)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 [![GitHub Issues](https://img.shields.io/github/issues/msrbuilds/elementor-mcp)](https://github.com/msrbuilds/elementor-mcp/issues)
 [![GitHub Stars](https://img.shields.io/github/stars/msrbuilds/elementor-mcp?style=social)](https://github.com/msrbuilds/elementor-mcp)
 
 A WordPress plugin that extends the [WordPress MCP Adapter](https://github.com/WordPress/mcp-adapter) to expose Elementor data, widgets, and page design tools as [MCP (Model Context Protocol)](https://modelcontextprotocol.io/) tools. This enables AI agents like Claude, Cursor, and other MCP-compatible clients to create and manipulate Elementor page designs programmatically.
 
-[![Watch the video](https://img.youtube.com/vi/tXCpGa-hqxk/maxresdefault.jpg)](https://www.youtube.com/watch?v=tXCpGa-hqxk)
+<img width="1953" height="1102" alt="image" src="https://github.com/user-attachments/assets/b6fbf504-5306-41ef-a584-eaabf63b2c93" />
 
 
 ## Features
 
-- **70 MCP Tools** covering the full Elementor page-building workflow
+- **92 MCP Tools** covering the full Elementor page-building workflow
 - **Query & Discovery** — List widgets, inspect page structures, read element settings, browse templates, view global design tokens
 - **Page Management** — Create pages, update settings, clear content, import/export templates
-- **Layout Tools** — Add flexbox containers, move/remove/duplicate elements
-- **Widget Tools** — 41 widget tools: universal add/update for any widget, plus 23 free convenience shortcuts (heading, text, image, button, video, icon, spacer, divider, icon box, accordion, alert, counter, Google Maps, icon list, image box, image carousel, progress bar, social icons, star rating, tabs, testimonial, toggle, HTML)
-- **Pro Widget Support** — 16 conditional Pro widget tools (form, posts grid, countdown, price table, flip box, animated headline, call to action, slides, testimonial carousel, price list, gallery, share buttons, table of contents, blockquote, Lottie, hotspot)
+- **Layout Tools** — Add flexbox containers, move/remove/duplicate elements, update containers, find elements, batch update, reorder children, get container schema
+- **Widget Tools** — 51 widget tools: universal add/update for any widget, plus 27 free convenience shortcuts and 22 conditional Pro widget tools
+- **Pro Widget Support** — 22 conditional Pro widget tools including nav menu, loop grid, loop carousel, media carousel, nested tabs, nested accordion, and more
+- **Theme Builder** — Create theme templates (header/footer/single/archive), set display conditions (Pro)
+- **Dynamic Tags** — List all available dynamic tags, bind dynamic data to element settings (Pro)
+- **Popup Builder** — Create popup templates, configure triggers/conditions/timing (Pro)
 - **Template Tools** — Save pages or elements as reusable templates, apply templates to pages
 - **Global Settings** — Update site-wide color palettes and typography presets
 - **Composite Tools** — Build a complete page from a declarative JSON structure in a single call
@@ -30,11 +33,6 @@ A WordPress plugin that extends the [WordPress MCP Adapter](https://github.com/W
 - **SVG Icons** — Upload SVG icons from URL or raw markup for use with Elementor icon widgets
 - **Custom Code** — Add custom CSS (element/page level), inject JavaScript, create site-wide code snippets for head/body injection
 - **Admin Dashboard** — Toggle individual tools on/off and view connection configs for all supported MCP clients
-
-
-# Get 50+ Premium Prompts to Build High Quality Landing Pages
-## [I Want This](https://wpacademy.gumroad.com/l/vlrihk)
-<img width="1280" height="720" alt="banner" src="https://github.com/user-attachments/assets/03e02c73-9fa8-40af-997b-99515352ebbb" />
 
 ## Requirements
 
@@ -154,42 +152,7 @@ Add to `~/.gemini/antigravity/mcp_config.json`:
 }
 ```
 
-### Codex
-
-Add to `~/.codex/config.toml` (global) or `.codex/config.toml` (project-scoped):
-
-```toml
-[mcp_servers.elementor-mcp]
-url = "https://your-site.com/wp-json/mcp/elementor-mcp-server"
-
-[mcp_servers.elementor-mcp.http_headers]
-"Authorization" = "Basic BASE64_ENCODED_CREDENTIALS"
-```
-
-### npx mcp-remote (Local Development)
-
-For local development, you can use [`mcp-remote`](https://www.npmjs.com/package/mcp-remote) to bridge your AI client to the WordPress HTTP endpoint via stdio. This works with any MCP client that supports stdio transport:
-
-```json
-{
-    "mcpServers": {
-        "elementor-mcp": {
-            "command": "npx",
-            "args": [
-                "-y",
-                "mcp-remote",
-                "http://localhost:10003/wp-json/mcp/elementor-mcp-server",
-                "--header",
-                "Authorization: Basic BASE64_ENCODED_CREDENTIALS"
-            ]
-        }
-    }
-}
-```
-
-Replace `localhost:10003` with your local WordPress address and `BASE64_ENCODED_CREDENTIALS` with your Base64-encoded `username:app-password`.
-
-### WP-CLI stdio (Local Development)
+### WP-CLI stdio (local development)
 
 For local development with WP-CLI available, you can use the stdio transport (no HTTP auth needed):
 
@@ -241,16 +204,22 @@ npx @modelcontextprotocol/inspector wp mcp-adapter serve \
 | `import-template` | Import JSON template structure into a page |
 | `export-page` | Export page's full Elementor data as JSON |
 
-### Layout (4 tools)
+### Layout & Structure (11 tools)
 
 | Tool | Description |
 |---|---|
 | `add-container` | Add a flexbox container (top-level or nested) |
+| `update-container` | Update settings on an existing container |
 | `move-element` | Move an element to a new parent/position |
 | `remove-element` | Remove an element and all children |
 | `duplicate-element` | Duplicate element with fresh IDs |
+| `get-container-schema` | Returns the JSON schema for container settings |
+| `find-element` | Find elements by type, settings, or CSS class within a page |
+| `update-element` | Update settings on any element (widget or container) by ID |
+| `batch-update` | Apply multiple element updates in a single call |
+| `reorder-elements` | Reorder child elements within a container |
 
-### Widgets (41 tools)
+### Widgets (51 tools)
 
 | Tool | Description |
 |---|---|
@@ -279,6 +248,10 @@ npx @modelcontextprotocol/inspector wp mcp-adapter serve \
 | `add-testimonial` | Convenience: testimonial with quote and author |
 | `add-toggle` | Convenience: toggle/expandable content |
 | `add-html` | Convenience: custom HTML code widget |
+| `add-menu-anchor` | Convenience: invisible anchor for one-page navigation |
+| `add-shortcode` | Convenience: embed WordPress shortcodes |
+| `add-rating` | Convenience: customizable rating widget |
+| `add-text-path` | Convenience: curved/circular text on a path |
 | `add-form` | Pro: form widget |
 | `add-posts-grid` | Pro: posts grid widget |
 | `add-countdown` | Pro: countdown timer widget |
@@ -295,13 +268,25 @@ npx @modelcontextprotocol/inspector wp mcp-adapter serve \
 | `add-blockquote` | Pro: styled blockquote widget |
 | `add-lottie` | Pro: Lottie animation widget |
 | `add-hotspot` | Pro: image hotspot widget |
+| `add-nav-menu` | Pro: WordPress navigation menu |
+| `add-loop-grid` | Pro: dynamic post/CPT loop grid |
+| `add-loop-carousel` | Pro: dynamic post/CPT loop carousel |
+| `add-media-carousel` | Pro: media carousel for images/videos |
+| `add-nested-tabs` | Pro: nested tabs with container content |
+| `add-nested-accordion` | Pro: nested accordion with container content |
 
-### Templates (2 tools)
+### Templates & Theme Builder (8 tools)
 
 | Tool | Description |
 |---|---|
 | `save-as-template` | Save a page or element as reusable template |
 | `apply-template` | Apply a saved template to a page |
+| `create-theme-template` | Pro: Create theme builder template (header/footer/single/archive/error-404/loop-item) |
+| `set-template-conditions` | Pro: Set display conditions on a theme builder template |
+| `list-dynamic-tags` | Pro: List all available dynamic tags with groups and categories |
+| `set-dynamic-tag` | Pro: Bind a dynamic tag to a specific element setting |
+| `create-popup` | Pro: Create a popup template |
+| `set-popup-settings` | Pro: Set triggers, display conditions, and timing on a popup |
 
 ### Global Settings (2 tools)
 
@@ -349,6 +334,8 @@ npx @modelcontextprotocol/inspector wp mcp-adapter serve \
 | Page creation | `publish_pages` or `edit_pages` |
 | Widget/layout manipulation | `edit_posts` + ownership check |
 | Template management | `edit_posts` |
+| Theme builder / Popups | `edit_posts` |
+| Dynamic tags | `edit_posts` + ownership check |
 | Global settings | `manage_options` |
 | Delete operations | `delete_posts` + ownership check |
 | Stock image search | `edit_posts` |
@@ -399,6 +386,11 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines on how to get sta
 2. Create a feature branch (`git checkout -b feature/amazing-tool`)
 3. Make your changes and test locally
 4. Submit a Pull Request
+
+## Contributors
+
+- **[@msrbuilds](https://github.com/msrbuilds)** — Original author and maintainer
+- **[@mhamzashafiq](https://github.com/mhamzashafiq)** — Layout & element tools, widget convenience shortcuts, theme builder, dynamic tags, popup builder, WooCommerce widget tools, motion effects support, settings validator improvements
 
 ## License
 
