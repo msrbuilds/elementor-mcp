@@ -146,6 +146,9 @@ class Elementor_MCP_Widget_Abilities {
 			$this->register_add_media_carousel();
 			$this->register_add_nested_tabs();
 			$this->register_add_nested_accordion();
+			$this->register_add_portfolio();
+			$this->register_add_author_box();
+			$this->register_add_login();
 
 			// WooCommerce widget convenience tools (only if WooCommerce is active).
 			if ( class_exists( 'WooCommerce' ) ) {
@@ -2170,6 +2173,94 @@ class Elementor_MCP_Widget_Abilities {
 			array(),
 			'nested-accordion',
 			array( 'default_state' => 'expanded', 'max_items_expended' => 'one' )
+		);
+	}
+
+	private function register_add_portfolio(): void {
+		$this->register_convenience_tool(
+			'add-portfolio',
+			__( 'Add Portfolio (Pro)', 'elementor-mcp' ),
+			__( 'Adds an Elementor Pro portfolio widget to display a filterable grid of posts or custom post types.', 'elementor-mcp' ),
+			array(
+				'columns'          => array( 'type' => 'integer', 'description' => __( 'Number of columns. Default: 3.', 'elementor-mcp' ) ),
+				'posts_per_page'   => array( 'type' => 'integer', 'description' => __( 'Number of posts to display. Default: 6.', 'elementor-mcp' ) ),
+				'show_filter_bar'     => array( 'type' => 'string', 'enum' => array( 'yes', 'no' ), 'description' => __( 'Show category filter bar. Default: no.', 'elementor-mcp' ) ),
+				'masonry'             => array( 'type' => 'string', 'enum' => array( 'yes', 'no' ), 'description' => __( 'Enable masonry layout. Default: no.', 'elementor-mcp' ) ),
+				'show_title'          => array( 'type' => 'string', 'enum' => array( 'yes', 'no' ), 'description' => __( 'Show post title overlay. Default: yes.', 'elementor-mcp' ) ),
+				'title_tag'           => array( 'type' => 'string', 'enum' => array( 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'div', 'span', 'p' ), 'description' => __( 'HTML tag for the title. Default: h3.', 'elementor-mcp' ) ),
+				'thumbnail_size_size' => array( 'type' => 'string', 'enum' => array( 'thumbnail', 'medium', 'medium_large', 'large', 'full' ), 'description' => __( 'Image size. Default: medium.', 'elementor-mcp' ) ),
+			),
+			array(),
+			'portfolio',
+			array(
+				'columns'             => 3,
+				'posts_per_page'      => 6,
+				'show_filter_bar'     => 'no',
+				'masonry'             => 'no',
+				'show_title'          => 'yes',
+				'title_tag'           => 'h3',
+				'thumbnail_size_size' => 'medium',
+			)
+		);
+	}
+
+	private function register_add_author_box(): void {
+		$this->register_convenience_tool(
+			'add-author-box',
+			__( 'Add Author Box (Pro)', 'elementor-mcp' ),
+			__( 'Adds an Elementor Pro author box widget displaying the post author\'s avatar, name, bio, and a link to their posts.', 'elementor-mcp' ),
+			array(
+				'show_avatar'     => array( 'type' => 'string', 'enum' => array( 'yes', 'no' ), 'description' => __( 'Show author avatar. Default: yes.', 'elementor-mcp' ) ),
+				'avatar_size'     => array( 'type' => 'integer', 'description' => __( 'Avatar size in pixels. Default: 96.', 'elementor-mcp' ) ),
+				'show_name'       => array( 'type' => 'string', 'enum' => array( 'yes', 'no' ), 'description' => __( 'Show author name. Default: yes.', 'elementor-mcp' ) ),
+				'author_name_tag' => array( 'type' => 'string', 'enum' => array( 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'div', 'span', 'p' ), 'description' => __( 'HTML tag for the author name. Default: h3.', 'elementor-mcp' ) ),
+				'show_biography'  => array( 'type' => 'string', 'enum' => array( 'yes', 'no' ), 'description' => __( 'Show author biography. Default: yes.', 'elementor-mcp' ) ),
+				'show_link'       => array( 'type' => 'string', 'enum' => array( 'yes', 'no' ), 'description' => __( 'Show link button to author posts. Default: yes.', 'elementor-mcp' ) ),
+				'link_text'       => array( 'type' => 'string', 'description' => __( 'Button label for the author posts link. Default: More Posts.', 'elementor-mcp' ) ),
+				'alignment'       => array( 'type' => 'string', 'enum' => array( 'left', 'center', 'right' ), 'description' => __( 'Content alignment. Default: left.', 'elementor-mcp' ) ),
+			),
+			array(),
+			'author-box',
+			array(
+				'show_avatar'     => 'yes',
+				'avatar_size'     => 96,
+				'show_name'       => 'yes',
+				'author_name_tag' => 'h3',
+				'show_biography'  => 'yes',
+				'show_link'       => 'yes',
+				'link_text'       => 'More Posts',
+				'alignment'       => 'left',
+			)
+		);
+	}
+
+	private function register_add_login(): void {
+		$this->register_convenience_tool(
+			'add-login',
+			__( 'Add Login (Pro)', 'elementor-mcp' ),
+			__( 'Adds an Elementor Pro login form widget with configurable fields, labels, remember me, lost password link, and post-login redirect.', 'elementor-mcp' ),
+			array(
+				'show_labels'          => array( 'type' => 'string', 'enum' => array( 'yes', 'no' ), 'description' => __( 'Show field labels. Default: yes.', 'elementor-mcp' ) ),
+				'show_remember_me'     => array( 'type' => 'string', 'enum' => array( 'yes', 'no' ), 'description' => __( 'Show "Remember Me" checkbox. Default: yes.', 'elementor-mcp' ) ),
+				'show_lost_password'   => array( 'type' => 'string', 'enum' => array( 'yes', 'no' ), 'description' => __( 'Show "Lost Password" link. Default: yes.', 'elementor-mcp' ) ),
+				'button_text'          => array( 'type' => 'string', 'description' => __( 'Submit button label. Default: Log In.', 'elementor-mcp' ) ),
+				'button_size'          => array( 'type' => 'string', 'enum' => array( 'xs', 'sm', 'md', 'lg', 'xl' ), 'description' => __( 'Button size preset. Default: sm.', 'elementor-mcp' ) ),
+				'redirect_after_login' => array( 'type' => 'string', 'enum' => array( 'yes', 'no' ), 'description' => __( 'Enable custom redirect after login. Default: no.', 'elementor-mcp' ) ),
+				'redirect_url'         => array( 'type' => 'string', 'description' => __( 'URL to redirect to after login (requires redirect_after_login=yes).', 'elementor-mcp' ) ),
+				'align'                => array( 'type' => 'string', 'enum' => array( 'left', 'center', 'right', 'justify' ), 'description' => __( 'Button alignment. Default: left.', 'elementor-mcp' ) ),
+			),
+			array(),
+			'login',
+			array(
+				'show_labels'          => 'yes',
+				'show_remember_me'     => 'yes',
+				'show_lost_password'   => 'yes',
+				'button_text'          => 'Log In',
+				'button_size'          => 'sm',
+				'redirect_after_login' => 'no',
+				'redirect_url'         => '',
+				'align'                => 'left',
+			)
 		);
 	}
 
