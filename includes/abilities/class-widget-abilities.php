@@ -146,6 +146,11 @@ class Elementor_MCP_Widget_Abilities {
 			$this->register_add_media_carousel();
 			$this->register_add_nested_tabs();
 			$this->register_add_nested_accordion();
+			$this->register_add_theme_site_logo();
+			$this->register_add_theme_site_title();
+			$this->register_add_theme_post_title();
+			$this->register_add_theme_page_title();
+			$this->register_add_theme_post_excerpt();
 
 			// WooCommerce widget convenience tools (only if WooCommerce is active).
 			if ( class_exists( 'WooCommerce' ) ) {
@@ -2170,6 +2175,112 @@ class Elementor_MCP_Widget_Abilities {
 			array(),
 			'nested-accordion',
 			array( 'default_state' => 'expanded', 'max_items_expended' => 'one' )
+		);
+	}
+
+	private function register_add_theme_site_logo(): void {
+		$this->register_convenience_tool(
+			'add-theme-site-logo',
+			__( 'Add Site Logo (Pro)', 'elementor-mcp' ),
+			__( 'Adds an Elementor Pro site logo widget that displays the logo set in Customizer > Site Identity.', 'elementor-mcp' ),
+			array(
+				'width'           => array( 'type' => 'integer', 'description' => __( 'Logo width in pixels. Default: 200.', 'elementor-mcp' ) ),
+				'align'           => array( 'type' => 'string', 'enum' => array( 'left', 'center', 'right' ), 'description' => __( 'Horizontal alignment. Default: left.', 'elementor-mcp' ) ),
+				'link_to'         => array( 'type' => 'string', 'enum' => array( 'none', 'home', 'custom' ), 'description' => __( 'Logo link destination. Default: home.', 'elementor-mcp' ) ),
+				'hover_animation' => array( 'type' => 'string', 'enum' => array( 'none', 'grow', 'shrink', 'pulse', 'push', 'bounce' ), 'description' => __( 'Hover animation preset. Default: none.', 'elementor-mcp' ) ),
+				'image_size'      => array( 'type' => 'string', 'enum' => array( 'thumbnail', 'medium', 'large', 'full' ), 'description' => __( 'Image size. Default: full.', 'elementor-mcp' ) ),
+			),
+			array(),
+			'theme-site-logo',
+			array(
+				'width'           => 200,
+				'align'           => 'left',
+				'link_to'         => 'home',
+				'hover_animation' => 'none',
+				'image_size'      => 'full',
+			)
+		);
+	}
+
+	private function register_add_theme_site_title(): void {
+		$this->register_convenience_tool(
+			'add-theme-site-title',
+			__( 'Add Site Title (Pro)', 'elementor-mcp' ),
+			__( 'Adds an Elementor Pro site title widget that displays the site name set in Settings > General.', 'elementor-mcp' ),
+			array(
+				'header_size' => array( 'type' => 'string', 'enum' => array( 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'div', 'span', 'p' ), 'description' => __( 'HTML tag for the title. Default: h2.', 'elementor-mcp' ) ),
+				'align'       => array( 'type' => 'string', 'enum' => array( 'left', 'center', 'right' ), 'description' => __( 'Text alignment. Default: left.', 'elementor-mcp' ) ),
+				'title_color' => array( 'type' => 'string', 'description' => __( 'Title text color (hex). Default: inherited.', 'elementor-mcp' ) ),
+			),
+			array(),
+			'theme-site-title',
+			array(
+				'header_size' => 'h2',
+				'align'       => 'left',
+				'title_color' => '',
+			)
+		);
+	}
+
+	private function register_add_theme_post_title(): void {
+		$this->register_convenience_tool(
+			'add-theme-post-title',
+			__( 'Add Post Title (Pro)', 'elementor-mcp' ),
+			__( 'Adds an Elementor Pro post title widget that dynamically displays the current post or page title.', 'elementor-mcp' ),
+			array(
+				'header_size' => array( 'type' => 'string', 'enum' => array( 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'div', 'span', 'p' ), 'description' => __( 'HTML tag for the title. Default: h1.', 'elementor-mcp' ) ),
+				'align'       => array( 'type' => 'string', 'enum' => array( 'left', 'center', 'right' ), 'description' => __( 'Text alignment. Default: left.', 'elementor-mcp' ) ),
+				'title_color' => array( 'type' => 'string', 'description' => __( 'Title text color (hex). Default: inherited.', 'elementor-mcp' ) ),
+			),
+			array(),
+			'theme-post-title',
+			array(
+				'header_size' => 'h1',
+				'align'       => 'left',
+				'title_color' => '',
+			)
+		);
+	}
+
+	private function register_add_theme_page_title(): void {
+		$this->register_convenience_tool(
+			'add-theme-page-title',
+			__( 'Add Page Title (Pro)', 'elementor-mcp' ),
+			__( 'Adds an Elementor Pro page title widget that dynamically displays the current page title.', 'elementor-mcp' ),
+			array(
+				'header_size' => array( 'type' => 'string', 'enum' => array( 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'div', 'span', 'p' ), 'description' => __( 'HTML tag for the title. Default: h1.', 'elementor-mcp' ) ),
+				'align'       => array( 'type' => 'string', 'enum' => array( 'left', 'center', 'right' ), 'description' => __( 'Text alignment. Default: left.', 'elementor-mcp' ) ),
+				'title_color' => array( 'type' => 'string', 'description' => __( 'Title text color (hex). Default: inherited.', 'elementor-mcp' ) ),
+			),
+			array(),
+			'theme-page-title',
+			array(
+				'header_size' => 'h1',
+				'align'       => 'left',
+				'title_color' => '',
+			)
+		);
+	}
+
+	private function register_add_theme_post_excerpt(): void {
+		$this->register_convenience_tool(
+			'add-theme-post-excerpt',
+			__( 'Add Post Excerpt (Pro)', 'elementor-mcp' ),
+			__( 'Adds an Elementor Pro post excerpt widget that dynamically displays the current post excerpt.', 'elementor-mcp' ),
+			array(
+				'align'             => array( 'type' => 'string', 'enum' => array( 'left', 'center', 'right', 'justify' ), 'description' => __( 'Text alignment. Default: left.', 'elementor-mcp' ) ),
+				'paragraph_spacing' => array( 'type' => 'integer', 'description' => __( 'Space between paragraphs in pixels. Default: 15.', 'elementor-mcp' ) ),
+				'title_color'       => array( 'type' => 'string', 'description' => __( 'Excerpt text color (hex). Default: inherited.', 'elementor-mcp' ) ),
+				'link_color'        => array( 'type' => 'string', 'description' => __( 'Link text color (hex). Default: inherited.', 'elementor-mcp' ) ),
+			),
+			array(),
+			'theme-post-excerpt',
+			array(
+				'align'             => 'left',
+				'paragraph_spacing' => 15,
+				'title_color'       => '',
+				'link_color'        => '',
+			)
 		);
 	}
 

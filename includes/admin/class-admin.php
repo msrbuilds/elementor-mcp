@@ -718,6 +718,46 @@ class Elementor_MCP_Admin {
 						'description' => __( 'Adds nested accordion widget where each item is a container.', 'elementor-mcp' ),
 						'badges'      => array( 'pro' ),
 					),
+					'elementor-mcp/add-portfolio'            => array(
+						'label'       => __( 'Add Portfolio', 'elementor-mcp' ),
+						'description' => __( 'Adds a portfolio widget to display a filterable grid of posts.', 'elementor-mcp' ),
+						'badges'      => array( 'pro' ),
+					),
+					'elementor-mcp/add-author-box'           => array(
+						'label'       => __( 'Add Author Box', 'elementor-mcp' ),
+						'description' => __( 'Adds an author box widget displaying author info.', 'elementor-mcp' ),
+						'badges'      => array( 'pro' ),
+					),
+					'elementor-mcp/add-login'                => array(
+						'label'       => __( 'Add Login', 'elementor-mcp' ),
+						'description' => __( 'Adds a login form widget.', 'elementor-mcp' ),
+						'badges'      => array( 'pro' ),
+					),
+					'elementor-mcp/add-theme-site-logo'      => array(
+						'label'       => __( 'Add Site Logo', 'elementor-mcp' ),
+						'description' => __( 'Adds the site logo from Customizer.', 'elementor-mcp' ),
+						'badges'      => array( 'pro' ),
+					),
+					'elementor-mcp/add-theme-site-title'     => array(
+						'label'       => __( 'Add Site Title', 'elementor-mcp' ),
+						'description' => __( 'Adds the site name dynamically.', 'elementor-mcp' ),
+						'badges'      => array( 'pro' ),
+					),
+					'elementor-mcp/add-theme-post-title'     => array(
+						'label'       => __( 'Add Post Title', 'elementor-mcp' ),
+						'description' => __( 'Adds the current post title dynamically.', 'elementor-mcp' ),
+						'badges'      => array( 'pro' ),
+					),
+					'elementor-mcp/add-theme-page-title'     => array(
+						'label'       => __( 'Add Page Title', 'elementor-mcp' ),
+						'description' => __( 'Adds the current page title dynamically.', 'elementor-mcp' ),
+						'badges'      => array( 'pro' ),
+					),
+					'elementor-mcp/add-theme-post-excerpt'   => array(
+						'label'       => __( 'Add Post Excerpt', 'elementor-mcp' ),
+						'description' => __( 'Adds the current post excerpt dynamically.', 'elementor-mcp' ),
+						'badges'      => array( 'pro' ),
+					),
 				),
 			),
 			'template'         => array(
