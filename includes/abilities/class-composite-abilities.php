@@ -241,6 +241,12 @@ class Elementor_MCP_Composite_Abilities {
 	 * 4 children). This matches Elementor's native column layout
 	 * pattern. No flex_wrap or _flex_size overrides are applied.
 	 *
+	 * Widgets that are direct children of a row parent are automatically
+	 * wrapped in a column container with the same equal percentage width.
+	 * Elementor's flex model requires a container as the flex item — a
+	 * widget placed directly in a row container has no flex-basis and
+	 * will not form a proper grid column.
+	 *
 	 * @param array  $items            The declarative structure items.
 	 * @param bool   $is_inner         Whether these are nested (inner) containers.
 	 * @param string $parent_direction The parent container's flex_direction.
@@ -300,7 +306,28 @@ class Elementor_MCP_Composite_Abilities {
 				if ( ! empty( $widget_type ) ) {
 					$widget = $this->factory->create_widget( $widget_type, $settings );
 					$this->elements_created++;
-					$elements[] = $widget;
+
+					// Widgets placed directly inside a row container must be
+					// wrapped in a column container. Elementor's flexbox model
+					// requires a container as the flex item — a bare widget has
+					// no flex-basis and will not form a proper grid column; it
+					// just stretches to fill the row instead.
+					if ( $is_in_row && $child_count > 1 ) {
+						$col_settings = array(
+							'content_width' => 'full',
+							'flex_direction' => 'column',
+							'width'         => array(
+								'size' => $equal_width,
+								'unit' => '%',
+							),
+						);
+						$col            = $this->factory->create_container( $col_settings, array( $widget ) );
+						$col['isInner'] = true;
+						$this->elements_created++;
+						$elements[] = $col;
+					} else {
+						$elements[] = $widget;
+					}
 				}
 			}
 		}
