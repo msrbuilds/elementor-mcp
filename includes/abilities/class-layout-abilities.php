@@ -437,7 +437,7 @@ class Elementor_MCP_Layout_Abilities {
 					'properties' => array(
 						'success'  => array( 'type' => 'boolean' ),
 						'updated'  => array( 'type' => 'integer' ),
-						'failed'   => array( 'type' => 'array' ),
+						'failed'   => array( 'type' => 'array', 'items' => array( 'type' => 'object' ) ),
 					),
 				),
 				'meta'                => array(

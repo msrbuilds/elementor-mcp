@@ -536,7 +536,7 @@ class Elementor_MCP_Template_Abilities {
 				'output_schema'       => array(
 					'type'       => 'object',
 					'properties' => array(
-						'tags'  => array( 'type' => 'array' ),
+						'tags'  => array( 'type' => 'array', 'items' => array( 'type' => 'object' ) ),
 						'count' => array( 'type' => 'integer' ),
 					),
 				),

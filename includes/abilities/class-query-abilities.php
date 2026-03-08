@@ -416,7 +416,7 @@ class Elementor_MCP_Query_Abilities {
 						'post_id'   => array( 'type' => 'integer' ),
 						'title'     => array( 'type' => 'string' ),
 						'type'      => array( 'type' => 'string' ),
-						'structure' => array( 'type' => 'array' ),
+						'structure' => array( 'type' => 'array', 'items' => array( 'type' => 'object' ) ),
 					),
 				),
 				'meta'                => array(
@@ -1036,8 +1036,8 @@ class Elementor_MCP_Query_Abilities {
 				'output_schema'       => array(
 					'type'       => 'object',
 					'properties' => array(
-						'colors'      => array( 'type' => 'array' ),
-						'typography'  => array( 'type' => 'array' ),
+						'colors'      => array( 'type' => 'array', 'items' => array( 'type' => 'object' ) ),
+						'typography'  => array( 'type' => 'array', 'items' => array( 'type' => 'object' ) ),
 						'settings'    => array( 'type' => 'object' ),
 					),
 				),

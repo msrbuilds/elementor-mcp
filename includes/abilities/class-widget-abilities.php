@@ -1217,7 +1217,7 @@ class Elementor_MCP_Widget_Abilities {
 				'selected_button_icon' => array( 'type' => 'object', 'description' => __( 'Button icon: {value, library}.', 'elementor-mcp' ) ),
 				'button_icon_align'    => array( 'type' => 'string', 'enum' => array( 'left', 'right' ), 'description' => __( 'Button icon position.', 'elementor-mcp' ) ),
 				// Submit actions.
-				'submit_actions' => array( 'type' => 'array', 'description' => __( 'Actions after submit: ["email","redirect","webhook"]. Default: ["email"].', 'elementor-mcp' ) ),
+				'submit_actions' => array( 'type' => 'array', 'items' => array( 'type' => 'string' ), 'description' => __( 'Actions after submit: ["email","redirect","webhook"]. Default: ["email"].', 'elementor-mcp' ) ),
 				// Email settings.
 				'email_to'      => array( 'type' => 'string', 'description' => __( 'Email recipient.', 'elementor-mcp' ) ),
 				'email_subject' => array( 'type' => 'string', 'description' => __( 'Email subject.', 'elementor-mcp' ) ),
@@ -1295,7 +1295,7 @@ class Elementor_MCP_Widget_Abilities {
 				'label_minutes'          => array( 'type' => 'string', 'description' => __( 'Custom minutes label.', 'elementor-mcp' ) ),
 				'label_seconds'          => array( 'type' => 'string', 'description' => __( 'Custom seconds label.', 'elementor-mcp' ) ),
 				// Expire actions.
-				'expire_actions'         => array( 'type' => 'array', 'description' => __( 'Actions on expiry: ["hide","redirect","message"].', 'elementor-mcp' ) ),
+				'expire_actions'         => array( 'type' => 'array', 'items' => array( 'type' => 'string' ), 'description' => __( 'Actions on expiry: ["hide","redirect","message"].', 'elementor-mcp' ) ),
 				'message_after_expire'   => array( 'type' => 'string', 'description' => __( 'Message to show after expire.', 'elementor-mcp' ) ),
 				'expire_redirect_url'    => array( 'type' => 'string', 'description' => __( 'Redirect URL after expire.', 'elementor-mcp' ) ),
 				// Style - Digits.
@@ -1672,7 +1672,7 @@ class Elementor_MCP_Widget_Abilities {
 						'type'       => 'object',
 						'properties' => array(
 							'gallery_title' => array( 'type' => 'string' ),
-							'gallery'       => array( 'type' => 'array' ),
+							'gallery'       => array( 'type' => 'array', 'items' => array( 'type' => 'object' ) ),
 						),
 					),
 				),
@@ -1733,7 +1733,7 @@ class Elementor_MCP_Widget_Abilities {
 			__( 'Adds an auto-generated table of contents widget based on page headings.', 'elementor-mcp' ),
 			array(
 				'title'             => array( 'type' => 'string', 'description' => __( 'TOC title. Default: Table of Contents.', 'elementor-mcp' ) ),
-				'headings_by_tags'  => array( 'type' => 'array', 'description' => __( 'Which heading tags to include (e.g. ["h2", "h3"]).', 'elementor-mcp' ) ),
+				'headings_by_tags'  => array( 'type' => 'array', 'items' => array( 'type' => 'string' ), 'description' => __( 'Which heading tags to include (e.g. ["h2", "h3"]).', 'elementor-mcp' ) ),
 				'marker_view'       => array( 'type' => 'string', 'enum' => array( 'numbers', 'bullets', 'none' ), 'description' => __( 'Marker style. Default: numbers.', 'elementor-mcp' ) ),
 				'hierarchical_view' => array( 'type' => 'string', 'enum' => array( 'yes', '' ), 'description' => __( 'Hierarchical display. Default: yes.', 'elementor-mcp' ) ),
 			),

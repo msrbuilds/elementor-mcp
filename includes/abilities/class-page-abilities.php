@@ -167,6 +167,7 @@ class Elementor_MCP_Page_Abilities {
 						),
 						'content'   => array(
 							'type'        => 'array',
+							'items'       => array( 'type' => 'object' ),
 							'description' => __( 'Initial element tree.', 'elementor-mcp' ),
 						),
 					),
@@ -496,7 +497,7 @@ class Elementor_MCP_Page_Abilities {
 				'output_schema'       => array(
 					'type'       => 'object',
 					'properties' => array(
-						'json' => array( 'type' => 'array' ),
+						'json' => array( 'type' => 'array', 'items' => array( 'type' => 'object' ) ),
 					),
 				),
 				'meta'                => array(

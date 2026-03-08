@@ -129,7 +129,7 @@ class Elementor_MCP_Composite_Abilities {
 									),
 									'widget_type' => array( 'type' => 'string' ),
 									'settings'    => array( 'type' => 'object' ),
-									'children'    => array( 'type' => 'array' ),
+									'children'    => array( 'type' => 'array', 'items' => array( 'type' => 'object' ) ),
 								),
 								'required' => array( 'type' ),
 							),
