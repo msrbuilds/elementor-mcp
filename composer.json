@@ -4,6 +4,7 @@
     "type": "wordpress-plugin",
     "license": "GPL-2.0-or-later",
     "require-dev": {
-        "phpunit/phpunit": "^9 || ^10"
+        "phpunit/phpunit": "^9 || ^10",
+        "php-stubs/wordpress-stubs": "^6.0"
     }
 }

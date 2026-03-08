@@ -121,6 +121,10 @@ class Elementor_MCP_Widget_Abilities {
 		$this->register_add_shortcode();
 		$this->register_add_rating();
 		$this->register_add_text_path();
+		$this->register_add_image_gallery();
+		$this->register_add_audio();
+		$this->register_add_read_more();
+		$this->register_add_sidebar();
 
 		// Pro widget convenience tools (only if Pro is active).
 		if ( defined( 'ELEMENTOR_PRO_VERSION' ) ) {
@@ -147,6 +151,38 @@ class Elementor_MCP_Widget_Abilities {
 			$this->register_add_nested_tabs();
 			$this->register_add_nested_accordion();
 
+			// Theme Builder widget convenience tools (Batch 1).
+			$this->register_add_site_logo();
+			$this->register_add_site_title();
+			$this->register_add_page_title();
+			$this->register_add_search_form();
+			$this->register_add_post_title();
+			$this->register_add_post_content();
+			$this->register_add_post_featured_image();
+			$this->register_add_post_excerpt();
+			$this->register_add_code_highlight();
+
+			// Theme Elements widget convenience tools (Batch 2).
+			$this->register_add_author_box();
+			$this->register_add_post_info();
+			$this->register_add_post_navigation();
+			$this->register_add_post_comments();
+			$this->register_add_sitemap();
+			$this->register_add_archive_title();
+			$this->register_add_archive_posts();
+			$this->register_add_video_playlist();
+			$this->register_add_progress_tracker();
+
+			// Payments, Navigation & Social (Batch 3).
+			$this->register_add_paypal_button();
+			$this->register_add_stripe_button();
+			$this->register_add_off_canvas();
+			$this->register_add_mega_menu();
+			$this->register_add_nested_carousel();
+			$this->register_add_portfolio();
+			$this->register_add_facebook_page();
+			$this->register_add_taxonomy_filter();
+
 			// WooCommerce widget convenience tools (only if WooCommerce is active).
 			if ( class_exists( 'WooCommerce' ) ) {
 				$this->register_add_wc_products();
@@ -154,6 +190,19 @@ class Elementor_MCP_Widget_Abilities {
 				$this->register_add_wc_cart();
 				$this->register_add_wc_checkout();
 				$this->register_add_wc_menu_cart();
+				$this->register_add_wc_product_images();
+				$this->register_add_wc_product_title();
+				$this->register_add_wc_product_price();
+				$this->register_add_wc_product_add_to_cart();
+				$this->register_add_wc_product_rating();
+				$this->register_add_wc_product_meta();
+				$this->register_add_wc_product_tabs();
+				$this->register_add_wc_product_short_desc();
+				$this->register_add_wc_product_related();
+				$this->register_add_wc_product_upsell();
+				$this->register_add_wc_archive_products();
+				$this->register_add_wc_categories();
+				$this->register_add_wc_my_account();
 			}
 		}
 	}
@@ -900,7 +949,7 @@ class Elementor_MCP_Widget_Abilities {
 		$this->register_convenience_tool(
 			'add-counter',
 			__( 'Add Counter', 'elementor-mcp' ),
-			__( 'Adds an animated counter widget that counts up to a number.', 'elementor-mcp' ),
+			__( 'Adds an animated counter widget. Supports number/title colors, typography (set number_typography_typography=custom or title_typography_typography=custom), prefix/suffix, and alignment. Accepts responsive suffixes and advanced controls.', 'elementor-mcp' ),
 			array(
 				'starting_number'    => array( 'type' => 'integer', 'description' => __( 'Start value. Default: 0.', 'elementor-mcp' ) ),
 				'ending_number'      => array( 'type' => 'integer', 'description' => __( 'End value. Default: 100.', 'elementor-mcp' ) ),
@@ -909,6 +958,19 @@ class Elementor_MCP_Widget_Abilities {
 				'duration'           => array( 'type' => 'integer', 'description' => __( 'Animation duration in ms. Default: 2000.', 'elementor-mcp' ) ),
 				'thousand_separator' => array( 'type' => 'string', 'enum' => array( 'yes', '' ), 'description' => __( 'Show thousand separators.', 'elementor-mcp' ) ),
 				'title'              => array( 'type' => 'string', 'description' => __( 'Counter label/title.', 'elementor-mcp' ) ),
+				// Colors.
+				'number_color'       => array( 'type' => 'string', 'description' => __( 'Number color (hex/rgba).', 'elementor-mcp' ) ),
+				'title_color'        => array( 'type' => 'string', 'description' => __( 'Title/label color (hex/rgba).', 'elementor-mcp' ) ),
+				// Number typography.
+				'number_typography_typography'  => array( 'type' => 'string', 'description' => __( 'Set to "custom" to enable number typography.', 'elementor-mcp' ) ),
+				'number_typography_font_family' => array( 'type' => 'string', 'description' => __( 'Number font family.', 'elementor-mcp' ) ),
+				'number_typography_font_size'   => array( 'type' => 'object', 'description' => __( 'Number font size: {size, unit}.', 'elementor-mcp' ) ),
+				'number_typography_font_weight' => array( 'type' => 'string', 'enum' => array( '100', '200', '300', '400', '500', '600', '700', '800', '900', 'normal', 'bold' ), 'description' => __( 'Number font weight.', 'elementor-mcp' ) ),
+				// Title typography.
+				'title_typography_typography'   => array( 'type' => 'string', 'description' => __( 'Set to "custom" to enable title typography.', 'elementor-mcp' ) ),
+				'title_typography_font_family'  => array( 'type' => 'string', 'description' => __( 'Title font family.', 'elementor-mcp' ) ),
+				'title_typography_font_size'    => array( 'type' => 'object', 'description' => __( 'Title font size: {size, unit}.', 'elementor-mcp' ) ),
+				'title_typography_font_weight'  => array( 'type' => 'string', 'enum' => array( '100', '200', '300', '400', '500', '600', '700', '800', '900', 'normal', 'bold' ), 'description' => __( 'Title font weight.', 'elementor-mcp' ) ),
 			),
 			array( 'ending_number' ),
 			'counter',
@@ -1009,13 +1071,25 @@ class Elementor_MCP_Widget_Abilities {
 		$this->register_convenience_tool(
 			'add-progress',
 			__( 'Add Progress Bar', 'elementor-mcp' ),
-			__( 'Adds an animated progress bar widget with label and percentage.', 'elementor-mcp' ),
+			__( 'Adds an animated progress bar widget with label and percentage. Supports custom bar/label colors, height, border radius, and title typography.', 'elementor-mcp' ),
 			array(
 				'title'              => array( 'type' => 'string', 'description' => __( 'Progress bar label.', 'elementor-mcp' ) ),
 				'progress_type'      => array( 'type' => 'string', 'enum' => array( '', 'info', 'success', 'warning', 'danger' ), 'description' => __( 'Color preset type.', 'elementor-mcp' ) ),
 				'percent'            => array( 'type' => 'object', 'description' => __( 'Progress percentage: { "size": 50, "unit": "%" }.', 'elementor-mcp' ) ),
 				'display_percentage' => array( 'type' => 'string', 'enum' => array( 'yes', '' ), 'description' => __( 'Show percentage value. Default: yes.', 'elementor-mcp' ) ),
 				'inner_text'         => array( 'type' => 'string', 'description' => __( 'Text inside the progress bar.', 'elementor-mcp' ) ),
+				// Style.
+				'bar_color'          => array( 'type' => 'string', 'description' => __( 'Progress bar fill color (#hex).', 'elementor-mcp' ) ),
+				'bar_bg_color'       => array( 'type' => 'string', 'description' => __( 'Progress bar track/background color (#hex).', 'elementor-mcp' ) ),
+				'bar_height'         => array( 'type' => 'object', 'description' => __( 'Bar height: { "size": 30, "unit": "px" }.', 'elementor-mcp' ) ),
+				'bar_border_radius'  => array( 'type' => 'object', 'description' => __( 'Bar border radius: { "size": 5, "unit": "px" }.', 'elementor-mcp' ) ),
+				'bar_inline_color'   => array( 'type' => 'string', 'description' => __( 'Inner text/percentage color (#hex).', 'elementor-mcp' ) ),
+				'title_color'        => array( 'type' => 'string', 'description' => __( 'Title/label text color (#hex).', 'elementor-mcp' ) ),
+				// Title typography.
+				'title_typography_typography'   => array( 'type' => 'string', 'enum' => array( 'custom' ), 'description' => __( 'Set to "custom" to enable title typography.', 'elementor-mcp' ) ),
+				'title_typography_font_family'  => array( 'type' => 'string', 'description' => __( 'Title font family.', 'elementor-mcp' ) ),
+				'title_typography_font_size'    => array( 'type' => 'object', 'description' => __( 'Title font size: { "size": 16, "unit": "px" }.', 'elementor-mcp' ) ),
+				'title_typography_font_weight'  => array( 'type' => 'string', 'description' => __( 'Title font weight: 100-900, normal, bold.', 'elementor-mcp' ) ),
 			),
 			array(),
 			'progress',
@@ -1027,9 +1101,9 @@ class Elementor_MCP_Widget_Abilities {
 		$this->register_convenience_tool(
 			'add-social-icons',
 			__( 'Add Social Icons', 'elementor-mcp' ),
-			__( 'Adds social media icon links. Great for headers and footers.', 'elementor-mcp' ),
+			__( 'Adds social media icon links with customizable colors, sizes, spacing, and hover effects. Great for headers and footers.', 'elementor-mcp' ),
 			array(
-				'social_icon_list' => array(
+				'social_icon_list'         => array(
 					'type'        => 'array',
 					'description' => __( 'Array of social items with social_icon and link.', 'elementor-mcp' ),
 					'items'       => array(
@@ -1040,9 +1114,23 @@ class Elementor_MCP_Widget_Abilities {
 						),
 					),
 				),
-				'shape'            => array( 'type' => 'string', 'enum' => array( 'rounded', 'square', 'circle' ), 'description' => __( 'Icon shape. Default: rounded.', 'elementor-mcp' ) ),
-				'columns'          => array( 'type' => 'integer', 'description' => __( 'Grid columns. 0 = auto.', 'elementor-mcp' ) ),
-				'align'            => array( 'type' => 'string', 'enum' => array( 'left', 'center', 'right' ), 'description' => __( 'Alignment. Default: center.', 'elementor-mcp' ) ),
+				'shape'                    => array( 'type' => 'string', 'enum' => array( 'rounded', 'square', 'circle' ), 'description' => __( 'Icon shape. Default: rounded.', 'elementor-mcp' ) ),
+				'columns'                  => array( 'type' => 'integer', 'description' => __( 'Grid columns. 0 = auto.', 'elementor-mcp' ) ),
+				'align'                    => array( 'type' => 'string', 'enum' => array( 'left', 'center', 'right' ), 'description' => __( 'Alignment. Default: center.', 'elementor-mcp' ) ),
+				// Style.
+				'icon_color'               => array( 'type' => 'string', 'enum' => array( 'default', 'custom' ), 'description' => __( 'Color mode. "default" = brand colors, "custom" = primary/secondary.', 'elementor-mcp' ) ),
+				'icon_primary_color'       => array( 'type' => 'string', 'description' => __( 'Primary color (#hex) — background for default, icon for custom.', 'elementor-mcp' ) ),
+				'icon_secondary_color'     => array( 'type' => 'string', 'description' => __( 'Secondary color (#hex) — icon for default, background for custom.', 'elementor-mcp' ) ),
+				'hover_primary_color'      => array( 'type' => 'string', 'description' => __( 'Hover primary color (#hex).', 'elementor-mcp' ) ),
+				'hover_secondary_color'    => array( 'type' => 'string', 'description' => __( 'Hover secondary color (#hex).', 'elementor-mcp' ) ),
+				'hover_animation'          => array( 'type' => 'string', 'description' => __( 'Hover animation: grow, shrink, pulse, push, pop, float, sink, bob, hang, skew, wobble, buzz.', 'elementor-mcp' ) ),
+				'icon_size'                => array( 'type' => 'object', 'description' => __( 'Icon size: { "size": 24, "unit": "px" }.', 'elementor-mcp' ) ),
+				'icon_padding'             => array( 'type' => 'object', 'description' => __( 'Icon padding: { "size": 12, "unit": "px" }.', 'elementor-mcp' ) ),
+				'icon_spacing'             => array( 'type' => 'object', 'description' => __( 'Space between icons: { "size": 10, "unit": "px" }.', 'elementor-mcp' ) ),
+				'image_border_border'      => array( 'type' => 'string', 'enum' => array( 'solid', 'dashed', 'dotted', 'none' ), 'description' => __( 'Border style.', 'elementor-mcp' ) ),
+				'image_border_color'       => array( 'type' => 'string', 'description' => __( 'Border color (#hex).', 'elementor-mcp' ) ),
+				'image_border_width'       => array( 'type' => 'object', 'description' => __( 'Border width: { "top": 1, "right": 1, "bottom": 1, "left": 1, "unit": "px" }.', 'elementor-mcp' ) ),
+				'border_radius'            => array( 'type' => 'object', 'description' => __( 'Border radius: { "top": 4, "right": 4, "bottom": 4, "left": 4, "unit": "px" }.', 'elementor-mcp' ) ),
 			),
 			array( 'social_icon_list' ),
 			'social-icons',
@@ -1054,12 +1142,24 @@ class Elementor_MCP_Widget_Abilities {
 		$this->register_convenience_tool(
 			'add-star-rating',
 			__( 'Add Star Rating', 'elementor-mcp' ),
-			__( 'Adds a star rating display widget.', 'elementor-mcp' ),
+			__( 'Adds a star rating display widget with customizable star colors, sizing, spacing, and title styling.', 'elementor-mcp' ),
 			array(
-				'rating_scale' => array( 'type' => 'string', 'enum' => array( '5', '10' ), 'description' => __( 'Rating scale. Default: 5.', 'elementor-mcp' ) ),
-				'rating'       => array( 'type' => 'object', 'description' => __( 'Rating value: { "size": 5, "unit": "px" }. Step: 0.1.', 'elementor-mcp' ) ),
-				'star_style'   => array( 'type' => 'string', 'enum' => array( 'star_fontawesome', 'star_unicode' ), 'description' => __( 'Star icon style.', 'elementor-mcp' ) ),
-				'title'        => array( 'type' => 'string', 'description' => __( 'Optional rating title.', 'elementor-mcp' ) ),
+				'rating_scale'                  => array( 'type' => 'string', 'enum' => array( '5', '10' ), 'description' => __( 'Rating scale. Default: 5.', 'elementor-mcp' ) ),
+				'rating'                        => array( 'type' => 'object', 'description' => __( 'Rating value: { "size": 5, "unit": "px" }. Step: 0.1.', 'elementor-mcp' ) ),
+				'star_style'                    => array( 'type' => 'string', 'enum' => array( 'star_fontawesome', 'star_unicode' ), 'description' => __( 'Star icon style.', 'elementor-mcp' ) ),
+				'title'                         => array( 'type' => 'string', 'description' => __( 'Optional rating title.', 'elementor-mcp' ) ),
+				// Style.
+				'star_color'                    => array( 'type' => 'string', 'description' => __( 'Filled/marked star color (#hex).', 'elementor-mcp' ) ),
+				'star_unmarked_color'           => array( 'type' => 'string', 'description' => __( 'Unmarked/empty star color (#hex).', 'elementor-mcp' ) ),
+				'star_size'                     => array( 'type' => 'object', 'description' => __( 'Star size: { "size": 24, "unit": "px" }.', 'elementor-mcp' ) ),
+				'star_spacing'                  => array( 'type' => 'object', 'description' => __( 'Spacing between stars: { "size": 4, "unit": "px" }.', 'elementor-mcp' ) ),
+				'title_color'                   => array( 'type' => 'string', 'description' => __( 'Title text color (#hex).', 'elementor-mcp' ) ),
+				// Title typography.
+				'title_typography_typography'    => array( 'type' => 'string', 'enum' => array( 'custom' ), 'description' => __( 'Set to "custom" to enable title typography.', 'elementor-mcp' ) ),
+				'title_typography_font_family'   => array( 'type' => 'string', 'description' => __( 'Title font family.', 'elementor-mcp' ) ),
+				'title_typography_font_size'     => array( 'type' => 'object', 'description' => __( 'Title font size: { "size": 14, "unit": "px" }.', 'elementor-mcp' ) ),
+				'title_typography_font_weight'   => array( 'type' => 'string', 'description' => __( 'Title font weight: 100-900, normal, bold.', 'elementor-mcp' ) ),
+				'title_gap'                     => array( 'type' => 'object', 'description' => __( 'Gap between title and stars: { "size": 10, "unit": "px" }.', 'elementor-mcp' ) ),
 			),
 			array(),
 			'star-rating',
@@ -2250,6 +2350,683 @@ class Elementor_MCP_Widget_Abilities {
 			),
 			array(),
 			'woocommerce-menu-cart',
+			array()
+		);
+	}
+
+	// =========================================================================
+	// Batch 1: Free missing widgets
+	// =========================================================================
+
+	private function register_add_image_gallery(): void {
+		$this->register_convenience_tool(
+			'add-image-gallery',
+			__( 'Add Basic Gallery', 'elementor-mcp' ),
+			__( 'Adds a basic image gallery widget with columns and lightbox.', 'elementor-mcp' ),
+			array(
+				'wp_gallery'      => array( 'type' => 'array', 'description' => __( 'Array of image objects [{id, url}].', 'elementor-mcp' ) ),
+				'gallery_columns' => array( 'type' => 'integer', 'description' => __( 'Number of columns (1-10). Default: 3.', 'elementor-mcp' ) ),
+				'gallery_link'    => array( 'type' => 'string', 'enum' => array( 'file', 'attachment', 'none' ), 'description' => __( 'Link images to.', 'elementor-mcp' ) ),
+				'gallery_rand'    => array( 'type' => 'string', 'enum' => array( '', 'rand' ), 'description' => __( 'Random order.', 'elementor-mcp' ) ),
+			),
+			array(),
+			'image-gallery',
+			array()
+		);
+	}
+
+	private function register_add_audio(): void {
+		$this->register_convenience_tool(
+			'add-audio',
+			__( 'Add SoundCloud / Audio', 'elementor-mcp' ),
+			__( 'Adds a SoundCloud audio embed widget.', 'elementor-mcp' ),
+			array(
+				'link'     => array( 'type' => 'string', 'description' => __( 'SoundCloud share URL.', 'elementor-mcp' ) ),
+				'visual'   => array( 'type' => 'string', 'enum' => array( 'yes', '' ), 'description' => __( 'Visual player mode.', 'elementor-mcp' ) ),
+				'sc_color' => array( 'type' => 'string', 'description' => __( 'Player color hex.', 'elementor-mcp' ) ),
+			),
+			array(),
+			'audio',
+			array()
+		);
+	}
+
+	private function register_add_read_more(): void {
+		$this->register_convenience_tool(
+			'add-read-more',
+			__( 'Add Read More', 'elementor-mcp' ),
+			__( 'Adds a read more link widget for archive pages.', 'elementor-mcp' ),
+			array(
+				'read_more_text' => array( 'type' => 'string', 'description' => __( 'Read more text. Default: Read More ».', 'elementor-mcp' ) ),
+			),
+			array(),
+			'read-more',
+			array()
+		);
+	}
+
+	private function register_add_sidebar(): void {
+		$this->register_convenience_tool(
+			'add-sidebar',
+			__( 'Add Sidebar', 'elementor-mcp' ),
+			__( 'Adds a WordPress sidebar/widget area.', 'elementor-mcp' ),
+			array(
+				'sidebar' => array( 'type' => 'string', 'description' => __( 'Sidebar widget area ID or name.', 'elementor-mcp' ) ),
+			),
+			array( 'sidebar' ),
+			'sidebar',
+			array()
+		);
+	}
+
+	// =========================================================================
+	// Batch 1: Theme Builder widgets (Pro)
+	// =========================================================================
+
+	private function register_add_site_logo(): void {
+		$this->register_convenience_tool(
+			'add-site-logo',
+			__( 'Add Site Logo', 'elementor-mcp' ),
+			__( 'Adds the site logo widget (Pro). Uses the Customizer logo or a custom image. Best used in headers.', 'elementor-mcp' ),
+			array(
+				'image'      => array( 'type' => 'object', 'description' => __( 'Custom logo image {id, url}. If empty, uses Customizer logo.', 'elementor-mcp' ) ),
+				'width'      => array( 'type' => 'object', 'description' => __( 'Logo width {size, unit}. e.g. {size:200, unit:"px"}.', 'elementor-mcp' ) ),
+				'align'      => array( 'type' => 'string', 'enum' => array( 'left', 'center', 'right' ), 'description' => __( 'Alignment.', 'elementor-mcp' ) ),
+				'link_to'    => array( 'type' => 'string', 'enum' => array( 'home', 'custom', 'none' ), 'description' => __( 'Link to. Default: home.', 'elementor-mcp' ) ),
+			),
+			array(),
+			'theme-site-logo',
+			array()
+		);
+	}
+
+	private function register_add_site_title(): void {
+		$this->register_convenience_tool(
+			'add-site-title',
+			__( 'Add Site Title', 'elementor-mcp' ),
+			__( 'Adds the dynamic site title widget (Pro). Best used in headers.', 'elementor-mcp' ),
+			array(
+				'header_size' => array( 'type' => 'string', 'enum' => array( 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'div', 'span', 'p' ), 'description' => __( 'HTML tag.', 'elementor-mcp' ) ),
+				'align'       => array( 'type' => 'string', 'enum' => array( 'left', 'center', 'right' ), 'description' => __( 'Alignment.', 'elementor-mcp' ) ),
+				'link_to'     => array( 'type' => 'string', 'enum' => array( 'home', 'custom', 'none' ), 'description' => __( 'Link to. Default: home.', 'elementor-mcp' ) ),
+			),
+			array(),
+			'theme-site-title',
+			array()
+		);
+	}
+
+	private function register_add_page_title(): void {
+		$this->register_convenience_tool(
+			'add-page-title',
+			__( 'Add Page Title', 'elementor-mcp' ),
+			__( 'Adds the dynamic page title widget (Pro). Displays the current page title.', 'elementor-mcp' ),
+			array(
+				'header_size' => array( 'type' => 'string', 'enum' => array( 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'div', 'span', 'p' ), 'description' => __( 'HTML tag.', 'elementor-mcp' ) ),
+				'align'       => array( 'type' => 'string', 'enum' => array( 'left', 'center', 'right' ), 'description' => __( 'Alignment.', 'elementor-mcp' ) ),
+			),
+			array(),
+			'theme-page-title',
+			array()
+		);
+	}
+
+	private function register_add_search_form(): void {
+		$this->register_convenience_tool(
+			'add-search-form',
+			__( 'Add Search Form', 'elementor-mcp' ),
+			__( 'Adds a search form widget (Pro). Best used in headers.', 'elementor-mcp' ),
+			array(
+				'skin'        => array( 'type' => 'string', 'enum' => array( 'classic', 'minimal', 'full_screen' ), 'description' => __( 'Search form skin.', 'elementor-mcp' ) ),
+				'placeholder' => array( 'type' => 'string', 'description' => __( 'Placeholder text.', 'elementor-mcp' ) ),
+				'button_type' => array( 'type' => 'string', 'enum' => array( 'icon', 'text' ), 'description' => __( 'Search button type.', 'elementor-mcp' ) ),
+			),
+			array(),
+			'search-form',
+			array()
+		);
+	}
+
+	private function register_add_post_title(): void {
+		$this->register_convenience_tool(
+			'add-post-title',
+			__( 'Add Post Title', 'elementor-mcp' ),
+			__( 'Adds a dynamic post title widget (Pro). For single post/page templates in Theme Builder.', 'elementor-mcp' ),
+			array(
+				'header_size' => array( 'type' => 'string', 'enum' => array( 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'div', 'span', 'p' ), 'description' => __( 'HTML tag.', 'elementor-mcp' ) ),
+				'align'       => array( 'type' => 'string', 'enum' => array( 'left', 'center', 'right' ), 'description' => __( 'Alignment.', 'elementor-mcp' ) ),
+				'link_to'     => array( 'type' => 'string', 'enum' => array( 'none', 'home', 'post' ), 'description' => __( 'Link to.', 'elementor-mcp' ) ),
+			),
+			array(),
+			'theme-post-title',
+			array()
+		);
+	}
+
+	private function register_add_post_content(): void {
+		$this->register_convenience_tool(
+			'add-post-content',
+			__( 'Add Post Content', 'elementor-mcp' ),
+			__( 'Adds the dynamic post content widget (Pro). Displays the full post content in single templates.', 'elementor-mcp' ),
+			array(),
+			array(),
+			'theme-post-content',
+			array()
+		);
+	}
+
+	private function register_add_post_featured_image(): void {
+		$this->register_convenience_tool(
+			'add-post-featured-image',
+			__( 'Add Post Featured Image', 'elementor-mcp' ),
+			__( 'Adds the dynamic featured image widget (Pro). Displays the post thumbnail in single templates.', 'elementor-mcp' ),
+			array(
+				'image_size'  => array( 'type' => 'string', 'enum' => array( 'full', 'large', 'medium', 'thumbnail' ), 'description' => __( 'Image size.', 'elementor-mcp' ) ),
+				'link_to'     => array( 'type' => 'string', 'enum' => array( 'none', 'file', 'custom' ), 'description' => __( 'Link to.', 'elementor-mcp' ) ),
+			),
+			array(),
+			'theme-post-featured-image',
+			array()
+		);
+	}
+
+	private function register_add_post_excerpt(): void {
+		$this->register_convenience_tool(
+			'add-post-excerpt',
+			__( 'Add Post Excerpt', 'elementor-mcp' ),
+			__( 'Adds the dynamic post excerpt widget (Pro). Displays the post excerpt in single/archive templates.', 'elementor-mcp' ),
+			array(
+				'excerpt_length' => array( 'type' => 'integer', 'description' => __( 'Max number of words.', 'elementor-mcp' ) ),
+				'align'          => array( 'type' => 'string', 'enum' => array( 'left', 'center', 'right' ), 'description' => __( 'Alignment.', 'elementor-mcp' ) ),
+			),
+			array(),
+			'theme-post-excerpt',
+			array()
+		);
+	}
+
+	private function register_add_code_highlight(): void {
+		$this->register_convenience_tool(
+			'add-code-highlight',
+			__( 'Add Code Highlight', 'elementor-mcp' ),
+			__( 'Adds a syntax-highlighted code block widget (Pro). Perfect for developer portfolios and documentation.', 'elementor-mcp' ),
+			array(
+				'code'            => array( 'type' => 'string', 'description' => __( 'The code to display.', 'elementor-mcp' ) ),
+				'language'        => array( 'type' => 'string', 'description' => __( 'Language: javascript, python, php, html, css, etc.', 'elementor-mcp' ) ),
+				'theme'           => array( 'type' => 'string', 'enum' => array( 'default', 'dark', 'coy', 'funky', 'okaidia', 'solarizedlight', 'tomorrow', 'twilight' ), 'description' => __( 'Syntax theme.', 'elementor-mcp' ) ),
+				'line_numbers'    => array( 'type' => 'string', 'enum' => array( 'yes', '' ), 'description' => __( 'Show line numbers.', 'elementor-mcp' ) ),
+				'copy_to_clipboard' => array( 'type' => 'string', 'enum' => array( 'copy', '' ), 'description' => __( 'Show copy button.', 'elementor-mcp' ) ),
+				'highlight_lines' => array( 'type' => 'string', 'description' => __( 'Highlighted lines (e.g. "1,3,5-8").', 'elementor-mcp' ) ),
+				'word_wrap'       => array( 'type' => 'string', 'enum' => array( 'yes', '' ), 'description' => __( 'Enable word wrap.', 'elementor-mcp' ) ),
+			),
+			array( 'code' ),
+			'code-highlight',
+			array()
+		);
+	}
+
+	// =========================================================================
+	// Batch 2: Theme Elements (Pro)
+	// =========================================================================
+
+	private function register_add_author_box(): void {
+		$this->register_convenience_tool(
+			'add-author-box',
+			__( 'Add Author Box', 'elementor-mcp' ),
+			__( 'Adds an author info box widget (Pro). Shows avatar, name, and bio for single/archive templates.', 'elementor-mcp' ),
+			array(
+				'show_avatar'    => array( 'type' => 'string', 'enum' => array( 'yes', '' ), 'description' => __( 'Show author avatar.', 'elementor-mcp' ) ),
+				'show_biography' => array( 'type' => 'string', 'enum' => array( 'yes', '' ), 'description' => __( 'Show author bio.', 'elementor-mcp' ) ),
+				'show_name'      => array( 'type' => 'string', 'enum' => array( 'yes', '' ), 'description' => __( 'Show author name.', 'elementor-mcp' ) ),
+				'author_name_tag' => array( 'type' => 'string', 'enum' => array( 'h1', 'h2', 'h3', 'h4', 'h5', 'h6' ), 'description' => __( 'Name HTML tag.', 'elementor-mcp' ) ),
+				'link_to'        => array( 'type' => 'string', 'enum' => array( 'website', 'posts_archive', 'none' ), 'description' => __( 'Link to.', 'elementor-mcp' ) ),
+			),
+			array(),
+			'author-box',
+			array()
+		);
+	}
+
+	private function register_add_post_info(): void {
+		$this->register_convenience_tool(
+			'add-post-info',
+			__( 'Add Post Info', 'elementor-mcp' ),
+			__( 'Adds post meta info widget (Pro). Shows date, author, comments, categories, tags, etc.', 'elementor-mcp' ),
+			array(
+				'layout'     => array( 'type' => 'string', 'enum' => array( 'default', 'inline' ), 'description' => __( 'Layout.', 'elementor-mcp' ) ),
+				'icon_list'  => array( 'type' => 'array', 'description' => __( 'Meta items array [{type: "date"|"author"|"comments"|"terms"|"time"|"custom"}].', 'elementor-mcp' ) ),
+			),
+			array(),
+			'post-info',
+			array()
+		);
+	}
+
+	private function register_add_post_navigation(): void {
+		$this->register_convenience_tool(
+			'add-post-navigation',
+			__( 'Add Post Navigation', 'elementor-mcp' ),
+			__( 'Adds previous/next post navigation links (Pro). For single post templates.', 'elementor-mcp' ),
+			array(
+				'show_label'   => array( 'type' => 'string', 'enum' => array( 'yes', '' ), 'description' => __( 'Show Prev/Next labels.', 'elementor-mcp' ) ),
+				'show_title'   => array( 'type' => 'string', 'enum' => array( 'yes', '' ), 'description' => __( 'Show post titles.', 'elementor-mcp' ) ),
+				'show_arrow'   => array( 'type' => 'string', 'enum' => array( 'yes', '' ), 'description' => __( 'Show navigation arrows.', 'elementor-mcp' ) ),
+				'show_borders' => array( 'type' => 'string', 'enum' => array( 'yes', '' ), 'description' => __( 'Show borders.', 'elementor-mcp' ) ),
+			),
+			array(),
+			'post-navigation',
+			array()
+		);
+	}
+
+	private function register_add_post_comments(): void {
+		$this->register_convenience_tool(
+			'add-post-comments',
+			__( 'Add Post Comments', 'elementor-mcp' ),
+			__( 'Adds the comments area widget (Pro). Displays comments for single post templates.', 'elementor-mcp' ),
+			array(
+				'_skin' => array( 'type' => 'string', 'enum' => array( '', 'theme_comments' ), 'description' => __( 'Skin: default or theme.', 'elementor-mcp' ) ),
+			),
+			array(),
+			'post-comments',
+			array()
+		);
+	}
+
+	private function register_add_sitemap(): void {
+		$this->register_convenience_tool(
+			'add-sitemap',
+			__( 'Add Sitemap', 'elementor-mcp' ),
+			__( 'Adds an HTML sitemap widget (Pro). Lists pages, posts, and categories.', 'elementor-mcp' ),
+			array(
+				'sitemap_type_selector' => array( 'type' => 'string', 'enum' => array( 'post_type', 'taxonomy' ), 'description' => __( 'Sitemap content type.', 'elementor-mcp' ) ),
+			),
+			array(),
+			'sitemap',
+			array()
+		);
+	}
+
+	private function register_add_archive_title(): void {
+		$this->register_convenience_tool(
+			'add-archive-title',
+			__( 'Add Archive Title', 'elementor-mcp' ),
+			__( 'Adds the dynamic archive title widget (Pro). For archive templates in Theme Builder.', 'elementor-mcp' ),
+			array(
+				'header_size' => array( 'type' => 'string', 'enum' => array( 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'div', 'span', 'p' ), 'description' => __( 'HTML tag.', 'elementor-mcp' ) ),
+				'align'       => array( 'type' => 'string', 'enum' => array( 'left', 'center', 'right' ), 'description' => __( 'Alignment.', 'elementor-mcp' ) ),
+			),
+			array(),
+			'theme-archive-title',
+			array()
+		);
+	}
+
+	private function register_add_archive_posts(): void {
+		$this->register_convenience_tool(
+			'add-archive-posts',
+			__( 'Add Archive Posts', 'elementor-mcp' ),
+			__( 'Adds the archive posts grid widget (Pro). For archive templates in Theme Builder.', 'elementor-mcp' ),
+			array(
+				'_skin'           => array( 'type' => 'string', 'enum' => array( 'archive_classic', 'archive_full_content', 'archive_cards' ), 'description' => __( 'Archive skin.', 'elementor-mcp' ) ),
+				'columns'         => array( 'type' => 'integer', 'description' => __( 'Number of columns (1-6).', 'elementor-mcp' ) ),
+				'archive_show_thumbnail' => array( 'type' => 'string', 'enum' => array( 'yes', '' ), 'description' => __( 'Show thumbnails.', 'elementor-mcp' ) ),
+				'archive_show_title'     => array( 'type' => 'string', 'enum' => array( 'yes', '' ), 'description' => __( 'Show titles.', 'elementor-mcp' ) ),
+				'archive_show_excerpt'   => array( 'type' => 'string', 'enum' => array( 'yes', '' ), 'description' => __( 'Show excerpts.', 'elementor-mcp' ) ),
+				'pagination_type' => array( 'type' => 'string', 'enum' => array( '', 'numbers', 'prev_next', 'numbers_and_prev_next' ), 'description' => __( 'Pagination type.', 'elementor-mcp' ) ),
+			),
+			array(),
+			'archive-posts',
+			array()
+		);
+	}
+
+	private function register_add_video_playlist(): void {
+		$this->register_convenience_tool(
+			'add-video-playlist',
+			__( 'Add Video Playlist', 'elementor-mcp' ),
+			__( 'Adds a video playlist widget (Pro). Displays multiple videos in a playlist layout.', 'elementor-mcp' ),
+			array(
+				'tabs' => array( 'type' => 'array', 'description' => __( 'Playlist items [{title, youtube_url}].', 'elementor-mcp' ) ),
+				'layout' => array( 'type' => 'string', 'enum' => array( 'horizontal', 'vertical' ), 'description' => __( 'Playlist layout.', 'elementor-mcp' ) ),
+			),
+			array(),
+			'video-playlist',
+			array()
+		);
+	}
+
+	private function register_add_progress_tracker(): void {
+		$this->register_convenience_tool(
+			'add-progress-tracker',
+			__( 'Add Progress Tracker', 'elementor-mcp' ),
+			__( 'Adds a reading progress tracker widget (Pro). Shows scroll progress on the page.', 'elementor-mcp' ),
+			array(
+				'type'      => array( 'type' => 'string', 'enum' => array( 'linear', 'circular' ), 'description' => __( 'Tracker type.', 'elementor-mcp' ) ),
+				'direction' => array( 'type' => 'string', 'enum' => array( 'ltr', 'rtl' ), 'description' => __( 'Direction.', 'elementor-mcp' ) ),
+			),
+			array(),
+			'progress-tracker',
+			array()
+		);
+	}
+
+	// =========================================================================
+	// Batch 3: Payments, Navigation & Social (Pro)
+	// =========================================================================
+
+	private function register_add_paypal_button(): void {
+		$this->register_convenience_tool(
+			'add-paypal-button',
+			__( 'Add PayPal Button', 'elementor-mcp' ),
+			__( 'Adds a PayPal payment button widget (Pro).', 'elementor-mcp' ),
+			array(
+				'type'            => array( 'type' => 'string', 'enum' => array( 'checkout', 'donation', 'subscription' ), 'description' => __( 'Transaction type.', 'elementor-mcp' ) ),
+				'product_name'    => array( 'type' => 'string', 'description' => __( 'Product/item name.', 'elementor-mcp' ) ),
+				'product_price'   => array( 'type' => 'number', 'description' => __( 'Price amount.', 'elementor-mcp' ) ),
+				'currency'        => array( 'type' => 'string', 'description' => __( 'Currency code (USD, EUR, etc.).', 'elementor-mcp' ) ),
+				'sandbox_mode'    => array( 'type' => 'string', 'enum' => array( 'yes', '' ), 'description' => __( 'Use sandbox/test mode.', 'elementor-mcp' ) ),
+			),
+			array(),
+			'paypal-button',
+			array()
+		);
+	}
+
+	private function register_add_stripe_button(): void {
+		$this->register_convenience_tool(
+			'add-stripe-button',
+			__( 'Add Stripe Button', 'elementor-mcp' ),
+			__( 'Adds a Stripe payment button widget (Pro).', 'elementor-mcp' ),
+			array(
+				'product_name'  => array( 'type' => 'string', 'description' => __( 'Product name.', 'elementor-mcp' ) ),
+				'product_price' => array( 'type' => 'number', 'description' => __( 'Price amount.', 'elementor-mcp' ) ),
+				'currency'      => array( 'type' => 'string', 'description' => __( 'Currency code.', 'elementor-mcp' ) ),
+			),
+			array(),
+			'stripe-button',
+			array()
+		);
+	}
+
+	private function register_add_off_canvas(): void {
+		$this->register_convenience_tool(
+			'add-off-canvas',
+			__( 'Add Off-Canvas', 'elementor-mcp' ),
+			__( 'Adds an off-canvas panel widget (Pro). A slide-out panel triggered by a button.', 'elementor-mcp' ),
+			array(
+				'content_type' => array( 'type' => 'string', 'enum' => array( 'template', 'custom' ), 'description' => __( 'Content source.', 'elementor-mcp' ) ),
+				'position'     => array( 'type' => 'string', 'enum' => array( 'start', 'end' ), 'description' => __( 'Slide from direction.', 'elementor-mcp' ) ),
+			),
+			array(),
+			'off-canvas',
+			array()
+		);
+	}
+
+	private function register_add_mega_menu(): void {
+		$this->register_convenience_tool(
+			'add-mega-menu',
+			__( 'Add Mega Menu', 'elementor-mcp' ),
+			__( 'Adds a mega menu widget (Pro). Advanced navigation with dropdowns.', 'elementor-mcp' ),
+			array(
+				'menu_id'       => array( 'type' => 'integer', 'description' => __( 'WordPress menu ID.', 'elementor-mcp' ) ),
+				'layout'        => array( 'type' => 'string', 'enum' => array( 'horizontal', 'vertical', 'dropdown' ), 'description' => __( 'Menu layout.', 'elementor-mcp' ) ),
+				'content_width' => array( 'type' => 'string', 'enum' => array( 'full_width', 'fit_to_content' ), 'description' => __( 'Dropdown width.', 'elementor-mcp' ) ),
+			),
+			array(),
+			'mega-menu',
+			array()
+		);
+	}
+
+	private function register_add_nested_carousel(): void {
+		$this->register_convenience_tool(
+			'add-nested-carousel',
+			__( 'Add Carousel (Nested)', 'elementor-mcp' ),
+			__( 'Adds a nested carousel widget (Pro). Each slide can contain any Elementor elements.', 'elementor-mcp' ),
+			array(
+				'slides_per_view'  => array( 'type' => 'integer', 'description' => __( 'Slides per view (1-10).', 'elementor-mcp' ) ),
+				'autoplay'         => array( 'type' => 'string', 'enum' => array( 'yes', '' ), 'description' => __( 'Enable autoplay.', 'elementor-mcp' ) ),
+				'autoplay_speed'   => array( 'type' => 'integer', 'description' => __( 'Autoplay speed in ms.', 'elementor-mcp' ) ),
+				'loop'             => array( 'type' => 'string', 'enum' => array( 'yes', '' ), 'description' => __( 'Infinite loop.', 'elementor-mcp' ) ),
+				'navigation'       => array( 'type' => 'string', 'enum' => array( 'arrows', 'dots', 'both', 'none' ), 'description' => __( 'Navigation type.', 'elementor-mcp' ) ),
+			),
+			array(),
+			'nested-carousel',
+			array()
+		);
+	}
+
+	private function register_add_portfolio(): void {
+		$this->register_convenience_tool(
+			'add-portfolio',
+			__( 'Add Portfolio', 'elementor-mcp' ),
+			__( 'Adds a filterable portfolio grid widget (Pro).', 'elementor-mcp' ),
+			array(
+				'posts_per_page' => array( 'type' => 'integer', 'description' => __( 'Number of items.', 'elementor-mcp' ) ),
+				'columns'        => array( 'type' => 'integer', 'description' => __( 'Number of columns.', 'elementor-mcp' ) ),
+			),
+			array(),
+			'portfolio',
+			array()
+		);
+	}
+
+	private function register_add_facebook_page(): void {
+		$this->register_convenience_tool(
+			'add-facebook-page',
+			__( 'Add Facebook Page', 'elementor-mcp' ),
+			__( 'Embeds a Facebook Page plugin (Pro).', 'elementor-mcp' ),
+			array(
+				'url'    => array( 'type' => 'string', 'description' => __( 'Facebook page URL.', 'elementor-mcp' ) ),
+				'tabs'   => array( 'type' => 'string', 'description' => __( 'Tabs to display: timeline, events, messages.', 'elementor-mcp' ) ),
+				'width'  => array( 'type' => 'integer', 'description' => __( 'Width in px.', 'elementor-mcp' ) ),
+				'height' => array( 'type' => 'integer', 'description' => __( 'Height in px.', 'elementor-mcp' ) ),
+			),
+			array( 'url' ),
+			'facebook-page',
+			array()
+		);
+	}
+
+	private function register_add_taxonomy_filter(): void {
+		$this->register_convenience_tool(
+			'add-taxonomy-filter',
+			__( 'Add Taxonomy Filter', 'elementor-mcp' ),
+			__( 'Adds a taxonomy filter widget (Pro) that filters a Loop Grid by taxonomy.', 'elementor-mcp' ),
+			array(
+				'taxonomy'    => array( 'type' => 'string', 'description' => __( 'The taxonomy to filter by (e.g. "category", "post_tag").', 'elementor-mcp' ) ),
+			),
+			array(),
+			'taxonomy-filter',
+			array()
+		);
+	}
+
+	// =========================================================================
+	// Batch 4: WooCommerce Single Product Builder (Pro + WooCommerce)
+	// =========================================================================
+
+	private function register_add_wc_product_images(): void {
+		$this->register_convenience_tool(
+			'add-wc-product-images',
+			__( 'Add Product Images', 'elementor-mcp' ),
+			__( 'Adds the WooCommerce product images gallery widget (Pro + WooCommerce).', 'elementor-mcp' ),
+			array(
+				'sale_flash' => array( 'type' => 'string', 'enum' => array( 'yes', '' ), 'description' => __( 'Show sale badge.', 'elementor-mcp' ) ),
+			),
+			array(),
+			'woocommerce-product-images',
+			array()
+		);
+	}
+
+	private function register_add_wc_product_title(): void {
+		$this->register_convenience_tool(
+			'add-wc-product-title',
+			__( 'Add Product Title', 'elementor-mcp' ),
+			__( 'Adds the WooCommerce product title widget (Pro + WooCommerce).', 'elementor-mcp' ),
+			array(
+				'header_size' => array( 'type' => 'string', 'enum' => array( 'h1', 'h2', 'h3', 'h4', 'h5', 'h6' ), 'description' => __( 'HTML tag.', 'elementor-mcp' ) ),
+				'align'       => array( 'type' => 'string', 'enum' => array( 'left', 'center', 'right' ), 'description' => __( 'Alignment.', 'elementor-mcp' ) ),
+			),
+			array(),
+			'woocommerce-product-title',
+			array()
+		);
+	}
+
+	private function register_add_wc_product_price(): void {
+		$this->register_convenience_tool(
+			'add-wc-product-price',
+			__( 'Add Product Price', 'elementor-mcp' ),
+			__( 'Adds the WooCommerce product price widget (Pro + WooCommerce).', 'elementor-mcp' ),
+			array(
+				'align' => array( 'type' => 'string', 'enum' => array( 'left', 'center', 'right' ), 'description' => __( 'Alignment.', 'elementor-mcp' ) ),
+			),
+			array(),
+			'woocommerce-product-price',
+			array()
+		);
+	}
+
+	private function register_add_wc_product_add_to_cart(): void {
+		$this->register_convenience_tool(
+			'add-wc-product-add-to-cart',
+			__( 'Add Product Add to Cart', 'elementor-mcp' ),
+			__( 'Adds the WooCommerce single product add to cart button (Pro + WooCommerce).', 'elementor-mcp' ),
+			array(
+				'layout' => array( 'type' => 'string', 'enum' => array( '', 'stacked', 'auto' ), 'description' => __( 'Layout.', 'elementor-mcp' ) ),
+			),
+			array(),
+			'woocommerce-product-add-to-cart',
+			array()
+		);
+	}
+
+	private function register_add_wc_product_rating(): void {
+		$this->register_convenience_tool(
+			'add-wc-product-rating',
+			__( 'Add Product Rating', 'elementor-mcp' ),
+			__( 'Adds the WooCommerce product star rating widget (Pro + WooCommerce).', 'elementor-mcp' ),
+			array(
+				'align' => array( 'type' => 'string', 'enum' => array( 'left', 'center', 'right' ), 'description' => __( 'Alignment.', 'elementor-mcp' ) ),
+			),
+			array(),
+			'woocommerce-product-rating',
+			array()
+		);
+	}
+
+	private function register_add_wc_product_meta(): void {
+		$this->register_convenience_tool(
+			'add-wc-product-meta',
+			__( 'Add Product Meta', 'elementor-mcp' ),
+			__( 'Adds the WooCommerce product meta (SKU, categories, tags) widget (Pro + WooCommerce).', 'elementor-mcp' ),
+			array(
+				'view' => array( 'type' => 'string', 'enum' => array( 'inline', 'stacked' ), 'description' => __( 'Layout.', 'elementor-mcp' ) ),
+			),
+			array(),
+			'woocommerce-product-meta',
+			array()
+		);
+	}
+
+	private function register_add_wc_product_tabs(): void {
+		$this->register_convenience_tool(
+			'add-wc-product-tabs',
+			__( 'Add Product Data Tabs', 'elementor-mcp' ),
+			__( 'Adds the WooCommerce product data tabs (description, reviews, etc.) widget (Pro + WooCommerce).', 'elementor-mcp' ),
+			array(),
+			array(),
+			'woocommerce-product-data-tabs',
+			array()
+		);
+	}
+
+	private function register_add_wc_product_short_desc(): void {
+		$this->register_convenience_tool(
+			'add-wc-product-short-desc',
+			__( 'Add Product Short Description', 'elementor-mcp' ),
+			__( 'Adds the WooCommerce product short description widget (Pro + WooCommerce).', 'elementor-mcp' ),
+			array(
+				'align' => array( 'type' => 'string', 'enum' => array( 'left', 'center', 'right' ), 'description' => __( 'Alignment.', 'elementor-mcp' ) ),
+			),
+			array(),
+			'woocommerce-product-short-description',
+			array()
+		);
+	}
+
+	private function register_add_wc_product_related(): void {
+		$this->register_convenience_tool(
+			'add-wc-product-related',
+			__( 'Add Related Products', 'elementor-mcp' ),
+			__( 'Adds the WooCommerce related products grid widget (Pro + WooCommerce).', 'elementor-mcp' ),
+			array(
+				'columns'        => array( 'type' => 'integer', 'description' => __( 'Number of columns.', 'elementor-mcp' ) ),
+				'posts_per_page' => array( 'type' => 'integer', 'description' => __( 'Number of products.', 'elementor-mcp' ) ),
+			),
+			array(),
+			'woocommerce-product-related',
+			array()
+		);
+	}
+
+	private function register_add_wc_product_upsell(): void {
+		$this->register_convenience_tool(
+			'add-wc-product-upsell',
+			__( 'Add Upsell Products', 'elementor-mcp' ),
+			__( 'Adds the WooCommerce upsell products grid widget (Pro + WooCommerce).', 'elementor-mcp' ),
+			array(
+				'columns'        => array( 'type' => 'integer', 'description' => __( 'Number of columns.', 'elementor-mcp' ) ),
+				'posts_per_page' => array( 'type' => 'integer', 'description' => __( 'Number of products.', 'elementor-mcp' ) ),
+			),
+			array(),
+			'woocommerce-product-upsell',
+			array()
+		);
+	}
+
+	private function register_add_wc_archive_products(): void {
+		$this->register_convenience_tool(
+			'add-wc-archive-products',
+			__( 'Add Archive Products', 'elementor-mcp' ),
+			__( 'Adds the WooCommerce archive products grid widget (Pro + WooCommerce).', 'elementor-mcp' ),
+			array(
+				'columns' => array( 'type' => 'integer', 'description' => __( 'Number of columns.', 'elementor-mcp' ) ),
+				'rows'    => array( 'type' => 'integer', 'description' => __( 'Number of rows.', 'elementor-mcp' ) ),
+			),
+			array(),
+			'wc-archive-products',
+			array()
+		);
+	}
+
+	private function register_add_wc_categories(): void {
+		$this->register_convenience_tool(
+			'add-wc-categories',
+			__( 'Add Product Categories', 'elementor-mcp' ),
+			__( 'Adds the WooCommerce product categories grid widget (Pro + WooCommerce).', 'elementor-mcp' ),
+			array(
+				'columns' => array( 'type' => 'integer', 'description' => __( 'Number of columns.', 'elementor-mcp' ) ),
+				'number'  => array( 'type' => 'integer', 'description' => __( 'Number of categories to show.', 'elementor-mcp' ) ),
+			),
+			array(),
+			'wc-categories',
+			array()
+		);
+	}
+
+	private function register_add_wc_my_account(): void {
+		$this->register_convenience_tool(
+			'add-wc-my-account',
+			__( 'Add My Account', 'elementor-mcp' ),
+			__( 'Adds the WooCommerce My Account page widget (Pro + WooCommerce).', 'elementor-mcp' ),
+			array(),
+			array(),
+			'woocommerce-my-account',
 			array()
 		);
 	}

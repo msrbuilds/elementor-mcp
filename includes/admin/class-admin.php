@@ -58,6 +58,18 @@ class Elementor_MCP_Admin {
 		add_action( 'admin_init', array( $this, 'register_settings' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_assets' ) );
 		add_filter( 'elementor_mcp_ability_names', array( $this, 'filter_ability_names' ) );
+
+		// AJAX handlers for the Settings tab.
+		add_action( 'wp_ajax_emcp_save_settings', array( $this, 'ajax_save_settings' ) );
+		add_action( 'wp_ajax_emcp_test_connection', array( $this, 'ajax_test_connection' ) );
+		add_action( 'wp_ajax_emcp_take_screenshot', array( $this, 'ajax_take_screenshot' ) );
+		add_action( 'wp_ajax_emcp_refresh_usage', array( $this, 'ajax_refresh_usage' ) );
+		add_action( 'wp_ajax_emcp_openverse_register', array( $this, 'ajax_openverse_register' ) );
+
+		// AJAX handlers for the Connection tab.
+		add_action( 'wp_ajax_emcp_generate_connection', array( $this, 'ajax_generate_connection' ) );
+		add_action( 'wp_ajax_emcp_revoke_connection', array( $this, 'ajax_revoke_connection' ) );
+		add_action( 'wp_ajax_emcp_delete_connection', array( $this, 'ajax_delete_connection' ) );
 	}
 
 	/**
@@ -88,6 +100,64 @@ class Elementor_MCP_Admin {
 				'type'              => 'array',
 				'default'           => array(),
 				'sanitize_callback' => array( $this, 'sanitize_disabled_tools' ),
+			)
+		);
+
+		// Screenshot API settings.
+		register_setting(
+			'elementor_mcp_settings_group',
+			'elementor_mcp_screenshot_enabled',
+			array(
+				'type'              => 'string',
+				'default'           => '',
+				'sanitize_callback' => 'sanitize_text_field',
+			)
+		);
+		register_setting(
+			'elementor_mcp_settings_group',
+			'elementor_mcp_screenshot_api_url',
+			array(
+				'type'              => 'string',
+				'default'           => '',
+				'sanitize_callback' => 'esc_url_raw',
+			)
+		);
+		register_setting(
+			'elementor_mcp_settings_group',
+			'elementor_mcp_screenshot_api_key',
+			array(
+				'type'              => 'string',
+				'default'           => '',
+				'sanitize_callback' => 'sanitize_text_field',
+			)
+		);
+
+		// Stock image provider settings.
+		register_setting(
+			'elementor_mcp_settings_group',
+			'elementor_mcp_stock_enabled',
+			array(
+				'type'              => 'string',
+				'default'           => '1',
+				'sanitize_callback' => 'sanitize_text_field',
+			)
+		);
+		register_setting(
+			'elementor_mcp_settings_group',
+			'elementor_mcp_stock_provider',
+			array(
+				'type'              => 'string',
+				'default'           => 'openverse',
+				'sanitize_callback' => 'sanitize_text_field',
+			)
+		);
+		register_setting(
+			'elementor_mcp_settings_group',
+			'elementor_mcp_stock_api_key',
+			array(
+				'type'              => 'string',
+				'default'           => '',
+				'sanitize_callback' => 'sanitize_text_field',
 			)
 		);
 	}
@@ -155,6 +225,27 @@ class Elementor_MCP_Admin {
 				'mcpEndpoint' => rest_url( 'mcp/elementor-mcp-server' ),
 				'siteUrl'     => site_url(),
 				'proxyPath'   => ELEMENTOR_MCP_DIR . 'bin' . DIRECTORY_SEPARATOR . 'mcp-proxy.mjs',
+				'ajaxUrl'     => admin_url( 'admin-ajax.php' ),
+				'nonce'       => wp_create_nonce( 'emcp_settings_nonce' ),
+				'siteUrl'     => home_url( '/' ),
+				'i18n'        => array(
+					'saving'           => __( 'Saving…', 'elementor-mcp' ),
+					'saved'            => __( 'Settings saved', 'elementor-mcp' ),
+					'saveFailed'       => __( 'Save failed', 'elementor-mcp' ),
+					'testing'          => __( 'Testing…', 'elementor-mcp' ),
+					'connected'        => __( 'Connected', 'elementor-mcp' ),
+					'disconnected'     => __( 'Disconnected', 'elementor-mcp' ),
+					'disabled'         => __( 'Disabled', 'elementor-mcp' ),
+					'invalidKey'       => __( 'Invalid Key', 'elementor-mcp' ),
+					'capturing'        => __( 'Capturing…', 'elementor-mcp' ),
+					'captureSuccess'   => __( 'Screenshot captured', 'elementor-mcp' ),
+					'captureFailed'    => __( 'Capture failed', 'elementor-mcp' ),
+					'refreshing'       => __( 'Refreshing…', 'elementor-mcp' ),
+					'enableFirst'      => __( 'Enable the feature first', 'elementor-mcp' ),
+					'saveSettings'     => __( 'Save Settings', 'elementor-mcp' ),
+					'testConnection'   => __( 'Test Connection', 'elementor-mcp' ),
+					'takeScreenshot'   => __( 'Take Test Screenshot', 'elementor-mcp' ),
+				),
 			)
 		);
 	}
@@ -295,6 +386,9 @@ class Elementor_MCP_Admin {
 				<a href="<?php echo esc_url( admin_url( 'options-general.php?page=' . self::PAGE_SLUG . '&tab=changelog' ) ); ?>"
 				   class="nav-tab <?php echo esc_attr( 'changelog' === $active_tab ? 'nav-tab-active' : '' ); ?>">
 					<?php esc_html_e( 'Changelog', 'elementor-mcp' ); ?>
+				<a href="<?php echo esc_url( admin_url( 'options-general.php?page=' . self::PAGE_SLUG . '&tab=settings' ) ); ?>"
+				   class="nav-tab <?php echo esc_attr( 'settings' === $active_tab ? 'nav-tab-active' : '' ); ?>">
+					<?php esc_html_e( 'Settings', 'elementor-mcp' ); ?>
 				</a>
 			</nav>
 
@@ -307,6 +401,8 @@ class Elementor_MCP_Admin {
 					include ELEMENTOR_MCP_DIR . 'includes/admin/views/page-prompts.php';
 				} elseif ( 'changelog' === $active_tab ) {
 					include ELEMENTOR_MCP_DIR . 'includes/admin/views/page-changelog.php';
+				} elseif ( 'settings' === $active_tab ) {
+					include ELEMENTOR_MCP_DIR . 'includes/admin/views/page-settings.php';
 				} else {
 					include ELEMENTOR_MCP_DIR . 'includes/admin/views/page-tools.php';
 				}
@@ -720,6 +816,271 @@ class Elementor_MCP_Admin {
 					),
 				),
 			),
+			'widget_free_extra' => array(
+				'label' => __( 'Additional Free Widgets', 'elementor-mcp' ),
+				'tools' => array(
+					'elementor-mcp/add-image-gallery'   => array(
+						'label'       => __( 'Add Image Gallery', 'elementor-mcp' ),
+						'description' => __( 'Adds a basic image gallery widget.', 'elementor-mcp' ),
+						'badges'      => array(),
+					),
+					'elementor-mcp/add-audio'           => array(
+						'label'       => __( 'Add Audio', 'elementor-mcp' ),
+						'description' => __( 'Adds an audio player widget.', 'elementor-mcp' ),
+						'badges'      => array(),
+					),
+					'elementor-mcp/add-read-more'       => array(
+						'label'       => __( 'Add Read More', 'elementor-mcp' ),
+						'description' => __( 'Adds a read more button for posts.', 'elementor-mcp' ),
+						'badges'      => array(),
+					),
+					'elementor-mcp/add-sidebar'         => array(
+						'label'       => __( 'Add Sidebar', 'elementor-mcp' ),
+						'description' => __( 'Adds a widget area/sidebar.', 'elementor-mcp' ),
+						'badges'      => array(),
+					),
+				),
+			),
+			'theme_builder'    => array(
+				'label' => __( 'Theme Builder Widgets', 'elementor-mcp' ),
+				'tools' => array(
+					'elementor-mcp/add-site-logo'            => array(
+						'label'       => __( 'Add Site Logo', 'elementor-mcp' ),
+						'description' => __( 'Adds the site logo widget.', 'elementor-mcp' ),
+						'badges'      => array( 'pro' ),
+					),
+					'elementor-mcp/add-site-title'           => array(
+						'label'       => __( 'Add Site Title', 'elementor-mcp' ),
+						'description' => __( 'Adds the site title widget.', 'elementor-mcp' ),
+						'badges'      => array( 'pro' ),
+					),
+					'elementor-mcp/add-page-title'           => array(
+						'label'       => __( 'Add Page Title', 'elementor-mcp' ),
+						'description' => __( 'Adds the page title widget.', 'elementor-mcp' ),
+						'badges'      => array( 'pro' ),
+					),
+					'elementor-mcp/add-search-form'          => array(
+						'label'       => __( 'Add Search Form', 'elementor-mcp' ),
+						'description' => __( 'Adds a search form widget.', 'elementor-mcp' ),
+						'badges'      => array( 'pro' ),
+					),
+					'elementor-mcp/add-post-title'           => array(
+						'label'       => __( 'Add Post Title', 'elementor-mcp' ),
+						'description' => __( 'Adds the post title widget for single templates.', 'elementor-mcp' ),
+						'badges'      => array( 'pro' ),
+					),
+					'elementor-mcp/add-post-content'         => array(
+						'label'       => __( 'Add Post Content', 'elementor-mcp' ),
+						'description' => __( 'Adds the post content widget for single templates.', 'elementor-mcp' ),
+						'badges'      => array( 'pro' ),
+					),
+					'elementor-mcp/add-post-featured-image'  => array(
+						'label'       => __( 'Add Post Featured Image', 'elementor-mcp' ),
+						'description' => __( 'Adds the post featured image widget.', 'elementor-mcp' ),
+						'badges'      => array( 'pro' ),
+					),
+					'elementor-mcp/add-post-excerpt'         => array(
+						'label'       => __( 'Add Post Excerpt', 'elementor-mcp' ),
+						'description' => __( 'Adds the post excerpt widget.', 'elementor-mcp' ),
+						'badges'      => array( 'pro' ),
+					),
+					'elementor-mcp/add-code-highlight'       => array(
+						'label'       => __( 'Add Code Highlight', 'elementor-mcp' ),
+						'description' => __( 'Adds a code syntax highlighting widget.', 'elementor-mcp' ),
+						'badges'      => array( 'pro' ),
+					),
+				),
+			),
+			'theme_elements'   => array(
+				'label' => __( 'Theme Elements', 'elementor-mcp' ),
+				'tools' => array(
+					'elementor-mcp/add-author-box'        => array(
+						'label'       => __( 'Add Author Box', 'elementor-mcp' ),
+						'description' => __( 'Adds an author info box widget.', 'elementor-mcp' ),
+						'badges'      => array( 'pro' ),
+					),
+					'elementor-mcp/add-post-info'         => array(
+						'label'       => __( 'Add Post Info', 'elementor-mcp' ),
+						'description' => __( 'Adds a post meta info widget.', 'elementor-mcp' ),
+						'badges'      => array( 'pro' ),
+					),
+					'elementor-mcp/add-post-navigation'   => array(
+						'label'       => __( 'Add Post Navigation', 'elementor-mcp' ),
+						'description' => __( 'Adds previous/next post navigation.', 'elementor-mcp' ),
+						'badges'      => array( 'pro' ),
+					),
+					'elementor-mcp/add-post-comments'     => array(
+						'label'       => __( 'Add Post Comments', 'elementor-mcp' ),
+						'description' => __( 'Adds the comments section widget.', 'elementor-mcp' ),
+						'badges'      => array( 'pro' ),
+					),
+					'elementor-mcp/add-sitemap'           => array(
+						'label'       => __( 'Add Sitemap', 'elementor-mcp' ),
+						'description' => __( 'Adds an HTML sitemap widget.', 'elementor-mcp' ),
+						'badges'      => array( 'pro' ),
+					),
+					'elementor-mcp/add-archive-title'     => array(
+						'label'       => __( 'Add Archive Title', 'elementor-mcp' ),
+						'description' => __( 'Adds the archive title widget.', 'elementor-mcp' ),
+						'badges'      => array( 'pro' ),
+					),
+					'elementor-mcp/add-archive-posts'     => array(
+						'label'       => __( 'Add Archive Posts', 'elementor-mcp' ),
+						'description' => __( 'Adds the archive posts listing widget.', 'elementor-mcp' ),
+						'badges'      => array( 'pro' ),
+					),
+					'elementor-mcp/add-video-playlist'    => array(
+						'label'       => __( 'Add Video Playlist', 'elementor-mcp' ),
+						'description' => __( 'Adds a video playlist widget.', 'elementor-mcp' ),
+						'badges'      => array( 'pro' ),
+					),
+					'elementor-mcp/add-progress-tracker'  => array(
+						'label'       => __( 'Add Progress Tracker', 'elementor-mcp' ),
+						'description' => __( 'Adds a reading progress tracker widget.', 'elementor-mcp' ),
+						'badges'      => array( 'pro' ),
+					),
+				),
+			),
+			'nav_social'       => array(
+				'label' => __( 'Navigation & Social', 'elementor-mcp' ),
+				'tools' => array(
+					'elementor-mcp/add-paypal-button'     => array(
+						'label'       => __( 'Add PayPal Button', 'elementor-mcp' ),
+						'description' => __( 'Adds a PayPal payment button.', 'elementor-mcp' ),
+						'badges'      => array( 'pro' ),
+					),
+					'elementor-mcp/add-stripe-button'     => array(
+						'label'       => __( 'Add Stripe Button', 'elementor-mcp' ),
+						'description' => __( 'Adds a Stripe payment button.', 'elementor-mcp' ),
+						'badges'      => array( 'pro' ),
+					),
+					'elementor-mcp/add-off-canvas'        => array(
+						'label'       => __( 'Add Off Canvas', 'elementor-mcp' ),
+						'description' => __( 'Adds an off-canvas sidebar/panel.', 'elementor-mcp' ),
+						'badges'      => array( 'pro' ),
+					),
+					'elementor-mcp/add-mega-menu'         => array(
+						'label'       => __( 'Add Mega Menu', 'elementor-mcp' ),
+						'description' => __( 'Adds a mega menu widget.', 'elementor-mcp' ),
+						'badges'      => array( 'pro' ),
+					),
+					'elementor-mcp/add-nested-carousel'   => array(
+						'label'       => __( 'Add Nested Carousel', 'elementor-mcp' ),
+						'description' => __( 'Adds a container-based nested carousel.', 'elementor-mcp' ),
+						'badges'      => array( 'pro' ),
+					),
+					'elementor-mcp/add-portfolio'         => array(
+						'label'       => __( 'Add Portfolio', 'elementor-mcp' ),
+						'description' => __( 'Adds a portfolio/filterable grid widget.', 'elementor-mcp' ),
+						'badges'      => array( 'pro' ),
+					),
+					'elementor-mcp/add-facebook-page'     => array(
+						'label'       => __( 'Add Facebook Page', 'elementor-mcp' ),
+						'description' => __( 'Embeds a Facebook page feed widget.', 'elementor-mcp' ),
+						'badges'      => array( 'pro' ),
+					),
+					'elementor-mcp/add-taxonomy-filter'   => array(
+						'label'       => __( 'Add Taxonomy Filter', 'elementor-mcp' ),
+						'description' => __( 'Adds a taxonomy filter widget for loop grids.', 'elementor-mcp' ),
+						'badges'      => array( 'pro' ),
+					),
+				),
+			),
+			'woocommerce'      => array(
+				'label' => __( 'WooCommerce Widgets', 'elementor-mcp' ),
+				'tools' => array(
+					'elementor-mcp/add-wc-product-images'     => array(
+						'label'       => __( 'Add Product Images', 'elementor-mcp' ),
+						'description' => __( 'Adds WooCommerce product images gallery.', 'elementor-mcp' ),
+						'badges'      => array( 'pro' ),
+					),
+					'elementor-mcp/add-wc-product-title'      => array(
+						'label'       => __( 'Add Product Title', 'elementor-mcp' ),
+						'description' => __( 'Adds WooCommerce product title widget.', 'elementor-mcp' ),
+						'badges'      => array( 'pro' ),
+					),
+					'elementor-mcp/add-wc-product-price'      => array(
+						'label'       => __( 'Add Product Price', 'elementor-mcp' ),
+						'description' => __( 'Adds WooCommerce product price widget.', 'elementor-mcp' ),
+						'badges'      => array( 'pro' ),
+					),
+					'elementor-mcp/add-wc-product-add-to-cart' => array(
+						'label'       => __( 'Add to Cart Button', 'elementor-mcp' ),
+						'description' => __( 'Adds WooCommerce add-to-cart button.', 'elementor-mcp' ),
+						'badges'      => array( 'pro' ),
+					),
+					'elementor-mcp/add-wc-product-rating'     => array(
+						'label'       => __( 'Add Product Rating', 'elementor-mcp' ),
+						'description' => __( 'Adds WooCommerce product rating widget.', 'elementor-mcp' ),
+						'badges'      => array( 'pro' ),
+					),
+					'elementor-mcp/add-wc-product-meta'       => array(
+						'label'       => __( 'Add Product Meta', 'elementor-mcp' ),
+						'description' => __( 'Adds WooCommerce product meta info.', 'elementor-mcp' ),
+						'badges'      => array( 'pro' ),
+					),
+					'elementor-mcp/add-wc-product-tabs'       => array(
+						'label'       => __( 'Add Product Tabs', 'elementor-mcp' ),
+						'description' => __( 'Adds WooCommerce product data tabs.', 'elementor-mcp' ),
+						'badges'      => array( 'pro' ),
+					),
+					'elementor-mcp/add-wc-product-short-desc'  => array(
+						'label'       => __( 'Add Product Short Description', 'elementor-mcp' ),
+						'description' => __( 'Adds WooCommerce product short description.', 'elementor-mcp' ),
+						'badges'      => array( 'pro' ),
+					),
+					'elementor-mcp/add-wc-product-related'    => array(
+						'label'       => __( 'Add Related Products', 'elementor-mcp' ),
+						'description' => __( 'Adds WooCommerce related products widget.', 'elementor-mcp' ),
+						'badges'      => array( 'pro' ),
+					),
+					'elementor-mcp/add-wc-product-upsell'     => array(
+						'label'       => __( 'Add Product Upsells', 'elementor-mcp' ),
+						'description' => __( 'Adds WooCommerce product upsells widget.', 'elementor-mcp' ),
+						'badges'      => array( 'pro' ),
+					),
+					'elementor-mcp/add-wc-archive-products'   => array(
+						'label'       => __( 'Add Archive Products', 'elementor-mcp' ),
+						'description' => __( 'Adds WooCommerce archive products grid.', 'elementor-mcp' ),
+						'badges'      => array( 'pro' ),
+					),
+					'elementor-mcp/add-wc-categories'         => array(
+						'label'       => __( 'Add Product Categories', 'elementor-mcp' ),
+						'description' => __( 'Adds WooCommerce product categories grid.', 'elementor-mcp' ),
+						'badges'      => array( 'pro' ),
+					),
+					'elementor-mcp/add-wc-my-account'         => array(
+						'label'       => __( 'Add My Account', 'elementor-mcp' ),
+						'description' => __( 'Adds WooCommerce My Account page widget.', 'elementor-mcp' ),
+						'badges'      => array( 'pro' ),
+					),
+					'elementor-mcp/add-wc-products'           => array(
+						'label'       => __( 'Add Products', 'elementor-mcp' ),
+						'description' => __( 'Adds a WooCommerce products listing widget.', 'elementor-mcp' ),
+						'badges'      => array( 'pro' ),
+					),
+					'elementor-mcp/add-wc-cart'               => array(
+						'label'       => __( 'Add Cart', 'elementor-mcp' ),
+						'description' => __( 'Adds WooCommerce cart widget.', 'elementor-mcp' ),
+						'badges'      => array( 'pro' ),
+					),
+					'elementor-mcp/add-wc-checkout'           => array(
+						'label'       => __( 'Add Checkout', 'elementor-mcp' ),
+						'description' => __( 'Adds WooCommerce checkout widget.', 'elementor-mcp' ),
+						'badges'      => array( 'pro' ),
+					),
+					'elementor-mcp/add-wc-menu-cart'          => array(
+						'label'       => __( 'Add Menu Cart', 'elementor-mcp' ),
+						'description' => __( 'Adds WooCommerce menu cart icon widget.', 'elementor-mcp' ),
+						'badges'      => array( 'pro' ),
+					),
+					'elementor-mcp/add-wc-add-to-cart'        => array(
+						'label'       => __( 'Add Custom Add to Cart', 'elementor-mcp' ),
+						'description' => __( 'Adds a custom add-to-cart button for any product.', 'elementor-mcp' ),
+						'badges'      => array( 'pro' ),
+					),
+				),
+			),
 			'template'         => array(
 				'label' => __( 'Templates', 'elementor-mcp' ),
 				'tools' => array(
@@ -890,5 +1251,524 @@ class Elementor_MCP_Admin {
 	 */
 	public function get_total_tool_count(): int {
 		return count( $this->get_all_tool_slugs() );
+	}
+
+	// ─── AJAX Handlers ───────────────────────────────────────────────────────
+
+	/**
+	 * Verify AJAX request nonce and permissions.
+	 *
+	 * @since 2.7.0
+	 */
+	private function verify_ajax_request(): void {
+		check_ajax_referer( 'emcp_settings_nonce', 'nonce' );
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( array( 'message' => __( 'Permission denied.', 'elementor-mcp' ) ), 403 );
+		}
+	}
+
+	/**
+	 * AJAX: Save settings without page reload.
+	 *
+	 * @since 2.7.0
+	 */
+	public function ajax_save_settings(): void {
+		$this->verify_ajax_request();
+
+		$group = isset( $_POST['group'] ) ? sanitize_text_field( wp_unslash( $_POST['group'] ) ) : '';
+
+		if ( 'screenshot' === $group ) {
+			$enabled = isset( $_POST['screenshot_enabled'] ) ? '1' : '';
+			$api_url = isset( $_POST['screenshot_api_url'] ) ? esc_url_raw( wp_unslash( $_POST['screenshot_api_url'] ) ) : '';
+			$api_key = isset( $_POST['screenshot_api_key'] ) ? sanitize_text_field( wp_unslash( $_POST['screenshot_api_key'] ) ) : '';
+
+			update_option( 'elementor_mcp_screenshot_enabled', $enabled );
+			update_option( 'elementor_mcp_screenshot_api_url', $api_url );
+			update_option( 'elementor_mcp_screenshot_api_key', $api_key );
+
+			wp_send_json_success( array(
+				'message' => __( 'Screenshot settings saved.', 'elementor-mcp' ),
+				'enabled' => ! empty( $enabled ),
+			) );
+		} elseif ( 'stock' === $group ) {
+			$enabled  = isset( $_POST['stock_enabled'] ) ? '1' : '';
+			$provider = isset( $_POST['stock_provider'] ) ? sanitize_text_field( wp_unslash( $_POST['stock_provider'] ) ) : 'openverse';
+			$api_key  = isset( $_POST['stock_api_key'] ) ? sanitize_text_field( wp_unslash( $_POST['stock_api_key'] ) ) : '';
+
+			update_option( 'elementor_mcp_stock_enabled', $enabled );
+			update_option( 'elementor_mcp_stock_provider', $provider );
+			update_option( 'elementor_mcp_stock_api_key', $api_key );
+
+			// Save per-provider key so switching providers preserves keys.
+			$allowed = array( 'pexels', 'pixabay', 'unsplash', 'openverse' );
+			if ( in_array( $provider, $allowed, true ) ) {
+				update_option( 'elementor_mcp_stock_key_' . $provider, $api_key );
+			}
+
+			wp_send_json_success( array(
+				'message' => __( 'Stock image settings saved.', 'elementor-mcp' ),
+				'enabled' => ! empty( $enabled ),
+			) );
+		} else {
+			wp_send_json_error( array( 'message' => __( 'Unknown settings group.', 'elementor-mcp' ) ) );
+		}
+	}
+
+	/**
+	 * AJAX: Test screenshot API connection.
+	 *
+	 * @since 2.7.0
+	 */
+	public function ajax_test_connection(): void {
+		$this->verify_ajax_request();
+
+		$api_url = get_option( 'elementor_mcp_screenshot_api_url', '' );
+		$api_key = get_option( 'elementor_mcp_screenshot_api_key', '' );
+
+		if ( empty( $api_url ) || empty( $api_key ) ) {
+			wp_send_json_error( array(
+				'message' => __( 'API URL and Key are required.', 'elementor-mcp' ),
+				'status'  => 'disconnected',
+			) );
+		}
+
+		$response = wp_remote_get(
+			rtrim( $api_url, '/' ) . '/api/validate',
+			array(
+				'timeout' => 15,
+				'headers' => array( 'Authorization' => 'Bearer ' . $api_key ),
+			)
+		);
+
+		if ( is_wp_error( $response ) ) {
+			wp_send_json_error( array(
+				'message' => sprintf( __( 'Connection failed: %s', 'elementor-mcp' ), $response->get_error_message() ),
+				'status'  => 'disconnected',
+			) );
+		}
+
+		$code = wp_remote_retrieve_response_code( $response );
+		$body = json_decode( wp_remote_retrieve_body( $response ), true );
+
+		if ( 200 === $code && ! empty( $body['valid'] ) ) {
+			$data = isset( $body['data'] ) ? $body['data'] : array();
+			wp_send_json_success( array(
+				'message' => __( 'Connection verified successfully.', 'elementor-mcp' ),
+				'status'  => 'connected',
+				'usage'   => array(
+					'plan'          => isset( $data['plan'] ) ? $data['plan'] : ( isset( $data['name'] ) ? $data['name'] : 'unknown' ),
+					'current_usage' => isset( $data['current_usage'] ) ? (int) $data['current_usage'] : 0,
+					'monthly_limit' => isset( $data['monthly_limit'] ) ? (int) $data['monthly_limit'] : 0,
+					'remaining'     => isset( $data['remaining'] ) ? (int) $data['remaining'] : 0,
+					'rate_limit'    => isset( $data['rate_limit'] ) ? (int) $data['rate_limit'] : 0,
+					'is_active'     => isset( $data['is_active'] ) ? (bool) $data['is_active'] : false,
+					'last_used_at'  => isset( $data['last_used_at'] ) ? $data['last_used_at'] : null,
+					'key_name'      => isset( $data['name'] ) ? $data['name'] : '',
+				),
+			) );
+		} else {
+			$msg = isset( $body['error']['message'] ) ? $body['error']['message'] : __( 'API key is invalid or disabled.', 'elementor-mcp' );
+			wp_send_json_error( array(
+				'message' => $msg,
+				'status'  => 'invalid',
+			) );
+		}
+	}
+
+	/**
+	 * AJAX: Take a test screenshot of the homepage.
+	 *
+	 * @since 2.7.0
+	 */
+	public function ajax_take_screenshot(): void {
+		$this->verify_ajax_request();
+
+		$api_url = get_option( 'elementor_mcp_screenshot_api_url', '' );
+		$api_key = get_option( 'elementor_mcp_screenshot_api_key', '' );
+
+		if ( empty( $api_url ) || empty( $api_key ) ) {
+			wp_send_json_error( array( 'message' => __( 'Configure API credentials first.', 'elementor-mcp' ) ) );
+		}
+
+		$target_url = home_url( '/' );
+		$endpoint   = rtrim( $api_url, '/' ) . '/api/screenshot?' . http_build_query( array(
+			'url'       => $target_url,
+			'width'     => 1280,
+			'height'    => 800,
+			'full_page' => 'true',
+			'scroll'    => 'true',
+			'format'    => 'png',
+			'output'    => 'json',
+		) );
+
+		$response = wp_remote_get( $endpoint, array(
+			'timeout' => 30,
+			'headers' => array( 'Authorization' => 'Bearer ' . $api_key ),
+		) );
+
+		if ( is_wp_error( $response ) ) {
+			wp_send_json_error( array(
+				'message' => sprintf( __( 'Screenshot failed: %s', 'elementor-mcp' ), $response->get_error_message() ),
+			) );
+		}
+
+		$body = json_decode( wp_remote_retrieve_body( $response ), true );
+
+		if ( ! empty( $body['success'] ) && ! empty( $body['data'] ) ) {
+			$image_url = isset( $body['data']['image'] ) ? $body['data']['image'] : ( isset( $body['data']['url'] ) ? $body['data']['url'] : '' );
+			wp_send_json_success( array(
+				'message'   => __( 'Screenshot captured successfully.', 'elementor-mcp' ),
+				'image_url' => $image_url,
+				'timestamp' => current_time( 'mysql' ),
+			) );
+		} else {
+			$msg = isset( $body['error']['message'] ) ? $body['error']['message'] : __( 'Unknown error during capture.', 'elementor-mcp' );
+			wp_send_json_error( array( 'message' => $msg ) );
+		}
+	}
+
+	/**
+	 * AJAX: Refresh API usage / credits.
+	 *
+	 * @since 2.7.0
+	 */
+	public function ajax_refresh_usage(): void {
+		$this->verify_ajax_request();
+
+		$api_url = get_option( 'elementor_mcp_screenshot_api_url', '' );
+		$api_key = get_option( 'elementor_mcp_screenshot_api_key', '' );
+
+		if ( empty( $api_url ) || empty( $api_key ) ) {
+			wp_send_json_error( array(
+				'message' => __( 'API not configured.', 'elementor-mcp' ),
+				'status'  => 'disconnected',
+			) );
+		}
+
+		$response = wp_remote_get(
+			rtrim( $api_url, '/' ) . '/api/validate',
+			array(
+				'timeout' => 15,
+				'headers' => array( 'Authorization' => 'Bearer ' . $api_key ),
+			)
+		);
+
+		if ( is_wp_error( $response ) ) {
+			wp_send_json_error( array(
+				'message' => $response->get_error_message(),
+				'status'  => 'disconnected',
+			) );
+		}
+
+		$body = json_decode( wp_remote_retrieve_body( $response ), true );
+
+		if ( ! empty( $body['valid'] ) && ! empty( $body['data'] ) ) {
+			$d = $body['data'];
+			wp_send_json_success( array(
+				'status' => 'connected',
+				'usage'  => array(
+					'plan'          => isset( $d['plan'] ) ? $d['plan'] : ( isset( $d['name'] ) ? $d['name'] : 'unknown' ),
+					'current_usage' => isset( $d['current_usage'] ) ? (int) $d['current_usage'] : 0,
+					'monthly_limit' => isset( $d['monthly_limit'] ) ? (int) $d['monthly_limit'] : 0,
+					'remaining'     => isset( $d['remaining'] ) ? (int) $d['remaining'] : 0,
+					'rate_limit'    => isset( $d['rate_limit'] ) ? (int) $d['rate_limit'] : 0,
+					'is_active'     => isset( $d['is_active'] ) ? (bool) $d['is_active'] : false,
+					'last_used_at'  => isset( $d['last_used_at'] ) ? $d['last_used_at'] : null,
+					'key_name'      => isset( $d['name'] ) ? $d['name'] : '',
+				),
+			) );
+		} else {
+			wp_send_json_error( array(
+				'message' => __( 'Could not fetch usage data.', 'elementor-mcp' ),
+				'status'  => 'invalid',
+			) );
+		}
+	}
+
+	/**
+	 * AJAX: Register with Openverse and exchange for access token.
+	 *
+	 * Flow:
+	 *   1. POST /v1/auth_tokens/register/ → client_id + client_secret
+	 *   2. POST /v1/auth_tokens/token/    → access_token
+	 *   3. Auto-save token to stock_api_key option
+	 *
+	 * @since 2.7.0
+	 */
+	public function ajax_openverse_register(): void {
+		$this->verify_ajax_request();
+
+		$name  = isset( $_POST['ov_name'] ) ? sanitize_text_field( wp_unslash( $_POST['ov_name'] ) ) : '';
+		$desc  = isset( $_POST['ov_desc'] ) ? sanitize_textarea_field( wp_unslash( $_POST['ov_desc'] ) ) : '';
+		$email = isset( $_POST['ov_email'] ) ? sanitize_email( wp_unslash( $_POST['ov_email'] ) ) : '';
+
+		if ( empty( $name ) || empty( $desc ) || empty( $email ) ) {
+			wp_send_json_error( array( 'message' => __( 'All fields are required.', 'elementor-mcp' ) ) );
+		}
+
+		// Step 1: Register application.
+		$reg_response = wp_remote_post(
+			'https://api.openverse.org/v1/auth_tokens/register/',
+			array(
+				'timeout' => 20,
+				'headers' => array( 'Content-Type' => 'application/json' ),
+				'body'    => wp_json_encode( array(
+					'name'        => $name,
+					'description' => $desc,
+					'email'       => $email,
+				) ),
+			)
+		);
+
+		if ( is_wp_error( $reg_response ) ) {
+			wp_send_json_error( array(
+				'message' => sprintf( __( 'Registration failed: %s', 'elementor-mcp' ), $reg_response->get_error_message() ),
+			) );
+		}
+
+		$reg_code = wp_remote_retrieve_response_code( $reg_response );
+		$reg_body = json_decode( wp_remote_retrieve_body( $reg_response ), true );
+
+		if ( 201 !== $reg_code || empty( $reg_body['client_id'] ) || empty( $reg_body['client_secret'] ) ) {
+			$err = '';
+			if ( is_array( $reg_body ) ) {
+				foreach ( $reg_body as $field => $msgs ) {
+					if ( is_array( $msgs ) ) {
+						$err .= ucfirst( $field ) . ': ' . implode( ', ', $msgs ) . ' ';
+					}
+				}
+			}
+			wp_send_json_error( array(
+				'message' => trim( $err ) ?: __( 'Registration failed. Please try again.', 'elementor-mcp' ),
+			) );
+		}
+
+		$client_id     = sanitize_text_field( $reg_body['client_id'] );
+		$client_secret = sanitize_text_field( $reg_body['client_secret'] );
+
+		// Step 2: Exchange for access token.
+		$token_response = wp_remote_post(
+			'https://api.openverse.org/v1/auth_tokens/token/',
+			array(
+				'timeout' => 20,
+				'headers' => array( 'Content-Type' => 'application/x-www-form-urlencoded' ),
+				'body'    => array(
+					'client_id'     => $client_id,
+					'client_secret' => $client_secret,
+					'grant_type'    => 'client_credentials',
+				),
+			)
+		);
+
+		if ( is_wp_error( $token_response ) ) {
+			wp_send_json_error( array(
+				'message' => sprintf( __( 'Token exchange failed: %s', 'elementor-mcp' ), $token_response->get_error_message() ),
+				'client_id'     => $client_id,
+				'client_secret' => $client_secret,
+			) );
+		}
+
+		$token_body = json_decode( wp_remote_retrieve_body( $token_response ), true );
+
+		if ( empty( $token_body['access_token'] ) ) {
+			wp_send_json_error( array(
+				'message'       => __( 'Token exchange failed. You can manually use your client credentials.', 'elementor-mcp' ),
+				'client_id'     => $client_id,
+				'client_secret' => $client_secret,
+			) );
+		}
+
+		$access_token = sanitize_text_field( $token_body['access_token'] );
+
+		// Step 3: Auto-save to stock API key.
+		update_option( 'elementor_mcp_stock_api_key', $access_token );
+		update_option( 'elementor_mcp_stock_key_openverse', $access_token );
+
+		wp_send_json_success( array(
+			'message'      => __( 'Registered successfully! Token saved automatically.', 'elementor-mcp' ),
+			'access_token' => $access_token,
+			'client_id'    => $client_id,
+			'expires_in'   => isset( $token_body['expires_in'] ) ? (int) $token_body['expires_in'] : null,
+		) );
+	}
+
+	// =========================================================================
+	//  Connection Management AJAX Handlers
+	// =========================================================================
+
+	/**
+	 * AJAX: Generate a new connection token.
+	 *
+	 * Validates WP credentials first, then generates a plugin-managed Bearer token.
+	 *
+	 * @since 2.8.0
+	 */
+	public function ajax_generate_connection(): void {
+		$this->verify_ajax_request();
+
+		$label    = isset( $_POST['label'] ) ? sanitize_text_field( wp_unslash( $_POST['label'] ) ) : '';
+		$username = isset( $_POST['username'] ) ? sanitize_text_field( wp_unslash( $_POST['username'] ) ) : '';
+		$password = isset( $_POST['app_password'] ) ? wp_unslash( $_POST['app_password'] ) : '';
+
+		if ( empty( $label ) ) {
+			wp_send_json_error( array( 'message' => __( 'Connection label is required.', 'elementor-mcp' ) ) );
+		}
+
+		if ( empty( $username ) || empty( $password ) ) {
+			wp_send_json_error( array( 'message' => __( 'Username and Application Password are required.', 'elementor-mcp' ) ) );
+		}
+
+		// Admin is already nonce-authenticated. No need to validate the app password
+		// server-side — wp_authenticate() doesn't support app passwords in admin AJAX
+		// context. The credentials are passed to the client for btoa() config generation.
+		$user_id = get_current_user_id();
+
+		// Generate plugin-managed Bearer token for history/revoke tracking.
+		$tokens = new Elementor_MCP_Connection_Tokens();
+		$result = $tokens->generate( $user_id, $label );
+
+		$endpoint = rest_url( 'mcp/elementor-mcp-server' );
+
+		// Strip spaces from password for Base64 encoding.
+		$clean_password = preg_replace( '/\s+/', '', $password );
+
+		wp_send_json_success( array(
+			'message'    => __( 'Connection created successfully! Copy your token now — it won\'t be shown again.', 'elementor-mcp' ),
+			'connection' => $result['connection'],
+			'raw_token'  => $result['raw_token'],
+			'endpoint'   => $endpoint,
+			'b64_token'  => base64_encode( $username . ':' . $clean_password ),
+			'configs'    => $this->build_client_configs( $endpoint, $result['raw_token'] ),
+		) );
+	}
+
+	/**
+	 * AJAX: Revoke a connection token.
+	 *
+	 * @since 2.8.0
+	 */
+	public function ajax_revoke_connection(): void {
+		$this->verify_ajax_request();
+
+		$conn_id = isset( $_POST['conn_id'] ) ? sanitize_text_field( wp_unslash( $_POST['conn_id'] ) ) : '';
+
+		if ( empty( $conn_id ) ) {
+			wp_send_json_error( array( 'message' => __( 'Connection ID is required.', 'elementor-mcp' ) ) );
+		}
+
+		$tokens  = new Elementor_MCP_Connection_Tokens();
+		$revoked = $tokens->revoke( $conn_id, get_current_user_id() );
+
+		if ( ! $revoked ) {
+			wp_send_json_error( array( 'message' => __( 'Connection not found.', 'elementor-mcp' ) ) );
+		}
+
+		$connection = $tokens->get( $conn_id );
+
+		wp_send_json_success( array(
+			'message'    => __( 'Connection revoked. It will no longer authenticate MCP requests.', 'elementor-mcp' ),
+			'connection' => $connection,
+		) );
+	}
+
+	/**
+	 * AJAX: Permanently delete a connection record.
+	 *
+	 * @since 2.8.0
+	 */
+	public function ajax_delete_connection(): void {
+		$this->verify_ajax_request();
+
+		$conn_id = isset( $_POST['conn_id'] ) ? sanitize_text_field( wp_unslash( $_POST['conn_id'] ) ) : '';
+
+		if ( empty( $conn_id ) ) {
+			wp_send_json_error( array( 'message' => __( 'Connection ID is required.', 'elementor-mcp' ) ) );
+		}
+
+		$tokens  = new Elementor_MCP_Connection_Tokens();
+		$deleted = $tokens->delete( $conn_id );
+
+		if ( ! $deleted ) {
+			wp_send_json_error( array( 'message' => __( 'Connection not found.', 'elementor-mcp' ) ) );
+		}
+
+		wp_send_json_success( array(
+			'message' => __( 'Connection deleted permanently.', 'elementor-mcp' ),
+		) );
+	}
+
+	/**
+	 * Build client config JSON for all supported AI clients.
+	 *
+	 * @param string $endpoint   MCP endpoint URL.
+	 * @param string $raw_token  Bearer token.
+	 *
+	 * @return array<string, string> Client configs keyed by client name.
+	 */
+	private function build_client_configs( string $endpoint, string $raw_token ): array {
+		$bearer = 'Bearer ' . $raw_token;
+
+		// Claude Code / Claude Desktop.
+		$claude = array(
+			'mcpServers' => array(
+				'elementor-mcp' => array(
+					'type'    => 'http',
+					'url'     => $endpoint,
+					'headers' => array( 'Authorization' => $bearer ),
+				),
+			),
+		);
+
+		// Cursor.
+		$cursor = array(
+			'mcpServers' => array(
+				'elementor-mcp' => array(
+					'url'     => $endpoint,
+					'headers' => array( 'Authorization' => $bearer ),
+				),
+			),
+		);
+
+		// Windsurf / Antigravity.
+		$windsurf = array(
+			'mcpServers' => array(
+				'elementor-mcp' => array(
+					'serverUrl' => $endpoint,
+					'headers'   => array( 'Authorization' => $bearer ),
+				),
+			),
+		);
+
+		// Codex (TOML).
+		$codex = "[mcp_servers.elementor-mcp]\n" .
+			'url = "' . $endpoint . "\"\n\n" .
+			"[mcp_servers.elementor-mcp.http_headers]\n" .
+			'"Authorization" = "' . $bearer . '"';
+
+		// npx mcp-remote.
+		$mcp_remote = array(
+			'mcpServers' => array(
+				'elementor-mcp' => array(
+					'command' => 'npx',
+					'args'    => array(
+						'-y',
+						'mcp-remote',
+						$endpoint,
+						'--header',
+						'Authorization: ' . $bearer,
+					),
+				),
+			),
+		);
+
+		return array(
+			'claude_code'    => wp_json_encode( $claude, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES ),
+			'claude_desktop' => wp_json_encode( $claude, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES ),
+			'cursor'         => wp_json_encode( $cursor, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES ),
+			'windsurf'       => wp_json_encode( $windsurf, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES ),
+			'antigravity'    => wp_json_encode( $windsurf, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES ),
+			'codex'          => $codex,
+			'mcp_remote'     => wp_json_encode( $mcp_remote, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES ),
+		);
 	}
 }

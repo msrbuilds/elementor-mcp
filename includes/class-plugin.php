@@ -169,7 +169,7 @@ class Elementor_MCP_Plugin {
 			'mcp',                                                    // route_namespace
 			'elementor-mcp-server',                                   // route
 			__( 'MCP Tools for Elementor Server', 'elementor-mcp' ),            // server_name
-			__( 'Exposes Elementor data and design tools as MCP tools for AI agents.', 'elementor-mcp' ), // description
+			Elementor_MCP_Instructions::get(),                         // description / instructions
 			'v' . ELEMENTOR_MCP_VERSION,                              // version
 			array( \WP\MCP\Transport\HttpTransport::class ),          // transports
 			null,                                                     // error_handler (use default)
