@@ -4,9 +4,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-MCP Tools for Elementor Plugin — a WordPress plugin that extends the official WordPress MCP Adapter to expose Elementor data, widgets, structures, and methods as MCP (Model Context Protocol) tools. This enables AI tools (Claude, Cursor, etc.) to create and manipulate Elementor page designs programmatically via 92 MCP tools.
+MCP Tools for Elementor Plugin — a WordPress plugin that extends the official WordPress MCP Adapter to expose Elementor data, widgets, structures, and methods as MCP (Model Context Protocol) tools. This enables AI tools (Claude, Cursor, etc.) to create and manipulate Elementor page designs programmatically via 97 MCP tools.
 
-**Current status: All phases implemented (P0/P1/P2).** Foundation layer, 7 read-only query tools, page CRUD, layout, widget, template, global, composite tools, stock images, SVG icons, custom code tools, and full widget coverage are all complete (92 MCP tools total). See `PLAN.md` for the full architectural specification.
+**Current status: All phases implemented (P0/P1/P2).** Foundation layer, 7 read-only query tools, page CRUD, layout, widget, template, global, composite tools, stock images, SVG icons, custom code tools, and full widget coverage are all complete (97 MCP tools total). See `PLAN.md` for the full architectural specification.
 
 ## Dependencies & Requirements
 
@@ -123,7 +123,7 @@ The MCP Adapter converts ability names like `elementor-mcp/list-widgets` to tool
 | Code snippets (create) | `manage_options` + `unfiltered_html` |
 | Code snippets (list) | `manage_options` |
 
-## All Implemented Tools (92 total)
+## All Implemented Tools (97 total)
 
 ### P0 — Query/Discovery (7 read-only)
 
@@ -156,7 +156,7 @@ The MCP Adapter converts ability names like `elementor-mcp/list-widgets` to tool
 | `elementor-mcp/remove-element` | Remove an element and all children (destructive) |
 | `elementor-mcp/duplicate-element` | Duplicate element with fresh IDs |
 
-### P1/P2 — Widgets (2 universal + 23 core + 16 Pro convenience)
+### P1/P2 — Widgets (2 universal + 23 core + 21 Pro convenience)
 
 | Ability Name | Purpose |
 |---|---|
@@ -201,6 +201,11 @@ The MCP Adapter converts ability names like `elementor-mcp/list-widgets` to tool
 | `elementor-mcp/add-blockquote` | Pro: styled blockquote widget |
 | `elementor-mcp/add-lottie` | Pro: Lottie animation widget |
 | `elementor-mcp/add-hotspot` | Pro: image hotspot widget |
+| `elementor-mcp/add-code-highlight` | Pro: syntax-highlighted code block widget |
+| `elementor-mcp/add-reviews` | Pro: reviews/testimonials carousel widget |
+| `elementor-mcp/add-off-canvas` | Pro: off-canvas panel widget |
+| `elementor-mcp/add-progress-tracker` | Pro: scroll progress tracker widget |
+| `elementor-mcp/add-search` | Pro: search widget with live results support |
 
 ### P2 — Templates (2 tools)
 

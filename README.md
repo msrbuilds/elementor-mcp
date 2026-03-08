@@ -5,7 +5,7 @@
 [![PHP](https://img.shields.io/badge/PHP-%3E%3D7.4-8892BF.svg)](https://php.net)
 [![WordPress](https://img.shields.io/badge/WordPress-%3E%3D6.8-21759B.svg)](https://wordpress.org)
 [![Elementor](https://img.shields.io/badge/Elementor-%3E%3D3.20-92003B.svg)](https://elementor.com)
-[![MCP Tools](https://img.shields.io/badge/MCP_Tools-92-orange.svg)](#available-tools)
+[![MCP Tools](https://img.shields.io/badge/MCP_Tools-97-orange.svg)](#available-tools)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 [![GitHub Issues](https://img.shields.io/github/issues/msrbuilds/elementor-mcp)](https://github.com/msrbuilds/elementor-mcp/issues)
 [![GitHub Stars](https://img.shields.io/github/stars/msrbuilds/elementor-mcp?style=social)](https://github.com/msrbuilds/elementor-mcp)
@@ -21,7 +21,7 @@ A WordPress plugin that extends the [WordPress MCP Adapter](https://github.com/W
 
 ## Features
 
-- **92 MCP Tools** covering the full Elementor page-building workflow
+- **97 MCP Tools** covering the full Elementor page-building workflow
 - **Query & Discovery** — List widgets, inspect page structures, read element settings, browse templates, view global design tokens
 - **Page Management** — Create pages, update settings, clear content, import/export templates
 - **Layout Tools** — Add flexbox containers, move/remove/duplicate elements, update containers, find elements, batch update, reorder children, get container schema

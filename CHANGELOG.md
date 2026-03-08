@@ -2,6 +2,11 @@
 
 All notable changes to MCP Tools for Elementor are documented in this file.
 
+## [Unreleased]
+
+- New: 5 Pro widget convenience tools — code-highlight, reviews, off-canvas, progress-tracker, search.
+- Total MCP tools increased from 92 to 97.
+
 ## [1.4.2]
 
 - Fix: Add missing `items` property to all `array` type JSON Schema definitions across 6 ability files (12 instances). VS Code and other strict MCP clients reject tools with invalid schemas, causing "tool parameters array type must have items" errors (#6).
