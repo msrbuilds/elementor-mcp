@@ -2,6 +2,20 @@
 
 All notable changes to MCP Tools for Elementor are documented in this file.
 
+## [1.5.0]
+
+- New: 2 screenshot tools — `take-screenshot` and `get-page-screenshot` via Screenshot SaaS API.
+- New: Built-in Screenshot API defaults — screenshot tools work out-of-the-box, zero configuration needed.
+- New: Connection management — Bearer token auth, token generation form, connection history with revoke.
+- New: Client config tabs — auto-generated configs for Cursor, Windsurf, Antigravity, Claude Desktop.
+- New: Multi-provider stock images — Pexels, Pixabay, Unsplash clients alongside existing Openverse.
+- New: Settings dashboard — premium card grid for Screenshot Service and Stock Image configuration.
+- New: Changelog tab in admin with parsed markdown rendering.
+- New: Auto-login, dependency manager, and MCP instructions classes.
+- Fix: Screenshot tools now correctly register with the WP Abilities API.
+- Fix: CSS and layout issues from upstream merge conflicts resolved.
+- Total MCP tools: 129 (+ 11 WooCommerce tools when WooCommerce is active, 140 total).
+
 ## [1.4.2]
 
 - Fix: Add missing `items` property to all `array` type JSON Schema definitions across 6 ability files (12 instances). VS Code and other strict MCP clients reject tools with invalid schemas, causing "tool parameters array type must have items" errors (#6).

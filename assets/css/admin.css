@@ -36,8 +36,10 @@
 	--mcp-radius-lg: 14px;
 	--mcp-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
 	--mcp-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
-	--mcp-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
-	--mcp-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+	--mcp-shadow-md:
+		0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+	--mcp-shadow-lg:
+		0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
 	--mcp-transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -446,7 +448,7 @@
 }
 
 .elementor-mcp-toggle-track::after {
-	content: '';
+	content: "";
 	position: absolute;
 	top: 3px;
 	left: 3px;
@@ -468,7 +470,65 @@
 }
 
 /* Focus state for accessibility */
-.elementor-mcp-tool-card input[type="checkbox"]:focus-visible ~ .elementor-mcp-toggle .elementor-mcp-toggle-track {
+.elementor-mcp-tool-card
+	input[type="checkbox"]:focus-visible
+	~ .elementor-mcp-toggle
+	.elementor-mcp-toggle-track {
+	box-shadow: 0 0 0 2px var(--mcp-white), 0 0 0 4px var(--mcp-primary);
+}
+
+/* Standalone toggle slider (Settings tab) */
+.elementor-mcp-toggle {
+	position: relative;
+	display: inline-block;
+	cursor: pointer;
+}
+
+.elementor-mcp-toggle input[type="checkbox"] {
+	position: absolute;
+	opacity: 0;
+	width: 0;
+	height: 0;
+}
+
+.elementor-mcp-toggle-slider {
+	display: block;
+	width: 44px;
+	height: 24px;
+	background: var(--mcp-gray-300);
+	border-radius: 12px;
+	transition: background var(--mcp-transition);
+	position: relative;
+}
+
+.elementor-mcp-toggle-slider::after {
+	content: "";
+	position: absolute;
+	top: 3px;
+	left: 3px;
+	width: 18px;
+	height: 18px;
+	background: var(--mcp-white);
+	border-radius: 50%;
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+	transition: transform var(--mcp-transition);
+}
+
+.elementor-mcp-toggle
+	input[type="checkbox"]:checked
+	+ .elementor-mcp-toggle-slider {
+	background: var(--mcp-primary);
+}
+
+.elementor-mcp-toggle
+	input[type="checkbox"]:checked
+	+ .elementor-mcp-toggle-slider::after {
+	transform: translateX(20px);
+}
+
+.elementor-mcp-toggle
+	input[type="checkbox"]:focus-visible
+	+ .elementor-mcp-toggle-slider {
 	box-shadow: 0 0 0 2px var(--mcp-white), 0 0 0 4px var(--mcp-primary);
 }
 
@@ -508,7 +568,8 @@
 	padding: 2px 7px;
 	border-radius: 4px;
 	display: inline-block;
-	font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+	font-family:
+		ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 	max-width: 100%;
 	overflow: hidden;
 	text-overflow: ellipsis;
@@ -776,7 +837,9 @@
 	border: 1px solid var(--mcp-gray-300);
 	border-radius: var(--mcp-radius-sm);
 	font-size: 13px;
-	transition: border-color var(--mcp-transition), box-shadow var(--mcp-transition);
+	transition:
+		border-color var(--mcp-transition),
+		box-shadow var(--mcp-transition);
 	width: 100%;
 	box-sizing: border-box;
 }
@@ -904,7 +967,8 @@
 	background: none;
 	color: inherit;
 	font-size: inherit;
-	font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+	font-family:
+		ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
 
 /* Legacy code block style — kept for backward compat */
@@ -1175,6 +1239,129 @@
 	gap: 16px;
 }
 
+/* =========================================================================
+ * Settings Dashboard Grid
+ * ========================================================================= */
+
+.emcp-settings-header {
+	margin-bottom: 28px;
+}
+
+.emcp-settings-header h2 {
+	font-size: 20px;
+	font-weight: 700;
+	color: var(--mcp-gray-800);
+	margin: 0 0 6px;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.emcp-settings-header p {
+	font-size: 13px;
+	color: var(--mcp-gray-500);
+	margin: 0;
+}
+
+.emcp-settings-grid {
+	display: grid;
+	grid-template-columns: repeat(2, 1fr);
+	gap: 24px;
+	align-items: start;
+}
+
+/* =========================================================================
+ * Settings Card Component
+ * ========================================================================= */
+
+.emcp-card {
+	background: var(--mcp-white);
+	border: 1px solid var(--mcp-gray-200);
+	border-radius: 12px;
+	box-shadow: var(--mcp-shadow-sm);
+	overflow: hidden;
+	transition: box-shadow var(--mcp-transition), border-color var(--mcp-transition);
+}
+
+.emcp-card:hover {
+	box-shadow: var(--mcp-shadow-md);
+	border-color: var(--mcp-gray-300);
+}
+
+.emcp-card-header {
+	display: flex;
+	align-items: flex-start;
+	gap: 14px;
+	padding: 24px 24px 0;
+}
+
+.emcp-card-icon {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 40px;
+	height: 40px;
+	border-radius: 10px;
+	flex-shrink: 0;
+}
+
+.emcp-card-icon svg {
+	width: 20px !important;
+	height: 20px !important;
+	max-width: 20px !important;
+	max-height: 20px !important;
+	fill: currentColor;
+}
+
+.emcp-card-icon--purple {
+	background: var(--mcp-primary-light);
+	color: var(--mcp-primary);
+}
+
+.emcp-card-icon--blue {
+	background: #dbeafe;
+	color: #2563eb;
+}
+
+.emcp-card-icon--green {
+	background: var(--mcp-success-light);
+	color: #059669;
+}
+
+.emcp-card-icon--amber {
+	background: #fef3c7;
+	color: #d97706;
+}
+
+.emcp-card-title-wrap {
+	flex: 1;
+	min-width: 0;
+}
+
+.emcp-card-title {
+	font-size: 15px;
+	font-weight: 600;
+	color: var(--mcp-gray-800);
+	margin: 0 0 4px;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.emcp-card-desc {
+	font-size: 12.5px;
+	color: var(--mcp-gray-500);
+	line-height: 1.5;
+	margin: 0;
+}
+
+.emcp-card-body {
+	padding: 20px 24px;
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+}
+
 .elementor-mcp-changelog-version {
 	background: var(--mcp-white);
 	border: 1px solid var(--mcp-gray-200);
@@ -1262,11 +1449,876 @@
 	font-family: monospace;
 }
 
+.emcp-card-footer {
+	padding: 16px 24px;
+	border-top: 1px solid var(--mcp-gray-100);
+	display: flex;
+	align-items: center;
+	gap: 10px;
+}
+
+/* Status pill in card header */
+.emcp-status-pill {
+	display: inline-flex;
+	align-items: center;
+	gap: 5px;
+	padding: 3px 10px;
+	border-radius: 20px;
+	font-size: 11px;
+	font-weight: 600;
+	white-space: nowrap;
+	flex-shrink: 0;
+}
+
+.emcp-status-pill--active {
+	background: var(--mcp-success-light);
+	color: #059669;
+}
+
+.emcp-status-pill--inactive {
+	background: var(--mcp-gray-100);
+	color: var(--mcp-gray-500);
+}
+
+.emcp-status-pill svg {
+	width: 12px !important;
+	height: 12px !important;
+	max-width: 12px !important;
+	max-height: 12px !important;
+	fill: currentColor;
+}
+
+/* =========================================================================
+ * Settings Card — Field Groups
+ * ========================================================================= */
+
+.emcp-field {
+	display: flex;
+	flex-direction: column;
+	gap: 5px;
+}
+
+.emcp-field label {
+	font-size: 13px;
+	font-weight: 500;
+	color: var(--mcp-gray-700);
+}
+
+.emcp-field input[type="text"],
+.emcp-field input[type="url"],
+.emcp-field input[type="password"],
+.emcp-field select {
+	padding: 9px 12px;
+	border: 1px solid var(--mcp-gray-300);
+	border-radius: 8px;
+	font-size: 13px;
+	color: var(--mcp-gray-800);
+	background: var(--mcp-white);
+	width: 100%;
+	box-sizing: border-box;
+	transition:
+		border-color var(--mcp-transition),
+		box-shadow var(--mcp-transition);
+}
+
+.emcp-field input:focus,
+.emcp-field select:focus {
+	border-color: var(--mcp-primary);
+	box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+	outline: none;
+}
+
+.emcp-field input::placeholder {
+	color: var(--mcp-gray-400);
+}
+
+.emcp-field-hint {
+	font-size: 12px;
+	color: var(--mcp-gray-400);
+	margin: 0;
+	line-height: 1.5;
+}
+
+.emcp-field-hint a {
+	color: var(--mcp-primary);
+}
+
+.emcp-field-row {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.emcp-field-row input {
+	flex: 1;
+}
+
+/* =========================================================================
+ * Settings Card — Buttons
+ * ========================================================================= */
+
+.emcp-btn {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	padding: 9px 20px;
+	font-size: 13px;
+	font-weight: 500;
+	border-radius: 8px;
+	border: 1px solid transparent;
+	cursor: pointer;
+	transition: all var(--mcp-transition);
+	text-shadow: none;
+	box-shadow: none;
+	line-height: 1.4;
+	text-decoration: none;
+}
+
+.emcp-btn svg {
+	width: 16px !important;
+	height: 16px !important;
+	max-width: 16px !important;
+	max-height: 16px !important;
+	fill: currentColor;
+	flex-shrink: 0;
+}
+
+.emcp-btn--primary {
+	background: var(--mcp-primary);
+	color: var(--mcp-white);
+	border-color: var(--mcp-primary);
+}
+
+.emcp-btn--primary:hover {
+	background: var(--mcp-primary-hover);
+	border-color: var(--mcp-primary-hover);
+}
+
+.emcp-btn--secondary {
+	background: var(--mcp-white);
+	color: var(--mcp-gray-700);
+	border-color: var(--mcp-gray-300);
+}
+
+.emcp-btn--secondary:hover {
+	background: var(--mcp-gray-50);
+	border-color: var(--mcp-gray-400);
+	color: var(--mcp-gray-800);
+}
+
+.emcp-btn--sm {
+	padding: 6px 14px;
+	font-size: 12px;
+}
+
+/* Toggle embedded inside card body */
+.emcp-card .elementor-mcp-tools-grid {
+	margin: 0;
+}
+
+.emcp-card .elementor-mcp-tool-card {
+	border: 1px solid var(--mcp-gray-100);
+	box-shadow: none;
+}
+
+/* Screenshot preview area (legacy) */
+.emcp-screenshot-preview {
+	margin-top: 4px;
+	border-radius: 8px;
+	overflow: hidden;
+	border: 1px solid var(--mcp-gray-200);
+	box-shadow: var(--mcp-shadow-sm);
+}
+
+.emcp-screenshot-preview img {
+	display: block;
+	width: 100%;
+	height: auto;
+}
+
+/* =========================================================================
+ * Asymmetric Grid (Screenshot = wider left column)
+ * ========================================================================= */
+
+.emcp-settings-grid--asymmetric {
+	grid-template-columns: 1.5fr 1fr;
+}
+
+/* =========================================================================
+ * Status Badge (in card header)
+ * ========================================================================= */
+
+.emcp-badge {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	padding: 3px 10px;
+	border-radius: 20px;
+	font-size: 11px;
+	font-weight: 600;
+	white-space: nowrap;
+	flex-shrink: 0;
+}
+
+.emcp-badge--connected {
+	background: var(--mcp-success-light);
+	color: #059669;
+}
+
+.emcp-badge--disconnected {
+	background: #fef2f2;
+	color: #dc2626;
+}
+
+.emcp-badge--disabled {
+	background: var(--mcp-gray-100);
+	color: var(--mcp-gray-500);
+}
+
+.emcp-badge--invalid {
+	background: #fffbeb;
+	color: #d97706;
+}
+
+/* =========================================================================
+ * Section Divider
+ * ========================================================================= */
+
+.emcp-divider {
+	border: none;
+	border-top: 1px solid var(--mcp-gray-100);
+	margin: 4px 0;
+}
+
+/* =========================================================================
+ * Action Row
+ * ========================================================================= */
+
+.emcp-action-row {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	flex-wrap: wrap;
+}
+
+/* =========================================================================
+ * Ghost Button
+ * ========================================================================= */
+
+.emcp-btn--ghost {
+	background: transparent;
+	color: var(--mcp-gray-500);
+	border-color: var(--mcp-gray-200);
+}
+
+.emcp-btn--ghost:hover {
+	background: var(--mcp-gray-50);
+	color: var(--mcp-gray-700);
+	border-color: var(--mcp-gray-300);
+}
+
+/* =========================================================================
+ * Button State Machine
+ * ========================================================================= */
+
+.emcp-btn--loading {
+	opacity: 0.75;
+	pointer-events: none;
+}
+
+.emcp-btn--loading::before {
+	content: '';
+	display: inline-block;
+	width: 14px;
+	height: 14px;
+	border: 2px solid currentColor;
+	border-top-color: transparent;
+	border-radius: 50%;
+	animation: emcp-spin 0.6s linear infinite;
+	margin-right: 4px;
+	flex-shrink: 0;
+}
+
+@keyframes emcp-spin {
+	to { transform: rotate(360deg); }
+}
+
+.emcp-btn--loading svg {
+	display: none;
+}
+
+.emcp-btn--success {
+	background: #059669 !important;
+	border-color: #059669 !important;
+	color: #fff !important;
+}
+
+.emcp-btn--error {
+	background: #dc2626 !important;
+	border-color: #dc2626 !important;
+	color: #fff !important;
+}
+
+/* =========================================================================
+ * Inline Toast Messages
+ * ========================================================================= */
+
+.emcp-toast {
+	padding: 10px 14px;
+	border-radius: 8px;
+	font-size: 13px;
+	font-weight: 500;
+	line-height: 1.4;
+	animation: emcp-toast-in 0.3s ease;
+}
+
+@keyframes emcp-toast-in {
+	from { opacity: 0; transform: translateY(-6px); }
+	to   { opacity: 1; transform: translateY(0); }
+}
+
+.emcp-toast--success {
+	background: var(--mcp-success-light);
+	color: #059669;
+	border: 1px solid #a7f3d0;
+}
+
+.emcp-toast--error {
+	background: #fef2f2;
+	color: #dc2626;
+	border: 1px solid #fecaca;
+}
+
+.emcp-toast--info {
+	background: #eff6ff;
+	color: #2563eb;
+	border: 1px solid #bfdbfe;
+}
+
+/* =========================================================================
+ * Usage Grid (API stats)
+ * ========================================================================= */
+
+.emcp-subsection-title {
+	font-size: 13px;
+	font-weight: 600;
+	color: var(--mcp-gray-600);
+	margin: 0 0 10px;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+}
+
+.emcp-usage-grid {
+	display: grid;
+	grid-template-columns: repeat(4, 1fr);
+	gap: 12px;
+}
+
+.emcp-usage-item {
+	display: flex;
+	flex-direction: column;
+	gap: 3px;
+	padding: 10px 12px;
+	background: var(--mcp-gray-50);
+	border-radius: 8px;
+	border: 1px solid var(--mcp-gray-100);
+}
+
+.emcp-usage-label {
+	font-size: 11px;
+	font-weight: 500;
+	color: var(--mcp-gray-500);
+	text-transform: uppercase;
+	letter-spacing: 0.3px;
+}
+
+.emcp-usage-value {
+	font-size: 18px;
+	font-weight: 700;
+	color: var(--mcp-gray-800);
+}
+
+/* Usage progress bar */
+.emcp-usage-bar-wrap {
+	height: 6px;
+	background: var(--mcp-gray-100);
+	border-radius: 4px;
+	overflow: hidden;
+	margin-top: 8px;
+}
+
+.emcp-usage-bar {
+	height: 100%;
+	background: var(--mcp-primary);
+	border-radius: 4px;
+	transition: width 0.5s ease;
+	min-width: 0;
+}
+
+.emcp-usage-bar--warn {
+	background: #f59e0b;
+}
+
+.emcp-usage-bar--danger {
+	background: #dc2626;
+}
+
+.emcp-usage-meta {
+	font-size: 12px;
+	color: var(--mcp-gray-400);
+	margin: 6px 0 0;
+}
+
+/* Empty hint */
+.emcp-empty-hint {
+	font-size: 13px;
+	color: var(--mcp-gray-500);
+	margin: 0;
+	padding: 12px 14px;
+	background: var(--mcp-gray-50);
+	border-radius: 8px;
+	border: 1px solid var(--mcp-gray-100);
+}
+
+/* =========================================================================
+ * Screenshot Preview Area
+ * ========================================================================= */
+
+.emcp-preview-area {
+	border-radius: 8px;
+	overflow: hidden;
+	border: 1px solid var(--mcp-gray-200);
+	box-shadow: var(--mcp-shadow-sm);
+	background: var(--mcp-gray-50);
+}
+
+.emcp-preview-area img {
+	display: block;
+	width: 100%;
+	height: auto;
+	max-height: 400px;
+	object-fit: cover;
+	object-position: top left;
+}
+
+/* =========================================================================
+ * Openverse Registration Card
+ * ========================================================================= */
+
+.emcp-ov-register-card {
+	background: var(--mcp-gray-50);
+	border: 1px solid var(--mcp-gray-200);
+	border-radius: 10px;
+	padding: 16px;
+}
+
+.emcp-ov-header {
+	display: flex;
+	align-items: flex-start;
+	gap: 10px;
+	margin-bottom: 14px;
+}
+
+.emcp-ov-header strong {
+	font-size: 13px;
+	font-weight: 600;
+	color: var(--mcp-gray-700);
+}
+
+.emcp-ov-form {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+}
+
+.emcp-ov-form .emcp-field input {
+	background: var(--mcp-white);
+}
+
+/* =========================================================================
+ * Connection Page
+ * ========================================================================= */
+
+.emcp-connection-page {
+	display: flex;
+	flex-direction: column;
+	gap: 24px;
+	max-width: 900px;
+}
+
+/* Status pills row */
+.emcp-status-grid-3 {
+	display: flex;
+	gap: 12px;
+	flex-wrap: wrap;
+	margin-bottom: 16px;
+}
+
+.emcp-status-pill {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 8px 14px;
+	background: var(--mcp-gray-50);
+	border: 1px solid var(--mcp-gray-200);
+	border-radius: 8px;
+	font-size: 13px;
+}
+
+.emcp-status-dot {
+	width: 8px;
+	height: 8px;
+	border-radius: 50%;
+	flex-shrink: 0;
+}
+.emcp-status-dot--ok   { background: #22c55e; }
+.emcp-status-dot--warn { background: #f59e0b; }
+
+.emcp-status-label {
+	color: var(--mcp-gray-600);
+	font-weight: 500;
+}
+
+/* Endpoint bar */
+.emcp-endpoint-bar {
+	margin-top: 4px;
+}
+
+.emcp-endpoint-bar label {
+	font-size: 12px;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+	color: var(--mcp-gray-500);
+	margin-bottom: 6px;
+	display: block;
+}
+
+.emcp-endpoint-row {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	background: var(--mcp-gray-50);
+	border: 1px solid var(--mcp-gray-200);
+	border-radius: 8px;
+	padding: 8px 12px;
+}
+
+.emcp-endpoint-row code {
+	flex: 1;
+	font-size: 13px;
+	color: var(--mcp-gray-700);
+	word-break: break-all;
+	background: none;
+	padding: 0;
+}
+
+/* Generate form row */
+.emcp-gen-form {
+	display: flex;
+	flex-direction: column;
+	gap: 14px;
+}
+
+.emcp-gen-form-row {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 14px;
+}
+
+/* One-time alert banner */
+.emcp-onetime-alert {
+	display: flex;
+	align-items: flex-start;
+	gap: 10px;
+	padding: 12px 16px;
+	background: #fefce8;
+	border: 1px solid #fde68a;
+	border-radius: 10px;
+	margin-bottom: 16px;
+}
+
+.emcp-onetime-alert strong {
+	font-size: 13px;
+	color: #92400e;
+}
+
+.emcp-onetime-alert p {
+	margin: 2px 0 0;
+	font-size: 12px;
+	color: #a16207;
+}
+
+/* Token display */
+.emcp-token-display {
+	margin-bottom: 8px;
+}
+
+.emcp-token-display label {
+	font-size: 12px;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+	color: var(--mcp-gray-500);
+	margin-bottom: 6px;
+	display: block;
+}
+
+.emcp-token-row {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	background: var(--mcp-gray-900);
+	border-radius: 8px;
+	padding: 10px 14px;
+}
+
+.emcp-token-code {
+	flex: 1;
+	font-size: 12px;
+	font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', monospace;
+	color: #4ade80;
+	word-break: break-all;
+	background: none !important;
+	padding: 0;
+}
+
+/* Config tabs */
+.emcp-config-tabs {
+	display: flex;
+	gap: 4px;
+	overflow-x: auto;
+	margin-bottom: 0;
+	border-bottom: 1px solid var(--mcp-gray-200);
+	padding-bottom: 0;
+}
+
+.emcp-config-tab {
+	padding: 8px 14px;
+	font-size: 12px;
+	font-weight: 500;
+	color: var(--mcp-gray-500);
+	background: none;
+	border: none;
+	border-bottom: 2px solid transparent;
+	cursor: pointer;
+	white-space: nowrap;
+	transition: all 0.15s;
+}
+
+.emcp-config-tab:hover {
+	color: var(--mcp-gray-700);
+}
+
+.emcp-config-tab.is-active {
+	color: var(--mcp-primary);
+	border-bottom-color: var(--mcp-primary);
+}
+
+.emcp-config-display {
+	position: relative;
+	background: var(--mcp-gray-50);
+	border: 1px solid var(--mcp-gray-200);
+	border-top: none;
+	border-radius: 0 0 8px 8px;
+	padding: 0;
+}
+
+.emcp-config-display pre {
+	margin: 0;
+	padding: 14px;
+	overflow-x: auto;
+	font-size: 12px;
+	line-height: 1.5;
+	max-height: 250px;
+}
+
+.emcp-config-display pre code {
+	background: none;
+	padding: 0;
+}
+
+.emcp-config-display .emcp-copy-btn {
+	position: absolute;
+	top: 8px;
+	right: 8px;
+}
+
+/* Connection history table */
+.emcp-conn-table {
+	width: 100%;
+	border-collapse: collapse;
+	font-size: 13px;
+}
+
+.emcp-conn-table th {
+	text-align: left;
+	font-size: 11px;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+	color: var(--mcp-gray-500);
+	padding: 8px 12px;
+	border-bottom: 2px solid var(--mcp-gray-200);
+}
+
+.emcp-conn-table td {
+	padding: 12px;
+	border-bottom: 1px solid var(--mcp-gray-100);
+	vertical-align: middle;
+}
+
+.emcp-conn-table tbody tr:hover {
+	background: var(--mcp-gray-50);
+}
+
+.emcp-conn-label-cell {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+}
+
+.emcp-conn-meta {
+	font-size: 11px;
+	color: var(--mcp-gray-400);
+}
+
+.emcp-conn-date {
+	font-size: 12px;
+	color: var(--mcp-gray-500);
+	white-space: nowrap;
+}
+
+.emcp-conn-actions {
+	white-space: nowrap;
+}
+
+.emcp-token-hint {
+	font-size: 12px;
+	font-family: 'SFMono-Regular', Consolas, monospace;
+	color: var(--mcp-gray-500);
+	background: var(--mcp-gray-50);
+	padding: 2px 6px;
+	border-radius: 4px;
+}
+
+.emcp-row--revoked {
+	opacity: 0.55;
+}
+
+.emcp-text-muted {
+	color: var(--mcp-gray-400);
+	font-style: italic;
+}
+
+/* Empty state */
+.emcp-empty-state {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 8px;
+	padding: 40px 20px;
+	text-align: center;
+}
+
+.emcp-empty-state p {
+	margin: 0;
+	color: var(--mcp-gray-500);
+	font-size: 14px;
+}
+
+/* Danger button */
+.emcp-btn--danger {
+	background: #ef4444;
+	color: #fff;
+	border: none;
+}
+
+.emcp-btn--danger:hover {
+	background: #dc2626;
+}
+
+/* Badge danger variant */
+.emcp-badge--danger {
+	background: #fef2f2;
+	color: #dc2626;
+}
+
+.emcp-badge--warning {
+	background: #fefce8;
+	color: #d97706;
+}
+
+.emcp-badge--info {
+	background: #eff6ff;
+	color: #2563eb;
+}
+
+/* Revoke modal */
+.emcp-modal-overlay {
+	position: fixed;
+	inset: 0;
+	background: rgba(0, 0, 0, 0.5);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	z-index: 100000;
+}
+
+.emcp-modal {
+	background: var(--mcp-white);
+	border-radius: 14px;
+	padding: 24px;
+	width: 440px;
+	max-width: 90vw;
+	box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.emcp-modal-header {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	margin-bottom: 12px;
+}
+
+.emcp-modal-header h4 {
+	margin: 0;
+	font-size: 16px;
+	font-weight: 600;
+}
+
+.emcp-modal p {
+	margin: 0 0 8px;
+	font-size: 14px;
+	color: var(--mcp-gray-600);
+}
+
+.emcp-modal-actions {
+	display: flex;
+	justify-content: flex-end;
+	gap: 8px;
+	margin-top: 16px;
+}
+
 /* =========================================================================
  * Responsive
  * ========================================================================= */
 
 @media screen and (max-width: 960px) {
+	.emcp-settings-grid,
+	.emcp-settings-grid--asymmetric {
+		grid-template-columns: 1fr;
+	}
+
+	.emcp-usage-grid {
+		grid-template-columns: repeat(2, 1fr);
+	}
+
+	.emcp-action-row {
+		flex-direction: column;
+		align-items: stretch;
+	}
+
 	.elementor-mcp-stats {
 		flex-wrap: wrap;
 	}

@@ -36,6 +36,27 @@ class Elementor_MCP_Openverse_Client {
 	const TIMEOUT = 15;
 
 	/**
+	 * Optional API token for authenticated access.
+	 *
+	 * When set, requests use Bearer auth for higher rate limits.
+	 * Without a token, anonymous access allows only 100 req/day.
+	 *
+	 * @var string
+	 */
+	private $api_key;
+
+	/**
+	 * Constructor.
+	 *
+	 * @since 2.6.0
+	 *
+	 * @param string $api_key Optional Openverse API token.
+	 */
+	public function __construct( string $api_key = '' ) {
+		$this->api_key = $api_key;
+	}
+
+	/**
 	 * Searches for images on Openverse.
 	 *
 	 * @since 1.1.0
@@ -112,9 +133,7 @@ class Elementor_MCP_Openverse_Client {
 			array(
 				'timeout'    => self::TIMEOUT,
 				'user-agent' => 'Elementor-MCP/' . ELEMENTOR_MCP_VERSION . ' (WordPress/' . get_bloginfo( 'version' ) . ')',
-				'headers'    => array(
-					'Accept' => 'application/json',
-				),
+				'headers'    => $this->get_headers(),
 			)
 		);
 
@@ -134,7 +153,9 @@ class Elementor_MCP_Openverse_Client {
 		if ( 429 === $status_code ) {
 			return new \WP_Error(
 				'rate_limited',
-				__( 'Openverse API rate limit reached. Anonymous access allows 100 requests/day and 5 requests/hour. Please wait before making more requests.', 'elementor-mcp' )
+				empty( $this->api_key )
+					? __( 'Openverse API rate limit reached. Anonymous access allows 100 requests/day. Add an API token in Settings → EMCP Tools → Settings for higher limits.', 'elementor-mcp' )
+					: __( 'Openverse API rate limit reached. Please wait before making more requests.', 'elementor-mcp' )
 			);
 		}
 
@@ -160,5 +181,24 @@ class Elementor_MCP_Openverse_Client {
 		}
 
 		return $data;
+	}
+
+	/**
+	 * Builds request headers, including optional Bearer auth.
+	 *
+	 * @since 2.6.0
+	 *
+	 * @return array Headers array for wp_remote_get.
+	 */
+	private function get_headers(): array {
+		$headers = array(
+			'Accept' => 'application/json',
+		);
+
+		if ( ! empty( $this->api_key ) ) {
+			$headers['Authorization'] = 'Bearer ' . $this->api_key;
+		}
+
+		return $headers;
 	}
 }

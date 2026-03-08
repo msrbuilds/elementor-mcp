@@ -2,8 +2,9 @@
 /**
  * Stock image MCP abilities for Elementor.
  *
- * Registers 3 tools for searching, sideloading, and adding stock images
- * from the Openverse API (WordPress.org's Creative Commons image search).
+ * Registers 3 tools for searching, sideloading, and adding stock images.
+ * Supports multiple providers: Pexels, Pixabay, Unsplash, and Openverse.
+ * The active provider is selected in admin Settings → MCP Tools → Settings.
  *
  * @package Elementor_MCP
  * @since   1.1.0
@@ -31,11 +32,6 @@ class Elementor_MCP_Stock_Image_Abilities {
 	private $factory;
 
 	/**
-	 * @var Elementor_MCP_Openverse_Client
-	 */
-	private $openverse;
-
-	/**
 	 * Constructor.
 	 *
 	 * @since 1.1.0
@@ -44,9 +40,35 @@ class Elementor_MCP_Stock_Image_Abilities {
 	 * @param Elementor_MCP_Element_Factory $factory The element factory.
 	 */
 	public function __construct( Elementor_MCP_Data $data, Elementor_MCP_Element_Factory $factory ) {
-		$this->data      = $data;
-		$this->factory   = $factory;
-		$this->openverse = new Elementor_MCP_Openverse_Client();
+		$this->data    = $data;
+		$this->factory = $factory;
+	}
+
+	/**
+	 * Returns the image search client for the configured provider.
+	 *
+	 * Reads the 'elementor_mcp_stock_provider' and 'elementor_mcp_stock_api_key'
+	 * options set in the admin Settings tab.
+	 *
+	 * @since 2.6.0
+	 *
+	 * @return Elementor_MCP_Openverse_Client|Elementor_MCP_Pexels_Client|Elementor_MCP_Pixabay_Client|Elementor_MCP_Unsplash_Client
+	 */
+	private function get_image_client() {
+		$provider = get_option( 'elementor_mcp_stock_provider', 'openverse' );
+		$api_key  = get_option( 'elementor_mcp_stock_api_key', '' );
+
+		switch ( $provider ) {
+			case 'pexels':
+				return new Elementor_MCP_Pexels_Client( $api_key );
+			case 'pixabay':
+				return new Elementor_MCP_Pixabay_Client( $api_key );
+			case 'unsplash':
+				return new Elementor_MCP_Unsplash_Client( $api_key );
+			case 'openverse':
+			default:
+				return new Elementor_MCP_Openverse_Client( $api_key );
+		}
 	}
 
 	/**
@@ -131,7 +153,7 @@ class Elementor_MCP_Stock_Image_Abilities {
 			'elementor-mcp/search-images',
 			array(
 				'label'               => __( 'Search Images', 'elementor-mcp' ),
-				'description'         => __( 'Searches Openverse (WordPress.org) for Creative Commons licensed images. Returns image URLs, thumbnails, licensing info, and attribution. Use the returned URLs with sideload-image or add-stock-image.', 'elementor-mcp' ),
+				'description'         => __( 'Searches for stock images using the configured provider (Pexels, Pixabay, Unsplash, or Openverse). Returns image URLs, thumbnails, licensing info, and attribution. Use the returned URLs with sideload-image or add-stock-image. Configure the provider in Settings → MCP Tools → Settings.', 'elementor-mcp' ),
 				'category'            => 'elementor-mcp',
 				'execute_callback'    => array( $this, 'execute_search_images' ),
 				'permission_callback' => array( $this, 'check_read_permission' ),
@@ -242,7 +264,8 @@ class Elementor_MCP_Stock_Image_Abilities {
 			}
 		}
 
-		$response = $this->openverse->search_images( $params );
+		$client   = $this->get_image_client();
+		$response = $client->search_images( $params );
 
 		if ( is_wp_error( $response ) ) {
 			return $response;
@@ -455,7 +478,7 @@ class Elementor_MCP_Stock_Image_Abilities {
 			'elementor-mcp/add-stock-image',
 			array(
 				'label'               => __( 'Add Stock Image', 'elementor-mcp' ),
-				'description'         => __( 'Searches Openverse for an image, downloads it to the Media Library, and adds it as an image widget to the page — all in one step. Defaults to landscape (wide) images for consistent layouts. Combines search-images + sideload-image + add-image.', 'elementor-mcp' ),
+				'description'         => __( 'Searches for a stock image using the configured provider (Pexels, Pixabay, Unsplash, or Openverse), downloads it to the Media Library, and adds it as an image widget to the page — all in one step. Defaults to landscape (wide) images. Configure the provider in Settings → MCP Tools → Settings.', 'elementor-mcp' ),
 				'category'            => 'elementor-mcp',
 				'execute_callback'    => array( $this, 'execute_add_stock_image' ),
 				'permission_callback' => array( $this, 'check_combined_permission' ),
