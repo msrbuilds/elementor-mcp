@@ -67,8 +67,9 @@ class Elementor_MCP_Custom_Code_Abilities {
 	 * @since 1.3.0
 	 */
 	public function register(): void {
-		// Custom JS works with free Elementor (uses HTML widget).
+		// Free tools — work with any Elementor installation.
 		$this->register_add_custom_js();
+		$this->register_inject_page_css();
 
 		// Pro-only tools require Elementor Pro.
 		if ( defined( 'ELEMENTOR_PRO_VERSION' ) ) {
@@ -123,6 +124,126 @@ class Elementor_MCP_Custom_Code_Abilities {
 	 */
 	public function check_manage_permission(): bool {
 		return current_user_can( 'manage_options' );
+	}
+
+	// -------------------------------------------------------------------------
+	// inject-page-css (Free — uses HTML widget with <style> tag)
+	// -------------------------------------------------------------------------
+
+	/**
+	 * Registers the inject-page-css ability.
+	 *
+	 * @since 2.1.0
+	 */
+	private function register_inject_page_css(): void {
+		$this->ability_names[] = 'elementor-mcp/inject-page-css';
+
+		wp_register_ability(
+			'elementor-mcp/inject-page-css',
+			array(
+				'label'               => __( 'Inject Page CSS', 'elementor-mcp' ),
+				'description'         => __( 'Injects raw CSS into a page using an invisible HTML widget containing a <style> tag. Works with free Elementor (no Pro required). Use this for pixel-perfect tweaks that cannot be expressed via Elementor settings: custom fonts, CSS variables, keyframe animations, ::before/::after pseudo-elements, media queries, etc. The CSS is automatically wrapped in <style> tags — do NOT include them yourself. Provide a parent_id (any container on the page). Set replace=true to overwrite a previously injected block (identified by widget_id).', 'elementor-mcp' ),
+				'category'            => 'elementor-mcp',
+				'execute_callback'    => array( $this, 'execute_inject_page_css' ),
+				'permission_callback' => array( $this, 'check_edit_permission' ),
+				'input_schema'        => array(
+					'type'       => 'object',
+					'properties' => array(
+						'post_id'   => array(
+							'type'        => 'integer',
+							'description' => __( 'The post/page ID.', 'elementor-mcp' ),
+						),
+						'parent_id' => array(
+							'type'        => 'string',
+							'description' => __( 'Parent container element ID to insert the style widget into.', 'elementor-mcp' ),
+						),
+						'css'       => array(
+							'type'        => 'string',
+							'description' => __( 'CSS rules to inject. Do NOT include <style> tags — they are added automatically.', 'elementor-mcp' ),
+						),
+						'position'  => array(
+							'type'        => 'integer',
+							'description' => __( 'Insert position within parent. -1 = append (default).', 'elementor-mcp' ),
+						),
+					),
+					'required'   => array( 'post_id', 'parent_id', 'css' ),
+				),
+				'output_schema'       => array(
+					'type'       => 'object',
+					'properties' => array(
+						'element_id' => array( 'type' => 'string' ),
+						'post_id'    => array( 'type' => 'integer' ),
+					),
+				),
+				'meta'                => array(
+					'annotations'  => array(
+						'readonly'    => false,
+						'destructive' => false,
+						'idempotent'  => false,
+					),
+					'show_in_rest' => true,
+				),
+			)
+		);
+	}
+
+	/**
+	 * Executes the inject-page-css ability.
+	 *
+	 * @since 2.1.0
+	 *
+	 * @param array $input The input parameters.
+	 * @return array|\WP_Error
+	 */
+	public function execute_inject_page_css( $input ) {
+		$post_id   = absint( $input['post_id'] ?? 0 );
+		$parent_id = sanitize_text_field( $input['parent_id'] ?? '' );
+		$css       = $input['css'] ?? '';
+		$position  = intval( $input['position'] ?? -1 );
+
+		if ( ! $post_id || empty( $parent_id ) || empty( $css ) ) {
+			return new \WP_Error( 'missing_params', __( 'post_id, parent_id, and css are required.', 'elementor-mcp' ) );
+		}
+
+		// Strip any <style> tags the caller may have included.
+		$css = preg_replace( '/<\/?style[^>]*>/i', '', $css );
+		// Strip PHP and script tags for safety.
+		$css = preg_replace( '/<\?(=|php)(.+?)\?>/is', '', $css );
+		$css = preg_replace( '/<script[^>]*>.*?<\/script>/is', '', $css );
+
+		$html_content = "<style>\n" . $css . "\n</style>";
+
+		$page_data = $this->data->get_page_data( $post_id );
+
+		if ( is_wp_error( $page_data ) ) {
+			return $page_data;
+		}
+
+		$widget = $this->factory->create_widget( 'html', array( 'html' => $html_content ) );
+
+		$inserted = $this->data->insert_element( $page_data, $parent_id, $widget, $position );
+
+		if ( ! $inserted ) {
+			return new \WP_Error(
+				'parent_not_found',
+				sprintf(
+					/* translators: %s: parent element ID */
+					__( 'Parent element "%s" not found.', 'elementor-mcp' ),
+					$parent_id
+				)
+			);
+		}
+
+		$result = $this->data->save_page_data( $post_id, $page_data );
+
+		if ( is_wp_error( $result ) ) {
+			return $result;
+		}
+
+		return array(
+			'element_id' => $widget['id'],
+			'post_id'    => $post_id,
+		);
 	}
 
 	// -------------------------------------------------------------------------

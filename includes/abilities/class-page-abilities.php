@@ -57,6 +57,7 @@ class Elementor_MCP_Page_Abilities {
 			'elementor-mcp/delete-page-content',
 			'elementor-mcp/import-template',
 			'elementor-mcp/export-page',
+			'elementor-mcp/validate-page',
 		);
 	}
 
@@ -71,6 +72,7 @@ class Elementor_MCP_Page_Abilities {
 		$this->register_delete_page_content();
 		$this->register_import_template();
 		$this->register_export_page();
+		$this->register_validate_page();
 	}
 
 	/**
@@ -526,6 +528,268 @@ class Elementor_MCP_Page_Abilities {
 		}
 
 		return array( 'json' => $data );
+	}
+
+	// -------------------------------------------------------------------------
+	// validate-page
+	// -------------------------------------------------------------------------
+
+	/**
+	 * Registers the validate-page ability.
+	 *
+	 * @since 2.4.0
+	 */
+	private function register_validate_page(): void {
+		wp_register_ability(
+			'elementor-mcp/validate-page',
+			array(
+				'label'               => __( 'Validate Page', 'elementor-mcp' ),
+				'description'         => __(
+					'Scans an Elementor page for common build errors and returns a list of warnings. '
+					. 'Checks for: missing background companion keys, typography without custom enabled, '
+					. 'empty containers, widgets with no content, borders without type, and placeholder image URLs. '
+					. 'Run this after building a page to catch issues before publishing.',
+					'elementor-mcp'
+				),
+				'category'            => 'elementor-mcp',
+				'execute_callback'    => array( $this, 'execute_validate_page' ),
+				'permission_callback' => array( $this, 'check_edit_permission' ),
+				'input_schema'        => array(
+					'type'       => 'object',
+					'properties' => array(
+						'post_id' => array(
+							'type'        => 'integer',
+							'description' => __( 'The post/page ID to validate.', 'elementor-mcp' ),
+						),
+					),
+					'required'   => array( 'post_id' ),
+				),
+				'output_schema'       => array(
+					'type'       => 'object',
+					'properties' => array(
+						'valid'         => array( 'type' => 'boolean' ),
+						'warning_count' => array( 'type' => 'integer' ),
+						'warnings'      => array( 'type' => 'array' ),
+						'element_count' => array( 'type' => 'integer' ),
+					),
+				),
+				'meta'                => array(
+					'annotations'  => array(
+						'readonly'    => true,
+						'destructive' => false,
+						'idempotent'  => true,
+					),
+					'show_in_rest' => true,
+				),
+			)
+		);
+	}
+
+	/**
+	 * Executes the validate-page ability.
+	 *
+	 * Recursively scans the page element tree and reports common issues.
+	 *
+	 * @since 2.4.0
+	 *
+	 * @param array $input The input parameters.
+	 * @return array|\WP_Error
+	 */
+	public function execute_validate_page( $input ) {
+		$post_id = absint( $input['post_id'] ?? 0 );
+
+		if ( ! $post_id ) {
+			return new \WP_Error( 'missing_post_id', __( 'The post_id parameter is required.', 'elementor-mcp' ) );
+		}
+
+		$page_data = $this->data->get_page_data( $post_id );
+
+		if ( is_wp_error( $page_data ) ) {
+			return $page_data;
+		}
+
+		$warnings      = array();
+		$element_count = 0;
+
+		$this->validate_elements( $page_data, $warnings, $element_count );
+
+		return array(
+			'valid'         => empty( $warnings ),
+			'warning_count' => count( $warnings ),
+			'warnings'      => $warnings,
+			'element_count' => $element_count,
+		);
+	}
+
+	/**
+	 * Recursively validates elements in the page tree.
+	 *
+	 * @param array $elements      The element tree.
+	 * @param array &$warnings     Warnings collector.
+	 * @param int   &$element_count Element counter.
+	 * @param int   $depth          Current nesting depth.
+	 */
+	private function validate_elements( array $elements, array &$warnings, int &$element_count, int $depth = 0 ): void {
+		foreach ( $elements as $element ) {
+			$element_count++;
+
+			$id       = $element['id'] ?? 'unknown';
+			$type     = $element['elType'] ?? $element['type'] ?? 'unknown';
+			$settings = $element['settings'] ?? array();
+			$children = $element['elements'] ?? array();
+
+			$widget_type = $element['widgetType'] ?? '';
+			$label       = $widget_type ? $widget_type : $type;
+
+			// 1. Empty container check.
+			if ( 'container' === $type && empty( $children ) ) {
+				$warnings[] = array(
+					'element_id' => $id,
+					'type'       => $label,
+					'severity'   => 'warning',
+					'message'    => 'Empty container — has no child elements.',
+					'fix'        => 'Add child widgets/containers or remove this empty container.',
+				);
+			}
+
+			// 2. Background color without background_background.
+			if (
+				! empty( $settings['background_color'] ) &&
+				empty( $settings['background_background'] )
+			) {
+				$warnings[] = array(
+					'element_id' => $id,
+					'type'       => $label,
+					'severity'   => 'error',
+					'message'    => 'background_color is set but background_background is missing — color will NOT render.',
+					'fix'        => 'Add background_background="classic" to this element.',
+				);
+			}
+
+			// 3. Typography font_size without typography_typography=custom.
+			if (
+				( ! empty( $settings['typography_font_size'] ) || ! empty( $settings['typography_font_weight'] ) || ! empty( $settings['typography_font_family'] ) ) &&
+				( empty( $settings['typography_typography'] ) || 'custom' !== $settings['typography_typography'] )
+			) {
+				$warnings[] = array(
+					'element_id' => $id,
+					'type'       => $label,
+					'severity'   => 'error',
+					'message'    => 'Typography settings set without typography_typography="custom" — font styles will be IGNORED.',
+					'fix'        => 'Add typography_typography="custom" to enable the typography group.',
+				);
+			}
+
+			// 4. Border color without border type.
+			if (
+				! empty( $settings['border_color'] ) &&
+				empty( $settings['border_border'] )
+			) {
+				$warnings[] = array(
+					'element_id' => $id,
+					'type'       => $label,
+					'severity'   => 'error',
+					'message'    => 'border_color is set but border_border is missing — no border will render.',
+					'fix'        => 'Add border_border="solid" (or dotted/dashed/double).',
+				);
+			}
+
+			// 5. Box shadow without type enabled.
+			if (
+				! empty( $settings['box_shadow_box_shadow'] ) &&
+				empty( $settings['box_shadow_box_shadow_type'] )
+			) {
+				$warnings[] = array(
+					'element_id' => $id,
+					'type'       => $label,
+					'severity'   => 'error',
+					'message'    => 'box_shadow_box_shadow is set but box_shadow_box_shadow_type is missing — shadow will NOT render.',
+					'fix'        => 'Add box_shadow_box_shadow_type="yes".',
+				);
+			}
+
+			// 6. Empty heading widget.
+			if ( 'heading' === $widget_type && empty( $settings['title'] ) ) {
+				$warnings[] = array(
+					'element_id' => $id,
+					'type'       => $label,
+					'severity'   => 'warning',
+					'message'    => 'Heading widget has no title text.',
+					'fix'        => 'Set the title setting.',
+				);
+			}
+
+			// 7. Empty button widget.
+			if ( 'button' === $widget_type && empty( $settings['text'] ) ) {
+				$warnings[] = array(
+					'element_id' => $id,
+					'type'       => $label,
+					'severity'   => 'warning',
+					'message'    => 'Button widget has no text.',
+					'fix'        => 'Set the text setting.',
+				);
+			}
+
+			// 8. Image widget with placeholder or empty URL.
+			if ( 'image' === $widget_type ) {
+				$img_url = $settings['image']['url'] ?? '';
+				if ( empty( $img_url ) ) {
+					$warnings[] = array(
+						'element_id' => $id,
+						'type'       => $label,
+						'severity'   => 'warning',
+						'message'    => 'Image widget has no image URL.',
+						'fix'        => 'Set image={"url": "...", "id": 123}.',
+					);
+				} elseif (
+					false !== strpos( $img_url, 'placeholder' ) ||
+					false !== strpos( $img_url, 'via.placeholder' ) ||
+					false !== strpos( $img_url, 'dummyimage' ) ||
+					false !== strpos( $img_url, 'picsum.photos' )
+				) {
+					$warnings[] = array(
+						'element_id' => $id,
+						'type'       => $label,
+						'severity'   => 'warning',
+						'message'    => 'Image uses a placeholder URL: ' . $img_url,
+						'fix'        => 'Use search-images + sideload-image to get a real image.',
+					);
+				}
+			}
+
+			// 9. Text editor with empty content.
+			if ( 'text-editor' === $widget_type ) {
+				$editor_content = trim( wp_strip_all_tags( $settings['editor'] ?? '' ) );
+				if ( empty( $editor_content ) ) {
+					$warnings[] = array(
+						'element_id' => $id,
+						'type'       => $label,
+						'severity'   => 'warning',
+						'message'    => 'Text editor widget has empty content.',
+						'fix'        => 'Set editor="<p>Your content</p>".',
+					);
+				}
+			}
+
+			// 10. Bare number values for dimension settings (should be {size, unit}).
+			$dimension_keys = array( 'padding', 'margin', 'border_radius', 'border_width', 'min_height', 'typography_font_size' );
+			foreach ( $dimension_keys as $key ) {
+				if ( isset( $settings[ $key ] ) && is_numeric( $settings[ $key ] ) ) {
+					$warnings[] = array(
+						'element_id' => $id,
+						'type'       => $label,
+						'severity'   => 'error',
+						'message'    => $key . ' is a bare number (' . $settings[ $key ] . ') — must be an object.',
+						'fix'        => 'Use {"size": ' . $settings[ $key ] . ', "unit": "px"} format.',
+					);
+				}
+			}
+
+			// Recurse into children.
+			if ( ! empty( $children ) && is_array( $children ) ) {
+				$this->validate_elements( $children, $warnings, $element_count, $depth + 1 );
+			}
+		}
 	}
 
 }

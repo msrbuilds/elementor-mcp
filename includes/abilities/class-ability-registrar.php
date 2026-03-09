@@ -134,6 +134,11 @@ class Elementor_MCP_Ability_Registrar {
 		$custom_code->register();
 		$this->ability_names = array_merge( $this->ability_names, $custom_code->get_ability_names() );
 
+		// Screenshot abilities (take-screenshot, get-page-screenshot).
+		$screenshots = new Elementor_MCP_Screenshot_Abilities();
+		$screenshot_names = $screenshots->register();
+		$this->ability_names = array_merge( $this->ability_names, $screenshot_names );
+
 		/**
 		 * Filters the registered ability names.
 		 *
