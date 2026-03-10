@@ -23,9 +23,3 @@ Thumbs.db
 
 #Tests
 releases/*
-
-#Security
-.mcp.json
-
-#Meta
-docs/*
