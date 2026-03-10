@@ -22,9 +22,10 @@ Thumbs.db
 .claude/settings.json
 
 #Tests
-tests/*
 releases/*
+
+#Security
+.mcp.json
 
 #Meta
 docs/*
-.security/*

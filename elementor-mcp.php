@@ -4,9 +4,9 @@
  * Plugin URI:        https://github.com/msrbuilds/elementor-mcpelementor-mcp
  * Description:       Extends the WordPress MCP Adapter to expose Elementor data, widgets, and page design tools as MCP tools for AI agents.
  * Version:           1.4.2
- * Requires at least: 6.7
+ * Requires at least: 6.9
  * Tested up to:      6.9
- * Requires PHP:      7.4
+ * Requires PHP:      8.0
  * Author:            Mian Shahzad Raza
  * Author URI:        https://msrbuilds.com
  * License:           GPL-2.0-or-later
