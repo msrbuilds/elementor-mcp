@@ -146,6 +146,14 @@ class Elementor_MCP_Widget_Abilities {
 			$this->register_add_media_carousel();
 			$this->register_add_nested_tabs();
 			$this->register_add_nested_accordion();
+			$this->register_add_portfolio();
+			$this->register_add_author_box();
+			$this->register_add_login();
+			$this->register_add_code_highlight();
+			$this->register_add_reviews();
+			$this->register_add_off_canvas();
+			$this->register_add_progress_tracker();
+			$this->register_add_search();
 
 			// WooCommerce widget convenience tools (only if WooCommerce is active).
 			if ( class_exists( 'WooCommerce' ) ) {
@@ -2170,6 +2178,221 @@ class Elementor_MCP_Widget_Abilities {
 			array(),
 			'nested-accordion',
 			array( 'default_state' => 'expanded', 'max_items_expended' => 'one' )
+		);
+	}
+
+	private function register_add_portfolio(): void {
+		$this->register_convenience_tool(
+			'add-portfolio',
+			__( 'Add Portfolio (Pro)', 'elementor-mcp' ),
+			__( 'Adds an Elementor Pro portfolio widget to display a filterable grid of posts or custom post types.', 'elementor-mcp' ),
+			array(
+				'columns'             => array( 'type' => 'integer', 'description' => __( 'Number of columns. Default: 3.', 'elementor-mcp' ) ),
+				'posts_per_page'      => array( 'type' => 'integer', 'description' => __( 'Number of posts to display. Default: 6.', 'elementor-mcp' ) ),
+				'show_filter_bar'     => array( 'type' => 'string', 'enum' => array( 'yes', 'no' ), 'description' => __( 'Show category filter bar. Default: no.', 'elementor-mcp' ) ),
+				'masonry'             => array( 'type' => 'string', 'enum' => array( 'yes', 'no' ), 'description' => __( 'Enable masonry layout. Default: no.', 'elementor-mcp' ) ),
+				'show_title'          => array( 'type' => 'string', 'enum' => array( 'yes', 'no' ), 'description' => __( 'Show post title overlay. Default: yes.', 'elementor-mcp' ) ),
+				'title_tag'           => array( 'type' => 'string', 'enum' => array( 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'div', 'span', 'p' ), 'description' => __( 'HTML tag for the title. Default: h3.', 'elementor-mcp' ) ),
+				'thumbnail_size_size' => array( 'type' => 'string', 'enum' => array( 'thumbnail', 'medium', 'medium_large', 'large', 'full' ), 'description' => __( 'Image size. Default: medium.', 'elementor-mcp' ) ),
+			),
+			array(),
+			'portfolio',
+			array(
+				'columns'             => 3,
+				'posts_per_page'      => 6,
+				'show_filter_bar'     => 'no',
+				'masonry'             => 'no',
+				'show_title'          => 'yes',
+				'title_tag'           => 'h3',
+				'thumbnail_size_size' => 'medium',
+			)
+		);
+	}
+
+	private function register_add_author_box(): void {
+		$this->register_convenience_tool(
+			'add-author-box',
+			__( 'Add Author Box (Pro)', 'elementor-mcp' ),
+			__( 'Adds an Elementor Pro author box widget displaying the post author\'s avatar, name, bio, and a link to their posts.', 'elementor-mcp' ),
+			array(
+				'show_avatar'     => array( 'type' => 'string', 'enum' => array( 'yes', 'no' ), 'description' => __( 'Show author avatar. Default: yes.', 'elementor-mcp' ) ),
+				'avatar_size'     => array( 'type' => 'integer', 'description' => __( 'Avatar size in pixels. Default: 96.', 'elementor-mcp' ) ),
+				'show_name'       => array( 'type' => 'string', 'enum' => array( 'yes', 'no' ), 'description' => __( 'Show author name. Default: yes.', 'elementor-mcp' ) ),
+				'author_name_tag' => array( 'type' => 'string', 'enum' => array( 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'div', 'span', 'p' ), 'description' => __( 'HTML tag for the author name. Default: h3.', 'elementor-mcp' ) ),
+				'show_biography'  => array( 'type' => 'string', 'enum' => array( 'yes', 'no' ), 'description' => __( 'Show author biography. Default: yes.', 'elementor-mcp' ) ),
+				'show_link'       => array( 'type' => 'string', 'enum' => array( 'yes', 'no' ), 'description' => __( 'Show link button to author posts. Default: yes.', 'elementor-mcp' ) ),
+				'link_text'       => array( 'type' => 'string', 'description' => __( 'Button label for the author posts link. Default: More Posts.', 'elementor-mcp' ) ),
+				'alignment'       => array( 'type' => 'string', 'enum' => array( 'left', 'center', 'right' ), 'description' => __( 'Content alignment. Default: left.', 'elementor-mcp' ) ),
+			),
+			array(),
+			'author-box',
+			array(
+				'show_avatar'     => 'yes',
+				'avatar_size'     => 96,
+				'show_name'       => 'yes',
+				'author_name_tag' => 'h3',
+				'show_biography'  => 'yes',
+				'show_link'       => 'yes',
+				'link_text'       => 'More Posts',
+				'alignment'       => 'left',
+			)
+		);
+	}
+
+	private function register_add_login(): void {
+		$this->register_convenience_tool(
+			'add-login',
+			__( 'Add Login (Pro)', 'elementor-mcp' ),
+			__( 'Adds an Elementor Pro login form widget with configurable fields, labels, remember me, lost password link, and post-login redirect.', 'elementor-mcp' ),
+			array(
+				'show_labels'          => array( 'type' => 'string', 'enum' => array( 'yes', 'no' ), 'description' => __( 'Show field labels. Default: yes.', 'elementor-mcp' ) ),
+				'show_remember_me'     => array( 'type' => 'string', 'enum' => array( 'yes', 'no' ), 'description' => __( 'Show "Remember Me" checkbox. Default: yes.', 'elementor-mcp' ) ),
+				'show_lost_password'   => array( 'type' => 'string', 'enum' => array( 'yes', 'no' ), 'description' => __( 'Show "Lost Password" link. Default: yes.', 'elementor-mcp' ) ),
+				'button_text'          => array( 'type' => 'string', 'description' => __( 'Submit button label. Default: Log In.', 'elementor-mcp' ) ),
+				'button_size'          => array( 'type' => 'string', 'enum' => array( 'xs', 'sm', 'md', 'lg', 'xl' ), 'description' => __( 'Button size preset. Default: sm.', 'elementor-mcp' ) ),
+				'redirect_after_login' => array( 'type' => 'string', 'enum' => array( 'yes', 'no' ), 'description' => __( 'Enable custom redirect after login. Default: no.', 'elementor-mcp' ) ),
+				'redirect_url'         => array( 'type' => 'string', 'description' => __( 'URL to redirect to after login (requires redirect_after_login=yes).', 'elementor-mcp' ) ),
+				'align'                => array( 'type' => 'string', 'enum' => array( 'left', 'center', 'right', 'justify' ), 'description' => __( 'Button alignment. Default: left.', 'elementor-mcp' ) ),
+			),
+			array(),
+			'login',
+			array(
+				'show_labels'          => 'yes',
+				'show_remember_me'     => 'yes',
+				'show_lost_password'   => 'yes',
+				'button_text'          => 'Log In',
+				'button_size'          => 'sm',
+				'redirect_after_login' => 'no',
+				'redirect_url'         => '',
+				'align'                => 'left',
+			)
+		);
+	}
+
+	private function register_add_code_highlight(): void {
+		$this->register_convenience_tool(
+			'add-code-highlight',
+			__( 'Add Code Highlight (Pro)', 'elementor-mcp' ),
+			__( 'Adds a syntax-highlighted code block widget.', 'elementor-mcp' ),
+			array(
+				'code'              => array( 'type' => 'string', 'description' => __( 'The code content to display.', 'elementor-mcp' ) ),
+				'language'          => array( 'type' => 'string', 'enum' => array( 'php', 'javascript', 'css', 'html', 'python', 'bash' ), 'description' => __( 'Syntax language. Default: php.', 'elementor-mcp' ) ),
+				'theme'             => array( 'type' => 'string', 'enum' => array( 'default', 'dark', 'funky', 'okaidia', 'twilight', 'coy' ), 'description' => __( 'Color theme. Default: default.', 'elementor-mcp' ) ),
+				'line_numbers'      => array( 'type' => 'string', 'enum' => array( 'yes', 'no' ), 'description' => __( 'Show line numbers. Default: yes.', 'elementor-mcp' ) ),
+				'copy_to_clipboard' => array( 'type' => 'string', 'enum' => array( 'yes', 'no' ), 'description' => __( 'Show copy-to-clipboard button. Default: yes.', 'elementor-mcp' ) ),
+			),
+			array(),
+			'code-highlight',
+			array(
+				'code'              => '',
+				'language'          => 'php',
+				'theme'             => 'default',
+				'line_numbers'      => 'yes',
+				'copy_to_clipboard' => 'yes',
+			)
+		);
+	}
+
+	private function register_add_reviews(): void {
+		$this->register_convenience_tool(
+			'add-reviews',
+			__( 'Add Reviews (Pro)', 'elementor-mcp' ),
+			__( 'Adds a reviews/testimonials carousel widget.', 'elementor-mcp' ),
+			array(
+				'slides_per_view' => array( 'type' => 'integer', 'description' => __( 'Number of slides visible at once. Default: 3.', 'elementor-mcp' ) ),
+				'autoplay'        => array( 'type' => 'string', 'enum' => array( 'yes', 'no' ), 'description' => __( 'Enable autoplay. Default: no.', 'elementor-mcp' ) ),
+				'autoplay_speed'  => array( 'type' => 'integer', 'description' => __( 'Autoplay speed in milliseconds. Default: 3000.', 'elementor-mcp' ) ),
+				'loop'            => array( 'type' => 'string', 'enum' => array( 'yes', 'no' ), 'description' => __( 'Enable infinite loop. Default: yes.', 'elementor-mcp' ) ),
+				'show_arrows'     => array( 'type' => 'string', 'enum' => array( 'yes', 'no' ), 'description' => __( 'Show navigation arrows. Default: yes.', 'elementor-mcp' ) ),
+				'pause_on_hover'  => array( 'type' => 'string', 'enum' => array( 'yes', 'no' ), 'description' => __( 'Pause autoplay on hover. Default: yes.', 'elementor-mcp' ) ),
+			),
+			array(),
+			'reviews',
+			array(
+				'slides_per_view' => 3,
+				'autoplay'        => 'no',
+				'autoplay_speed'  => 3000,
+				'loop'            => 'yes',
+				'show_arrows'     => 'yes',
+				'pause_on_hover'  => 'yes',
+			)
+		);
+	}
+
+	private function register_add_off_canvas(): void {
+		$this->register_convenience_tool(
+			'add-off-canvas',
+			__( 'Add Off-Canvas (Pro)', 'elementor-mcp' ),
+			__( 'Adds an off-canvas panel widget.', 'elementor-mcp' ),
+			array(
+				'horizontal_position' => array( 'type' => 'string', 'enum' => array( 'left', 'right' ), 'description' => __( 'Panel side. Default: left.', 'elementor-mcp' ) ),
+				'vertical_position'   => array( 'type' => 'string', 'enum' => array( 'top', 'center', 'bottom' ), 'description' => __( 'Vertical alignment. Default: center.', 'elementor-mcp' ) ),
+				'width'               => array( 'type' => 'integer', 'description' => __( 'Panel width in pixels. Default: 300.', 'elementor-mcp' ) ),
+				'entrance_animation'  => array( 'type' => 'string', 'enum' => array( 'none', 'slideInLeft', 'slideInRight', 'fadeIn' ), 'description' => __( 'Open animation. Default: slideInLeft.', 'elementor-mcp' ) ),
+				'has_overlay'         => array( 'type' => 'string', 'enum' => array( 'yes', 'no' ), 'description' => __( 'Show background overlay. Default: yes.', 'elementor-mcp' ) ),
+				'prevent_scroll'      => array( 'type' => 'string', 'enum' => array( 'yes', 'no' ), 'description' => __( 'Lock body scroll when open. Default: yes.', 'elementor-mcp' ) ),
+			),
+			array(),
+			'off-canvas',
+			array(
+				'horizontal_position' => 'left',
+				'vertical_position'   => 'center',
+				'width'               => 300,
+				'entrance_animation'  => 'slideInLeft',
+				'has_overlay'         => 'yes',
+				'prevent_scroll'      => 'yes',
+			)
+		);
+	}
+
+	private function register_add_progress_tracker(): void {
+		$this->register_convenience_tool(
+			'add-progress-tracker',
+			__( 'Add Progress Tracker (Pro)', 'elementor-mcp' ),
+			__( 'Adds a scroll progress tracker widget.', 'elementor-mcp' ),
+			array(
+				'type'          => array( 'type' => 'string', 'enum' => array( 'horizontal', 'circular' ), 'description' => __( 'Tracker style. Default: horizontal.', 'elementor-mcp' ) ),
+				'relative_to'   => array( 'type' => 'string', 'enum' => array( 'page', 'element' ), 'description' => __( 'What to track. Default: page.', 'elementor-mcp' ) ),
+				'align'         => array( 'type' => 'string', 'enum' => array( 'left', 'center', 'right' ), 'description' => __( 'Alignment. Default: left.', 'elementor-mcp' ) ),
+				'circular_size' => array( 'type' => 'integer', 'description' => __( 'Circle diameter in pixels (circular type). Default: 200.', 'elementor-mcp' ) ),
+				'circular_width' => array( 'type' => 'integer', 'description' => __( 'Circle stroke width in pixels (circular type). Default: 8.', 'elementor-mcp' ) ),
+			),
+			array(),
+			'progress-tracker',
+			array(
+				'type'           => 'horizontal',
+				'relative_to'    => 'page',
+				'align'          => 'left',
+				'circular_size'  => 200,
+				'circular_width' => 8,
+			)
+		);
+	}
+
+	private function register_add_search(): void {
+		$this->register_convenience_tool(
+			'add-search',
+			__( 'Add Search (Pro)', 'elementor-mcp' ),
+			__( 'Adds a search widget with live results support.', 'elementor-mcp' ),
+			array(
+				'search_input_placeholder_text' => array( 'type' => 'string', 'description' => __( 'Placeholder text for the search input. Default: Search...', 'elementor-mcp' ) ),
+				'submit_trigger'                => array( 'type' => 'string', 'enum' => array( 'button', 'auto' ), 'description' => __( 'Search trigger method. Default: button.', 'elementor-mcp' ) ),
+				'submit_button_text'            => array( 'type' => 'string', 'description' => __( 'Submit button label. Default: Search.', 'elementor-mcp' ) ),
+				'live_results'                  => array( 'type' => 'string', 'enum' => array( 'yes', 'no' ), 'description' => __( 'Enable live search results dropdown. Default: no.', 'elementor-mcp' ) ),
+				'number_of_items'               => array( 'type' => 'integer', 'description' => __( 'Max results to show. Default: 5.', 'elementor-mcp' ) ),
+				'search_query_post_type'        => array( 'type' => 'string', 'description' => __( 'Post type to search. Default: any.', 'elementor-mcp' ) ),
+			),
+			array(),
+			'search',
+			array(
+				'search_input_placeholder_text' => 'Search...',
+				'submit_trigger'                => 'button',
+				'submit_button_text'            => 'Search',
+				'live_results'                  => 'no',
+				'number_of_items'               => 5,
+				'search_query_post_type'        => 'any',
+
+			)
 		);
 	}
 

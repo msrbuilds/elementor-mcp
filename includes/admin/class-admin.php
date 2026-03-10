@@ -718,6 +718,31 @@ class Elementor_MCP_Admin {
 						'description' => __( 'Adds nested accordion widget where each item is a container.', 'elementor-mcp' ),
 						'badges'      => array( 'pro' ),
 					),
+					'elementor-mcp/add-code-highlight'       => array(
+						'label'       => __( 'Add Code Highlight', 'elementor-mcp' ),
+						'description' => __( 'Adds a syntax-highlighted code block widget.', 'elementor-mcp' ),
+						'badges'      => array( 'pro' ),
+					),
+					'elementor-mcp/add-reviews'              => array(
+						'label'       => __( 'Add Reviews', 'elementor-mcp' ),
+						'description' => __( 'Adds a reviews/testimonials carousel widget.', 'elementor-mcp' ),
+						'badges'      => array( 'pro' ),
+					),
+					'elementor-mcp/add-off-canvas'           => array(
+						'label'       => __( 'Add Off-Canvas', 'elementor-mcp' ),
+						'description' => __( 'Adds an off-canvas panel widget.', 'elementor-mcp' ),
+						'badges'      => array( 'pro' ),
+					),
+					'elementor-mcp/add-progress-tracker'     => array(
+						'label'       => __( 'Add Progress Tracker', 'elementor-mcp' ),
+						'description' => __( 'Adds a scroll progress tracker widget.', 'elementor-mcp' ),
+						'badges'      => array( 'pro' ),
+					),
+					'elementor-mcp/add-search'               => array(
+						'label'       => __( 'Add Search', 'elementor-mcp' ),
+						'description' => __( 'Adds a search widget with live results support.', 'elementor-mcp' ),
+						'badges'      => array( 'pro' ),
+					),
 				),
 			),
 			'template'         => array(
