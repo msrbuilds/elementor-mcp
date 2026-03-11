@@ -136,7 +136,7 @@ class Elementor_MCP_Page_Abilities {
 	// -------------------------------------------------------------------------
 
 	private function register_create_page(): void {
-		wp_register_ability(
+		elementor_mcp_register_ability(
 			'elementor-mcp/create-page',
 			array(
 				'label'               => __( 'Create Elementor Page', 'elementor-mcp' ),
@@ -261,7 +261,7 @@ class Elementor_MCP_Page_Abilities {
 	// -------------------------------------------------------------------------
 
 	private function register_update_page_settings(): void {
-		wp_register_ability(
+		elementor_mcp_register_ability(
 			'elementor-mcp/update-page-settings',
 			array(
 				'label'               => __( 'Update Page Settings', 'elementor-mcp' ),
@@ -327,7 +327,7 @@ class Elementor_MCP_Page_Abilities {
 	// -------------------------------------------------------------------------
 
 	private function register_delete_page_content(): void {
-		wp_register_ability(
+		elementor_mcp_register_ability(
 			'elementor-mcp/delete-page-content',
 			array(
 				'label'               => __( 'Delete Page Content', 'elementor-mcp' ),
@@ -384,7 +384,7 @@ class Elementor_MCP_Page_Abilities {
 	// -------------------------------------------------------------------------
 
 	private function register_import_template(): void {
-		wp_register_ability(
+		elementor_mcp_register_ability(
 			'elementor-mcp/import-template',
 			array(
 				'label'               => __( 'Import Template', 'elementor-mcp' ),
@@ -402,6 +402,9 @@ class Elementor_MCP_Page_Abilities {
 						'template_json' => array(
 							'type'        => 'array',
 							'description' => __( 'Elementor JSON element structure to import.', 'elementor-mcp' ),
+							'items'       => array(
+								'type' => 'object',
+							),
 						),
 						'position'      => array(
 							'type'        => 'integer',
@@ -476,7 +479,7 @@ class Elementor_MCP_Page_Abilities {
 	// -------------------------------------------------------------------------
 
 	private function register_export_page(): void {
-		wp_register_ability(
+		elementor_mcp_register_ability(
 			'elementor-mcp/export-page',
 			array(
 				'label'               => __( 'Export Page', 'elementor-mcp' ),

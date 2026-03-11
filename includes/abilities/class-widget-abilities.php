@@ -194,7 +194,7 @@ class Elementor_MCP_Widget_Abilities {
 	private function register_add_widget(): void {
 		$this->ability_names[] = 'elementor-mcp/add-widget';
 
-		wp_register_ability(
+		elementor_mcp_register_ability(
 			'elementor-mcp/add-widget',
 			array(
 				'label'               => __( 'Add Widget', 'elementor-mcp' ),
@@ -317,7 +317,7 @@ class Elementor_MCP_Widget_Abilities {
 	private function register_update_widget(): void {
 		$this->ability_names[] = 'elementor-mcp/update-widget';
 
-		wp_register_ability(
+		elementor_mcp_register_ability(
 			'elementor-mcp/update-widget',
 			array(
 				'label'               => __( 'Update Widget', 'elementor-mcp' ),
@@ -458,7 +458,7 @@ class Elementor_MCP_Widget_Abilities {
 
 		$all_required = array_unique( array_merge( array( 'post_id', 'parent_id' ), $required ) );
 
-		wp_register_ability(
+		elementor_mcp_register_ability(
 			$full_name,
 			array(
 				'label'               => $label,

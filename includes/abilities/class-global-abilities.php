@@ -76,7 +76,7 @@ class Elementor_MCP_Global_Abilities {
 	// -------------------------------------------------------------------------
 
 	private function register_update_global_colors(): void {
-		wp_register_ability(
+		elementor_mcp_register_ability(
 			'elementor-mcp/update-global-colors',
 			array(
 				'label'               => __( 'Update Global Colors', 'elementor-mcp' ),
@@ -193,7 +193,7 @@ class Elementor_MCP_Global_Abilities {
 	// -------------------------------------------------------------------------
 
 	private function register_update_global_typography(): void {
-		wp_register_ability(
+		elementor_mcp_register_ability(
 			'elementor-mcp/update-global-typography',
 			array(
 				'label'               => __( 'Update Global Typography', 'elementor-mcp' ),

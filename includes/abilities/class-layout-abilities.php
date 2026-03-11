@@ -105,7 +105,7 @@ class Elementor_MCP_Layout_Abilities {
 	// -------------------------------------------------------------------------
 
 	private function register_add_container(): void {
-		wp_register_ability(
+		elementor_mcp_register_ability(
 			'elementor-mcp/add-container',
 			array(
 				'label'               => __( 'Add Container', 'elementor-mcp' ),
@@ -214,7 +214,7 @@ class Elementor_MCP_Layout_Abilities {
 	// -------------------------------------------------------------------------
 
 	private function register_update_container(): void {
-		wp_register_ability(
+		elementor_mcp_register_ability(
 			'elementor-mcp/update-container',
 			array(
 				'label'               => __( 'Update Container', 'elementor-mcp' ),
@@ -311,7 +311,7 @@ class Elementor_MCP_Layout_Abilities {
 	// -------------------------------------------------------------------------
 
 	private function register_update_element(): void {
-		wp_register_ability(
+		elementor_mcp_register_ability(
 			'elementor-mcp/update-element',
 			array(
 				'label'               => __( 'Update Element', 'elementor-mcp' ),
@@ -402,7 +402,7 @@ class Elementor_MCP_Layout_Abilities {
 	// -------------------------------------------------------------------------
 
 	private function register_batch_update(): void {
-		wp_register_ability(
+		elementor_mcp_register_ability(
 			'elementor-mcp/batch-update',
 			array(
 				'label'               => __( 'Batch Update Elements', 'elementor-mcp' ),
@@ -512,7 +512,7 @@ class Elementor_MCP_Layout_Abilities {
 	// -------------------------------------------------------------------------
 
 	private function register_reorder_elements(): void {
-		wp_register_ability(
+		elementor_mcp_register_ability(
 			'elementor-mcp/reorder-elements',
 			array(
 				'label'               => __( 'Reorder Elements', 'elementor-mcp' ),
@@ -658,7 +658,7 @@ class Elementor_MCP_Layout_Abilities {
 	// -------------------------------------------------------------------------
 
 	private function register_move_element(): void {
-		wp_register_ability(
+		elementor_mcp_register_ability(
 			'elementor-mcp/move-element',
 			array(
 				'label'               => __( 'Move Element', 'elementor-mcp' ),
@@ -765,7 +765,7 @@ class Elementor_MCP_Layout_Abilities {
 	// -------------------------------------------------------------------------
 
 	private function register_remove_element(): void {
-		wp_register_ability(
+		elementor_mcp_register_ability(
 			'elementor-mcp/remove-element',
 			array(
 				'label'               => __( 'Remove Element', 'elementor-mcp' ),
@@ -847,7 +847,7 @@ class Elementor_MCP_Layout_Abilities {
 	// -------------------------------------------------------------------------
 
 	private function register_duplicate_element(): void {
-		wp_register_ability(
+		elementor_mcp_register_ability(
 			'elementor-mcp/duplicate-element',
 			array(
 				'label'               => __( 'Duplicate Element', 'elementor-mcp' ),

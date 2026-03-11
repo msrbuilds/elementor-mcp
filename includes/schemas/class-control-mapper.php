@@ -125,8 +125,9 @@ class Elementor_MCP_Control_Mapper {
 
 			case 'switcher':
 				return array(
-					'type' => 'string',
-					'enum' => array( 'yes', '' ),
+					'type'        => 'string',
+					'enum'        => array( 'yes' ),
+					'description' => __( 'Toggle switch. Use "yes" to enable, omit or send empty string to disable.', 'elementor-mcp' ),
 				);
 
 			case 'color':
@@ -238,8 +239,9 @@ class Elementor_MCP_Control_Mapper {
 
 			case 'popover_toggle':
 				return array(
-					'type' => 'string',
-					'enum' => array( 'yes', '' ),
+					'type'        => 'string',
+					'enum'        => array( 'yes' ),
+					'description' => __( 'Popover toggle. Use "yes" to enable, omit or send empty string to disable.', 'elementor-mcp' ),
 				);
 
 			case 'gaps':
@@ -271,7 +273,17 @@ class Elementor_MCP_Control_Mapper {
 		$schema = array( 'type' => 'string' );
 
 		if ( ! empty( $control['options'] ) && is_array( $control['options'] ) ) {
-			$schema['enum'] = array_keys( $control['options'] );
+			$enum = array_values(
+				array_filter(
+					array_keys( $control['options'] ),
+					function ( $value ) {
+						return '' !== $value;
+					}
+				)
+			);
+			if ( ! empty( $enum ) ) {
+				$schema['enum'] = $enum;
+			}
 		}
 
 		return $schema;
@@ -289,7 +301,17 @@ class Elementor_MCP_Control_Mapper {
 		$schema = array( 'type' => 'string' );
 
 		if ( ! empty( $control['options'] ) && is_array( $control['options'] ) ) {
-			$schema['enum'] = array_keys( $control['options'] );
+			$enum = array_values(
+				array_filter(
+					array_keys( $control['options'] ),
+					function ( $value ) {
+						return '' !== $value;
+					}
+				)
+			);
+			if ( ! empty( $enum ) ) {
+				$schema['enum'] = $enum;
+			}
 		}
 
 		return $schema;

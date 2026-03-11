@@ -137,7 +137,7 @@ class Elementor_MCP_Custom_Code_Abilities {
 	private function register_add_custom_css(): void {
 		$this->ability_names[] = 'elementor-mcp/add-custom-css';
 
-		wp_register_ability(
+		elementor_mcp_register_ability(
 			'elementor-mcp/add-custom-css',
 			array(
 				'label'               => __( 'Add Custom CSS', 'elementor-mcp' ),
@@ -287,7 +287,7 @@ class Elementor_MCP_Custom_Code_Abilities {
 	private function register_add_custom_js(): void {
 		$this->ability_names[] = 'elementor-mcp/add-custom-js';
 
-		wp_register_ability(
+		elementor_mcp_register_ability(
 			'elementor-mcp/add-custom-js',
 			array(
 				'label'               => __( 'Add Custom JavaScript', 'elementor-mcp' ),
@@ -414,7 +414,7 @@ class Elementor_MCP_Custom_Code_Abilities {
 	private function register_add_code_snippet(): void {
 		$this->ability_names[] = 'elementor-mcp/add-code-snippet';
 
-		wp_register_ability(
+		elementor_mcp_register_ability(
 			'elementor-mcp/add-code-snippet',
 			array(
 				'label'               => __( 'Add Code Snippet', 'elementor-mcp' ),
@@ -564,7 +564,7 @@ class Elementor_MCP_Custom_Code_Abilities {
 	private function register_list_code_snippets(): void {
 		$this->ability_names[] = 'elementor-mcp/list-code-snippets';
 
-		wp_register_ability(
+		elementor_mcp_register_ability(
 			'elementor-mcp/list-code-snippets',
 			array(
 				'label'               => __( 'List Code Snippets', 'elementor-mcp' ),

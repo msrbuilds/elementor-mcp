@@ -127,7 +127,7 @@ class Elementor_MCP_Stock_Image_Abilities {
 	// -------------------------------------------------------------------------
 
 	private function register_search_images(): void {
-		wp_register_ability(
+		elementor_mcp_register_ability(
 			'elementor-mcp/search-images',
 			array(
 				'label'               => __( 'Search Images', 'elementor-mcp' ),
@@ -283,7 +283,7 @@ class Elementor_MCP_Stock_Image_Abilities {
 	// -------------------------------------------------------------------------
 
 	private function register_sideload_image(): void {
-		wp_register_ability(
+		elementor_mcp_register_ability(
 			'elementor-mcp/sideload-image',
 			array(
 				'label'               => __( 'Sideload Image', 'elementor-mcp' ),
@@ -451,7 +451,7 @@ class Elementor_MCP_Stock_Image_Abilities {
 	// -------------------------------------------------------------------------
 
 	private function register_add_stock_image(): void {
-		wp_register_ability(
+		elementor_mcp_register_ability(
 			'elementor-mcp/add-stock-image',
 			array(
 				'label'               => __( 'Add Stock Image', 'elementor-mcp' ),

@@ -88,7 +88,7 @@ class Elementor_MCP_Composite_Abilities {
 	// -------------------------------------------------------------------------
 
 	private function register_build_page(): void {
-		wp_register_ability(
+		elementor_mcp_register_ability(
 			'elementor-mcp/build-page',
 			array(
 				'label'               => __( 'Build Page', 'elementor-mcp' ),

@@ -112,7 +112,7 @@ class Elementor_MCP_Template_Abilities {
 	// -------------------------------------------------------------------------
 
 	private function register_save_as_template(): void {
-		wp_register_ability(
+		elementor_mcp_register_ability(
 			'elementor-mcp/save-as-template',
 			array(
 				'label'               => __( 'Save As Template', 'elementor-mcp' ),
@@ -236,7 +236,7 @@ class Elementor_MCP_Template_Abilities {
 	// -------------------------------------------------------------------------
 
 	private function register_apply_template(): void {
-		wp_register_ability(
+		elementor_mcp_register_ability(
 			'elementor-mcp/apply-template',
 			array(
 				'label'               => __( 'Apply Template', 'elementor-mcp' ),
@@ -367,7 +367,7 @@ class Elementor_MCP_Template_Abilities {
 	// ── Phase 6: Theme Builder Template Tools ─────────────────────────
 
 	private function register_create_theme_template(): void {
-		wp_register_ability(
+		elementor_mcp_register_ability(
 			'elementor-mcp/create-theme-template',
 			array(
 				'label'               => __( 'Create Theme Template', 'elementor-mcp' ),
@@ -445,7 +445,7 @@ class Elementor_MCP_Template_Abilities {
 	}
 
 	private function register_set_template_conditions(): void {
-		wp_register_ability(
+		elementor_mcp_register_ability(
 			'elementor-mcp/set-template-conditions',
 			array(
 				'label'               => __( 'Set Template Conditions', 'elementor-mcp' ),
@@ -516,7 +516,7 @@ class Elementor_MCP_Template_Abilities {
 	// ── Phase 6: Dynamic Tags ─────────────────────────────────────────
 
 	private function register_list_dynamic_tags(): void {
-		wp_register_ability(
+		elementor_mcp_register_ability(
 			'elementor-mcp/list-dynamic-tags',
 			array(
 				'label'               => __( 'List Dynamic Tags', 'elementor-mcp' ),
@@ -586,7 +586,7 @@ class Elementor_MCP_Template_Abilities {
 	}
 
 	private function register_set_dynamic_tag(): void {
-		wp_register_ability(
+		elementor_mcp_register_ability(
 			'elementor-mcp/set-dynamic-tag',
 			array(
 				'label'               => __( 'Set Dynamic Tag', 'elementor-mcp' ),
@@ -681,7 +681,7 @@ class Elementor_MCP_Template_Abilities {
 	// ── Phase 6: Popup Builder ────────────────────────────────────────
 
 	private function register_create_popup(): void {
-		wp_register_ability(
+		elementor_mcp_register_ability(
 			'elementor-mcp/create-popup',
 			array(
 				'label'               => __( 'Create Popup', 'elementor-mcp' ),
@@ -750,7 +750,7 @@ class Elementor_MCP_Template_Abilities {
 	}
 
 	private function register_set_popup_settings(): void {
-		wp_register_ability(
+		elementor_mcp_register_ability(
 			'elementor-mcp/set-popup-settings',
 			array(
 				'label'               => __( 'Set Popup Settings', 'elementor-mcp' ),

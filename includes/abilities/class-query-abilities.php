@@ -104,7 +104,7 @@ class Elementor_MCP_Query_Abilities {
 	 * @since 1.0.0
 	 */
 	private function register_list_widgets(): void {
-		wp_register_ability(
+		elementor_mcp_register_ability(
 			'elementor-mcp/list-widgets',
 			array(
 				'label'               => __( 'List Elementor Widgets', 'elementor-mcp' ),
@@ -195,7 +195,7 @@ class Elementor_MCP_Query_Abilities {
 	 * @since 1.0.0
 	 */
 	private function register_get_widget_schema(): void {
-		wp_register_ability(
+		elementor_mcp_register_ability(
 			'elementor-mcp/get-widget-schema',
 			array(
 				'label'               => __( 'Get Widget Schema', 'elementor-mcp' ),
@@ -278,7 +278,7 @@ class Elementor_MCP_Query_Abilities {
 	// -------------------------------------------------------------------------
 
 	private function register_get_container_schema(): void {
-		wp_register_ability(
+		elementor_mcp_register_ability(
 			'elementor-mcp/get-container-schema',
 			array(
 				'label'               => __( 'Get Container Schema', 'elementor-mcp' ),
@@ -288,7 +288,7 @@ class Elementor_MCP_Query_Abilities {
 				'permission_callback' => array( $this, 'check_read_permission' ),
 				'input_schema'        => array(
 					'type'       => 'object',
-					'properties' => array(),
+					'properties' => new \stdClass(),
 				),
 				'output_schema'       => array(
 					'type'       => 'object',
@@ -340,7 +340,17 @@ class Elementor_MCP_Query_Abilities {
 			}
 
 			if ( ! empty( $control['options'] ) && is_array( $control['options'] ) ) {
-				$prop['enum'] = array_keys( $control['options'] );
+				$enum = array_values(
+					array_filter(
+						array_keys( $control['options'] ),
+						function ( $value ) {
+							return '' !== $value;
+						}
+					)
+				);
+				if ( ! empty( $enum ) ) {
+					$prop['enum'] = $enum;
+				}
 			}
 
 			$schema['properties'][ $control_id ] = $prop;
@@ -392,7 +402,7 @@ class Elementor_MCP_Query_Abilities {
 	 * @since 1.0.0
 	 */
 	private function register_get_page_structure(): void {
-		wp_register_ability(
+		elementor_mcp_register_ability(
 			'elementor-mcp/get-page-structure',
 			array(
 				'label'               => __( 'Get Page Structure', 'elementor-mcp' ),
@@ -552,7 +562,7 @@ class Elementor_MCP_Query_Abilities {
 	 * @since 1.0.0
 	 */
 	private function register_get_element_settings(): void {
-		wp_register_ability(
+		elementor_mcp_register_ability(
 			'elementor-mcp/get-element-settings',
 			array(
 				'label'               => __( 'Get Element Settings', 'elementor-mcp' ),
@@ -647,7 +657,7 @@ class Elementor_MCP_Query_Abilities {
 	// -------------------------------------------------------------------------
 
 	private function register_find_element(): void {
-		wp_register_ability(
+		elementor_mcp_register_ability(
 			'elementor-mcp/find-element',
 			array(
 				'label'               => __( 'Find Element', 'elementor-mcp' ),
@@ -827,7 +837,7 @@ class Elementor_MCP_Query_Abilities {
 	 * @since 1.0.0
 	 */
 	private function register_list_pages(): void {
-		wp_register_ability(
+		elementor_mcp_register_ability(
 			'elementor-mcp/list-pages',
 			array(
 				'label'               => __( 'List Elementor Pages', 'elementor-mcp' ),
@@ -926,7 +936,7 @@ class Elementor_MCP_Query_Abilities {
 	 * @since 1.0.0
 	 */
 	private function register_list_templates(): void {
-		wp_register_ability(
+		elementor_mcp_register_ability(
 			'elementor-mcp/list-templates',
 			array(
 				'label'               => __( 'List Elementor Templates', 'elementor-mcp' ),
@@ -1021,7 +1031,7 @@ class Elementor_MCP_Query_Abilities {
 	 * @since 1.0.0
 	 */
 	private function register_get_global_settings(): void {
-		wp_register_ability(
+		elementor_mcp_register_ability(
 			'elementor-mcp/get-global-settings',
 			array(
 				'label'               => __( 'Get Global Settings', 'elementor-mcp' ),

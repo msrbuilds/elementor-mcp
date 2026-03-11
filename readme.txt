@@ -3,7 +3,7 @@ Contributors: mianshahzadraza
 Tags: elementor, mcp, ai, page-builder, automation
 Requires at least: 6.7
 Tested up to: 6.9
-Stable tag: 1.4.2
+Stable tag: 1.4.3
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -151,6 +151,10 @@ The plugin enforces WordPress capability checks on every tool. Read operations r
 
 == Changelog ==
 
+= 1.4.3 =
+* Fixed: Removed empty string values from enum arrays in JSON Schema output for Gemini API compatibility (Antigravity support).
+* Fixed: Added missing `items` schema to `template_json` array property in import-template tool.
+
 = 1.4.0 =
 * New: 22 Pro widget convenience tools — nav menu, loop grid, loop carousel, media carousel, nested tabs, nested accordion, and more.
 * New: 5 WooCommerce widget tools — products, add-to-cart, cart, checkout, menu cart (conditional on WooCommerce).
@@ -228,6 +232,9 @@ The plugin enforces WordPress capability checks on every tool. Read operations r
 * Node.js HTTP proxy for remote connections.
 
 == Upgrade Notice ==
+
+= 1.4.3 =
+Fixes Gemini API compatibility — removes empty enum values and adds missing array items schema for Antigravity and other non-Claude MCP clients.
 
 = 1.4.0 =
 Major update: 22 new tools including theme builder, dynamic tags, popup builder, WooCommerce widgets, and enhanced layout management. Total tools now 92.

@@ -3,7 +3,7 @@
  * Plugin Name:       MCP Tools for Elementor
  * Plugin URI:        https://github.com/msrbuilds/elementor-mcpelementor-mcp
  * Description:       Extends the WordPress MCP Adapter to expose Elementor data, widgets, and page design tools as MCP tools for AI agents.
- * Version:           1.4.2
+ * Version:           1.4.3
  * Requires at least: 6.9
  * Tested up to:      6.9
  * Requires PHP:      8.0
@@ -20,10 +20,91 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Plugin constants.
-define( 'ELEMENTOR_MCP_VERSION', '1.4.2' );
+define( 'ELEMENTOR_MCP_VERSION', '1.4.3' );
 define( 'ELEMENTOR_MCP_DIR', plugin_dir_path( __FILE__ ) );
 define( 'ELEMENTOR_MCP_URL', plugin_dir_url( __FILE__ ) );
 define( 'ELEMENTOR_MCP_BASENAME', plugin_basename( __FILE__ ) );
+
+/**
+ * Recursively removes empty strings from enum arrays in a JSON Schema.
+ *
+ * Some MCP clients (e.g. Gemini/Antigravity) reject empty string values
+ * inside enum arrays. This sanitizer strips them from any schema structure,
+ * including nested properties, items, and allOf/oneOf/anyOf.
+ *
+ * Also ensures empty `properties` objects serialize as JSON `{}` not `[]`.
+ *
+ * @since 1.4.3
+ *
+ * @param array $schema A JSON Schema array.
+ * @return array The sanitized schema.
+ */
+function elementor_mcp_sanitize_schema( array $schema ): array {
+	// Strip empty strings from enum arrays.
+	if ( isset( $schema['enum'] ) && is_array( $schema['enum'] ) ) {
+		$schema['enum'] = array_values(
+			array_filter(
+				$schema['enum'],
+				function ( $value ) {
+					return '' !== $value;
+				}
+			)
+		);
+		if ( empty( $schema['enum'] ) ) {
+			unset( $schema['enum'] );
+		}
+	}
+
+	// Recurse into properties.
+	if ( isset( $schema['properties'] ) && is_array( $schema['properties'] ) ) {
+		if ( empty( $schema['properties'] ) ) {
+			$schema['properties'] = new \stdClass();
+		} else {
+			foreach ( $schema['properties'] as $key => $prop ) {
+				if ( is_array( $prop ) ) {
+					$schema['properties'][ $key ] = elementor_mcp_sanitize_schema( $prop );
+				}
+			}
+		}
+	}
+
+	// Recurse into items.
+	if ( isset( $schema['items'] ) && is_array( $schema['items'] ) ) {
+		$schema['items'] = elementor_mcp_sanitize_schema( $schema['items'] );
+	}
+
+	// Recurse into allOf, oneOf, anyOf.
+	foreach ( array( 'allOf', 'oneOf', 'anyOf' ) as $keyword ) {
+		if ( isset( $schema[ $keyword ] ) && is_array( $schema[ $keyword ] ) ) {
+			foreach ( $schema[ $keyword ] as $i => $sub ) {
+				if ( is_array( $sub ) ) {
+					$schema[ $keyword ][ $i ] = elementor_mcp_sanitize_schema( $sub );
+				}
+			}
+		}
+	}
+
+	return $schema;
+}
+
+/**
+ * Wrapper around wp_register_ability that sanitizes schemas for cross-client compatibility.
+ *
+ * @since 1.4.3
+ *
+ * @param string $name    The ability name.
+ * @param array  $args    The ability arguments.
+ * @return mixed The result of wp_register_ability().
+ */
+function elementor_mcp_register_ability( string $name, array $args ) {
+	if ( isset( $args['input_schema'] ) && is_array( $args['input_schema'] ) ) {
+		$args['input_schema'] = elementor_mcp_sanitize_schema( $args['input_schema'] );
+	}
+	if ( isset( $args['output_schema'] ) && is_array( $args['output_schema'] ) ) {
+		$args['output_schema'] = elementor_mcp_sanitize_schema( $args['output_schema'] );
+	}
+	return wp_register_ability( $name, $args );
+}
 
 /**
  * Checks that all required dependencies are available.

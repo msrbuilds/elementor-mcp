@@ -90,7 +90,7 @@ class Elementor_MCP_Svg_Icon_Abilities {
 	 * @since 1.2.0
 	 */
 	private function register_upload_svg_icon(): void {
-		wp_register_ability(
+		elementor_mcp_register_ability(
 			'elementor-mcp/upload-svg-icon',
 			array(
 				'label'               => __( 'Upload SVG Icon', 'elementor-mcp' ),
