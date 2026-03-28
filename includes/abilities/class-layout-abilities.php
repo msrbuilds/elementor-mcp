@@ -460,6 +460,19 @@ class Elementor_MCP_Layout_Abilities {
 			return new \WP_Error( 'missing_params', __( 'post_id and operations are required.', 'elementor-mcp' ) );
 		}
 
+		// Limit operations to prevent memory exhaustion / DoS.
+		$max_operations = 100;
+		if ( count( $operations ) > $max_operations ) {
+			return new \WP_Error(
+				'too_many_operations',
+				sprintf(
+					/* translators: %d: maximum allowed operations */
+					__( 'Too many operations. Maximum allowed: %d.', 'elementor-mcp' ),
+					$max_operations
+				)
+			);
+		}
+
 		$page_data = $this->data->get_page_data( $post_id );
 
 		if ( is_wp_error( $page_data ) ) {

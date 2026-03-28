@@ -300,10 +300,17 @@ class Elementor_MCP_Composite_Abilities {
 				$elements[] = $container;
 
 			} elseif ( 'widget' === $type ) {
-				$widget_type = $item['widget_type'] ?? '';
+				$widget_type = sanitize_key( $item['widget_type'] ?? '' );
 				$settings    = $item['settings'] ?? array();
 
 				if ( ! empty( $widget_type ) ) {
+					// Validate that the widget type is registered in Elementor.
+					$widgets_manager = \Elementor\Plugin::$instance->widgets_manager;
+					if ( $widgets_manager && ! $widgets_manager->get_widget_types( $widget_type ) ) {
+						// Skip unknown widget types silently to avoid breaking the page build.
+						continue;
+					}
+
 					$widget = $this->factory->create_widget( $widget_type, $settings );
 					$this->elements_created++;
 

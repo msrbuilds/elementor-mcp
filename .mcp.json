@@ -16,9 +16,9 @@
     },
     "elementor-mcp-remote": {
       "type": "http",
-      "serverUrl": "https://educated-emma-2bmze.zipwp.top/wp-json/mcp/elementor-mcp-server",
+      "serverUrl": "https://your-site.example.com/wp-json/mcp/elementor-mcp-server",
       "headers": {
-        "Authorization": "Basic dDJlcXk4ZGUzbThzOlh0SmIgN0NXOSBBQVBDIGJZQVcgSDVtUSAzRDJP"
+        "Authorization": "Basic YOUR_BASE64_ENCODED_USERNAME_COLON_APP_PASSWORD"
       }
     }
   }

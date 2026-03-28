@@ -451,6 +451,13 @@ class Elementor_MCP_Page_Abilities {
 			return $data;
 		}
 
+		// Validate the structure of imported elements.
+		$validator        = new Elementor_MCP_Element_Validator();
+		$validation_error = $this->validate_element_tree( $template_json, $validator );
+		if ( is_wp_error( $validation_error ) ) {
+			return $validation_error;
+		}
+
 		// Assign new IDs to all imported elements.
 		$template_json = $this->data->reassign_ids( $template_json );
 		$count         = $this->data->count_elements( $template_json );
@@ -529,6 +536,50 @@ class Elementor_MCP_Page_Abilities {
 		}
 
 		return array( 'json' => $data );
+	}
+
+	/**
+	 * Recursively validates an element tree before import.
+	 *
+	 * Checks that each element has a valid elType and, for widgets,
+	 * a valid widgetType. Recurses into children (elements key).
+	 *
+	 * @since 1.4.4
+	 *
+	 * @param array                          $elements  The element tree.
+	 * @param Elementor_MCP_Element_Validator $validator The validator instance.
+	 * @return true|\WP_Error True if all elements are valid.
+	 */
+	private function validate_element_tree( array $elements, Elementor_MCP_Element_Validator $validator ) {
+		foreach ( $elements as $element ) {
+			if ( ! is_array( $element ) ) {
+				return new \WP_Error( 'invalid_element', __( 'Template contains an invalid element (not an array).', 'elementor-mcp' ) );
+			}
+
+			// Elements must have at minimum an elType.
+			if ( empty( $element['elType'] ) ) {
+				return new \WP_Error( 'missing_el_type', __( 'Imported element is missing elType.', 'elementor-mcp' ) );
+			}
+
+			// Use a temporary ID for validation (real IDs are assigned by reassign_ids).
+			$element_copy       = $element;
+			$element_copy['id'] = $element_copy['id'] ?? 'temp';
+
+			$valid = $validator->validate( $element_copy );
+			if ( is_wp_error( $valid ) ) {
+				return $valid;
+			}
+
+			// Recurse into children.
+			if ( ! empty( $element['elements'] ) && is_array( $element['elements'] ) ) {
+				$child_valid = $this->validate_element_tree( $element['elements'], $validator );
+				if ( is_wp_error( $child_valid ) ) {
+					return $child_valid;
+				}
+			}
+		}
+
+		return true;
 	}
 
 }

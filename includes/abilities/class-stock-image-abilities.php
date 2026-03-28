@@ -354,6 +354,12 @@ class Elementor_MCP_Stock_Image_Abilities {
 			return new \WP_Error( 'missing_url', __( 'The url parameter is required.', 'elementor-mcp' ) );
 		}
 
+		// Validate URL against SSRF (private/reserved IPs, non-HTTP schemes).
+		$url_check = elementor_mcp_validate_url( $url );
+		if ( is_wp_error( $url_check ) ) {
+			return $url_check;
+		}
+
 		// Load required WordPress media functions.
 		if ( ! function_exists( 'media_handle_sideload' ) ) {
 			require_once ABSPATH . 'wp-admin/includes/file.php';

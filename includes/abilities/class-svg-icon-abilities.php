@@ -260,7 +260,13 @@ class Elementor_MCP_Svg_Icon_Abilities {
 	 * @param string $title Optional title for filename fallback.
 	 * @return array|\WP_Error Array with attachment_id and url on success.
 	 */
-	private function upload_from_url( string $url, string $title ): array {
+	private function upload_from_url( string $url, string $title ) {
+		// Validate URL against SSRF (private/reserved IPs, non-HTTP schemes).
+		$url_check = elementor_mcp_validate_url( $url );
+		if ( is_wp_error( $url_check ) ) {
+			return $url_check;
+		}
+
 		$tmp_file = download_url( $url, 30 );
 
 		if ( is_wp_error( $tmp_file ) ) {
@@ -439,8 +445,8 @@ class Elementor_MCP_Svg_Icon_Abilities {
 	 * @return string|\WP_Error Sanitized SVG content or WP_Error.
 	 */
 	private function sanitize_svg_content( string $content ) {
-		// Strip PHP tags.
-		$content = preg_replace( '/<\?(=|php)(.+?)\?>/i', '', $content );
+		// Strip all PHP tags (including short open tags).
+		$content = preg_replace( '/<\?(?:php|=)?[\s\S]*?\?>/i', '', $content );
 
 		// Remove script tags.
 		if ( preg_match( '/<script/i', $content ) ) {

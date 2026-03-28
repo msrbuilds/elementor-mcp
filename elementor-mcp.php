@@ -194,3 +194,69 @@ function elementor_mcp_init(): void {
 	Elementor_MCP_Plugin::instance();
 }
 add_action( 'plugins_loaded', 'elementor_mcp_init', 20 );
+
+/**
+ * Validates that a URL is safe for server-side requests (anti-SSRF).
+ *
+ * Rejects private/reserved IP ranges, loopback addresses, link-local,
+ * and non-HTTP(S) schemes to prevent Server-Side Request Forgery.
+ *
+ * @since 1.4.4
+ *
+ * @param string $url The URL to validate.
+ * @return true|\WP_Error True if safe, WP_Error if the URL targets a private/reserved host.
+ */
+function elementor_mcp_validate_url( string $url ) {
+	$parsed = wp_parse_url( $url );
+
+	if ( empty( $parsed['host'] ) ) {
+		return new \WP_Error(
+			'invalid_url',
+			__( 'The URL is missing a host.', 'elementor-mcp' )
+		);
+	}
+
+	// Only allow http and https schemes.
+	$scheme = strtolower( $parsed['scheme'] ?? '' );
+	if ( ! in_array( $scheme, array( 'http', 'https' ), true ) ) {
+		return new \WP_Error(
+			'invalid_url_scheme',
+			sprintf(
+				/* translators: %s: URL scheme */
+				__( 'URL scheme "%s" is not allowed. Only http and https are permitted.', 'elementor-mcp' ),
+				$scheme
+			)
+		);
+	}
+
+	$host = $parsed['host'];
+
+	// Resolve the hostname to an IP address.
+	$ip = gethostbyname( $host );
+
+	// gethostbyname returns the hostname unchanged if resolution fails.
+	if ( $ip === $host && ! filter_var( $host, FILTER_VALIDATE_IP ) ) {
+		return new \WP_Error(
+			'dns_resolution_failed',
+			sprintf(
+				/* translators: %s: hostname */
+				__( 'Could not resolve hostname: %s', 'elementor-mcp' ),
+				$host
+			)
+		);
+	}
+
+	// Check against private and reserved IP ranges.
+	if ( ! filter_var( $ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE ) ) {
+		return new \WP_Error(
+			'ssrf_blocked',
+			sprintf(
+				/* translators: %s: hostname or IP */
+				__( 'The URL host "%s" resolves to a private or reserved IP address and is not allowed.', 'elementor-mcp' ),
+				$host
+			)
+		);
+	}
+
+	return true;
+}

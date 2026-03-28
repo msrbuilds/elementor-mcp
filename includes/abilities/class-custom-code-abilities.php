@@ -104,6 +104,44 @@ class Elementor_MCP_Custom_Code_Abilities {
 	}
 
 	/**
+	 * Permission check for JavaScript injection via HTML widget.
+	 *
+	 * Requires unfiltered_html in addition to edit_posts because the
+	 * tool injects <script> tags into page content.
+	 *
+	 * @since 1.4.4
+	 *
+	 * @param array|null $input The input data.
+	 * @return bool
+	 */
+	public function check_js_permission( $input = null ): bool {
+		if ( ! current_user_can( 'unfiltered_html' ) ) {
+			return false;
+		}
+
+		return $this->check_edit_permission( $input );
+	}
+
+	/**
+	 * Permission check for custom CSS injection.
+	 *
+	 * Requires unfiltered_html in addition to edit_posts because CSS
+	 * can be used for data exfiltration and content spoofing.
+	 *
+	 * @since 1.4.4
+	 *
+	 * @param array|null $input The input data.
+	 * @return bool
+	 */
+	public function check_css_permission( $input = null ): bool {
+		if ( ! current_user_can( 'unfiltered_html' ) ) {
+			return false;
+		}
+
+		return $this->check_edit_permission( $input );
+	}
+
+	/**
 	 * Permission check for creating site-wide code snippets.
 	 *
 	 * @since 1.3.0
@@ -144,7 +182,7 @@ class Elementor_MCP_Custom_Code_Abilities {
 				'description'         => __( 'Adds custom CSS to a specific element or to the entire page. Requires Elementor Pro. For element-level CSS, use the keyword "selector" as a placeholder for the element\'s CSS wrapper (e.g. "selector .heading { color: red; }" or "selector:hover { transform: scale(1.05); }"). For page-level CSS, omit element_id. Appends to existing CSS by default; set replace=true to overwrite.', 'elementor-mcp' ),
 				'category'            => 'elementor-mcp',
 				'execute_callback'    => array( $this, 'execute_add_custom_css' ),
-				'permission_callback' => array( $this, 'check_edit_permission' ),
+				'permission_callback' => array( $this, 'check_css_permission' ),
 				'input_schema'        => array(
 					'type'       => 'object',
 					'properties' => array(
@@ -205,9 +243,13 @@ class Elementor_MCP_Custom_Code_Abilities {
 			return new \WP_Error( 'missing_params', __( 'post_id and css are required.', 'elementor-mcp' ) );
 		}
 
-		// Basic sanitization: strip PHP tags and script tags.
-		$css = preg_replace( '/<\?(=|php)(.+?)\?>/is', '', $css );
-		$css = preg_replace( '/<script[^>]*>.*?<\/script>/is', '', $css );
+		// Strip all PHP tags (including short open tags) and script/style tags.
+		$css = preg_replace( '/<\?(?:php|=)?[\s\S]*?\?>/i', '', $css );
+		$css = preg_replace( '/<\s*script[\s\S]*?<\s*\/\s*script\s*>/i', '', $css );
+		$css = preg_replace( '/<\s*script[^>]*>/i', '', $css );
+
+		// Strip HTML event handlers and javascript: URIs that could appear in CSS url() values.
+		$css = preg_replace( '/javascript\s*:/i', '', $css );
 
 		if ( ! empty( $element_id ) ) {
 			// Element-level custom CSS.
@@ -294,7 +336,7 @@ class Elementor_MCP_Custom_Code_Abilities {
 				'description'         => __( 'Adds a custom JavaScript snippet to a page by inserting an HTML widget containing a <script> tag. Works with free Elementor (no Pro required). The JS code is automatically wrapped in <script> tags — do NOT include them yourself. Use wrap_dom_ready=true to wrap in a DOMContentLoaded listener. For site-wide JS, use add-code-snippet instead (requires Pro).', 'elementor-mcp' ),
 				'category'            => 'elementor-mcp',
 				'execute_callback'    => array( $this, 'execute_add_custom_js' ),
-				'permission_callback' => array( $this, 'check_edit_permission' ),
+				'permission_callback' => array( $this, 'check_js_permission' ),
 				'input_schema'        => array(
 					'type'       => 'object',
 					'properties' => array(
