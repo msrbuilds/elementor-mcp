@@ -34,7 +34,13 @@ class Elementor_MCP_Element_Validator {
 			return new \WP_Error( 'missing_el_type', __( 'Element is missing elType.', 'elementor-mcp' ) );
 		}
 
-		$valid_types = array( 'container', 'widget', 'section', 'column' );
+		$valid_types = array(
+			'container', 'widget', 'section', 'column',
+			// Atomic container types (Elementor 4.0+).
+			'e-div-block', 'e-flexbox',
+			'e-tabs', 'e-tabs-menu', 'e-tab', 'e-tabs-content-area', 'e-tab-content',
+			'e-form', 'e-form-success-message', 'e-form-error-message',
+		);
 		if ( ! in_array( $element['elType'], $valid_types, true ) ) {
 			return new \WP_Error(
 				'invalid_el_type',

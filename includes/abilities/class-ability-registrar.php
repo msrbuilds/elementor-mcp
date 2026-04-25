@@ -134,6 +134,16 @@ class Elementor_MCP_Ability_Registrar {
 		$custom_code->register();
 		$this->ability_names = array_merge( $this->ability_names, $custom_code->get_ability_names() );
 
+		// Atomic widget abilities (Elementor 4.0+). Self-guards on version check.
+		$atomic_widgets = new Elementor_MCP_Atomic_Widget_Abilities( $this->data, $this->factory );
+		$atomic_widgets->register();
+		$this->ability_names = array_merge( $this->ability_names, $atomic_widgets->get_ability_names() );
+
+		// Atomic layout abilities (Elementor 4.0+). Includes detect-elementor-version.
+		$atomic_layout = new Elementor_MCP_Atomic_Layout_Abilities( $this->data, $this->factory );
+		$atomic_layout->register();
+		$this->ability_names = array_merge( $this->ability_names, $atomic_layout->get_ability_names() );
+
 		/**
 		 * Filters the registered ability names.
 		 *

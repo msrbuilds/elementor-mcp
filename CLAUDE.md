@@ -4,14 +4,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-MCP Tools for Elementor Plugin — a WordPress plugin that extends the official WordPress MCP Adapter to expose Elementor data, widgets, structures, and methods as MCP (Model Context Protocol) tools. This enables AI tools (Claude, Cursor, etc.) to create and manipulate Elementor page designs programmatically via 97 MCP tools.
+MCP Tools for Elementor Plugin — a WordPress plugin that extends the official WordPress MCP Adapter to expose Elementor data, widgets, structures, and methods as MCP (Model Context Protocol) tools. This enables AI tools (Claude, Cursor, etc.) to create and manipulate Elementor page designs programmatically via 110 MCP tools.
 
-**Current status: All phases implemented (P0/P1/P2).** Foundation layer, 7 read-only query tools, page CRUD, layout, widget, template, global, composite tools, stock images, SVG icons, custom code tools, and full widget coverage are all complete (97 MCP tools total). See `PLAN.md` for the full architectural specification.
+**Current status: All phases implemented (P0/P1/P2) plus Elementor 4.0 atomic elements support.** Foundation layer, 7 read-only query tools, page CRUD, layout, widget, template, global, composite tools, stock images, SVG icons, custom code tools, full widget coverage (97 legacy tools), and 13 new atomic element tools for Elementor 4.0+. See `PLAN.md` for the full architectural specification.
 
 ## Dependencies & Requirements
 
 - WordPress >= 6.8
-- Elementor >= 3.20 (container support required)
+- Elementor >= 3.20 (container support required; >= 4.0 for atomic elements)
 - WordPress Abilities API (bundled in WP 6.9+, or via composer)
 - WordPress MCP Adapter (`wordpress/mcp-adapter` via composer)
 - PHP 7.4+
@@ -243,6 +243,47 @@ The MCP Adapter converts ability names like `elementor-mcp/list-widgets` to tool
 | `elementor-mcp/add-custom-js` | Add JavaScript to a page via HTML widget with auto `<script>` wrapping |
 | `elementor-mcp/add-code-snippet` | Create a site-wide Custom Code snippet for head/body injection (Pro only) |
 | `elementor-mcp/list-code-snippets` | List existing Custom Code snippets with locations and statuses (Pro only) |
+
+### Atomic Elements — Elementor 4.0+ (13 tools)
+
+These tools only register when Elementor >= 4.0 is detected. Legacy tools continue to work alongside them.
+
+**Atomic elements use a typed props system (`$$type` wrappers) and a separate `styles` map for visual styling. The convenience tools handle this automatically — AI agents pass simple flat values.**
+
+| Ability Name | Purpose |
+|---|---|
+| `elementor-mcp/detect-elementor-version` | Returns Elementor version and whether atomic elements are supported. Call first to choose tool family. |
+| `elementor-mcp/add-atomic-widget` | Universal: add any atomic widget by type name with raw $$type settings |
+| `elementor-mcp/update-atomic-widget` | Universal: partial-merge update on an existing atomic widget's settings |
+| `elementor-mcp/add-atomic-heading` | Convenience: atomic heading (e-heading). Params: title, tag (h1-h6), link, css_id |
+| `elementor-mcp/add-atomic-paragraph` | Convenience: atomic paragraph (e-paragraph). Params: content, link, css_id |
+| `elementor-mcp/add-atomic-button` | Convenience: atomic button (e-button). Params: text, link, target_blank, css_id |
+| `elementor-mcp/add-atomic-image` | Convenience: atomic image (e-image). Params: image_id, image_url, alt, link, css_id |
+| `elementor-mcp/add-atomic-svg` | Convenience: atomic SVG (e-svg). Params: svg_id, svg_url, css_id |
+| `elementor-mcp/add-atomic-youtube` | Convenience: atomic YouTube embed (e-youtube). Params: video_url, css_id |
+| `elementor-mcp/add-atomic-video` | Convenience: atomic self-hosted video (e-self-hosted-video). Params: video_url, video_id, css_id |
+| `elementor-mcp/add-atomic-divider` | Convenience: atomic divider (e-divider). Params: css_id |
+| `elementor-mcp/add-flexbox` | Atomic flexbox container (e-flexbox). Params: direction, justify, align, gap, wrap, tag, padding, background_color |
+| `elementor-mcp/add-div-block` | Atomic div-block container (e-div-block). Params: tag, padding, background_color |
+
+### Atomic Element Data Model (Elementor 4.0+)
+
+Atomic elements have a different JSON structure from legacy widgets:
+
+- **`settings`** contains content props using `$$type` wrappers: `{ "tag": { "$$type": "string", "value": "h2" } }`
+- **`styles`** (sibling of settings) contains visual/layout CSS using local style classes
+- **`interactions`** (sibling) stores entrance/hover/click interactions
+- Style properties use CSS property names (kebab-case): `flex-direction`, `justify-content`, `gap`
+- Layout props are NOT in settings — they're in `styles[class_id].variants[].props`
+
+### Key Architecture Files (Atomic)
+
+| File | Purpose |
+|---|---|
+| `includes/class-atomic-props.php` | Static helpers to wrap/unwrap $$type values |
+| `includes/class-atomic-styles.php` | Builds local style classes for flex layout, spacing, colors |
+| `includes/abilities/class-atomic-widget-abilities.php` | 10 atomic widget tools |
+| `includes/abilities/class-atomic-layout-abilities.php` | 2 container tools + detect-version |
 
 ## Connecting to the MCP Server
 
