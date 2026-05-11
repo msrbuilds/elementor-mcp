@@ -6,7 +6,7 @@
  * Version:           1.5.1
  * Requires at least: 6.9
  * Tested up to:      6.9
- * Requires PHP:      8.0
+ * Requires PHP:      7.4
  * Author:            Mian Shahzad Raza
  * Author URI:        https://msrbuilds.com
  * License:           GPL-2.0-or-later
