@@ -135,7 +135,8 @@ function elementor_mcp_check_dependencies(): bool {
 		add_action( 'admin_notices', function () use ( $missing ) {
 			$list = implode( ', ', $missing );
 			printf(
-				'<div class="notice notice-error"><p>%s</p></div>',
+				'<div class="notice notice-error" role="region" aria-label="%s"><p>%s</p></div>',
+				esc_html__( 'Missing dependencies', 'elementor-mcp' ),
 				sprintf(
 					/* translators: %s: comma-separated list of missing dependencies */
 					esc_html__( 'MCP Tools for Elementor requires the following to be installed and active: %s', 'elementor-mcp' ),
