@@ -1183,6 +1183,116 @@
 }
 
 /* =========================================================================
+ * Premium prompts library
+ * ========================================================================= */
+
+.elementor-mcp-pro-prompts {
+	margin-top: 40px;
+	padding-top: 32px;
+	border-top: 1px solid var(--mcp-gray-200);
+}
+
+.elementor-mcp-pro-prompts-header {
+	display: flex;
+	align-items: flex-start;
+	justify-content: space-between;
+	gap: 16px;
+	margin-bottom: 20px;
+	flex-wrap: wrap;
+}
+
+.elementor-mcp-pro-prompts-heading h2 {
+	margin: 0 0 6px;
+	display: flex;
+	align-items: center;
+	gap: 10px;
+}
+
+.elementor-mcp-pro-prompts-heading .description {
+	margin: 0;
+}
+
+.elementor-mcp-pro-prompts-meta {
+	display: inline-block;
+	margin-left: 8px;
+	font-size: 12px;
+	color: var(--mcp-gray-500);
+}
+
+.elementor-mcp-pro-sync-btn {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+}
+
+.elementor-mcp-pro-sync-btn .dashicons {
+	font-size: 16px;
+	line-height: 1;
+	width: 16px;
+	height: 16px;
+}
+
+.elementor-mcp-pro-sync-btn .spin {
+	animation: elementor-mcp-spin 1s linear infinite;
+}
+
+@keyframes elementor-mcp-spin {
+	from { transform: rotate( 0deg ); }
+	to   { transform: rotate( 360deg ); }
+}
+
+.elementor-mcp-pro-filters {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	margin-bottom: 20px;
+}
+
+.elementor-mcp-pro-filter {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	padding: 6px 14px;
+	border: 1px solid var(--mcp-gray-200);
+	background: #fff;
+	border-radius: 999px;
+	font-size: 13px;
+	color: var(--mcp-gray-700, #374151);
+	cursor: pointer;
+	transition: all var(--mcp-transition);
+}
+
+.elementor-mcp-pro-filter:hover {
+	border-color: var(--mcp-primary, #4f46e5);
+	color: var(--mcp-primary, #4f46e5);
+}
+
+.elementor-mcp-pro-filter.is-active {
+	background: var(--mcp-primary, #4f46e5);
+	border-color: var(--mcp-primary, #4f46e5);
+	color: #fff;
+}
+
+.elementor-mcp-pro-filter-count {
+	display: inline-block;
+	min-width: 20px;
+	padding: 1px 6px;
+	border-radius: 999px;
+	background: rgba(0, 0, 0, 0.08);
+	font-size: 11px;
+	font-weight: 600;
+	line-height: 1.4;
+}
+
+.elementor-mcp-pro-filter.is-active .elementor-mcp-pro-filter-count {
+	background: rgba(255, 255, 255, 0.22);
+}
+
+.elementor-mcp-pro-prompt-card {
+	position: relative;
+}
+
+/* =========================================================================
  * Prompts Tab
  * ========================================================================= */
 

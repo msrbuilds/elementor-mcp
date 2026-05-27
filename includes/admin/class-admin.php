@@ -277,6 +277,8 @@ class Elementor_MCP_Admin {
 				'mcpEndpoint' => rest_url( 'mcp/elementor-mcp-server' ),
 				'siteUrl'     => site_url(),
 				'proxyPath'   => ELEMENTOR_MCP_DIR . 'bin' . DIRECTORY_SEPARATOR . 'mcp-proxy.mjs',
+				'ajaxUrl'     => admin_url( 'admin-ajax.php' ),
+				'syncing'     => __( 'Syncing…', 'elementor-mcp' ),
 			)
 		);
 	}
@@ -331,7 +333,11 @@ class Elementor_MCP_Admin {
 						<svg viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"/></svg>
 						<?php esc_html_e( 'Watch Tutorial', 'elementor-mcp' ); ?>
 					</a>
-					<a href="https://msrbuilds.com/lets-talk/" class="elementor-mcp-header-btn elementor-mcp-header-btn--secondary">
+					<a href="https://emcp.msrbuilds.com/docs" class="elementor-mcp-header-btn elementor-mcp-header-btn--secondary" target="_blank" rel="noopener noreferrer">
+						<svg viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clip-rule="evenodd"/></svg>
+						<?php esc_html_e( 'Read the Docs', 'elementor-mcp' ); ?>
+					</a>
+					<a href="https://emcp.msrbuilds.com/about" class="elementor-mcp-header-btn elementor-mcp-header-btn--secondary" target="_blank" rel="noopener noreferrer">
 						<svg viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"/><path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"/></svg>
 						<?php esc_html_e( 'Contact Me', 'elementor-mcp' ); ?>
 					</a>

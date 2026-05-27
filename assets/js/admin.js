@@ -360,16 +360,89 @@
 		} );
 	}
 
+	/**
+	 * Premium prompts — category filter pills.
+	 */
+	function initProPromptFilters() {
+		var filterBar = document.querySelector( '.elementor-mcp-pro-filters' );
+		var grid = document.querySelector( '.elementor-mcp-pro-prompts-grid' );
+		if ( ! filterBar || ! grid ) {
+			return;
+		}
+
+		filterBar.addEventListener( 'click', function ( e ) {
+			var btn = e.target.closest( '.elementor-mcp-pro-filter' );
+			if ( ! btn ) {
+				return;
+			}
+			var category = btn.getAttribute( 'data-category' );
+			filterBar.querySelectorAll( '.elementor-mcp-pro-filter' ).forEach( function ( b ) {
+				b.classList.toggle( 'is-active', b === btn );
+			} );
+			grid.querySelectorAll( '.elementor-mcp-pro-prompt-card' ).forEach( function ( card ) {
+				var match = ( 'all' === category ) || card.getAttribute( 'data-category' ) === category;
+				card.style.display = match ? '' : 'none';
+			} );
+		} );
+	}
+
+	/**
+	 * Premium prompts — "Sync Library" button.
+	 */
+	function initProSync() {
+		document.querySelectorAll( '.elementor-mcp-pro-sync-btn' ).forEach( function ( btn ) {
+			btn.addEventListener( 'click', function () {
+				if ( typeof elementorMcpAdmin === 'undefined' || ! elementorMcpAdmin.ajaxUrl ) {
+					return;
+				}
+				var original = btn.innerHTML;
+				btn.disabled = true;
+				btn.innerHTML = '<span class="dashicons dashicons-update spin" aria-hidden="true"></span> ' + ( elementorMcpAdmin.syncing || 'Syncing…' );
+
+				var body = new URLSearchParams();
+				body.append( 'action', 'elementor_mcp_sync_pro_prompts' );
+				body.append( 'nonce', btn.getAttribute( 'data-nonce' ) || '' );
+
+				fetch( elementorMcpAdmin.ajaxUrl, {
+					method: 'POST',
+					credentials: 'same-origin',
+					headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+					body: body.toString(),
+				} )
+					.then( function ( r ) { return r.json(); } )
+					.then( function ( res ) {
+						if ( res && res.success ) {
+							window.location.reload();
+						} else {
+							var msg = ( res && res.data && res.data.message ) ? res.data.message : 'Sync failed.';
+							window.alert( msg );
+							btn.disabled = false;
+							btn.innerHTML = original;
+						}
+					} )
+					.catch( function () {
+						window.alert( 'Sync failed. Check your connection and try again.' );
+						btn.disabled = false;
+						btn.innerHTML = original;
+					} );
+			} );
+		} );
+	}
+
 	// Initialize on DOM ready.
 	if ( document.readyState === 'loading' ) {
 		document.addEventListener( 'DOMContentLoaded', function () {
 			initToolsForm();
 			initBase64Generator();
 			initCopyButtons();
+			initProPromptFilters();
+			initProSync();
 		} );
 	} else {
 		initToolsForm();
 		initBase64Generator();
 		initCopyButtons();
+		initProPromptFilters();
+		initProSync();
 	}
 })();

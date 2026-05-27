@@ -6,6 +6,15 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 MCP Tools for Elementor Plugin — a WordPress plugin that extends the official WordPress MCP Adapter to expose Elementor data, widgets, structures, and methods as MCP (Model Context Protocol) tools. This enables AI tools (Claude, Cursor, etc.) to create and manipulate Elementor page designs programmatically via up to 118 MCP tools (scales with environment).
 
+## Companion projects (sibling folders, edit from here)
+
+| Project | Path | What it is |
+|---|---|---|
+| **Master prompts library** | `E:\MSR Builds\Products\EMCP\prompts\` | Source-of-truth markdown files for the 50+ Premium Prompts. 10 categories (Automotive, Food & Dining, General, Health & Wellness, Home Services, Lifestyle & Entertainment, Pets, Professional Services, Retail, Weddings). Never bundled in the plugin zip. |
+| **Website + docs + API** | `E:\MSR Builds\Products\EMCP\website\` | Astro 5 + Starlight + Tailwind + Postgres + Drizzle. Hosts the marketing site, comprehensive docs, and the `/api/emcp/prompts.json` license-gated endpoint the plugin's Pro Prompts page fetches from. See `website/PLAN.md` for the full implementation spec. Hosted via Dokploy at `emcp.msrbuilds.com` (planned). |
+
+When editing premium-prompts behavior, the plugin code (`includes/admin/class-pro-prompts.php`) and the website's API endpoint (`website/src/pages/api/emcp/prompts.json.ts` per the PLAN) must stay in sync via the contract in `docs/PREMIUM_PROMPTS_API.md`.
+
 **Current status: v1.6.0 — All phases implemented (P0/P1/P2) plus Elementor 4.0 atomic elements, top-level admin menu, and Low-tools mode.** Foundation layer, query tools, page CRUD, layout, widget, template, global, composite tools, stock images, SVG icons, custom code tools, 13 atomic element tools for Elementor 4.0+, and a curated essentials filter for clients with strict tool caps (Antigravity, Gemini API).
 
 **Tool counts by configuration:**

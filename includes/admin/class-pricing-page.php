@@ -166,7 +166,7 @@ class Elementor_MCP_Pricing_Page {
 				printf(
 					/* translators: %s: contact link */
 					esc_html__( 'Still have questions? %s and I\'ll get back to you within one business day.', 'elementor-mcp' ),
-					'<a href="https://msrbuilds.com/lets-talk/" target="_blank" rel="noopener noreferrer">' . esc_html__( 'Get in touch', 'elementor-mcp' ) . '</a>'
+					'<a href="https://emcp.msrbuilds.com/about" target="_blank" rel="noopener noreferrer">' . esc_html__( 'Get in touch', 'elementor-mcp' ) . '</a>'
 				);
 				?>
 			</p>

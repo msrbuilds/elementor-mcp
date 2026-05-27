@@ -3,7 +3,7 @@
  * Plugin Name:       MCP Tools for Elementor
  * Plugin URI:        https://github.com/msrbuilds/elementor-mcpelementor-mcp
  * Description:       Extends the WordPress MCP Adapter to expose Elementor data, widgets, and page design tools as MCP tools for AI agents.
- * Version:           1.6.1
+ * Version:           1.7.0
  * Requires at least: 6.9
  * Tested up to:      6.9
  * Requires PHP:      8.0
@@ -20,7 +20,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Plugin constants.
-define( 'ELEMENTOR_MCP_VERSION', '1.6.1' );
+define( 'ELEMENTOR_MCP_VERSION', '1.7.0' );
 define( 'ELEMENTOR_MCP_DIR', plugin_dir_path( __FILE__ ) );
 define( 'ELEMENTOR_MCP_URL', plugin_dir_url( __FILE__ ) );
 define( 'ELEMENTOR_MCP_BASENAME', plugin_basename( __FILE__ ) );
@@ -82,6 +82,42 @@ function elementor_mcp_after_uninstall() {
     delete_option( 'elementor_mcp_disabled_tools' );
     delete_option( 'elementor_mcp_low_tool_mode' );
     delete_option( 'elementor_mcp_defaults_applied' );
+    delete_transient( 'elementor_mcp_pro_prompts_bundle' );
+}
+
+/**
+ * AJAX handler for the "Sync Library" button on the Pro Prompts page.
+ *
+ * @since 1.7.0
+ */
+function elementor_mcp_sync_pro_prompts_ajax() {
+    check_ajax_referer( 'elementor_mcp_sync_pro_prompts', 'nonce' );
+
+    if ( ! current_user_can( 'manage_options' ) ) {
+        wp_send_json_error( array( 'message' => __( 'You do not have permission to sync prompts.', 'elementor-mcp' ) ), 403 );
+    }
+
+    $bundle = Elementor_MCP_Pro_Prompts::get_bundle( true );
+    if ( is_wp_error( $bundle ) ) {
+        wp_send_json_error( array( 'message' => $bundle->get_error_message() ), 400 );
+    }
+
+    $total = 0;
+    foreach ( $bundle['categories'] as $category ) {
+        $total += isset( $category['prompts'] ) && is_array( $category['prompts'] ) ? count( $category['prompts'] ) : 0;
+    }
+
+    wp_send_json_success(
+        array(
+            'message'    => sprintf(
+                /* translators: %1$d: total prompts, %2$d: total categories */
+                __( 'Synced %1$d prompts across %2$d categories.', 'elementor-mcp' ),
+                $total,
+                count( $bundle['categories'] )
+            ),
+            'fetched_at' => $bundle['fetched_at'],
+        )
+    );
 }
 /**
  * Recursively removes empty strings from enum arrays in a JSON Schema.
@@ -257,6 +293,9 @@ function elementor_mcp_init(): void {
 		if ( function_exists( 'emcp_pro_fs' ) ) {
 			require_once ELEMENTOR_MCP_DIR . 'includes/admin/class-pricing-page.php';
 			( new Elementor_MCP_Pricing_Page() )->init();
+
+			require_once ELEMENTOR_MCP_DIR . 'includes/admin/class-pro-prompts.php';
+			add_action( 'wp_ajax_elementor_mcp_sync_pro_prompts', 'elementor_mcp_sync_pro_prompts_ajax' );
 		}
 	}
 
