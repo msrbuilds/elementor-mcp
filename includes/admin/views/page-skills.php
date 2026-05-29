@@ -22,6 +22,36 @@ $elementor_mcp_download_url = $elementor_mcp_has_pro ? Elementor_MCP_Pro_Skills:
 $elementor_mcp_upgrade_url = function_exists( 'elementor_mcp_upgrade_url' )
 	? elementor_mcp_upgrade_url()
 	: 'https://emcp.msrbuilds.com/pricing';
+
+/*
+ * Bundled industry vertical packs. Read the labels straight from the shipped
+ * verticals/ folder so this list never drifts from what's actually in the zip.
+ * Only present on premium builds (the folder ships only there).
+ */
+$elementor_mcp_verticals = array();
+if ( $elementor_mcp_has_pro && defined( 'ELEMENTOR_MCP_DIR' ) ) {
+	$elementor_mcp_verticals_dir = ELEMENTOR_MCP_DIR . 'skills/emcp-skills/verticals';
+	if ( is_dir( $elementor_mcp_verticals_dir ) ) {
+		foreach ( (array) glob( $elementor_mcp_verticals_dir . '/*.md' ) as $elementor_mcp_vfile ) {
+			if ( 'readme.md' === strtolower( basename( $elementor_mcp_vfile ) ) ) {
+				continue;
+			}
+			$elementor_mcp_label = '';
+			$elementor_mcp_lines  = (array) @file( $elementor_mcp_vfile, FILE_IGNORE_NEW_LINES ); // phpcs:ignore WordPress.PHP.NoSilencedErrors
+			foreach ( array_slice( $elementor_mcp_lines, 0, 20 ) as $elementor_mcp_line ) {
+				if ( preg_match( '/^label:\s*(.+?)\s*$/', $elementor_mcp_line, $elementor_mcp_m ) ) {
+					$elementor_mcp_label = $elementor_mcp_m[1];
+					break;
+				}
+			}
+			if ( '' === $elementor_mcp_label ) {
+				$elementor_mcp_label = ucwords( str_replace( '-', ' ', basename( $elementor_mcp_vfile, '.md' ) ) );
+			}
+			$elementor_mcp_verticals[] = $elementor_mcp_label;
+		}
+		sort( $elementor_mcp_verticals );
+	}
+}
 ?>
 
 <div class="elementor-mcp-skills">
@@ -33,7 +63,7 @@ $elementor_mcp_upgrade_url = function_exists( 'elementor_mcp_upgrade_url' )
 				<span class="elementor-mcp-badge elementor-mcp-badge--pro">PRO</span>
 			</h2>
 			<p class="description">
-				<?php esc_html_e( 'A pre-written Agent Skill that teaches Claude (and any compatible AI client) exactly how to build, edit, and style Elementor pages through the MCP tools. Install once per machine — every future session that loads this skill knows your workflow.', 'elementor-mcp' ); ?>
+				<?php esc_html_e( 'A pre-written Agent Skill that teaches Claude (and any compatible AI client) exactly how to build, edit, and style Elementor pages through the MCP tools — now with industry skill packs that tailor the build to the site\'s trade. Install once per machine — every future session that loads this skill knows your workflow.', 'elementor-mcp' ); ?>
 			</p>
 		</div>
 		<?php if ( $elementor_mcp_has_pro ) : ?>
@@ -57,6 +87,26 @@ $elementor_mcp_upgrade_url = function_exists( 'elementor_mcp_upgrade_url' )
 				<?php esc_html_e( 'Click the download button above, then follow the guide for your AI client below. The skill folder goes into your client\'s skills/rules directory — paths listed per platform.', 'elementor-mcp' ); ?>
 			</div>
 		</div>
+
+		<?php if ( ! empty( $elementor_mcp_verticals ) ) : ?>
+			<div class="elementor-mcp-skills-packs">
+				<h3 class="elementor-mcp-skills-packs__title">
+					<?php
+					/* translators: %d: number of bundled industry packs. */
+					echo esc_html( sprintf( _n( 'Includes %d industry skill pack', 'Includes %d industry skill packs', count( $elementor_mcp_verticals ), 'elementor-mcp' ), count( $elementor_mcp_verticals ) ) );
+					?>
+					<span class="elementor-mcp-badge elementor-mcp-badge--pro">NEW</span>
+				</h3>
+				<p class="description">
+					<?php esc_html_e( 'When your AI agent recognizes the site\'s industry, it reads the matching pack before building — applying that trade\'s brand voice, SEO keywords, page structure, conversion patterns, and compliance notes, plus the exact Brand Kit + prompt + template combo to use. Nothing to configure: just tell your client what kind of site you\'re building (e.g. "build a dental clinic site") and the skill routes itself.', 'elementor-mcp' ); ?>
+				</p>
+				<ul class="elementor-mcp-skills-packs__grid">
+					<?php foreach ( $elementor_mcp_verticals as $elementor_mcp_v ) : ?>
+						<li class="elementor-mcp-skills-pack"><?php echo esc_html( $elementor_mcp_v ); ?></li>
+					<?php endforeach; ?>
+				</ul>
+			</div>
+		<?php endif; ?>
 
 		<div class="elementor-mcp-skills-guides">
 

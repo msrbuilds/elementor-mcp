@@ -2,6 +2,14 @@
 
 All notable changes to MCP Tools for Elementor are documented in this file.
 
+## [1.7.3]
+
+- New: **Industry Skill Packs** for the Pro Agent Skill — 10 vertical knowledge files (`verticals/<slug>.md`) covering Dental, Med-Spa, Therapy, Fitness, Automotive, Food & Restaurant, Wedding, Real Estate, Legal, and Photography. When the AI agent recognizes the site's industry, it reads the one matching pack **before building** and applies that trade's brand voice, SEO keywords, page set/section order, conversion patterns, and compliance notes — plus the exact **Brand Kit + prompt slug(s) + template** combo for the vertical. This is the connective tissue that turns the three Pro content libraries (Prompts, Templates, Brand Kits) into curated per-industry combos the agent applies automatically.
+- New: The bundled `SKILL.md` gained a **vertical-routing section** (a trigger table near the top) so the agent loads only the single relevant pack — progressive disclosure keeps token cost flat regardless of how many packs ship.
+- New: **Skills admin tab** lists the bundled industry packs (read live from the shipped `verticals/` folder) and explains the zero-config auto-routing, so the value is visible before download.
+- New: **Build-time validator** (`tools/verticals/`) — a zero-dependency Node linter that checks every vertical file's `brand_kits` / `prompt_category` / `prompt_slugs` / `template_slugs` against a vendored, content-free slug snapshot of the shipped libraries; existence failures error, deliberate cross-category prompt pulls warn. Caught two real reference defects during authoring.
+- Changed: Industry packs ship in the **premium build only** (inside the already-premium `skills/` folder); free installs are unaffected and the download endpoint required no change (it bundles the whole skill folder as-is).
+
 ## [1.7.2]
 
 - New: **Brand Kits Library** for Pro subscribers — one-click coordinated color palettes + typography systems. 16 curated kits across 4 categories (Corporate & Tech, Creative, Hospitality, Trades). Click **Apply** on a kit and the entire Elementor site re-skins in seconds. Auto-synced from the EMCP Tools server with the same 24h transient-cache pattern as Premium Prompts and Templates.
