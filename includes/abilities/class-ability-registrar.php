@@ -153,6 +153,22 @@ class Elementor_MCP_Ability_Registrar {
 			$this->ability_names = array_merge( $this->ability_names, $brand_kits->get_ability_names() );
 		}
 
+		// SEO toolkit abilities (Pro only). Self-guards on Pro access exactly
+		// like the brand-kit group — register()/get_ability_names() are no-ops
+		// without a license, so the tools never enter the MCP surface.
+		if ( class_exists( 'Elementor_MCP_Seo_Abilities' ) ) {
+			$seo = new Elementor_MCP_Seo_Abilities( $this->data );
+			$seo->register();
+			$this->ability_names = array_merge( $this->ability_names, $seo->get_ability_names() );
+		}
+
+		// Accessibility toolkit abilities (Pro only). Same self-guard.
+		if ( class_exists( 'Elementor_MCP_A11y_Abilities' ) ) {
+			$a11y = new Elementor_MCP_A11y_Abilities( $this->data );
+			$a11y->register();
+			$this->ability_names = array_merge( $this->ability_names, $a11y->get_ability_names() );
+		}
+
 		/**
 		 * Filters the registered ability names.
 		 *

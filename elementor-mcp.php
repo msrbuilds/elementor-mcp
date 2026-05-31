@@ -3,7 +3,7 @@
  * Plugin Name:       MCP Tools for Elementor
  * Plugin URI:        https://github.com/msrbuilds/elementor-mcpelementor-mcp
  * Description:       Extends the WordPress MCP Adapter to expose Elementor data, widgets, and page design tools as MCP tools for AI agents.
- * Version:           1.7.4
+ * Version:           1.8.0
  * Requires at least: 6.9
  * Tested up to:      6.9
  * Requires PHP:      8.0
@@ -20,7 +20,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Plugin constants.
-define( 'ELEMENTOR_MCP_VERSION', '1.7.4' );
+define( 'ELEMENTOR_MCP_VERSION', '1.8.0' );
 define( 'ELEMENTOR_MCP_DIR', plugin_dir_path( __FILE__ ) );
 define( 'ELEMENTOR_MCP_URL', plugin_dir_url( __FILE__ ) );
 define( 'ELEMENTOR_MCP_BASENAME', plugin_basename( __FILE__ ) );
@@ -527,6 +527,10 @@ function elementor_mcp_init(): void {
 	require_once ELEMENTOR_MCP_DIR . 'includes/schemas/class-schema-generator.php';
 	require_once ELEMENTOR_MCP_DIR . 'includes/validators/class-element-validator.php';
 	require_once ELEMENTOR_MCP_DIR . 'includes/validators/class-settings-validator.php';
+	// SEO / A11y toolkit shared helpers (used by the Pro audit abilities).
+	require_once ELEMENTOR_MCP_DIR . 'includes/class-color-contrast.php';
+	require_once ELEMENTOR_MCP_DIR . 'includes/class-content-extractor.php';
+	require_once ELEMENTOR_MCP_DIR . 'includes/class-seo-meta.php';
 	require_once ELEMENTOR_MCP_DIR . 'includes/abilities/class-query-abilities.php';
 	require_once ELEMENTOR_MCP_DIR . 'includes/abilities/class-page-abilities.php';
 	require_once ELEMENTOR_MCP_DIR . 'includes/abilities/class-layout-abilities.php';
@@ -546,6 +550,10 @@ function elementor_mcp_init(): void {
 	require_once ELEMENTOR_MCP_DIR . 'includes/admin/class-pro-brand-kits.php';
 	require_once ELEMENTOR_MCP_DIR . 'includes/abilities/class-system-kit-abilities.php';
 	add_action( 'init', array( 'Elementor_MCP_Kit_Backup_Store', 'register_post_type' ) );
+	// SEO toolkit abilities (Pro only; self-guards on license at registration).
+	require_once ELEMENTOR_MCP_DIR . 'includes/abilities/class-seo-abilities.php';
+	// Accessibility toolkit abilities (Pro only; self-guards on license).
+	require_once ELEMENTOR_MCP_DIR . 'includes/abilities/class-a11y-abilities.php';
 	// Atomic elements support (Elementor 4.0+).
 	require_once ELEMENTOR_MCP_DIR . 'includes/class-atomic-props.php';
 	require_once ELEMENTOR_MCP_DIR . 'includes/class-atomic-styles.php';

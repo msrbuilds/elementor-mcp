@@ -545,6 +545,12 @@ namespace {
 			'Elementor_MCP_Settings_Validator'     => 'includes/validators/class-settings-validator.php',
 			'Elementor_MCP_Schema_Generator'       => 'includes/schemas/class-schema-generator.php',
 			'Elementor_MCP_Control_Mapper'         => 'includes/schemas/class-control-mapper.php',
+			// SEO / A11y toolkit helpers + abilities
+			'Elementor_MCP_Color_Contrast'         => 'includes/class-color-contrast.php',
+			'Elementor_MCP_Content_Extractor'      => 'includes/class-content-extractor.php',
+			'Elementor_MCP_Seo_Meta'               => 'includes/class-seo-meta.php',
+			'Elementor_MCP_Seo_Abilities'          => 'includes/abilities/class-seo-abilities.php',
+			'Elementor_MCP_A11y_Abilities'         => 'includes/abilities/class-a11y-abilities.php',
 			// Ability classes — all groups
 			'Elementor_MCP_Custom_Code_Abilities'  => 'includes/abilities/class-custom-code-abilities.php',
 			'Elementor_MCP_Stock_Image_Abilities'  => 'includes/abilities/class-stock-image-abilities.php',

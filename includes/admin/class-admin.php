@@ -139,32 +139,52 @@ class Elementor_MCP_Admin {
 	}
 
 	/**
-	 * Option that records whether the one-time default disabled-tools list
-	 * has been applied yet.
+	 * Option that records which version of the default disabled-tools seeding
+	 * has been applied. Stored as an integer-ish string: legacy '1' = the
+	 * original Pro-widget defaults; '2' adds the SEO/A11y Pro MCP tools.
 	 */
 	const OPTION_DEFAULTS_APPLIED = 'elementor_mcp_defaults_applied';
 
 	/**
-	 * On the first admin page load after install/upgrade, mark every Pro
-	 * widget shortcut as disabled-by-default so fresh installs ship under
-	 * the 100-tool cap enforced by some MCP clients. Runs exactly once;
-	 * existing user choices are preserved by merging (union) rather than
-	 * overwriting.
+	 * Current defaults-seeding version. Bump when a new batch of slugs should
+	 * ship disabled-by-default; add a guarded step in
+	 * maybe_apply_default_disabled_tools() for the new version.
+	 *
+	 * @since 1.8.0
+	 */
+	const DEFAULTS_VERSION = 2;
+
+	/**
+	 * SEO/A11y Pro MCP tool slugs that ship disabled-by-default (v2 defaults).
+	 *
+	 * @since 1.8.0
+	 *
+	 * @return string[]
+	 */
+	public static function seo_a11y_tool_slugs(): array {
+		return array(
+			'elementor-mcp/audit-page-seo',
+			'elementor-mcp/extract-keywords-from-content',
+			'elementor-mcp/generate-meta-tags',
+			'elementor-mcp/generate-schema-markup',
+			'elementor-mcp/audit-page-a11y',
+			'elementor-mcp/fix-color-contrast',
+			'elementor-mcp/add-alt-text-from-context',
+		);
+	}
+
+	/**
+	 * Seeds default disabled-tools on install/upgrade so new Pro tool batches
+	 * ship off-by-default (keeping sites under client tool caps), then records
+	 * the applied version. Each version step adds ONLY its newly-introduced
+	 * slugs, so prior user enable/disable choices are preserved (union merge).
 	 *
 	 * @since 1.6.0
 	 */
 	public function maybe_apply_default_disabled_tools(): void {
-		if ( '1' === get_option( self::OPTION_DEFAULTS_APPLIED, '' ) ) {
+		$applied = (int) get_option( self::OPTION_DEFAULTS_APPLIED, 0 );
+		if ( $applied >= self::DEFAULTS_VERSION ) {
 			return;
-		}
-
-		$pro_slugs = array();
-		foreach ( $this->get_all_tools() as $category ) {
-			foreach ( $category['tools'] as $slug => $tool ) {
-				if ( in_array( 'pro', $tool['badges'], true ) ) {
-					$pro_slugs[] = $slug;
-				}
-			}
 		}
 
 		$existing = get_option( self::OPTION_DISABLED_TOOLS, array() );
@@ -172,9 +192,29 @@ class Elementor_MCP_Admin {
 			$existing = array();
 		}
 
-		$merged = array_values( array_unique( array_merge( $existing, $pro_slugs ) ) );
+		$add = array();
+
+		// v1 — every Pro-badged tool. Only seeded on a truly fresh install
+		// (applied < 1); re-running on an upgrade would clobber user re-enables.
+		if ( $applied < 1 ) {
+			foreach ( $this->get_all_tools() as $category ) {
+				foreach ( $category['tools'] as $slug => $tool ) {
+					if ( in_array( 'pro', $tool['badges'], true ) ) {
+						$add[] = $slug;
+					}
+				}
+			}
+		}
+
+		// v2 — SEO/A11y Pro MCP tools ship disabled-by-default. Adding only the
+		// new slugs means an existing user's other choices survive the upgrade.
+		if ( $applied < 2 ) {
+			$add = array_merge( $add, self::seo_a11y_tool_slugs() );
+		}
+
+		$merged = array_values( array_unique( array_merge( $existing, $add ) ) );
 		update_option( self::OPTION_DISABLED_TOOLS, $merged );
-		update_option( self::OPTION_DEFAULTS_APPLIED, '1' );
+		update_option( self::OPTION_DEFAULTS_APPLIED, (string) self::DEFAULTS_VERSION );
 	}
 
 	/**
@@ -1197,6 +1237,53 @@ class Elementor_MCP_Admin {
 						'label'       => __( 'Replace System Typography', 'elementor-mcp' ),
 						'description' => __( 'Replaces the four Elementor system typography slots atomically.', 'elementor-mcp' ),
 						'badges'      => array( 'destructive' ),
+					),
+				),
+			);
+		}
+
+		// SEO & Accessibility toolkit (Pro). Shown to licensed sites only —
+		// matching the ability gate. Carries the 'pro' badge so they ship
+		// disabled-by-default (see maybe_apply_default_disabled_tools v2);
+		// users re-enable individual tools here. All five are read-only.
+		if ( function_exists( 'emcp_pro_fs' ) && emcp_pro_fs()->can_use_premium_code() ) {
+			$tools['seo_a11y'] = array(
+				'label' => __( 'SEO & Accessibility', 'elementor-mcp' ),
+				'tools' => array(
+					'elementor-mcp/audit-page-seo'                 => array(
+						'label'       => __( 'Audit Page SEO', 'elementor-mcp' ),
+						'description' => __( 'Scored on-page SEO report (H1, title/meta, canonical, alts, links, word count).', 'elementor-mcp' ),
+						'badges'      => array( 'pro', 'read-only' ),
+					),
+					'elementor-mcp/extract-keywords-from-content'  => array(
+						'label'       => __( 'Extract Keywords', 'elementor-mcp' ),
+						'description' => __( 'Frequency keyword + phrase extraction from page content.', 'elementor-mcp' ),
+						'badges'      => array( 'pro', 'read-only' ),
+					),
+					'elementor-mcp/generate-meta-tags'             => array(
+						'label'       => __( 'Generate Meta Tags', 'elementor-mcp' ),
+						'description' => __( 'Proposes (apply:true writes to Yoast/Rank Math) an SEO title and meta description. Dry-run by default.', 'elementor-mcp' ),
+						'badges'      => array( 'pro' ),
+					),
+					'elementor-mcp/generate-schema-markup'         => array(
+						'label'       => __( 'Generate Schema Markup', 'elementor-mcp' ),
+						'description' => __( 'Generates (apply:true injects) JSON-LD structured data (Article, LocalBusiness, FAQPage, etc.). Dry-run by default.', 'elementor-mcp' ),
+						'badges'      => array( 'pro' ),
+					),
+					'elementor-mcp/audit-page-a11y'                => array(
+						'label'       => __( 'Audit Page Accessibility', 'elementor-mcp' ),
+						'description' => __( 'WCAG-oriented report: contrast, alts, heading order, link text, form labels.', 'elementor-mcp' ),
+						'badges'      => array( 'pro', 'read-only' ),
+					),
+					'elementor-mcp/fix-color-contrast'             => array(
+						'label'       => __( 'Fix Color Contrast', 'elementor-mcp' ),
+						'description' => __( 'Proposes (apply:true to write) adjusted text colors so failing pairs meet WCAG AA. Dry-run by default.', 'elementor-mcp' ),
+						'badges'      => array( 'pro', 'destructive' ),
+					),
+					'elementor-mcp/add-alt-text-from-context'      => array(
+						'label'       => __( 'Add Alt Text from Context', 'elementor-mcp' ),
+						'description' => __( 'Proposes (apply:true to write) alt text for images lacking it, from filename/heading/title. Dry-run by default.', 'elementor-mcp' ),
+						'badges'      => array( 'pro', 'destructive' ),
 					),
 				),
 			);

@@ -1,10 +1,10 @@
 === MCP Tools for Elementor ===
 Contributors: mianshahzadraza
 Tags: elementor, mcp, ai, page-builder, automation
-Requires at least: 6.7
+Requires at least: 6.9
 Tested up to: 6.9
-Stable tag: 1.7.4
-Requires PHP: 7.4
+Stable tag: 1.8.0
+Requires PHP: 8.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -36,7 +36,7 @@ Tool counts scale with your environment: 61 tools on a free Elementor install, 1
 
 **Requires:**
 
-* WordPress 6.8 or later
+* WordPress 6.9 or later
 * Elementor 3.20 or later (container support required)
 * WordPress Abilities API — included in WordPress core 6.9+ (and 7.0)
 * WordPress MCP Adapter — bundled with the plugin (no separate install needed; an active standalone MCP Adapter plugin is used instead when present)
@@ -153,6 +153,12 @@ The plugin enforces WordPress capability checks on every tool. Read operations r
 2. Connection configuration page with copy-paste configs.
 
 == Changelog ==
+
+= 1.8.0 =
+* New: SEO & Accessibility toolkit for Pro subscribers — 7 new MCP tools that audit and improve a page at the structure level (no external API, no AI cost). SEO: audit-page-seo (scored on-page report), extract-keywords-from-content, generate-meta-tags (writes to Yoast/Rank Math with apply), generate-schema-markup (JSON-LD: Article/LocalBusiness/FAQPage/Service/Product, injects with apply). Accessibility: audit-page-a11y (WCAG-oriented: contrast, alts, heading order, link text, form labels), fix-color-contrast, add-alt-text-from-context.
+* New: Every page-mutating tool is dry-run by default — fixers and the generator write-back only change the site when apply:true is passed, and edits are reversible via Elementor revisions.
+* New: The 7 tools are Pro-gated and disabled-by-default; enable individual tools on the EMCP Tools tab (new "SEO & Accessibility" category).
+* Changed: CLAUDE.md / documentation corrected to state the real minimums (WordPress 6.9+, PHP 8.0+).
 
 = 1.7.4 =
 * New: The WordPress MCP Adapter is now bundled with the plugin — no separate adapter plugin install required. On WordPress 6.9+/7.0 (where the Abilities API is in core), Elementor is the only thing you need to install. If a standalone MCP Adapter plugin is active, the plugin automatically defers to it.

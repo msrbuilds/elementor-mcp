@@ -24,16 +24,17 @@ When editing premium-prompts behavior, the plugin code (`includes/admin/class-pr
 - With Elementor Pro + Elementor 4.0+: **113**
 - With Elementor Pro + WooCommerce + Elementor 4.0+: **118**
 - Low-tools mode (any config): capped at **51** (46 without Elementor 4.0+)
+- Pro (EMCP license): **+7** SEO & Accessibility tools — registered but **disabled-by-default**, so they don't change the active surface until a user enables them on the Tools tab.
 
 See `PLAN.md` for the full architectural specification.
 
 ## Dependencies & Requirements
 
-- WordPress >= 6.8
+- WordPress >= 6.9 (the Abilities API — `wp_register_ability()` — is core in 6.9+/7.0)
 - Elementor >= 3.20 (container support required; >= 4.0 for atomic elements)
 - WordPress Abilities API — core in WP 6.9+/7.0 (the only hard external dep is Elementor)
 - WordPress MCP Adapter — **bundled** with the plugin since v1.7.4 (`includes/vendors/mcp-adapter/`); no separate install needed. If a standalone MCP Adapter plugin is active, the plugin defers to it (see `Elementor_MCP_Adapter_Bootstrap`).
-- PHP 7.4+
+- PHP >= 8.0
 
 ## Build & Development Commands
 
@@ -264,6 +265,20 @@ The MCP Adapter converts ability names like `elementor-mcp/list-widgets` to tool
 | `elementor-mcp/add-custom-js` | Add JavaScript to a page via HTML widget with auto `<script>` wrapping |
 | `elementor-mcp/add-code-snippet` | Create a site-wide Custom Code snippet for head/body injection (Pro only) |
 | `elementor-mcp/list-code-snippets` | List existing Custom Code snippets with locations and statuses (Pro only) |
+
+### SEO & Accessibility Toolkit — Pro (7 tools, off by default)
+
+Pro-only, registered only when `emcp_pro_fs()->can_use_premium_code()` (self-guarded like the brand-kit tools). All seven are **disabled-by-default** (the `seo_a11y` category in `get_all_tools()` carries the `pro` badge; the v2 defaults marker in `maybe_apply_default_disabled_tools()` seeds them into `elementor_mcp_disabled_tools` on upgrade — `Elementor_MCP_Admin::seo_a11y_tool_slugs()` is the canonical list). Users re-enable individual tools on the Tools tab. No external API — pure PHP over the Elementor data layer + SEO-plugin meta. The five audits/generators are **read-only**; the two fixers **mutate only when `apply: true`** (dry-run preview by default) and are reversible via Elementor revisions. Shared helpers: `Elementor_MCP_Content_Extractor` (normalized page view), `Elementor_MCP_Color_Contrast` (WCAG math), `Elementor_MCP_Seo_Meta` (Yoast/Rank Math/core).
+
+| Ability Name | Purpose |
+|---|---|
+| `elementor-mcp/audit-page-seo` | Scored on-page SEO report: H1 presence, title/meta length, canonical, heading hierarchy, image alts, internal links, word count, optional target-keyword usage |
+| `elementor-mcp/extract-keywords-from-content` | Frequency/TF-IDF-style keyword + bigram extraction from page text (stop-word filtered, no external service) |
+| `elementor-mcp/generate-meta-tags` | Proposes an SEO title (≤60) + meta description (≤155) from page content, keyword-front-loaded; proposal-only |
+| `elementor-mcp/generate-schema-markup` | Generates JSON-LD (Article / LocalBusiness / FAQPage / Service / Product); LocalBusiness takes a `business` object, FAQPage a `faqs` array; proposal-only |
+| `elementor-mcp/audit-page-a11y` | WCAG-oriented report: color contrast (best-effort, `inconclusive` when background unresolved), missing alts, heading order, generic/empty link text, form-label coverage |
+| `elementor-mcp/fix-color-contrast` | Proposes (and with `apply:true` writes) adjusted text colors so failing pairs meet WCAG AA. Dry-run by default; writes the resolved `*_color` setting via the data layer |
+| `elementor-mcp/add-alt-text-from-context` | Proposes (and with `apply:true` writes) alt text for images lacking it, derived from filename → nearest heading → page title. Dry-run by default; writes `_wp_attachment_image_alt` + the image widget's alt |
 
 ### Atomic Elements — Elementor 4.0+ (13 tools)
 

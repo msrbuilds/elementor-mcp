@@ -2,6 +2,16 @@
 
 All notable changes to MCP Tools for Elementor are documented in this file.
 
+## [1.8.0]
+
+- New: **SEO & Accessibility toolkit (Pro)** — 7 MCP tools that audit and improve a page at the **structure** level, with **no external API and no inference cost** (pure PHP over the Elementor data layer + the site's SEO-plugin meta). The competitive wedge vs. prompt-only AI plugins is that these operate on the real page structure.
+  - **SEO (4):** `audit-page-seo` (scored on-page report: H1, title/meta length, canonical, heading hierarchy, image alts, internal links, word count, optional target-keyword usage); `extract-keywords-from-content` (frequency/TF-IDF keywords + bigrams, stop-word filtered); `generate-meta-tags` (proposes an SEO title ≤60 + meta description ≤155; **writes to Yoast / Rank Math with `apply:true`**); `generate-schema-markup` (JSON-LD for Article / LocalBusiness / FAQPage / Service / Product; **injects via a managed, replace-in-place HTML widget with `apply:true`**).
+  - **Accessibility (3):** `audit-page-a11y` (WCAG-oriented: best-effort color contrast with honest `inconclusive` when a background can't be resolved, missing alts, heading order, generic/empty link text, form-label coverage); `fix-color-contrast` (suggests/writes adjusted text colors to meet WCAG AA); `add-alt-text-from-context` (derives alt text from filename → nearest heading → page title).
+- New: **Dry-run by default for every mutating path.** The two fixers and the two generator write-backs only change the site when `apply: true` is passed; all edits are reversible via Elementor revisions, and writes additionally enforce per-post ownership.
+- New: **Off-by-default + user-toggleable.** All 7 tools are Pro-gated and ship disabled-by-default (seeded via a versioned defaults marker, `Elementor_MCP_Admin::DEFAULTS_VERSION`), so they don't push Pro users over a client tool cap. A new **"SEO & Accessibility"** category on the EMCP Tools tab lets users enable individual tools.
+- New: Shared, unit-tested helpers — `Elementor_MCP_Content_Extractor` (one normalized page view: headings, text, images + alt resolution, links, form fields, word count, contrast contexts), `Elementor_MCP_Color_Contrast` (WCAG relative-luminance/contrast/suggest math), `Elementor_MCP_Seo_Meta` (Yoast / Rank Math / core read + write abstraction).
+- Changed: **Documentation accuracy** — CLAUDE.md and readme.txt now state the real minimums (WordPress **6.9+**, PHP **8.0+**) instead of the stale 6.7/6.8/7.4 claims.
+
 ## [1.7.4]
 
 - New: **Bundled MCP Adapter.** The `wordpress/mcp-adapter` package now ships inside the plugin (`includes/vendors/mcp-adapter/`), so users no longer install it as a separate plugin. WordPress 6.9+/7.0 already includes the Abilities API in core, so on those versions Elementor is the only external dependency. `Elementor_MCP_Adapter_Bootstrap::ensure()` loads the bundled copy via a minimal PSR-4 autoloader **only when no standalone MCP Adapter plugin is already active** — when one is, the plugin defers to it (no double-load, no version clash). Only the adapter's `includes/` source is vendored; its dev-only Composer `vendor/` is not (the package has zero runtime dependencies).
