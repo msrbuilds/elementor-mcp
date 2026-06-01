@@ -52,6 +52,14 @@ namespace {
 	$GLOBALS['_active_experiments'] = [];
 
 	// -----------------------------------------------------------------------
+	// Registered atomic element types for atomic-detection tests.
+	// $GLOBALS['_registered_element_types'] lists the element-type slugs the
+	// \Elementor\Plugin stub's elements_manager->get_element_types() returns
+	// (e.g. 'e-flexbox'). Reset per-test in setUp(); empty by default.
+	// -----------------------------------------------------------------------
+	$GLOBALS['_registered_element_types'] = [];
+
+	// -----------------------------------------------------------------------
 	// WordPress function stubs
 	// -----------------------------------------------------------------------
 
@@ -496,6 +504,9 @@ namespace Elementor {
 			/** @var object Stub experiments manager reading $GLOBALS['_active_experiments']. */
 			public $experiments;
 
+			/** @var object Stub elements_manager reading $GLOBALS['_registered_element_types']. */
+			public $elements_manager;
+
 			private function __construct() {
 				$this->experiments = new class {
 					/**
@@ -507,6 +518,22 @@ namespace Elementor {
 					 */
 					public function is_feature_active( string $feature ): bool {
 						return in_array( $feature, $GLOBALS['_active_experiments'] ?? [], true );
+					}
+				};
+
+				$this->elements_manager = new class {
+					/**
+					 * Returns a map of registered element types keyed by slug,
+					 * driven by $GLOBALS['_registered_element_types'] (set per-test).
+					 *
+					 * @return array<string, object>
+					 */
+					public function get_element_types(): array {
+						$out = [];
+						foreach ( $GLOBALS['_registered_element_types'] ?? [] as $slug ) {
+							$out[ $slug ] = new \stdClass();
+						}
+						return $out;
 					}
 				};
 
