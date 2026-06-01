@@ -19,31 +19,55 @@
     }
   },
 
-  "claude_desktop_remote_proxy": {
-    "_description": "Claude Desktop — remote WordPress via Node.js HTTP proxy (absolute path required for Desktop)",
+  "claude_desktop_remote_npx": {
+    "_description": "Claude Desktop — remote WordPress via npx runner (RECOMMENDED for remote/shared hosting; nothing to install or keep in sync)",
+    "_note": "The proxy runs as a LOCAL subprocess on the machine with Claude Desktop. npx fetches it on demand, so there is no file path to maintain. Requires Node.js 18+ locally.",
     "mcpServers": {
       "elementor-mcp": {
-        "command": "node",
+        "command": "npx",
         "args": [
-          "/path/to/wp-content/plugins/elementor-mcp/bin/mcp-proxy.mjs"
+          "-y",
+          "@msrbuilds/emcp-proxy@latest"
         ],
         "env": {
           "WP_URL": "https://your-site.com",
           "WP_USERNAME": "admin",
-          "WP_APP_PASSWORD": "xxxx xxxx xxxx xxxx xxxx xxxx"
+          "WP_APP_PASSWORD": "xxxx xxxx xxxx xxxx xxxx xxxx",
+          "MCP_PROTOCOL_VERSION": "2024-11-05"
         }
       }
     }
   },
 
-  "claude_code_remote_proxy": {
-    "_description": "Claude Code — remote WordPress via Node.js HTTP proxy with optional protocol version override",
+  "claude_desktop_remote_proxy_local_copy": {
+    "_description": "Claude Desktop — remote WordPress via a LOCAL copy of the proxy file",
+    "_note": "Claude Desktop launches the proxy locally, so mcp-proxy.mjs must exist on THIS machine, not on the server. Extract bin/mcp-proxy.mjs from the plugin ZIP, save it locally, and point 'args' at that local path. Re-extract after plugin updates to get proxy fixes.",
+    "mcpServers": {
+      "elementor-mcp": {
+        "command": "node",
+        "args": [
+          "C:\\local\\path\\to\\mcp-proxy.mjs"
+        ],
+        "env": {
+          "WP_URL": "https://your-site.com",
+          "WP_USERNAME": "admin",
+          "WP_APP_PASSWORD": "xxxx xxxx xxxx xxxx xxxx xxxx",
+          "MCP_PROTOCOL_VERSION": "2024-11-05"
+        }
+      }
+    }
+  },
+
+  "claude_code_remote_npx": {
+    "_description": "Claude Code — remote WordPress via npx runner with protocol version override",
+    "_note": "The npx package runs locally; no file path to maintain. Requires Node.js 18+.",
     "mcpServers": {
       "elementor-mcp": {
         "type": "stdio",
-        "command": "node",
+        "command": "npx",
         "args": [
-          "/path/to/wp-content/plugins/elementor-mcp/bin/mcp-proxy.mjs"
+          "-y",
+          "@msrbuilds/emcp-proxy@latest"
         ],
         "env": {
           "WP_URL": "https://your-site.com",

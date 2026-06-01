@@ -188,24 +188,33 @@ For local development with WP-CLI available, you can use the stdio transport (no
 
 ### Node.js proxy (remote sites or protocol compatibility)
 
-For remote WordPress sites, environments without WP-CLI, or when your AI client needs a different MCP protocol version, use the bundled Node.js proxy:
+For remote WordPress sites, environments without WP-CLI, or when your AI client needs a different MCP protocol version, use the Node.js proxy. Your AI client launches it as a **local subprocess**, so it must run on the machine with the client — **not** on the WordPress server. On shared hosting you have no local access to the plugin directory, so use one of the two methods below.
+
+**Recommended — `npx` runner (nothing to install or keep in sync):**
 
 ```json
 {
     "mcpServers": {
         "elementor-mcp": {
             "type": "stdio",
-            "command": "node",
-            "args": ["/path/to/wp-content/plugins/elementor-mcp/bin/mcp-proxy.mjs"],
+            "command": "npx",
+            "args": ["-y", "@msrbuilds/emcp-proxy@latest"],
             "env": {
                 "WP_URL": "https://your-site.com",
                 "WP_USERNAME": "admin",
-                "WP_APP_PASSWORD": "xxxx xxxx xxxx xxxx xxxx xxxx"
+                "WP_APP_PASSWORD": "xxxx xxxx xxxx xxxx xxxx xxxx",
+                "MCP_PROTOCOL_VERSION": "2024-11-05"
             }
         }
     }
 }
 ```
+
+`npx` fetches the latest proxy on each launch, so there is no local copy to drift from the plugin version. Requires Node.js 18+ on the client machine.
+
+**Alternative — local copy of the proxy file:**
+
+Extract `bin/mcp-proxy.mjs` from the plugin ZIP, save it anywhere on the machine running your AI client, and point `args` at that **local** path (e.g. `["C:\\local\\path\\to\\mcp-proxy.mjs"]`) — not at the copy inside `wp-content/plugins/...` on the server. Re-extract it after plugin updates to pick up proxy fixes.
 
 **Optional environment variables:**
 

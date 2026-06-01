@@ -360,25 +360,32 @@ The MCP Adapter includes a built-in WP-CLI stdio bridge. No HTTP round-trip, no 
 
 **Verify:** `wp mcp-adapter list --path=/path/to/wordpress` should show `elementor-mcp-server`.
 
-### Option B: Node.js HTTP proxy (remote sites)
+### Option B: Node.js proxy (remote sites)
 
-For remote WordPress sites or environments without WP-CLI, use the bundled proxy at `bin/mcp-proxy.mjs`. It bridges stdio ↔ WordPress HTTP endpoint with Application Password auth.
+For remote WordPress sites or environments without WP-CLI, use the Node.js proxy. It bridges stdio ↔ WordPress HTTP endpoint with Application Password auth. **The client launches it as a local subprocess, so it must run on the client machine, not the server** — on shared hosting there's no local access to `wp-content/plugins/...`. Two ways to run it:
+
+**Recommended — npx runner** (`@msrbuilds/emcp-proxy`, published from `bin/` — see [bin/package.json](bin/package.json)). Nothing to copy or keep in sync:
 
 ```json
 {
   "mcpServers": {
     "elementor-mcp": {
-      "command": "node",
-      "args": ["bin/mcp-proxy.mjs"],
+      "command": "npx",
+      "args": ["-y", "@msrbuilds/emcp-proxy@latest"],
       "env": {
         "WP_URL": "https://your-site.com",
         "WP_USERNAME": "admin",
-        "WP_APP_PASSWORD": "xxxx xxxx xxxx xxxx xxxx xxxx"
+        "WP_APP_PASSWORD": "xxxx xxxx xxxx xxxx xxxx xxxx",
+        "MCP_PROTOCOL_VERSION": "2024-11-05"
       }
     }
   }
 }
 ```
+
+**Alternative — local copy:** extract `bin/mcp-proxy.mjs` from the ZIP to the client machine and point `args` at that local path (`["C:\\local\\path\\to\\mcp-proxy.mjs"]`). For local dev from the plugin dir, `["bin/mcp-proxy.mjs"]` works since client and server share the filesystem.
+
+`MCP_PROTOCOL_VERSION=2024-11-05` makes the proxy rewrite the adapter's `2025-06-18` handshake for clients that reject it (e.g. some Claude Desktop builds).
 
 ### Option C: Direct HTTP (VS Code MCP extension)
 

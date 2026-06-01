@@ -227,9 +227,23 @@ $elementor_mcp_server_enabled = class_exists( 'Elementor_MCP_Plugin' )
 			</div>
 
 			<p class="description">
-				<strong><?php esc_html_e( 'Note:', 'elementor-mcp' ); ?></strong>
-				<?php esc_html_e( 'Replace the proxy path with the absolute path to bin/mcp-proxy.mjs in your plugin installation directory.', 'elementor-mcp' ); ?>
+				<strong><?php esc_html_e( 'Local WordPress:', 'elementor-mcp' ); ?></strong>
+				<?php esc_html_e( 'The path above already points to bin/mcp-proxy.mjs in this installation — no change needed.', 'elementor-mcp' ); ?>
 			</p>
+			<p class="description">
+				<strong><?php esc_html_e( 'Remote WordPress (e.g. shared hosting):', 'elementor-mcp' ); ?></strong>
+				<?php esc_html_e( 'Your AI client launches this proxy as a local subprocess, so the file must exist on the machine running the client — not on the server. The path above points to the server and will not work remotely. Use one of these instead:', 'elementor-mcp' ); ?>
+			</p>
+			<ul class="description" style="list-style: disc; margin-left: 1.5em;">
+				<li><?php
+					printf(
+						/* translators: %s: npx command code */
+						esc_html__( 'Recommended — zero-install npx runner (nothing to keep in sync): set %s and keep the same env block.', 'elementor-mcp' ),
+						'<code>"command": "npx", "args": ["-y", "@msrbuilds/emcp-proxy@latest"]</code>'
+					);
+				?></li>
+				<li><?php esc_html_e( 'Or copy bin/mcp-proxy.mjs from the plugin ZIP to your local machine and point "args" at that local path. Re-copy it after plugin updates to pick up proxy fixes.', 'elementor-mcp' ); ?></li>
+			</ul>
 
 		</div>
 

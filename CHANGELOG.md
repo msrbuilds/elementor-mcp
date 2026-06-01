@@ -2,6 +2,12 @@
 
 All notable changes to MCP Tools for Elementor are documented in this file.
 
+## [1.8.1]
+
+- Fixed: **Remote-proxy documentation.** Clarified that the Node.js proxy is launched by the AI client as a **local subprocess**, so for remote/shared-hosting sites its file path must point to the **client** machine — not to `bin/mcp-proxy.mjs` inside `wp-content/plugins/...` on the server, which the client can't reach. A user reported the old docs (which showed a server-side path under a "remote WordPress" heading) led to exactly this misread. Updated the Connection tab note (`includes/admin/views/page-connection.php`), `README.md`, and `mcp-config-examples.json`.
+- New: **`npx` runner for remote connections** — `@msrbuilds/emcp-proxy`, published from `bin/` (`bin/package.json`, zero-dependency single file). Config becomes `"command": "npx", "args": ["-y", "@msrbuilds/emcp-proxy@latest"]`, so there's no local proxy copy to extract or keep in sync with the plugin version. The local-file method remains documented as the alternative.
+- Changed: **Documented `MCP_PROTOCOL_VERSION`** (`2024-11-05`) in the connection docs, not just the release notes — it makes the proxy rewrite the adapter's `2025-06-18` handshake for clients (e.g. some Claude Desktop builds) that reject it.
+
 ## [1.8.0]
 
 - New: **SEO & Accessibility toolkit (Pro)** — 7 MCP tools that audit and improve a page at the **structure** level, with **no external API and no inference cost** (pure PHP over the Elementor data layer + the site's SEO-plugin meta). The competitive wedge vs. prompt-only AI plugins is that these operate on the real page structure.
