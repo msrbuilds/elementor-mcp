@@ -45,6 +45,19 @@ class Elementor_MCP_Atomic_Widget_Abilities {
 	}
 
 	/**
+	 * Content prop for e-heading/e-paragraph/e-button text. Elementor 4.x GA
+	 * types these as Html_V3 (html-v3); 3.x-experimental used a plain String.
+	 *
+	 * @param string $text Plain text content.
+	 * @return array Typed prop ($$type html-v3 on 4.x, string on 3.x).
+	 */
+	private static function content_prop( string $text ): array {
+		return Elementor_MCP_Atomic_Props::is_v4()
+			? Elementor_MCP_Atomic_Props::html( $text )
+			: Elementor_MCP_Atomic_Props::string( $text );
+	}
+
+	/**
 	 * JSON-Schema fragment for the flat atomic styling props the factory reads
 	 * (typography + common). Shared by the convenience tools and add-atomic-widget
 	 * so agents discover the capability. The factory accepts more keys than are
@@ -371,7 +384,7 @@ class Elementor_MCP_Atomic_Widget_Abilities {
 			'e-heading',
 			function ( $input ) {
 				$settings = array();
-				$settings['title'] = Elementor_MCP_Atomic_Props::string( sanitize_text_field( $input['title'] ?? 'Heading' ) );
+				$settings['title'] = self::content_prop( sanitize_text_field( $input['title'] ?? 'Heading' ) );
 				$settings['tag']   = Elementor_MCP_Atomic_Props::string( sanitize_text_field( $input['tag'] ?? 'h2' ) );
 
 				if ( ! empty( $input['link'] ) ) {
@@ -401,7 +414,7 @@ class Elementor_MCP_Atomic_Widget_Abilities {
 			'e-paragraph',
 			function ( $input ) {
 				$settings = array();
-				$settings['paragraph'] = Elementor_MCP_Atomic_Props::string( sanitize_text_field( $input['content'] ?? 'Paragraph text' ) );
+				$settings['paragraph'] = self::content_prop( sanitize_text_field( $input['content'] ?? 'Paragraph text' ) );
 
 				if ( ! empty( $input['link'] ) ) {
 					$settings['link'] = Elementor_MCP_Atomic_Props::link( esc_url_raw( $input['link'] ) );
@@ -431,7 +444,7 @@ class Elementor_MCP_Atomic_Widget_Abilities {
 			'e-button',
 			function ( $input ) {
 				$settings = array();
-				$settings['text'] = Elementor_MCP_Atomic_Props::string( sanitize_text_field( $input['text'] ?? 'Click Here' ) );
+				$settings['text'] = self::content_prop( sanitize_text_field( $input['text'] ?? 'Click Here' ) );
 
 				if ( ! empty( $input['link'] ) ) {
 					$target_blank = ! empty( $input['target_blank'] );
@@ -514,7 +527,7 @@ class Elementor_MCP_Atomic_Widget_Abilities {
 				$src_url = $svg_id ? ( wp_get_attachment_url( $svg_id ) ?: '' ) : $svg_url;
 				if ( $src_url ) {
 					$settings['svg'] = array(
-						'$$type' => 'image-src',
+						'$$type' => Elementor_MCP_Atomic_Props::is_v4() ? 'svg-src' : 'image-src',
 						'value'  => array( 'url' => array( '$$type' => 'url', 'value' => $src_url ) ),
 					);
 				}
