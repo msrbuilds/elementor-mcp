@@ -237,6 +237,20 @@ class Elementor_MCP_Atomic_Props {
 	}
 
 	/**
+	 * True when the live Elementor is 4.0+ (GA atomic schema). The atomic
+	 * prop-types changed between 3.x-experimental and 4.x-GA, so output shapes
+	 * (content html-v3, svg-src, padding/margin dimensions, gap layout-direction)
+	 * branch on this. Tests override via $GLOBALS['_elementor_version_override'].
+	 *
+	 * @return bool
+	 */
+	public static function is_v4(): bool {
+		$v = $GLOBALS['_elementor_version_override']
+			?? ( defined( 'ELEMENTOR_VERSION' ) ? ELEMENTOR_VERSION : '' );
+		return '' !== $v && version_compare( $v, '4.0', '>=' );
+	}
+
+	/**
 	 * Checks whether Elementor atomic (V4) elements are available **and will
 	 * persist**.
 	 *

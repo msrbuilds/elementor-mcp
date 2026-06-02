@@ -59,6 +59,9 @@ namespace {
 	// -----------------------------------------------------------------------
 	$GLOBALS['_registered_element_types'] = [];
 
+	// Override for Elementor_MCP_Atomic_Props::is_v4(); null → reads ELEMENTOR_VERSION.
+	$GLOBALS['_elementor_version_override'] = null;
+
 	// -----------------------------------------------------------------------
 	// WordPress function stubs
 	// -----------------------------------------------------------------------
