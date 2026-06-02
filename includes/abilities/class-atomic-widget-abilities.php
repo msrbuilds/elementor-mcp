@@ -45,6 +45,30 @@ class Elementor_MCP_Atomic_Widget_Abilities {
 	}
 
 	/**
+	 * JSON-Schema fragment for the flat atomic styling props the factory reads
+	 * (typography + common). Shared by the convenience tools and add-atomic-widget
+	 * so agents discover the capability. The factory accepts more keys than are
+	 * documented here (per-side padding, units); these are the common ones.
+	 *
+	 * @return array<string,array> Schema properties to merge into a tool's input.
+	 */
+	private static function style_schema_props(): array {
+		return array(
+			'font_size'        => array( 'type' => 'number', 'description' => __( 'Font size value (default unit px).', 'elementor-mcp' ) ),
+			'font_size_unit'   => array( 'type' => 'string', 'description' => __( 'Font size unit: px, em, rem.', 'elementor-mcp' ) ),
+			'font_family'      => array( 'type' => 'string', 'description' => __( 'Font family name.', 'elementor-mcp' ) ),
+			'font_weight'      => array( 'type' => 'string', 'description' => __( 'Font weight (e.g. 400, 700).', 'elementor-mcp' ) ),
+			'line_height'      => array( 'type' => 'number', 'description' => __( 'Line height value (default unit em).', 'elementor-mcp' ) ),
+			'letter_spacing'   => array( 'type' => 'number', 'description' => __( 'Letter spacing value (default unit px).', 'elementor-mcp' ) ),
+			'text_align'       => array( 'type' => 'string', 'description' => __( 'Text alignment: left, center, right, justify.', 'elementor-mcp' ) ),
+			'color'            => array( 'type' => 'string', 'description' => __( 'Text color (hex/rgb).', 'elementor-mcp' ) ),
+			'background_color' => array( 'type' => 'string', 'description' => __( 'Background color (hex/rgb).', 'elementor-mcp' ) ),
+			'padding'          => array( 'type' => 'number', 'description' => __( 'Uniform padding value.', 'elementor-mcp' ) ),
+			'border_radius'    => array( 'type' => 'number', 'description' => __( 'Border radius value.', 'elementor-mcp' ) ),
+		);
+	}
+
+	/**
 	 * Registers all atomic widget abilities.
 	 *
 	 * Skips registration entirely if Elementor < 4.0.
@@ -105,12 +129,15 @@ class Elementor_MCP_Atomic_Widget_Abilities {
 				'permission_callback' => array( $this, 'check_edit_permission' ),
 				'input_schema'        => array(
 					'type'       => 'object',
-					'properties' => array(
-						'post_id'     => array( 'type' => 'integer', 'description' => __( 'The post/page ID.', 'elementor-mcp' ) ),
-						'parent_id'   => array( 'type' => 'string', 'description' => __( 'Parent container element ID.', 'elementor-mcp' ) ),
-						'position'    => array( 'type' => 'integer', 'description' => __( 'Insert position. -1 = append.', 'elementor-mcp' ) ),
-						'widget_type' => array( 'type' => 'string', 'description' => __( 'Atomic widget type name (e.g. e-heading, e-button).', 'elementor-mcp' ) ),
-						'settings'    => array( 'type' => 'object', 'description' => __( 'Widget settings with $$type-wrapped values.', 'elementor-mcp' ) ),
+					'properties' => array_merge(
+						array(
+							'post_id'     => array( 'type' => 'integer', 'description' => __( 'The post/page ID.', 'elementor-mcp' ) ),
+							'parent_id'   => array( 'type' => 'string', 'description' => __( 'Parent container element ID.', 'elementor-mcp' ) ),
+							'position'    => array( 'type' => 'integer', 'description' => __( 'Insert position. -1 = append.', 'elementor-mcp' ) ),
+							'widget_type' => array( 'type' => 'string', 'description' => __( 'Atomic widget type name (e.g. e-heading, e-button).', 'elementor-mcp' ) ),
+							'settings'    => array( 'type' => 'object', 'description' => __( 'Widget settings with $$type-wrapped values.', 'elementor-mcp' ) ),
+						),
+						self::style_schema_props()
 					),
 					'required'   => array( 'post_id', 'parent_id', 'widget_type' ),
 				),
@@ -141,7 +168,9 @@ class Elementor_MCP_Atomic_Widget_Abilities {
 			return new \WP_Error( 'missing_widget_type', __( 'widget_type is required.', 'elementor-mcp' ) );
 		}
 
-		$element = $this->factory->create_atomic_widget( $widget_type, $settings );
+		// Flat style props (color, font_size, padding, ...) are read from $input
+		// by the factory's build_common/typography props; unknown keys ignored.
+		$element = $this->factory->create_atomic_widget( $widget_type, $settings, $input );
 
 		$page_data = $this->data->get_page_data( $post_id );
 		if ( is_wp_error( $page_data ) ) {
@@ -254,10 +283,13 @@ class Elementor_MCP_Atomic_Widget_Abilities {
 		$full_name             = 'elementor-mcp/' . $name;
 		$this->ability_names[] = $full_name;
 
-		$base_props = array(
-			'post_id'   => array( 'type' => 'integer', 'description' => __( 'The post/page ID.', 'elementor-mcp' ) ),
-			'parent_id' => array( 'type' => 'string', 'description' => __( 'Parent container element ID (e-flexbox or e-div-block).', 'elementor-mcp' ) ),
-			'position'  => array( 'type' => 'integer', 'description' => __( 'Insert position. -1 = append.', 'elementor-mcp' ) ),
+		$base_props = array_merge(
+			array(
+				'post_id'   => array( 'type' => 'integer', 'description' => __( 'The post/page ID.', 'elementor-mcp' ) ),
+				'parent_id' => array( 'type' => 'string', 'description' => __( 'Parent container element ID (e-flexbox or e-div-block).', 'elementor-mcp' ) ),
+				'position'  => array( 'type' => 'integer', 'description' => __( 'Insert position. -1 = append.', 'elementor-mcp' ) ),
+			),
+			self::style_schema_props()
 		);
 
 		$all_required = array_unique( array_merge( array( 'post_id', 'parent_id' ), $required ) );
@@ -270,14 +302,10 @@ class Elementor_MCP_Atomic_Widget_Abilities {
 				'category'            => 'elementor-mcp',
 				'execute_callback'    => function ( $input ) use ( $widget_type, $settings_fn ) {
 					$settings = $settings_fn( $input );
-					$element  = $this->factory->create_atomic_widget( $widget_type, $settings );
-
-					// Apply styles if style params are present.
-					$common_css = Elementor_MCP_Atomic_Styles::build_common_props( $input );
-					if ( ! empty( $common_css ) ) {
-						$style = Elementor_MCP_Atomic_Styles::create_local_class( $element['id'], $common_css );
-						Elementor_MCP_Atomic_Styles::apply_to_element( $element, $style['class_id'], $style['style_def'] );
-					}
+					// Flat style props (color/spacing + typography) are read from $input
+					// by the factory — routes the convenience tools through the same
+					// styled-widget path as add-atomic-widget.
+					$element  = $this->factory->create_atomic_widget( $widget_type, $settings, $input );
 
 					$post_id   = absint( $input['post_id'] ?? 0 );
 					$parent_id = sanitize_text_field( $input['parent_id'] ?? '' );
