@@ -153,7 +153,10 @@ class Elementor_MCP_Atomic_Widget_Abilities {
 			return $inserted;
 		}
 
-		$save = $this->data->save_page_data( $post_id, $inserted );
+		// insert_element() returns a bool and mutates $page_data by reference.
+		// save_page_data() expects the page-data array — passing $inserted (bool)
+		// here raised a TypeError and broke add-atomic-widget entirely.
+		$save = $this->data->save_page_data( $post_id, $page_data );
 		if ( is_wp_error( $save ) ) {
 			return $save;
 		}
@@ -213,7 +216,10 @@ class Elementor_MCP_Atomic_Widget_Abilities {
 			return $updated;
 		}
 
-		$save = $this->data->save_page_data( $post_id, $updated );
+		// update_element_settings() returns a bool and mutates $page_data by
+		// reference — pass the array, not the bool (same TypeError class as
+		// add-atomic-widget above).
+		$save = $this->data->save_page_data( $post_id, $page_data );
 		if ( is_wp_error( $save ) ) {
 			return $save;
 		}

@@ -594,6 +594,7 @@ namespace {
 		$map = [
 			// Core classes
 			'Elementor_MCP_Atomic_Props'           => 'includes/class-atomic-props.php',
+			'Elementor_MCP_Atomic_Styles'          => 'includes/class-atomic-styles.php',
 			'Elementor_MCP_Data'                  => 'includes/class-elementor-data.php',
 			'Elementor_MCP_Element_Factory'        => 'includes/class-element-factory.php',
 			'Elementor_MCP_Id_Generator'           => 'includes/class-id-generator.php',
@@ -619,6 +620,8 @@ namespace {
 			'Elementor_MCP_Global_Abilities'       => 'includes/abilities/class-global-abilities.php',
 			'Elementor_MCP_Template_Abilities'     => 'includes/abilities/class-template-abilities.php',
 			'Elementor_MCP_Widget_Abilities'       => 'includes/abilities/class-widget-abilities.php',
+			'Elementor_MCP_Atomic_Widget_Abilities' => 'includes/abilities/class-atomic-widget-abilities.php',
+			'Elementor_MCP_Atomic_Layout_Abilities' => 'includes/abilities/class-atomic-layout-abilities.php',
 		];
 
 		if ( isset( $map[ $class ] ) ) {

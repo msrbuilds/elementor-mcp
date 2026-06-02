@@ -279,7 +279,11 @@ class Elementor_MCP_Atomic_Layout_Abilities {
 			return $inserted;
 		}
 
-		$save = $this->data->save_page_data( $post_id, $inserted );
+		// In the nested-insert branch above, insert_element() returns a bool and
+		// mutates $page_data by reference; only the top-level branch sets
+		// $inserted to the array. Save $page_data so a nested add-flexbox /
+		// add-div-block (non-empty parent_id) doesn't hit a TypeError.
+		$save = $this->data->save_page_data( $post_id, $page_data );
 		if ( is_wp_error( $save ) ) {
 			return $save;
 		}
