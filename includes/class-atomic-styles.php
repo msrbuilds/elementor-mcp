@@ -159,6 +159,47 @@ class Elementor_MCP_Atomic_Styles {
 	}
 
 	/**
+	 * Builds typography CSS props from flat params.
+	 *
+	 * Sibling to build_common_props() — covers the text-styling props that
+	 * one (color/spacing) does not. Only keys present in $params produce
+	 * output; unknown keys are ignored.
+	 *
+	 * @param array $params Flat typography params.
+	 * @return array Map of CSS prop name => $$type-wrapped value.
+	 */
+	public static function build_typography_props( array $params ): array {
+		$props = array();
+
+		// size-typed props: input key => [ css prop, default unit ].
+		$size_props = array(
+			'font_size'      => array( 'font-size', 'px' ),
+			'line_height'    => array( 'line-height', 'em' ),
+			'letter_spacing' => array( 'letter-spacing', 'px' ),
+		);
+		foreach ( $size_props as $input_key => $meta ) {
+			if ( isset( $params[ $input_key ] ) ) {
+				$unit              = $params[ $input_key . '_unit' ] ?? $meta[1];
+				$props[ $meta[0] ] = Elementor_MCP_Atomic_Props::size( (float) $params[ $input_key ], $unit );
+			}
+		}
+
+		// string-typed props: input key => css prop.
+		$string_props = array(
+			'font_family' => 'font-family',
+			'font_weight' => 'font-weight',
+			'text_align'  => 'text-align',
+		);
+		foreach ( $string_props as $input_key => $css_prop ) {
+			if ( isset( $params[ $input_key ] ) ) {
+				$props[ $css_prop ] = Elementor_MCP_Atomic_Props::string( (string) $params[ $input_key ] );
+			}
+		}
+
+		return $props;
+	}
+
+	/**
 	 * Applies a local style class to an element structure.
 	 *
 	 * Adds the class to settings.classes and the style definition to the styles map.
