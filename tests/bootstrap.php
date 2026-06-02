@@ -44,6 +44,22 @@ namespace {
 	$GLOBALS['_caps'] = null;
 
 	// -----------------------------------------------------------------------
+	// Active Elementor experiments for atomic-detection tests.
+	// $GLOBALS['_active_experiments'] lists the experiment slugs the
+	// \Elementor\Plugin stub's experiments->is_feature_active() reports active.
+	// Reset per-test in setUp(); empty by default.
+	// -----------------------------------------------------------------------
+	$GLOBALS['_active_experiments'] = [];
+
+	// -----------------------------------------------------------------------
+	// Registered atomic element types for atomic-detection tests.
+	// $GLOBALS['_registered_element_types'] lists the element-type slugs the
+	// \Elementor\Plugin stub's elements_manager->get_element_types() returns
+	// (e.g. 'e-flexbox'). Reset per-test in setUp(); empty by default.
+	// -----------------------------------------------------------------------
+	$GLOBALS['_registered_element_types'] = [];
+
+	// -----------------------------------------------------------------------
 	// WordPress function stubs
 	// -----------------------------------------------------------------------
 
@@ -485,7 +501,42 @@ namespace Elementor {
 			/** @var object Stub kits_manager returning null (no active kit). */
 			public $kits_manager;
 
+			/** @var object Stub experiments manager reading $GLOBALS['_active_experiments']. */
+			public $experiments;
+
+			/** @var object Stub elements_manager reading $GLOBALS['_registered_element_types']. */
+			public $elements_manager;
+
 			private function __construct() {
+				$this->experiments = new class {
+					/**
+					 * Reports an experiment active iff its slug is in
+					 * $GLOBALS['_active_experiments'] (set per-test).
+					 *
+					 * @param string $feature Experiment slug.
+					 * @return bool
+					 */
+					public function is_feature_active( string $feature ): bool {
+						return in_array( $feature, $GLOBALS['_active_experiments'] ?? [], true );
+					}
+				};
+
+				$this->elements_manager = new class {
+					/**
+					 * Returns a map of registered element types keyed by slug,
+					 * driven by $GLOBALS['_registered_element_types'] (set per-test).
+					 *
+					 * @return array<string, object>
+					 */
+					public function get_element_types(): array {
+						$out = [];
+						foreach ( $GLOBALS['_registered_element_types'] ?? [] as $slug ) {
+							$out[ $slug ] = new \stdClass();
+						}
+						return $out;
+					}
+				};
+
 				$this->documents = new class {
 					public function get( int $post_id ) {
 						return null;
@@ -519,6 +570,11 @@ namespace Elementor {
 				}
 				return static::$instance;
 			}
+
+			/** Real Elementor exposes the singleton via instance(); mirror it. */
+			public static function instance(): self {
+				return static::getInstance();
+			}
 		}
 
 		Plugin::$instance = Plugin::getInstance();
@@ -537,6 +593,7 @@ namespace {
 
 		$map = [
 			// Core classes
+			'Elementor_MCP_Atomic_Props'           => 'includes/class-atomic-props.php',
 			'Elementor_MCP_Data'                  => 'includes/class-elementor-data.php',
 			'Elementor_MCP_Element_Factory'        => 'includes/class-element-factory.php',
 			'Elementor_MCP_Id_Generator'           => 'includes/class-id-generator.php',

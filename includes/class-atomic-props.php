@@ -237,11 +237,60 @@ class Elementor_MCP_Atomic_Props {
 	}
 
 	/**
-	 * Checks whether Elementor 4.0+ atomic elements are available.
+	 * Checks whether Elementor atomic (V4) elements are available **and will
+	 * persist**.
 	 *
-	 * @return bool True if atomic elements are supported.
+	 * Detection is not version-number based. Elementor ships atomic/V4 as opt-in
+	 * experiments while the core `ELEMENTOR_VERSION` constant still reports a 3.x
+	 * value, so `version_compare( ELEMENTOR_VERSION, '4.0.0', '>=' )` is false on
+	 * exactly the sites running atomic.
+	 *
+	 * Crucially, we gate on whether the atomic **element types are registered**
+	 * (`e-flexbox` / `e-div-block`), not merely whether the V4 *page* editor is
+	 * opted in. Those are separate experiments: a site can have `e_opt_in_v4_page`
+	 * active while `e_atomic_elements` is OFF — atomic tools would register, but
+	 * `Elementor\Document::save()` then silently sanitizes the unknown elements
+	 * away (the write returns success yet `_elementor_data` stays empty). Keying
+	 * on element-type registration means the atomic tools appear only when an
+	 * atomic write will actually persist. Verified live on Elementor 3.31.5.
+	 *
+	 * @return bool True if atomic element types are registered/available.
 	 */
 	public static function is_atomic_supported(): bool {
+		if ( class_exists( '\Elementor\Plugin' ) && method_exists( '\Elementor\Plugin', 'instance' ) ) {
+			$elementor = \Elementor\Plugin::instance();
+
+			// Primary, authoritative signal: the atomic element types are
+			// registered server-side, so Document::save() will keep them.
+			if ( isset( $elementor->elements_manager ) && is_object( $elementor->elements_manager )
+				&& method_exists( $elementor->elements_manager, 'get_element_types' ) ) {
+				$types = $elementor->elements_manager->get_element_types();
+				if ( is_array( $types ) && ( isset( $types['e-flexbox'] ) || isset( $types['e-div-block'] ) ) ) {
+					return true;
+				}
+			}
+
+			// Secondary: the experiments that register the atomic element types.
+			// (Deliberately NOT e_opt_in_v4_page / editor_v4 — those opt the page
+			// editor into V4 without guaranteeing element registration, which is
+			// the silent-no-op trap above.) method_exists-guarded so we never
+			// fatal on builds/stubs without the experiments API.
+			if ( isset( $elementor->experiments ) && is_object( $elementor->experiments )
+				&& method_exists( $elementor->experiments, 'is_feature_active' ) ) {
+				foreach ( array( 'e_atomic_elements', 'atomic_widgets' ) as $feature ) {
+					if ( $elementor->experiments->is_feature_active( $feature ) ) {
+						return true;
+					}
+				}
+			}
+		}
+
+		// NB: do NOT use class_exists( '\Elementor\Modules\AtomicWidgets\Module' )
+		// as a signal — that class is autoloaded even when the atomic experiment
+		// is OFF and no atomic element types are registered, which would make the
+		// tools register while writes silently get dropped on save.
+
+		// Genuine 4.0+ core (kept as a forward-compatible fallback).
 		return defined( 'ELEMENTOR_VERSION' ) && version_compare( ELEMENTOR_VERSION, '4.0.0', '>=' );
 	}
 }
