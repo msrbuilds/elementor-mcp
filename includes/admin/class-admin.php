@@ -92,6 +92,7 @@ class Elementor_MCP_Admin {
 				self::PAGE_SLUG . '-templates'  => __( 'Templates', 'elementor-mcp' ),
 				self::PAGE_SLUG . '-brand-kits' => __( 'Brand Kits', 'elementor-mcp' ),
 				self::PAGE_SLUG . '-skills'     => __( 'Skills', 'elementor-mcp' ),
+				self::PAGE_SLUG . '-widgets'    => __( 'Widget Builder', 'elementor-mcp' ),
 				self::PAGE_SLUG . '-changelog'  => __( 'Changelog', 'elementor-mcp' ),
 			);
 		}
@@ -118,6 +119,8 @@ class Elementor_MCP_Admin {
 				return 'brand-kits';
 			case self::PAGE_SLUG . '-skills':
 				return 'skills';
+			case self::PAGE_SLUG . '-widgets':
+				return 'widgets';
 			case self::PAGE_SLUG . '-changelog':
 				return 'changelog';
 			default:
@@ -137,6 +140,8 @@ class Elementor_MCP_Admin {
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_assets' ) );
 		add_action( 'admin_head', array( $this, 'print_menu_icon_style' ) );
 		add_action( 'wp_ajax_elementor_mcp_create_app_password', array( $this, 'ajax_create_app_password' ) );
+		add_action( 'wp_ajax_elementor_mcp_toggle_widget', array( $this, 'ajax_toggle_widget' ) );
+		add_action( 'wp_ajax_elementor_mcp_delete_widget', array( $this, 'ajax_delete_widget' ) );
 	}
 
 	/**
@@ -153,7 +158,7 @@ class Elementor_MCP_Admin {
 	 *
 	 * @since 1.8.0
 	 */
-	const DEFAULTS_VERSION = 2;
+	const DEFAULTS_VERSION = 3;
 
 	/**
 	 * SEO/A11y Pro MCP tool slugs that ship disabled-by-default (v2 defaults).
@@ -171,6 +176,26 @@ class Elementor_MCP_Admin {
 			'elementor-mcp/audit-page-a11y',
 			'elementor-mcp/fix-color-contrast',
 			'elementor-mcp/add-alt-text-from-context',
+		);
+	}
+
+	/**
+	 * Widget Builder Pro MCP tool slugs that ship disabled-by-default (v3).
+	 *
+	 * @since 1.9.0
+	 *
+	 * @return string[]
+	 */
+	public static function widget_builder_tool_slugs(): array {
+		return array(
+			'elementor-mcp/list-control-types',
+			'elementor-mcp/validate-widget-spec',
+			'elementor-mcp/create-custom-widget',
+			'elementor-mcp/update-custom-widget',
+			'elementor-mcp/get-custom-widget',
+			'elementor-mcp/list-custom-widgets',
+			'elementor-mcp/set-widget-status',
+			'elementor-mcp/delete-custom-widget',
 		);
 	}
 
@@ -211,6 +236,11 @@ class Elementor_MCP_Admin {
 		// new slugs means an existing user's other choices survive the upgrade.
 		if ( $applied < 2 ) {
 			$add = array_merge( $add, self::seo_a11y_tool_slugs() );
+		}
+
+		// v3 — Widget Builder Pro MCP tools ship disabled-by-default.
+		if ( $applied < 3 ) {
+			$add = array_merge( $add, self::widget_builder_tool_slugs() );
 		}
 
 		$merged = array_values( array_unique( array_merge( $existing, $add ) ) );
@@ -479,6 +509,49 @@ class Elementor_MCP_Admin {
 	}
 
 	/**
+	 * AJAX: activate/deactivate a generated widget from the Widget Builder tab.
+	 *
+	 * @since 1.9.0
+	 */
+	public function ajax_toggle_widget(): void {
+		check_ajax_referer( 'elementor_mcp_widgets', 'nonce' );
+		if ( ! class_exists( 'Elementor_MCP_Widget_Store' ) || ! Elementor_MCP_Widget_Store::user_has_access() ) {
+			wp_send_json_error( array( 'message' => __( 'You do not have permission to do this.', 'elementor-mcp' ) ), 403 );
+		}
+		$widget_id = isset( $_POST['widget_id'] ) ? absint( wp_unslash( $_POST['widget_id'] ) ) : 0;
+		$status    = isset( $_POST['status'] ) ? sanitize_key( wp_unslash( $_POST['status'] ) ) : '';
+		if ( ! $widget_id || ! in_array( $status, array( 'active', 'draft' ), true ) ) {
+			wp_send_json_error( array( 'message' => __( 'Invalid request.', 'elementor-mcp' ) ), 400 );
+		}
+		$res = Elementor_MCP_Widget_Store::set_status( $widget_id, $status );
+		if ( is_wp_error( $res ) ) {
+			wp_send_json_error( array( 'message' => $res->get_error_message() ), 400 );
+		}
+		wp_send_json_success( $res );
+	}
+
+	/**
+	 * AJAX: delete a generated widget from the Widget Builder tab.
+	 *
+	 * @since 1.9.0
+	 */
+	public function ajax_delete_widget(): void {
+		check_ajax_referer( 'elementor_mcp_widgets', 'nonce' );
+		if ( ! class_exists( 'Elementor_MCP_Widget_Store' ) || ! Elementor_MCP_Widget_Store::user_has_access() ) {
+			wp_send_json_error( array( 'message' => __( 'You do not have permission to do this.', 'elementor-mcp' ) ), 403 );
+		}
+		$widget_id = isset( $_POST['widget_id'] ) ? absint( wp_unslash( $_POST['widget_id'] ) ) : 0;
+		if ( ! $widget_id ) {
+			wp_send_json_error( array( 'message' => __( 'Invalid request.', 'elementor-mcp' ) ), 400 );
+		}
+		$res = Elementor_MCP_Widget_Store::delete( $widget_id );
+		if ( is_wp_error( $res ) ) {
+			wp_send_json_error( array( 'message' => $res->get_error_message() ), 400 );
+		}
+		wp_send_json_success( $res );
+	}
+
+	/**
 	 * Render the settings page.
 	 *
 	 * @since 1.0.0
@@ -525,11 +598,16 @@ class Elementor_MCP_Admin {
 			$prompt_count = count( $prompt_files );
 		}
 
-		// Brand kits: surface the cached library count for Pro sites.
-		$brand_kit_count   = 0;
-		$show_brand_kits   = class_exists( 'Elementor_MCP_Pro_Brand_Kits' ) && Elementor_MCP_Pro_Brand_Kits::user_has_access();
-		if ( $show_brand_kits ) {
+		// Brand kits: Pro shows the cached remote library count; everyone else
+		// shows the bundled free-kit count (applying is a free feature).
+		$brand_kit_count = 0;
+		$show_brand_kits = false;
+		if ( class_exists( 'Elementor_MCP_Pro_Brand_Kits' ) && Elementor_MCP_Pro_Brand_Kits::user_has_access() ) {
 			$brand_kit_count = Elementor_MCP_Pro_Brand_Kits::count_cached_kits();
+			$show_brand_kits = true;
+		} elseif ( class_exists( 'Elementor_MCP_Free_Brand_Kits' ) ) {
+			$brand_kit_count = Elementor_MCP_Free_Brand_Kits::count_kits();
+			$show_brand_kits = $brand_kit_count > 0;
 		}
 
 		?>
@@ -556,6 +634,10 @@ class Elementor_MCP_Admin {
 					<a href="https://emcp.msrbuilds.com/docs" class="elementor-mcp-header-btn elementor-mcp-header-btn--secondary" target="_blank" rel="noopener noreferrer">
 						<svg viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clip-rule="evenodd"/></svg>
 						<?php esc_html_e( 'Read the Docs', 'elementor-mcp' ); ?>
+					</a>
+					<a href="https://support.msrbuilds.com/" class="elementor-mcp-header-btn elementor-mcp-header-btn--secondary" target="_blank" rel="noopener noreferrer">
+						<svg viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM8.94 6.94a1.5 1.5 0 012.45 1.16c0 .5-.25.78-.86 1.2-.66.45-1.03 1-1.03 1.7v.25a.75.75 0 001.5 0c0-.4.13-.55.7-.94.7-.48 1.19-1.06 1.19-2.06A3 3 0 006.6 7.34a.75.75 0 101.4.52c.1-.27.26-.66.94-.92zM10 14.5a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"/></svg>
+						<?php esc_html_e( 'Get Support', 'elementor-mcp' ); ?>
 					</a>
 					<?php
 					// Only show the upgrade CTA to sites without a valid Pro license.
@@ -636,6 +718,8 @@ class Elementor_MCP_Admin {
 					include ELEMENTOR_MCP_DIR . 'includes/admin/views/page-brand-kits.php';
 				} elseif ( 'skills' === $active_tab ) {
 					include ELEMENTOR_MCP_DIR . 'includes/admin/views/page-skills.php';
+				} elseif ( 'widgets' === $active_tab ) {
+					include ELEMENTOR_MCP_DIR . 'includes/admin/views/page-widgets.php';
 				} elseif ( 'changelog' === $active_tab ) {
 					include ELEMENTOR_MCP_DIR . 'includes/admin/views/page-changelog.php';
 				} else {
@@ -1361,6 +1445,52 @@ class Elementor_MCP_Admin {
 					'elementor-mcp/add-alt-text-from-context'      => array(
 						'label'       => __( 'Add Alt Text from Context', 'elementor-mcp' ),
 						'description' => __( 'Proposes (apply:true to write) alt text for images lacking it, from filename/heading/title. Dry-run by default.', 'elementor-mcp' ),
+						'badges'      => array( 'pro', 'destructive' ),
+					),
+				),
+			);
+
+			$tools['widget_builder'] = array(
+				'label' => __( 'Widget Builder', 'elementor-mcp' ),
+				'tools' => array(
+					'elementor-mcp/list-control-types'   => array(
+						'label'       => __( 'List Control Types', 'elementor-mcp' ),
+						'description' => __( 'Returns the control types and template syntax for building widget specs.', 'elementor-mcp' ),
+						'badges'      => array( 'pro', 'read-only' ),
+					),
+					'elementor-mcp/validate-widget-spec' => array(
+						'label'       => __( 'Validate Widget Spec', 'elementor-mcp' ),
+						'description' => __( 'Validates a widget spec and dry-runs the generator without saving.', 'elementor-mcp' ),
+						'badges'      => array( 'pro', 'read-only' ),
+					),
+					'elementor-mcp/create-custom-widget' => array(
+						'label'       => __( 'Create Custom Widget', 'elementor-mcp' ),
+						'description' => __( 'Generates a custom Elementor widget from a spec into an isolated sandbox and activates it.', 'elementor-mcp' ),
+						'badges'      => array( 'pro' ),
+					),
+					'elementor-mcp/update-custom-widget' => array(
+						'label'       => __( 'Update Custom Widget', 'elementor-mcp' ),
+						'description' => __( 'Replaces a custom widget\'s spec and regenerates its code.', 'elementor-mcp' ),
+						'badges'      => array( 'pro' ),
+					),
+					'elementor-mcp/get-custom-widget'    => array(
+						'label'       => __( 'Get Custom Widget', 'elementor-mcp' ),
+						'description' => __( 'Returns a custom widget\'s spec, generated PHP, status, and last error.', 'elementor-mcp' ),
+						'badges'      => array( 'pro', 'read-only' ),
+					),
+					'elementor-mcp/list-custom-widgets'  => array(
+						'label'       => __( 'List Custom Widgets', 'elementor-mcp' ),
+						'description' => __( 'Lists all generated custom widgets with their status.', 'elementor-mcp' ),
+						'badges'      => array( 'pro', 'read-only' ),
+					),
+					'elementor-mcp/set-widget-status'    => array(
+						'label'       => __( 'Set Widget Status', 'elementor-mcp' ),
+						'description' => __( 'Activates or deactivates a custom widget.', 'elementor-mcp' ),
+						'badges'      => array( 'pro' ),
+					),
+					'elementor-mcp/delete-custom-widget' => array(
+						'label'       => __( 'Delete Custom Widget', 'elementor-mcp' ),
+						'description' => __( 'Permanently deletes a custom widget and its sandbox file.', 'elementor-mcp' ),
 						'badges'      => array( 'pro', 'destructive' ),
 					),
 				),

@@ -169,6 +169,14 @@ class Elementor_MCP_Ability_Registrar {
 			$this->ability_names = array_merge( $this->ability_names, $a11y->get_ability_names() );
 		}
 
+		// Widget Builder abilities (Pro only). Self-guards on Pro access —
+		// register()/get_ability_names() are no-ops without a license.
+		if ( class_exists( 'Elementor_MCP_Widget_Builder_Abilities' ) ) {
+			$widget_builder = new Elementor_MCP_Widget_Builder_Abilities();
+			$widget_builder->register();
+			$this->ability_names = array_merge( $this->ability_names, $widget_builder->get_ability_names() );
+		}
+
 		/**
 		 * Filters the registered ability names.
 		 *

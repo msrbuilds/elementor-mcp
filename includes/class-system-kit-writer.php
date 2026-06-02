@@ -71,21 +71,81 @@ class Elementor_MCP_System_Kit_Writer {
 	// -------------------------------------------------------------------------
 
 	/**
-	 * Whether the current site may use brand-kit writes. The last line of
-	 * defense in the § 6.1 premium model: the one class that can mutate global
-	 * styling refuses to do so without a license, regardless of caller.
+	 * Whether the current user may perform brand-kit writes. The last line of
+	 * defense: the one class that can mutate global styling refuses to do so for
+	 * a user without `manage_options`, regardless of caller.
+	 *
+	 * As of 1.9.0 applying brand kits is a FREE feature (10 bundled kits +
+	 * backup/restore), so this is a capability gate, not a license gate. The
+	 * Pro-only surface (the 50-kit remote library and the MCP brand-kit tools)
+	 * is gated separately at its own layer.
 	 *
 	 * @since 1.8.0
 	 *
 	 * @return bool
 	 */
 	public static function user_has_access(): bool {
-		return function_exists( 'emcp_pro_fs' ) && emcp_pro_fs()->can_use_premium_code();
+		return current_user_can( 'manage_options' );
 	}
 
 	// -------------------------------------------------------------------------
 	// Public write API
 	// -------------------------------------------------------------------------
+
+	/**
+	 * Apply a complete brand kit (colors + typography + optional custom colors +
+	 * theme-style defaults) to the active Elementor kit. The neutral, license-
+	 * agnostic orchestrator shared by the free admin apply flow, the Pro service,
+	 * and the MCP brand-kit ability. Each underlying write enforces the
+	 * `manage_options` capability gate, so this stays a pure sequencer.
+	 *
+	 * @since 1.9.0
+	 *
+	 * @param array $kit A kit entry (slug/title/colors/typography[/custom_colors]).
+	 * @return array|WP_Error Summary of what was applied.
+	 */
+	public static function apply_kit( array $kit ) {
+		if ( empty( $kit['colors'] ) || ! is_array( $kit['colors'] ) || empty( $kit['typography'] ) || ! is_array( $kit['typography'] ) ) {
+			return new WP_Error( 'invalid_kit', __( 'This brand kit is missing its colors or typography data.', 'elementor-mcp' ) );
+		}
+
+		// 1) System colors.
+		$colors_result = self::replace_system_colors( $kit['colors'] );
+		if ( is_wp_error( $colors_result ) ) {
+			return $colors_result;
+		}
+
+		// 2) System typography.
+		$typo_result = self::replace_system_typography( $kit['typography'] );
+		if ( is_wp_error( $typo_result ) ) {
+			return $typo_result;
+		}
+
+		// 3) Optional named custom colors.
+		$custom_added = 0;
+		if ( ! empty( $kit['custom_colors'] ) && is_array( $kit['custom_colors'] ) ) {
+			$custom_result = self::replace_brand_custom_colors( $kit['custom_colors'] );
+			if ( is_wp_error( $custom_result ) ) {
+				return $custom_result;
+			}
+			$custom_added = (int) ( $custom_result['custom_colors_added'] ?? 0 );
+		}
+
+		// 4) Theme Style defaults — the step that actually re-skins the site.
+		$theme_result = self::apply_theme_style( $kit['colors'], $kit['typography'] );
+		if ( is_wp_error( $theme_result ) ) {
+			return $theme_result;
+		}
+
+		return array(
+			'success'             => true,
+			'kit_slug'            => isset( $kit['slug'] ) ? (string) $kit['slug'] : '',
+			'kit_title'           => isset( $kit['title'] ) ? (string) $kit['title'] : '',
+			'colors_applied'      => (int) ( $colors_result['colors_applied'] ?? 0 ),
+			'typography_applied'  => (int) ( $typo_result['typography_applied'] ?? 0 ),
+			'custom_colors_added' => $custom_added,
+		);
+	}
 
 	/**
 	 * Replace all four system color slots atomically.
@@ -98,7 +158,7 @@ class Elementor_MCP_System_Kit_Writer {
 	 */
 	public static function replace_system_colors( array $colors ) {
 		if ( ! self::user_has_access() ) {
-			return new WP_Error( 'no_license', __( 'A valid EMCP Tools Pro license is required to apply brand kits.', 'elementor-mcp' ) );
+			return new WP_Error( 'insufficient_capability', __( 'You need the manage_options capability to apply brand kits.', 'elementor-mcp' ) );
 		}
 
 		$kit = self::get_kit();
@@ -153,7 +213,7 @@ class Elementor_MCP_System_Kit_Writer {
 	 */
 	public static function replace_system_typography( array $typography ) {
 		if ( ! self::user_has_access() ) {
-			return new WP_Error( 'no_license', __( 'A valid EMCP Tools Pro license is required to apply brand kits.', 'elementor-mcp' ) );
+			return new WP_Error( 'insufficient_capability', __( 'You need the manage_options capability to apply brand kits.', 'elementor-mcp' ) );
 		}
 
 		$kit = self::get_kit();
@@ -194,7 +254,7 @@ class Elementor_MCP_System_Kit_Writer {
 	 */
 	public static function replace_brand_custom_colors( array $custom_colors ) {
 		if ( ! self::user_has_access() ) {
-			return new WP_Error( 'no_license', __( 'A valid EMCP Tools Pro license is required to apply brand kits.', 'elementor-mcp' ) );
+			return new WP_Error( 'insufficient_capability', __( 'You need the manage_options capability to apply brand kits.', 'elementor-mcp' ) );
 		}
 
 		$kit = self::get_kit();
@@ -265,7 +325,7 @@ class Elementor_MCP_System_Kit_Writer {
 	 */
 	public static function apply_theme_style( array $colors, array $typography ) {
 		if ( ! self::user_has_access() ) {
-			return new WP_Error( 'no_license', __( 'A valid EMCP Tools Pro license is required to apply brand kits.', 'elementor-mcp' ) );
+			return new WP_Error( 'insufficient_capability', __( 'You need the manage_options capability to apply brand kits.', 'elementor-mcp' ) );
 		}
 
 		$kit = self::get_kit();
@@ -386,7 +446,7 @@ class Elementor_MCP_System_Kit_Writer {
 	 */
 	public static function restore_snapshot( array $snapshot, bool $full_clobber = false ) {
 		if ( ! self::user_has_access() ) {
-			return new WP_Error( 'no_license', __( 'A valid EMCP Tools Pro license is required to restore brand kits.', 'elementor-mcp' ) );
+			return new WP_Error( 'insufficient_capability', __( 'You need the manage_options capability to restore brand kits.', 'elementor-mcp' ) );
 		}
 
 		$kit = self::get_kit();

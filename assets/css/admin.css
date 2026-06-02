@@ -551,6 +551,11 @@
 	color: var(--mcp-pro);
 }
 
+.elementor-mcp-badge--free {
+	background: var(--mcp-success-light);
+	color: var(--mcp-success);
+}
+
 /* =========================================================================
  * Save Button
  * ========================================================================= */
@@ -960,14 +965,15 @@
 	color: #fff !important;
 }
 
-/* Hidden textarea for copy source */
+/* Hidden textarea for copy source.
+ * MUST be display:none, not just off-screen. An off-screen textarea
+ * (left:-9999px; width:1px) is still in the layout tree, so the browser
+ * reflows its full multi-KB value wrapped into a 1px-wide column. With 50+
+ * prompt cards that pathological reflow froze the whole tab for seconds on
+ * the Prompts page. display:none removes it from layout entirely; reading
+ * .value (used by the copy handler) still works. */
 .elementor-mcp-copy-source {
-	position: absolute;
-	left: -9999px;
-	top: -9999px;
-	width: 1px;
-	height: 1px;
-	opacity: 0;
+	display: none;
 }
 
 /* =========================================================================
@@ -2195,4 +2201,74 @@
 
 .elementor-mcp-activate-note--security strong {
 	color: #b91c1c;
+}
+
+/* =========================================================================
+ * Pagination (Prompts / Templates / Brand Kits grids)
+ * Client-side, filter-aware pager rendered by initGridPagination() in admin.js.
+ * ========================================================================= */
+
+.elementor-mcp-pager {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex-wrap: wrap;
+	gap: 6px;
+	margin: 24px 0 8px;
+}
+
+.elementor-mcp-pager:empty {
+	display: none;
+}
+
+.elementor-mcp-pager-btn {
+	min-width: 34px;
+	height: 34px;
+	padding: 0 10px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 13px;
+	font-weight: 600;
+	line-height: 1;
+	color: var(--mcp-gray-700);
+	background: var(--mcp-white);
+	border: 1px solid var(--mcp-gray-200);
+	border-radius: var(--mcp-radius-sm);
+	cursor: pointer;
+	transition: all var(--mcp-transition);
+}
+
+.elementor-mcp-pager-btn:hover:not(:disabled):not(.is-current) {
+	border-color: var(--mcp-primary);
+	color: var(--mcp-primary);
+	background: var(--mcp-primary-light);
+}
+
+.elementor-mcp-pager-btn.is-current {
+	color: var(--mcp-white);
+	background: var(--mcp-primary);
+	border-color: var(--mcp-primary);
+	cursor: default;
+}
+
+.elementor-mcp-pager-btn:disabled {
+	opacity: 0.45;
+	cursor: not-allowed;
+}
+
+.elementor-mcp-pager-ellipsis {
+	min-width: 22px;
+	text-align: center;
+	color: var(--mcp-gray-400);
+	font-size: 13px;
+	user-select: none;
+}
+
+.elementor-mcp-pager-status {
+	width: 100%;
+	text-align: center;
+	margin: 4px 0 0;
+	font-size: 12px;
+	color: var(--mcp-gray-500);
 }

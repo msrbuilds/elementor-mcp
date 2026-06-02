@@ -3,7 +3,7 @@
  * Plugin Name:       MCP Tools for Elementor
  * Plugin URI:        https://github.com/msrbuilds/elementor-mcpelementor-mcp
  * Description:       Extends the WordPress MCP Adapter to expose Elementor data, widgets, and page design tools as MCP tools for AI agents.
- * Version:           1.8.3
+ * Version:           1.9.0
  * Requires at least: 6.9
  * Tested up to:      6.9
  * Requires PHP:      8.0
@@ -20,7 +20,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Plugin constants.
-define( 'ELEMENTOR_MCP_VERSION', '1.8.3' );
+define( 'ELEMENTOR_MCP_VERSION', '1.9.0' );
 define( 'ELEMENTOR_MCP_DIR', plugin_dir_path( __FILE__ ) );
 define( 'ELEMENTOR_MCP_URL', plugin_dir_url( __FILE__ ) );
 define( 'ELEMENTOR_MCP_BASENAME', plugin_basename( __FILE__ ) );
@@ -49,6 +49,7 @@ if ( ! function_exists( 'emcp_pro_fs' ) ) {
                 'has_addons'          => false,
                 'has_paid_plans'      => false,
                 'is_org_compliant'    => false,
+                'has_affiliation'     => 'selected',
                 'menu'                => array(
                     'slug'           => 'elementor-mcp',
                     'support'        => false,
@@ -96,6 +97,15 @@ function elementor_mcp_after_uninstall() {
     // Brand-kit backups (emcp_kit_backup CPT) are intentionally LEFT in place
     // on uninstall — treated as recoverable user content so a user who removes
     // the plugin can still roll back their pre-kit brand after reinstalling.
+
+    // Widget Builder: generated executable PHP must NOT survive uninstall —
+    // delete every emcp_widget post and remove the uploads sandbox tree.
+    if ( ! class_exists( 'Elementor_MCP_Widget_Store' ) ) {
+        require_once ELEMENTOR_MCP_DIR . 'includes/class-widget-store.php';
+    }
+    if ( class_exists( 'Elementor_MCP_Widget_Store' ) ) {
+        Elementor_MCP_Widget_Store::uninstall_cleanup();
+    }
 }
 
 /**
@@ -266,7 +276,7 @@ function elementor_mcp_sync_pro_brand_kits_ajax() {
 function elementor_mcp_apply_pro_brand_kit_ajax() {
     check_ajax_referer( 'elementor_mcp_apply_pro_brand_kit', 'nonce' );
 
-    if ( ! current_user_can( 'manage_options' ) || ! Elementor_MCP_Pro_Brand_Kits::user_has_access() ) {
+    if ( ! current_user_can( 'manage_options' ) ) {
         wp_send_json_error( array( 'message' => __( 'You do not have permission to apply brand kits.', 'elementor-mcp' ) ), 403 );
     }
 
@@ -278,7 +288,16 @@ function elementor_mcp_apply_pro_brand_kit_ajax() {
         wp_send_json_error( array( 'message' => __( 'Missing kit slug.', 'elementor-mcp' ) ), 400 );
     }
 
-    $kit = Elementor_MCP_Pro_Brand_Kits::find_kit( $kit_slug, $category_slug );
+    // Resolve the kit from the Pro remote library when the site has it, falling
+    // back to the 10 bundled free kits otherwise. Applying is a free feature;
+    // the Pro library is just a larger pool of kits to apply from.
+    $kit = null;
+    if ( class_exists( 'Elementor_MCP_Pro_Brand_Kits' ) && Elementor_MCP_Pro_Brand_Kits::user_has_access() ) {
+        $kit = Elementor_MCP_Pro_Brand_Kits::find_kit( $kit_slug, $category_slug );
+    }
+    if ( null === $kit && class_exists( 'Elementor_MCP_Free_Brand_Kits' ) ) {
+        $kit = Elementor_MCP_Free_Brand_Kits::find_kit( $kit_slug, $category_slug );
+    }
     if ( null === $kit ) {
         wp_send_json_error( array( 'message' => __( 'Brand kit not found. Try syncing the library first.', 'elementor-mcp' ) ), 404 );
     }
@@ -309,7 +328,7 @@ function elementor_mcp_apply_pro_brand_kit_ajax() {
 function elementor_mcp_restore_pro_brand_kit_ajax() {
     check_ajax_referer( 'elementor_mcp_restore_pro_brand_kit', 'nonce' );
 
-    if ( ! current_user_can( 'manage_options' ) || ! Elementor_MCP_Pro_Brand_Kits::user_has_access() ) {
+    if ( ! current_user_can( 'manage_options' ) ) {
         wp_send_json_error( array( 'message' => __( 'You do not have permission to restore brand kits.', 'elementor-mcp' ) ), 403 );
     }
 
@@ -547,9 +566,19 @@ function elementor_mcp_init(): void {
 	// can reach them; every write method is independently Pro-gated.
 	require_once ELEMENTOR_MCP_DIR . 'includes/class-system-kit-writer.php';
 	require_once ELEMENTOR_MCP_DIR . 'includes/class-kit-backup-store.php';
+	require_once ELEMENTOR_MCP_DIR . 'includes/class-free-brand-kits.php';
 	require_once ELEMENTOR_MCP_DIR . 'includes/admin/class-pro-brand-kits.php';
 	require_once ELEMENTOR_MCP_DIR . 'includes/abilities/class-system-kit-abilities.php';
 	add_action( 'init', array( 'Elementor_MCP_Kit_Backup_Store', 'register_post_type' ) );
+	// Widget Builder (Pro) — sandboxed AI-generated Elementor widgets. The
+	// generator/store/loader load unconditionally so the MCP surface can reach
+	// them; every write + the loader itself are independently Pro-gated.
+	require_once ELEMENTOR_MCP_DIR . 'includes/class-widget-generator.php';
+	require_once ELEMENTOR_MCP_DIR . 'includes/class-widget-store.php';
+	require_once ELEMENTOR_MCP_DIR . 'includes/class-widget-loader.php';
+	require_once ELEMENTOR_MCP_DIR . 'includes/abilities/class-widget-builder-abilities.php';
+	add_action( 'init', array( 'Elementor_MCP_Widget_Store', 'register_post_type' ) );
+	( new Elementor_MCP_Widget_Loader() )->register_hooks();
 	// SEO toolkit abilities (Pro only; self-guards on license at registration).
 	require_once ELEMENTOR_MCP_DIR . 'includes/abilities/class-seo-abilities.php';
 	// Accessibility toolkit abilities (Pro only; self-guards on license).

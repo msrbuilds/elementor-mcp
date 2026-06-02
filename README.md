@@ -15,7 +15,7 @@ A WordPress plugin that extends the [WordPress MCP Adapter](https://github.com/W
 <img width="1995" height="1141" alt="image" src="https://github.com/user-attachments/assets/06ab916a-0146-4a5f-828c-d5aa409cb072" />
 
 
-# Introdiucing EMCP Pro! 25% Discount for GitHub Community: MSRGIT
+# Introducing EMCP Pro! 25% Discount for GitHub Community: MSRGIT
 ## [Grab the Deal](https://emcp.msrbuilds.com/pricing)
 <img width="1697" height="250" alt="image" src="https://github.com/user-attachments/assets/f588d365-1986-4132-90d3-4d44a28da464" />
 
@@ -39,13 +39,14 @@ A WordPress plugin that extends the [WordPress MCP Adapter](https://github.com/W
 - **Popup Builder** — Create popup templates, configure triggers/conditions/timing (Pro)
 - **Template Tools** — Save pages or elements as reusable templates, apply templates to pages
 - **Global Settings** — Update site-wide color palettes and typography presets
-- **Brand Kits (Pro)** — One-click coordinated color + typography kits. Apply a curated brand kit and the whole site re-skins (system tokens + Theme Style defaults); back up and restore any time. Browse and apply via the admin page or the `apply-brand-kit` MCP tool
+- **Brand Kits** — One-click coordinated color + typography kits. Apply a curated brand kit and the whole site re-skins (system tokens + Theme Style defaults); back up and restore any time. **10 kits are free to apply**; the full 50-kit library and the `apply-brand-kit` MCP tool are Pro
+- **AI Widget Builder (Pro)** — Let an AI agent design custom Elementor widgets from a structured spec — no hand-written PHP. The plugin compiles the spec + an HTML template into a sandboxed `Widget_Base` class (35 control types, optional per-widget CSS/JS) that appears under a "Custom (EMCP)" category in the editor; a runtime safety net keeps a bad widget from breaking the editor
 - **Composite Tools** — Build a complete page from a declarative JSON structure in a single call
 - **Stock Images** — Search Openverse for Creative Commons images, sideload into Media Library, add to pages
 - **SVG Icons** — Upload SVG icons from URL or raw markup for use with Elementor icon widgets
 - **Custom Code** — Add custom CSS (element/page level), inject JavaScript, create site-wide code snippets for head/body injection
 - **Low-tools Mode** — One-click toggle that filters the active tool list to a curated essentials set (~50 tools) so MCP clients with strict tool caps (Antigravity, Gemini API, etc.) stay under their limits
-- **Admin Dashboard** — Dedicated top-level **EMCP Tools** menu with Tools / Connection / Prompts / Templates / Brand Kits / Skills / Changelog submenus. Toggle individual tools on/off and view connection configs for all supported MCP clients
+- **Admin Dashboard** — Dedicated top-level **EMCP Tools** menu with Tools / Connection / Prompts / Templates / Brand Kits / Skills / Widget Builder / Changelog tabs. Toggle individual tools on/off, view connection configs for all supported MCP clients, and reach the **Get Support** portal from any tab
 
 ## Requirements
 
@@ -406,6 +407,21 @@ These tools only register when Elementor >= 4.0 is detected. Legacy widget tools
 | `add-custom-js` | Inject JavaScript via HTML widget with automatic `<script>` wrapping |
 | `add-code-snippet` | Create site-wide Custom Code snippets for head/body injection (Pro) |
 | `list-code-snippets` | List all Custom Code snippets with location and status filters (Pro) |
+
+### Widget Builder — Pro (8 tools, off by default)
+
+Design and register custom Elementor widgets from a structured spec — no hand-written PHP. The generator compiles the spec + an HTML template (`{{control}}`, `{{#if}}`, `{{#each}}`) into a sandboxed `Widget_Base` class, escaping every value by its control type.
+
+| Tool | Description |
+|---|---|
+| `list-control-types` | List the supported control types + spec shape so agents build valid specs |
+| `validate-widget-spec` | Schema + generator dry-run; returns errors without persisting |
+| `create-custom-widget` | Generate + register a widget from a spec (auto-activates) |
+| `update-custom-widget` | Replace a widget's spec, regenerate, re-validate |
+| `get-custom-widget` | Return a widget's spec + generated PHP + status |
+| `list-custom-widgets` | List generated widgets (id, title, name, status) |
+| `set-widget-status` | Activate or deactivate a widget |
+| `delete-custom-widget` | Delete a widget (CPT + sandbox files) |
 
 > All tool names are prefixed with `elementor-mcp/` in the MCP namespace (e.g., `elementor-mcp/list-widgets`). The MCP Adapter converts these to `elementor-mcp-list-widgets` for transport.
 

@@ -497,29 +497,160 @@
 	}
 
 	/**
-	 * Premium prompts — category filter pills.
+	 * Reusable, filter-aware client-side pagination for a card grid.
+	 *
+	 * Owns BOTH the category filter pills and the pager, so the two stay in
+	 * sync: changing the filter recomputes the matching set and resets to page
+	 * one. Only the cards on the current page are shown; the rest are
+	 * display:none, which keeps the DOM light and the page responsive even with
+	 * 50+ cards. Safe to call on any page — it no-ops when the grid is absent.
+	 *
+	 * @param {Object} opts
+	 * @param {string} opts.gridSelector   Selector for the grid container.
+	 * @param {string} opts.cardSelector   Selector for cards within the grid.
+	 * @param {string} [opts.filterSelector] Selector for the filter-pill bar.
+	 * @param {number} [opts.pageSize]      Cards per page (default 12).
+	 * @param {string} [opts.label]         Noun for the status line (e.g. 'prompts').
 	 */
-	function initProPromptFilters() {
-		var filterBar = document.querySelector( '.elementor-mcp-pro-filters' );
-		var grid = document.querySelector( '.elementor-mcp-pro-prompts-grid' );
-		if ( ! filterBar || ! grid ) {
+	function initGridPagination( opts ) {
+		var grid = document.querySelector( opts.gridSelector );
+		if ( ! grid ) {
+			return;
+		}
+		var cards = Array.prototype.slice.call( grid.querySelectorAll( opts.cardSelector ) );
+		if ( ! cards.length ) {
 			return;
 		}
 
-		filterBar.addEventListener( 'click', function ( e ) {
-			var btn = e.target.closest( '.elementor-mcp-pro-filter' );
-			if ( ! btn ) {
+		var pageSize = opts.pageSize || 12;
+		var label = opts.label || 'items';
+		var filterBar = opts.filterSelector ? document.querySelector( opts.filterSelector ) : null;
+		var activeCategory = 'all';
+		var currentPage = 1;
+
+		// Pager container lives directly after the grid.
+		var pager = document.createElement( 'nav' );
+		pager.className = 'elementor-mcp-pager';
+		pager.setAttribute( 'aria-label', 'Pagination' );
+		grid.parentNode.insertBefore( pager, grid.nextSibling );
+
+		function matching() {
+			return cards.filter( function ( card ) {
+				return 'all' === activeCategory || card.getAttribute( 'data-category' ) === activeCategory;
+			} );
+		}
+
+		function makeBtn( text, page, opt ) {
+			opt = opt || {};
+			var btn = document.createElement( 'button' );
+			btn.type = 'button';
+			btn.className = 'elementor-mcp-pager-btn' + ( opt.current ? ' is-current' : '' );
+			btn.textContent = text;
+			if ( opt.disabled ) {
+				btn.disabled = true;
+			}
+			if ( opt.current ) {
+				btn.setAttribute( 'aria-current', 'page' );
+			}
+			if ( opt.ariaLabel ) {
+				btn.setAttribute( 'aria-label', opt.ariaLabel );
+			}
+			if ( ! opt.disabled && ! opt.current ) {
+				btn.addEventListener( 'click', function () {
+					currentPage = page;
+					render();
+				} );
+			}
+			return btn;
+		}
+
+		// Windowed page list with ellipses: 1 … 4 5 [6] 7 8 … 20.
+		function pageList( total ) {
+			var pages = [];
+			var add = function ( p ) { if ( pages.indexOf( p ) === -1 ) { pages.push( p ); } };
+			add( 1 );
+			add( total );
+			for ( var p = currentPage - 1; p <= currentPage + 1; p++ ) {
+				if ( p >= 1 && p <= total ) {
+					add( p );
+				}
+			}
+			pages.sort( function ( a, b ) { return a - b; } );
+			var withGaps = [];
+			for ( var i = 0; i < pages.length; i++ ) {
+				if ( i > 0 && pages[ i ] - pages[ i - 1 ] > 1 ) {
+					withGaps.push( '…' );
+				}
+				withGaps.push( pages[ i ] );
+			}
+			return withGaps;
+		}
+
+		function render() {
+			var list = matching();
+			var totalPages = Math.max( 1, Math.ceil( list.length / pageSize ) );
+			if ( currentPage > totalPages ) {
+				currentPage = totalPages;
+			}
+			var start = ( currentPage - 1 ) * pageSize;
+			var end = start + pageSize;
+
+			cards.forEach( function ( card ) { card.style.display = 'none'; } );
+			list.slice( start, end ).forEach( function ( card ) { card.style.display = ''; } );
+
+			pager.innerHTML = '';
+			if ( totalPages <= 1 ) {
 				return;
 			}
-			var category = btn.getAttribute( 'data-category' );
-			filterBar.querySelectorAll( '.elementor-mcp-pro-filter' ).forEach( function ( b ) {
-				b.classList.toggle( 'is-active', b === btn );
+
+			pager.appendChild( makeBtn( '‹', currentPage - 1, {
+				disabled: currentPage === 1,
+				ariaLabel: 'Previous page'
+			} ) );
+
+			pageList( totalPages ).forEach( function ( item ) {
+				if ( '…' === item ) {
+					var span = document.createElement( 'span' );
+					span.className = 'elementor-mcp-pager-ellipsis';
+					span.textContent = '…';
+					pager.appendChild( span );
+				} else {
+					pager.appendChild( makeBtn( String( item ), item, {
+						current: item === currentPage,
+						ariaLabel: 'Page ' + item
+					} ) );
+				}
 			} );
-			grid.querySelectorAll( '.elementor-mcp-pro-prompt-card' ).forEach( function ( card ) {
-				var match = ( 'all' === category ) || card.getAttribute( 'data-category' ) === category;
-				card.style.display = match ? '' : 'none';
+
+			pager.appendChild( makeBtn( '›', currentPage + 1, {
+				disabled: currentPage === totalPages,
+				ariaLabel: 'Next page'
+			} ) );
+
+			var status = document.createElement( 'p' );
+			status.className = 'elementor-mcp-pager-status';
+			status.textContent = 'Showing ' + ( start + 1 ) + '–' + Math.min( end, list.length ) +
+				' of ' + list.length + ' ' + label;
+			pager.appendChild( status );
+		}
+
+		// Own the category filter pills (active state + reset to page 1).
+		if ( filterBar ) {
+			filterBar.addEventListener( 'click', function ( e ) {
+				var btn = e.target.closest( '.elementor-mcp-pro-filter' );
+				if ( ! btn ) {
+					return;
+				}
+				activeCategory = btn.getAttribute( 'data-category' ) || 'all';
+				filterBar.querySelectorAll( '.elementor-mcp-pro-filter' ).forEach( function ( b ) {
+					b.classList.toggle( 'is-active', b === btn );
+				} );
+				currentPage = 1;
+				render();
 			} );
-		} );
+		}
+
+		render();
 	}
 
 	/**
@@ -688,25 +819,9 @@
 		}
 
 		var grid = root.querySelector( '.elementor-mcp-brand-kit-grid' );
-		var filterBar = root.querySelector( '.elementor-mcp-pro-filters' );
 
-		// Category filter pills.
-		if ( filterBar && grid ) {
-			filterBar.addEventListener( 'click', function ( e ) {
-				var btn = e.target.closest( '.elementor-mcp-pro-filter' );
-				if ( ! btn ) {
-					return;
-				}
-				var category = btn.getAttribute( 'data-category' );
-				filterBar.querySelectorAll( '.elementor-mcp-pro-filter' ).forEach( function ( b ) {
-					b.classList.toggle( 'is-active', b === btn );
-				} );
-				grid.querySelectorAll( '.elementor-mcp-brand-kit-card' ).forEach( function ( card ) {
-					var match = ( 'all' === category ) || card.getAttribute( 'data-category' ) === category;
-					card.style.display = match ? '' : 'none';
-				} );
-			} );
-		}
+		// Note: the category filter pills are handled by initGridPagination(),
+		// which owns both filtering and pagination so they stay in sync.
 
 		// Apply confirmation modal.
 		var modal = root.querySelector( '.elementor-mcp-brand-kit-modal' );
@@ -845,24 +960,55 @@
 		}
 	}
 
-	// Initialize on DOM ready.
-	if ( document.readyState === 'loading' ) {
-		document.addEventListener( 'DOMContentLoaded', function () {
-			initToolsForm();
-			initBase64Generator();
-			initCopyButtons();
-			initProPromptFilters();
-			initProSync();
-			initProTemplateActions();
-			initBrandKits();
+	/**
+	 * Wire pagination (and the category filter it owns) into each library grid.
+	 * Each call no-ops when its grid isn't on the current page, so it's safe to
+	 * run all three regardless of which tab rendered.
+	 */
+	function initPagers() {
+		initGridPagination( {
+			gridSelector: '.elementor-mcp-pro-prompts-grid',
+			cardSelector: '.elementor-mcp-pro-prompt-card',
+			filterSelector: '.elementor-mcp-pro-prompts .elementor-mcp-pro-filters',
+			pageSize: 12,
+			label: 'prompts'
 		} );
-	} else {
+		initGridPagination( {
+			gridSelector: '.elementor-mcp-template-grid',
+			cardSelector: '.elementor-mcp-template-card',
+			filterSelector: '.elementor-mcp-templates .elementor-mcp-pro-filters',
+			pageSize: 12,
+			label: 'templates'
+		} );
+		initGridPagination( {
+			gridSelector: '.elementor-mcp-brand-kit-grid',
+			cardSelector: '.elementor-mcp-brand-kit-card',
+			filterSelector: '.elementor-mcp-brand-kits .elementor-mcp-pro-filters',
+			pageSize: 12,
+			label: 'brand kits'
+		} );
+		initGridPagination( {
+			gridSelector: '.elementor-mcp-changelog-list',
+			cardSelector: '.elementor-mcp-changelog-version',
+			pageSize: 10,
+			label: 'releases'
+		} );
+	}
+
+	// Initialize on DOM ready.
+	function initAll() {
 		initToolsForm();
 		initBase64Generator();
 		initCopyButtons();
-		initProPromptFilters();
+		initPagers();
 		initProSync();
 		initProTemplateActions();
 		initBrandKits();
+	}
+
+	if ( document.readyState === 'loading' ) {
+		document.addEventListener( 'DOMContentLoaded', initAll );
+	} else {
+		initAll();
 	}
 })();

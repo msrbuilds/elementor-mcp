@@ -130,57 +130,14 @@ class Elementor_MCP_Pro_Brand_Kits {
 	 * @return array|WP_Error Summary of what was applied.
 	 */
 	public static function apply_kit( array $kit ) {
-		if ( ! self::user_has_access() ) {
-			return new WP_Error( 'no_license', __( 'A valid EMCP Tools Pro license is required to apply brand kits.', 'elementor-mcp' ) );
-		}
-
 		if ( ! class_exists( 'Elementor_MCP_System_Kit_Writer' ) ) {
 			return new WP_Error( 'no_writer', __( 'The kit writer service is unavailable.', 'elementor-mcp' ) );
 		}
 
-		if ( empty( $kit['colors'] ) || ! is_array( $kit['colors'] ) || empty( $kit['typography'] ) || ! is_array( $kit['typography'] ) ) {
-			return new WP_Error( 'invalid_kit', __( 'This brand kit is missing its colors or typography data.', 'elementor-mcp' ) );
-		}
-
-		// 1) System colors.
-		$colors_result = Elementor_MCP_System_Kit_Writer::replace_system_colors( $kit['colors'] );
-		if ( is_wp_error( $colors_result ) ) {
-			return $colors_result;
-		}
-
-		// 2) System typography.
-		$typo_result = Elementor_MCP_System_Kit_Writer::replace_system_typography( $kit['typography'] );
-		if ( is_wp_error( $typo_result ) ) {
-			return $typo_result;
-		}
-
-		// 3) Optional named custom colors (cleanup contract handled by writer).
-		$custom_added = 0;
-		if ( ! empty( $kit['custom_colors'] ) && is_array( $kit['custom_colors'] ) ) {
-			$custom_result = Elementor_MCP_System_Kit_Writer::replace_brand_custom_colors( $kit['custom_colors'] );
-			if ( is_wp_error( $custom_result ) ) {
-				return $custom_result;
-			}
-			$custom_added = (int) ( $custom_result['custom_colors_added'] ?? 0 );
-		}
-
-		// 4) Theme Style defaults — the step that actually re-skins the site
-		//    (default body/heading fonts + body/heading/link colors). Without
-		//    this, the system tokens above only affect elements that explicitly
-		//    reference them, so the page font/colors appear unchanged.
-		$theme_result = Elementor_MCP_System_Kit_Writer::apply_theme_style( $kit['colors'], $kit['typography'] );
-		if ( is_wp_error( $theme_result ) ) {
-			return $theme_result;
-		}
-
-		return array(
-			'success'             => true,
-			'kit_slug'            => isset( $kit['slug'] ) ? (string) $kit['slug'] : '',
-			'kit_title'           => isset( $kit['title'] ) ? (string) $kit['title'] : '',
-			'colors_applied'      => (int) ( $colors_result['colors_applied'] ?? 0 ),
-			'typography_applied'  => (int) ( $typo_result['typography_applied'] ?? 0 ),
-			'custom_colors_added' => $custom_added,
-		);
+		// Delegate to the neutral writer orchestrator (capability-gated per
+		// write). Applying is a free feature as of 1.9.0; the Pro value is the
+		// larger remote library + the MCP brand-kit tools, gated elsewhere.
+		return Elementor_MCP_System_Kit_Writer::apply_kit( $kit );
 	}
 
 	/**

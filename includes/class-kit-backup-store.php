@@ -66,17 +66,15 @@ class Elementor_MCP_Kit_Backup_Store {
 	}
 
 	/**
-	 * Whether the current user/site may manage backups. Both the Pro gate
-	 * (§ 6.1) and `manage_options` are required.
+	 * Whether the current user may manage brand backups. As of 1.9.0 backup +
+	 * restore ships with the free brand-kit apply feature, so this is a
+	 * capability gate (`manage_options`), not a license gate.
 	 *
 	 * @since 1.8.0
 	 *
 	 * @return bool
 	 */
 	public static function user_has_access(): bool {
-		if ( ! function_exists( 'emcp_pro_fs' ) || ! emcp_pro_fs()->can_use_premium_code() ) {
-			return false;
-		}
 		return current_user_can( 'manage_options' );
 	}
 

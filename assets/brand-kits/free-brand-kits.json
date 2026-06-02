@@ -1,0 +1,1192 @@
+{
+  "categories": [
+    {
+      "slug": "corporate",
+      "label": "Corporate & Tech",
+      "kits": [
+        {
+          "slug": "enterprise-blue",
+          "title": "Enterprise Blue",
+          "description": "Navy + steel + white with Source Sans. Dependable and corporate — for enterprise software, IT, and B2B services.",
+          "category": "corporate",
+          "tags": [
+            "enterprise",
+            "corporate",
+            "b2b"
+          ],
+          "colors": {
+            "primary": {
+              "title": "Primary",
+              "color": "#1E3A5F"
+            },
+            "secondary": {
+              "title": "Secondary",
+              "color": "#334155"
+            },
+            "text": {
+              "title": "Text",
+              "color": "#1F2937"
+            },
+            "accent": {
+              "title": "Accent",
+              "color": "#2563EB"
+            }
+          },
+          "custom_colors": [
+            {
+              "title": "Surface",
+              "color": "#F9FAFB"
+            },
+            {
+              "title": "Border",
+              "color": "#E5E7EB"
+            }
+          ],
+          "typography": {
+            "primary": {
+              "title": "Primary Headings",
+              "font_family": "Source Sans 3",
+              "font_weight": "700",
+              "font_size": {
+                "size": 46,
+                "unit": "px"
+              },
+              "line_height": {
+                "size": 1.15,
+                "unit": "em"
+              }
+            },
+            "secondary": {
+              "title": "Secondary Headings",
+              "font_family": "Source Sans 3",
+              "font_weight": "600",
+              "font_size": {
+                "size": 24,
+                "unit": "px"
+              },
+              "line_height": {
+                "size": 1.3,
+                "unit": "em"
+              }
+            },
+            "text": {
+              "title": "Body",
+              "font_family": "Source Sans 3",
+              "font_weight": "400",
+              "font_size": {
+                "size": 16,
+                "unit": "px"
+              },
+              "line_height": {
+                "size": 1.6,
+                "unit": "em"
+              }
+            },
+            "accent": {
+              "title": "Accent",
+              "font_family": "Source Sans 3",
+              "font_weight": "600",
+              "font_size": {
+                "size": 13,
+                "unit": "px"
+              },
+              "letter_spacing": {
+                "size": 0.05,
+                "unit": "em"
+              },
+              "text_transform": "uppercase"
+            }
+          },
+          "fonts_provider": "google",
+          "fonts": [
+            "Source Sans 3"
+          ],
+          "preview": {
+            "swatches": [
+              "#1E3A5F",
+              "#334155",
+              "#1F2937",
+              "#2563EB"
+            ]
+          }
+        },
+        {
+          "slug": "modern-saas",
+          "title": "Modern SaaS",
+          "description": "Indigo + slate with Inter throughout. Clean, confident, and modern — suits B2B software, startups, and dashboards.",
+          "category": "corporate",
+          "tags": [
+            "b2b",
+            "tech",
+            "minimal"
+          ],
+          "colors": {
+            "primary": {
+              "title": "Primary",
+              "color": "#4F46E5"
+            },
+            "secondary": {
+              "title": "Secondary",
+              "color": "#0F172A"
+            },
+            "text": {
+              "title": "Text",
+              "color": "#1E293B"
+            },
+            "accent": {
+              "title": "Accent",
+              "color": "#0E7490"
+            }
+          },
+          "custom_colors": [
+            {
+              "title": "Surface",
+              "color": "#F8FAFC"
+            },
+            {
+              "title": "Border",
+              "color": "#E2E8F0"
+            },
+            {
+              "title": "Success",
+              "color": "#15803D"
+            },
+            {
+              "title": "Danger",
+              "color": "#B91C1C"
+            }
+          ],
+          "typography": {
+            "primary": {
+              "title": "Primary Headings",
+              "font_family": "Inter",
+              "font_weight": "700",
+              "font_size": {
+                "size": 48,
+                "unit": "px"
+              },
+              "line_height": {
+                "size": 1.1,
+                "unit": "em"
+              },
+              "letter_spacing": {
+                "size": -0.02,
+                "unit": "em"
+              }
+            },
+            "secondary": {
+              "title": "Secondary Headings",
+              "font_family": "Inter",
+              "font_weight": "600",
+              "font_size": {
+                "size": 24,
+                "unit": "px"
+              },
+              "line_height": {
+                "size": 1.3,
+                "unit": "em"
+              }
+            },
+            "text": {
+              "title": "Body",
+              "font_family": "Inter",
+              "font_weight": "400",
+              "font_size": {
+                "size": 16,
+                "unit": "px"
+              },
+              "line_height": {
+                "size": 1.6,
+                "unit": "em"
+              }
+            },
+            "accent": {
+              "title": "Accent",
+              "font_family": "Inter",
+              "font_weight": "500",
+              "font_size": {
+                "size": 14,
+                "unit": "px"
+              },
+              "letter_spacing": {
+                "size": 0.04,
+                "unit": "em"
+              },
+              "text_transform": "uppercase"
+            }
+          },
+          "fonts_provider": "google",
+          "fonts": [
+            "Inter"
+          ],
+          "preview": {
+            "swatches": [
+              "#4F46E5",
+              "#0F172A",
+              "#1E293B",
+              "#0E7490"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "slug": "creative",
+      "label": "Creative",
+      "kits": [
+        {
+          "slug": "bold-studio",
+          "title": "Bold Studio",
+          "description": "High-contrast black and electric coral for design studios",
+          "category": "creative",
+          "tags": [
+            "studio",
+            "bold",
+            "portfolio"
+          ],
+          "colors": {
+            "primary": {
+              "title": "Primary",
+              "color": "#18181B"
+            },
+            "secondary": {
+              "title": "Secondary",
+              "color": "#BE123C"
+            },
+            "text": {
+              "title": "Text",
+              "color": "#18181B"
+            },
+            "accent": {
+              "title": "Accent",
+              "color": "#E11D48"
+            }
+          },
+          "custom_colors": [
+            {
+              "title": "Surface",
+              "color": "#FAFAFA"
+            },
+            {
+              "title": "Border",
+              "color": "#E4E4E7"
+            },
+            {
+              "title": "Coral",
+              "color": "#FB7185"
+            },
+            {
+              "title": "Electric Rose",
+              "color": "#FF4D6D"
+            }
+          ],
+          "typography": {
+            "primary": {
+              "title": "Primary Headings",
+              "font_family": "Anton",
+              "font_weight": "400",
+              "font_size": {
+                "size": 64,
+                "unit": "px"
+              },
+              "line_height": {
+                "size": 1.05,
+                "unit": "em"
+              }
+            },
+            "secondary": {
+              "title": "Secondary Headings",
+              "font_family": "Anton",
+              "font_weight": "400",
+              "font_size": {
+                "size": 32,
+                "unit": "px"
+              },
+              "line_height": {
+                "size": 1.3,
+                "unit": "em"
+              }
+            },
+            "text": {
+              "title": "Body",
+              "font_family": "Work Sans",
+              "font_weight": "400",
+              "font_size": {
+                "size": 16,
+                "unit": "px"
+              },
+              "line_height": {
+                "size": 1.6,
+                "unit": "em"
+              }
+            },
+            "accent": {
+              "title": "Accent",
+              "font_family": "Work Sans",
+              "font_weight": "700",
+              "font_size": {
+                "size": 13,
+                "unit": "px"
+              },
+              "line_height": {
+                "size": 1.4,
+                "unit": "em"
+              },
+              "letter_spacing": {
+                "size": 0.06,
+                "unit": "em"
+              },
+              "text_transform": "uppercase"
+            }
+          },
+          "fonts_provider": "google",
+          "fonts": [
+            "Anton",
+            "Work Sans"
+          ],
+          "preview": {
+            "swatches": [
+              "#18181B",
+              "#BE123C",
+              "#18181B",
+              "#E11D48"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "slug": "ecommerce",
+      "label": "E-commerce",
+      "kits": [
+        {
+          "slug": "boutique-rose",
+          "title": "Boutique Rose",
+          "description": "Berry rose and warm charcoal for fashion, beauty, and boutique DTC stores",
+          "category": "ecommerce",
+          "tags": [
+            "fashion",
+            "beauty",
+            "boutique"
+          ],
+          "colors": {
+            "primary": {
+              "title": "Primary",
+              "color": "#9D174D"
+            },
+            "secondary": {
+              "title": "Secondary",
+              "color": "#3F2A2A"
+            },
+            "text": {
+              "title": "Text",
+              "color": "#3B2A2A"
+            },
+            "accent": {
+              "title": "Accent",
+              "color": "#BE185D"
+            }
+          },
+          "custom_colors": [
+            {
+              "title": "Surface",
+              "color": "#FFF1F2"
+            },
+            {
+              "title": "Border",
+              "color": "#F3D9DE"
+            }
+          ],
+          "typography": {
+            "primary": {
+              "title": "Primary Headings",
+              "font_family": "Fraunces",
+              "font_weight": "600",
+              "font_size": {
+                "size": 48,
+                "unit": "px"
+              },
+              "line_height": {
+                "size": 1.1,
+                "unit": "em"
+              }
+            },
+            "secondary": {
+              "title": "Secondary Headings",
+              "font_family": "Fraunces",
+              "font_weight": "600",
+              "font_size": {
+                "size": 24,
+                "unit": "px"
+              },
+              "line_height": {
+                "size": 1.3,
+                "unit": "em"
+              }
+            },
+            "text": {
+              "title": "Body",
+              "font_family": "Inter",
+              "font_weight": "400",
+              "font_size": {
+                "size": 16,
+                "unit": "px"
+              },
+              "line_height": {
+                "size": 1.6,
+                "unit": "em"
+              }
+            },
+            "accent": {
+              "title": "Accent",
+              "font_family": "Inter",
+              "font_weight": "600",
+              "font_size": {
+                "size": 14,
+                "unit": "px"
+              },
+              "line_height": {
+                "size": 1.4,
+                "unit": "em"
+              },
+              "letter_spacing": {
+                "size": 0.08,
+                "unit": "em"
+              },
+              "text_transform": "uppercase"
+            }
+          },
+          "fonts_provider": "google",
+          "fonts": [
+            "Fraunces",
+            "Inter"
+          ],
+          "preview": {
+            "swatches": [
+              "#9D174D",
+              "#3F2A2A",
+              "#3B2A2A",
+              "#BE185D"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "slug": "editorial",
+      "label": "Editorial",
+      "kits": [
+        {
+          "slug": "magazine-classic",
+          "title": "Magazine Classic",
+          "description": "Black and red for magazines and long-form journalism",
+          "category": "editorial",
+          "tags": [
+            "magazine",
+            "editorial",
+            "classic"
+          ],
+          "colors": {
+            "primary": {
+              "title": "Primary",
+              "color": "#18181B"
+            },
+            "secondary": {
+              "title": "Secondary",
+              "color": "#991B1B"
+            },
+            "text": {
+              "title": "Text",
+              "color": "#27272A"
+            },
+            "accent": {
+              "title": "Accent",
+              "color": "#DC2626"
+            }
+          },
+          "custom_colors": [
+            {
+              "title": "Surface",
+              "color": "#FAFAFA"
+            },
+            {
+              "title": "Border",
+              "color": "#E5E5E5"
+            }
+          ],
+          "typography": {
+            "primary": {
+              "title": "Primary Headings",
+              "font_family": "Libre Baskerville",
+              "font_weight": "700",
+              "font_size": {
+                "size": 56,
+                "unit": "px"
+              },
+              "line_height": {
+                "size": 1.05,
+                "unit": "em"
+              }
+            },
+            "secondary": {
+              "title": "Secondary Headings",
+              "font_family": "Libre Baskerville",
+              "font_weight": "700",
+              "font_size": {
+                "size": 30,
+                "unit": "px"
+              },
+              "line_height": {
+                "size": 1.3,
+                "unit": "em"
+              }
+            },
+            "text": {
+              "title": "Body",
+              "font_family": "Source Serif 4",
+              "font_weight": "400",
+              "font_size": {
+                "size": 18,
+                "unit": "px"
+              },
+              "line_height": {
+                "size": 1.7,
+                "unit": "em"
+              }
+            },
+            "accent": {
+              "title": "Accent",
+              "font_family": "Inter",
+              "font_weight": "600",
+              "font_size": {
+                "size": 14,
+                "unit": "px"
+              },
+              "line_height": {
+                "size": 1.4,
+                "unit": "em"
+              },
+              "letter_spacing": {
+                "size": 0.06,
+                "unit": "em"
+              },
+              "text_transform": "uppercase"
+            }
+          },
+          "fonts_provider": "google",
+          "fonts": [
+            "Libre Baskerville",
+            "Source Serif 4",
+            "Inter"
+          ],
+          "preview": {
+            "swatches": [
+              "#18181B",
+              "#991B1B",
+              "#27272A",
+              "#DC2626"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "slug": "hospitality",
+      "label": "Hospitality",
+      "kits": [
+        {
+          "slug": "fine-dining",
+          "title": "Fine Dining",
+          "description": "Charcoal and gold for upscale restaurants and fine dining",
+          "category": "hospitality",
+          "tags": [
+            "restaurant",
+            "luxury",
+            "elegant"
+          ],
+          "colors": {
+            "primary": {
+              "title": "Primary",
+              "color": "#1C1917"
+            },
+            "secondary": {
+              "title": "Secondary",
+              "color": "#44403C"
+            },
+            "text": {
+              "title": "Text",
+              "color": "#292524"
+            },
+            "accent": {
+              "title": "Accent",
+              "color": "#A16207"
+            }
+          },
+          "custom_colors": [
+            {
+              "title": "Surface",
+              "color": "#FAFAF9"
+            },
+            {
+              "title": "Border",
+              "color": "#E7E5E4"
+            },
+            {
+              "title": "Gold",
+              "color": "#C9A227"
+            },
+            {
+              "title": "Champagne",
+              "color": "#D4A373"
+            }
+          ],
+          "typography": {
+            "primary": {
+              "title": "Primary Headings",
+              "font_family": "Cormorant Garamond",
+              "font_weight": "600",
+              "font_size": {
+                "size": 56,
+                "unit": "px"
+              },
+              "line_height": {
+                "size": 1.05,
+                "unit": "em"
+              }
+            },
+            "secondary": {
+              "title": "Secondary Headings",
+              "font_family": "Cormorant Garamond",
+              "font_weight": "600",
+              "font_size": {
+                "size": 30,
+                "unit": "px"
+              },
+              "line_height": {
+                "size": 1.3,
+                "unit": "em"
+              }
+            },
+            "text": {
+              "title": "Body",
+              "font_family": "EB Garamond",
+              "font_weight": "400",
+              "font_size": {
+                "size": 16,
+                "unit": "px"
+              },
+              "line_height": {
+                "size": 1.6,
+                "unit": "em"
+              }
+            },
+            "accent": {
+              "title": "Accent",
+              "font_family": "EB Garamond",
+              "font_weight": "500",
+              "font_size": {
+                "size": 14,
+                "unit": "px"
+              },
+              "line_height": {
+                "size": 1.4,
+                "unit": "em"
+              },
+              "letter_spacing": {
+                "size": 0.06,
+                "unit": "em"
+              },
+              "text_transform": "uppercase"
+            }
+          },
+          "fonts_provider": "google",
+          "fonts": [
+            "Cormorant Garamond",
+            "EB Garamond"
+          ],
+          "preview": {
+            "swatches": [
+              "#1C1917",
+              "#44403C",
+              "#292524",
+              "#A16207"
+            ]
+          }
+        },
+        {
+          "slug": "restaurant-warm",
+          "title": "Restaurant Warm",
+          "description": "Terracotta + cream + olive, Playfair Display headings over Lato body. Warm and appetizing — for restaurants, bistros, and cafés.",
+          "category": "hospitality",
+          "tags": [
+            "restaurant",
+            "food",
+            "warm"
+          ],
+          "colors": {
+            "primary": {
+              "title": "Primary",
+              "color": "#9A3412"
+            },
+            "secondary": {
+              "title": "Secondary",
+              "color": "#4D5320"
+            },
+            "text": {
+              "title": "Text",
+              "color": "#2A2118"
+            },
+            "accent": {
+              "title": "Accent",
+              "color": "#B45309"
+            }
+          },
+          "custom_colors": [
+            {
+              "title": "Surface",
+              "color": "#FBF6EC"
+            },
+            {
+              "title": "Border",
+              "color": "#EADFC9"
+            }
+          ],
+          "typography": {
+            "primary": {
+              "title": "Primary Headings",
+              "font_family": "Playfair Display",
+              "font_weight": "700",
+              "font_size": {
+                "size": 46,
+                "unit": "px"
+              },
+              "line_height": {
+                "size": 1.15,
+                "unit": "em"
+              }
+            },
+            "secondary": {
+              "title": "Secondary Headings",
+              "font_family": "Playfair Display",
+              "font_weight": "600",
+              "font_size": {
+                "size": 26,
+                "unit": "px"
+              },
+              "line_height": {
+                "size": 1.3,
+                "unit": "em"
+              }
+            },
+            "text": {
+              "title": "Body",
+              "font_family": "Lato",
+              "font_weight": "400",
+              "font_size": {
+                "size": 16,
+                "unit": "px"
+              },
+              "line_height": {
+                "size": 1.6,
+                "unit": "em"
+              }
+            },
+            "accent": {
+              "title": "Accent",
+              "font_family": "Lato",
+              "font_weight": "700",
+              "font_size": {
+                "size": 13,
+                "unit": "px"
+              },
+              "letter_spacing": {
+                "size": 0.08,
+                "unit": "em"
+              },
+              "text_transform": "uppercase"
+            }
+          },
+          "fonts_provider": "google",
+          "fonts": [
+            "Playfair Display",
+            "Lato"
+          ],
+          "preview": {
+            "swatches": [
+              "#9A3412",
+              "#4D5320",
+              "#2A2118",
+              "#B45309"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "slug": "trades",
+      "label": "Trades",
+      "kits": [
+        {
+          "slug": "construction-pro",
+          "title": "Construction Pro",
+          "description": "Navy + steel with a hi-vis orange accent, Oswald headlines over Source Sans. Strong and dependable — for construction, contractors, and roofing.",
+          "category": "trades",
+          "tags": [
+            "construction",
+            "contractor",
+            "industrial"
+          ],
+          "colors": {
+            "primary": {
+              "title": "Primary",
+              "color": "#1E293B"
+            },
+            "secondary": {
+              "title": "Secondary",
+              "color": "#334155"
+            },
+            "text": {
+              "title": "Text",
+              "color": "#1E293B"
+            },
+            "accent": {
+              "title": "Accent",
+              "color": "#C2410C"
+            }
+          },
+          "custom_colors": [
+            {
+              "title": "Hi-Vis Orange",
+              "color": "#F97316"
+            },
+            {
+              "title": "Steel",
+              "color": "#64748B"
+            },
+            {
+              "title": "Surface",
+              "color": "#F4F5F7"
+            },
+            {
+              "title": "Border",
+              "color": "#E2E5EA"
+            }
+          ],
+          "typography": {
+            "primary": {
+              "title": "Primary Headings",
+              "font_family": "Oswald",
+              "font_weight": "700",
+              "font_size": {
+                "size": 50,
+                "unit": "px"
+              },
+              "line_height": {
+                "size": 1.1,
+                "unit": "em"
+              },
+              "text_transform": "uppercase"
+            },
+            "secondary": {
+              "title": "Secondary Headings",
+              "font_family": "Oswald",
+              "font_weight": "600",
+              "font_size": {
+                "size": 28,
+                "unit": "px"
+              },
+              "line_height": {
+                "size": 1.2,
+                "unit": "em"
+              }
+            },
+            "text": {
+              "title": "Body",
+              "font_family": "Source Sans 3",
+              "font_weight": "400",
+              "font_size": {
+                "size": 16,
+                "unit": "px"
+              },
+              "line_height": {
+                "size": 1.6,
+                "unit": "em"
+              }
+            },
+            "accent": {
+              "title": "Accent",
+              "font_family": "Source Sans 3",
+              "font_weight": "700",
+              "font_size": {
+                "size": 13,
+                "unit": "px"
+              },
+              "letter_spacing": {
+                "size": 0.06,
+                "unit": "em"
+              },
+              "text_transform": "uppercase"
+            }
+          },
+          "fonts_provider": "google",
+          "fonts": [
+            "Oswald",
+            "Source Sans 3"
+          ],
+          "preview": {
+            "swatches": [
+              "#1E293B",
+              "#334155",
+              "#1E293B",
+              "#C2410C"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "slug": "wellness",
+      "label": "Wellness",
+      "kits": [
+        {
+          "slug": "calm-spa",
+          "title": "Calm Spa",
+          "description": "Soft sage and stone for spas and meditation apps",
+          "category": "wellness",
+          "tags": [
+            "spa",
+            "calm",
+            "wellness"
+          ],
+          "colors": {
+            "primary": {
+              "title": "Primary",
+              "color": "#115E59"
+            },
+            "secondary": {
+              "title": "Secondary",
+              "color": "#134E4A"
+            },
+            "text": {
+              "title": "Text",
+              "color": "#1F2937"
+            },
+            "accent": {
+              "title": "Accent",
+              "color": "#0F766E"
+            }
+          },
+          "custom_colors": [
+            {
+              "title": "Surface",
+              "color": "#F0FDFA"
+            },
+            {
+              "title": "Border",
+              "color": "#CCFBF1"
+            },
+            {
+              "title": "Eucalyptus",
+              "color": "#5EEAD4"
+            },
+            {
+              "title": "Mist",
+              "color": "#A7F3D0"
+            }
+          ],
+          "typography": {
+            "primary": {
+              "title": "Primary Headings",
+              "font_family": "Crimson Pro",
+              "font_weight": "600",
+              "font_size": {
+                "size": 48,
+                "unit": "px"
+              },
+              "line_height": {
+                "size": 1.1,
+                "unit": "em"
+              }
+            },
+            "secondary": {
+              "title": "Secondary Headings",
+              "font_family": "Crimson Pro",
+              "font_weight": "600",
+              "font_size": {
+                "size": 24,
+                "unit": "px"
+              },
+              "line_height": {
+                "size": 1.3,
+                "unit": "em"
+              }
+            },
+            "text": {
+              "title": "Body",
+              "font_family": "Mulish",
+              "font_weight": "400",
+              "font_size": {
+                "size": 16,
+                "unit": "px"
+              },
+              "line_height": {
+                "size": 1.6,
+                "unit": "em"
+              }
+            },
+            "accent": {
+              "title": "Accent",
+              "font_family": "Mulish",
+              "font_weight": "600",
+              "font_size": {
+                "size": 14,
+                "unit": "px"
+              },
+              "line_height": {
+                "size": 1.4,
+                "unit": "em"
+              },
+              "letter_spacing": {
+                "size": 0.06,
+                "unit": "em"
+              },
+              "text_transform": "uppercase"
+            }
+          },
+          "fonts_provider": "google",
+          "fonts": [
+            "Crimson Pro",
+            "Mulish"
+          ],
+          "preview": {
+            "swatches": [
+              "#115E59",
+              "#134E4A",
+              "#1F2937",
+              "#0F766E"
+            ]
+          }
+        },
+        {
+          "slug": "fitness-energy",
+          "title": "Fitness Energy",
+          "description": "Charcoal and lime for gyms and fitness brands",
+          "category": "wellness",
+          "tags": [
+            "fitness",
+            "gym",
+            "energy"
+          ],
+          "colors": {
+            "primary": {
+              "title": "Primary",
+              "color": "#18181B"
+            },
+            "secondary": {
+              "title": "Secondary",
+              "color": "#3F3F46"
+            },
+            "text": {
+              "title": "Text",
+              "color": "#18181B"
+            },
+            "accent": {
+              "title": "Accent",
+              "color": "#4D7C0F"
+            }
+          },
+          "custom_colors": [
+            {
+              "title": "Surface",
+              "color": "#F7FEE7"
+            },
+            {
+              "title": "Border",
+              "color": "#ECFCCB"
+            },
+            {
+              "title": "Volt",
+              "color": "#A3E635"
+            },
+            {
+              "title": "Lime",
+              "color": "#84CC16"
+            }
+          ],
+          "typography": {
+            "primary": {
+              "title": "Primary Headings",
+              "font_family": "Archivo",
+              "font_weight": "800",
+              "font_size": {
+                "size": 56,
+                "unit": "px"
+              },
+              "line_height": {
+                "size": 1.05,
+                "unit": "em"
+              }
+            },
+            "secondary": {
+              "title": "Secondary Headings",
+              "font_family": "Archivo",
+              "font_weight": "800",
+              "font_size": {
+                "size": 30,
+                "unit": "px"
+              },
+              "line_height": {
+                "size": 1.3,
+                "unit": "em"
+              }
+            },
+            "text": {
+              "title": "Body",
+              "font_family": "Inter",
+              "font_weight": "400",
+              "font_size": {
+                "size": 16,
+                "unit": "px"
+              },
+              "line_height": {
+                "size": 1.6,
+                "unit": "em"
+              }
+            },
+            "accent": {
+              "title": "Accent",
+              "font_family": "Inter",
+              "font_weight": "700",
+              "font_size": {
+                "size": 13,
+                "unit": "px"
+              },
+              "line_height": {
+                "size": 1.4,
+                "unit": "em"
+              },
+              "letter_spacing": {
+                "size": 0.06,
+                "unit": "em"
+              },
+              "text_transform": "uppercase"
+            }
+          },
+          "fonts_provider": "google",
+          "fonts": [
+            "Archivo",
+            "Inter"
+          ],
+          "preview": {
+            "swatches": [
+              "#18181B",
+              "#3F3F46",
+              "#18181B",
+              "#4D7C0F"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

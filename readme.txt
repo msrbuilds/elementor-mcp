@@ -3,7 +3,7 @@ Contributors: mianshahzadraza
 Tags: elementor, mcp, ai, page-builder, automation
 Requires at least: 6.9
 Tested up to: 6.9
-Stable tag: 1.8.3
+Stable tag: 1.9.0
 Requires PHP: 8.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -30,9 +30,11 @@ Tool counts scale with your environment: 61 tools on a free Elementor install, 1
 * **Stock Images** — Search Openverse for Creative Commons images, sideload into Media Library, add to pages.
 * **SVG Icons** — Upload SVG icons from URL or raw markup for use with Elementor icon widgets.
 * **Custom Code** — Add custom CSS (element/page level), inject JavaScript, create site-wide code snippets for head/body injection.
+* **AI Widget Builder (Pro)** — Let an AI agent design custom Elementor widgets from a structured spec (no hand-written PHP). The plugin compiles the spec into a sandboxed widget that appears in the Elementor panel — 35 control types, optional CSS/JS, with a runtime safety net so a bad widget can never break the editor.
+* **Brand Kits** — One-click color + typography kits that re-skin your whole site. 10 kits are free to apply (with backup + restore); 50+ with Pro.
 * **Low-tools Mode** — One-click toggle that trims the active tool list to a curated 50-or-so essentials so MCP clients with strict tool caps (Antigravity, Gemini API, etc.) stay under their limits.
 * **Sample Prompts** — Ready-to-use landing page blueprints with one-click copy from the admin dashboard.
-* **Admin Dashboard** — Dedicated top-level menu with Tools, Connection, Prompts, and Changelog submenus. Toggle individual tools on/off and view connection configs for all supported MCP clients.
+* **Admin Dashboard** — Dedicated top-level menu with Tools, Connection, Prompts, Templates, Brand Kits, Skills, Widget Builder, and Changelog tabs. Toggle individual tools on/off, view connection configs for all supported MCP clients, and get help via the built-in Get Support link.
 
 **Requires:**
 
@@ -153,6 +155,14 @@ The plugin enforces WordPress capability checks on every tool. Read operations r
 2. Connection configuration page with copy-paste configs.
 
 == Changelog ==
+
+= 1.9.0 =
+* New: AI Widget Builder (Pro) — 8 MCP tools let an agent design custom Elementor widgets from a structured spec (no hand-written PHP). The plugin compiles the spec + an HTML template into a sandboxed Widget_Base class under uploads/emcp-widgets/, escaping every value by control type. 35 control types incl. group controls (typography/border/box-shadow/background), repeaters, responsive, and conditions, plus optional per-widget CSS/JS. New widgets auto-activate under a "Custom (EMCP)" category; a runtime safety net keeps a bad widget from breaking the editor. Off-by-default; managed on the new Widget Builder tab.
+* New: 10 free brand kits — the Brand Kits tab now ships 10 curated color + typography kits anyone can apply for free, with backup-before-apply and restore. The full 50-kit library stays Pro.
+* New: Get Support button in the admin header on every tab, linking to the support portal (support.msrbuilds.com).
+* New: Pagination on the Prompts, Templates, Brand Kits, and Changelog pages — filter-aware, and it revived the Templates category filter.
+* Fixed: Prompts page froze for several seconds with 50+ prompts — off-screen 1px-wide copy textareas forced a pathological reflow; they're now display:none.
+* Fixed: Atomic (V4) tool detection (#47) — atomic tools now register based on whether the atomic element types are registered (or the e_atomic_elements/atomic_widgets experiment is on), not the ELEMENTOR_VERSION constant, and not on the page-editor opt-in alone (which let writes silently no-op).
 
 = 1.8.3 =
 * New: One-click credentials on the Connection tab — pick an administrator from a dropdown (admins only, you at the top) and click Generate to automatically create a new Application Password and fill in every client config. No more creating one by hand under your profile.
