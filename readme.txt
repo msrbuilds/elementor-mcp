@@ -2,8 +2,8 @@
 Contributors: mianshahzadraza
 Tags: elementor, mcp, ai, page-builder, automation
 Requires at least: 6.9
-Tested up to: 6.9
-Stable tag: 2.0.0
+Tested up to: 7.0
+Stable tag: 2.0.1
 Requires PHP: 8.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -155,6 +155,11 @@ The plugin enforces WordPress capability checks on every tool. Read operations r
 2. Connection configuration page with copy-paste configs.
 
 == Changelog ==
+
+= 2.0.1 =
+* Fixed: Pro license activation. The premium build now correctly identifies as premium (it reads the bundled .emcp-pro marker), so Freemius shows the license-activation screen instead of the free opt-in. Previously the Pro zip behaved like the free version — if you skipped opt-in or didn't click the confirmation email, no "Activate License" link appeared.
+* Stuck on Pro 2.0.0? Update to 2.0.1 and the Activate License option will appear. If your install is still wedged mid opt-in, run the official Freemius Fixer (https://github.com/Freemius/freemius-fixer) to re-trigger the opt-in, complete the opt-in, then activate your license.
+* New: Community button in the admin header linking to the EMCP Tools Facebook group.
 
 = 2.0.0 =
 * ⚠️ PRO USERS — ACTION NEEDED: Because the plugin folder/slug changed (elementor-mcp -> emcp-tools), the new install is a separate plugin to WordPress, so your Pro license does NOT carry over automatically. After deleting the old plugin and activating "EMCP Tools", you will likely need to re-activate your license and complete the Freemius opt-in/connection again. Your license stays valid — this only re-links it to the renamed plugin. Free users have nothing extra to do.

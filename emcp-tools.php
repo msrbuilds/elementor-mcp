@@ -3,7 +3,7 @@
  * Plugin Name:       EMCP Tools
  * Plugin URI:        https://github.com/msrbuilds/elementor-mcp
  * Description:       Extends the WordPress MCP Adapter to expose Elementor data, widgets, and page design tools as MCP tools for AI agents.
- * Version:           2.0.0
+ * Version:           2.0.1
  * Requires at least: 6.9
  * Tested up to:      6.9
  * Requires PHP:      8.0
@@ -116,7 +116,7 @@ if ( emcp_tools_legacy_plugin_active() ) {
 }
 
 // Plugin constants.
-define( 'EMCP_TOOLS_VERSION', '2.0.0' );
+define( 'EMCP_TOOLS_VERSION', '2.0.1' );
 define( 'EMCP_TOOLS_DIR', plugin_dir_path( __FILE__ ) );
 define( 'EMCP_TOOLS_URL', plugin_dir_url( __FILE__ ) );
 define( 'EMCP_TOOLS_BASENAME', plugin_basename( __FILE__ ) );
@@ -135,15 +135,25 @@ if ( ! function_exists( 'emcp_tools_fs' ) ) {
             // Include Freemius SDK.
             require_once dirname( __FILE__ ) . '/includes/vendors/fremius/start.php';
 
+            // The premium build ships a `.emcp-pro` marker file at the plugin
+            // root; the free build does not. Freemius needs is_premium=true on
+            // the premium build so it shows the LICENSE-ACTIVATION flow (gated
+            // on is_premium()) instead of the free connect/opt-in screen. With
+            // it hardcoded false, the premium zip behaved like the free version
+            // and never offered license activation.
+            $emcp_tools_is_premium = file_exists( dirname( __FILE__ ) . '/.emcp-pro' );
+
             $emcp_tools_fs = fs_dynamic_init( array(
                 'id'                  => '30577',
                 'slug'                => 'emcp-tools',
                 'premium_slug'        => 'emcp-pro',
                 'type'                => 'plugin',
                 'public_key'          => 'pk_2b2a026d5c27655581635abcd4556',
-                'is_premium'          => false,
+                'is_premium'          => $emcp_tools_is_premium,
+                'premium_suffix'      => 'Pro',
+                'has_premium_version' => true,
                 'has_addons'          => false,
-                'has_paid_plans'      => false,
+                'has_paid_plans'      => true,
                 'is_org_compliant'    => false,
                 'has_affiliation'     => 'selected',
                 'menu'                => array(

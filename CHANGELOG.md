@@ -2,6 +2,12 @@
 
 All notable changes to MCP Tools for Elementor are documented in this file.
 
+## [2.0.1]
+
+- Fixed: **Pro license activation.** The premium build now correctly reports itself as the premium version (it reads the bundled `.emcp-pro` marker), so Freemius shows the **license-activation** flow instead of the free connect/opt-in screen. Previously `is_premium` was hardcoded off, so the Pro zip behaved like the free version — if a customer skipped opt-in (or didn't click the confirmation email), no "Activate License" link or Account page appeared. Also corrected `has_paid_plans`/`has_premium_version` to reflect that the plugin has a paid tier.
+  - **Already stuck on Pro 2.0.0?** Update to 2.0.1 and the **Activate License** option will appear. If your install is still wedged in the half-finished opt-in state, run the official **Freemius Fixer** (https://github.com/Freemius/freemius-fixer) to re-trigger the opt-in, **complete the opt-in**, and then **activate your license**.
+- New: **Community button** in the admin header (every tab) linking to the EMCP Tools Facebook group.
+
 ## [2.0.0]
 
 > **⚠️ Pro customers — one action after upgrading.** Because the plugin folder/slug changed (`elementor-mcp` → `emcp-tools`), the new install is a **separate plugin** to WordPress, so your Pro license does **not** carry over automatically. After you delete the old plugin and activate **EMCP Tools**, you will likely need to **re-activate your license and complete the Freemius opt-in/connection again** (EMCP Tools → opt-in / "Activate License"). **Your license stays valid** — this just re-links it to the renamed plugin. Free users have nothing extra to do.
