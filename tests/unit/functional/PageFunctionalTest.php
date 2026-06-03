@@ -7,24 +7,24 @@
  *
  * @group functional
  * @group page
- * @package Elementor_MCP\Tests\Functional
+ * @package EMCP_Tools\Tests\Functional
  */
 
-namespace Elementor_MCP\Tests\Functional;
+namespace EMCP_Tools\Tests\Functional;
 
 require_once dirname( __DIR__ ) . '/class-ability-test-case.php';
 
-use Elementor_MCP\Tests\Ability_Test_Case;
+use EMCP_Tools\Tests\Ability_Test_Case;
 
 class PageFunctionalTest extends Ability_Test_Case {
 
-	/** @var \Elementor_MCP_Page_Abilities */
+	/** @var \EMCP_Tools_Page_Abilities */
 	private $ability;
 
 	protected function setUp(): void {
 		parent::setUp();
 
-		$data = $this->createStub( \Elementor_MCP_Data::class );
+		$data = $this->createStub( \EMCP_Tools_Data::class );
 		$data->method( 'save_page_data' )->willReturn( true );
 		$data->method( 'save_page_settings' )->willReturn( true );
 		$data->method( 'get_document' )
@@ -32,7 +32,7 @@ class PageFunctionalTest extends Ability_Test_Case {
 		$data->method( 'get_page_data' )
 		     ->willReturn( new \WP_Error( 'no_data', 'No data.' ) );
 
-		$this->ability = new \Elementor_MCP_Page_Abilities( $data, $this->make_factory() );
+		$this->ability = new \EMCP_Tools_Page_Abilities( $data, $this->make_factory() );
 		$this->allow_all_caps();
 	}
 

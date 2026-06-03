@@ -6,22 +6,22 @@
  * Core tools (save-as-template, apply-template) always registered.
  * @group capabilities
  * @group template
- * @package Elementor_MCP\Tests\Capabilities
+ * @package EMCP_Tools\Tests\Capabilities
  */
-namespace Elementor_MCP\Tests\Capabilities;
+namespace EMCP_Tools\Tests\Capabilities;
 
 require_once dirname(__DIR__) . '/class-ability-test-case.php';
 
-use Elementor_MCP\Tests\Ability_Test_Case;
+use EMCP_Tools\Tests\Ability_Test_Case;
 
 class TemplateCapabilityTest extends Ability_Test_Case {
-    private \Elementor_MCP_Template_Abilities $ability;
+    private \EMCP_Tools_Template_Abilities $ability;
 
     protected function setUp(): void {
         parent::setUp();
-        $data    = $this->createStub(\Elementor_MCP_Data::class);
+        $data    = $this->createStub(\EMCP_Tools_Data::class);
         $factory = $this->make_factory();
-        $this->ability = new \Elementor_MCP_Template_Abilities($data, $factory);
+        $this->ability = new \EMCP_Tools_Template_Abilities($data, $factory);
     }
 
     // check_edit_permission() — denied

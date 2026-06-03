@@ -6,7 +6,7 @@
  * endpoint and bundle shape. Each template's `data` field is an Elementor
  * element tree that can be imported into a new or existing page.
  *
- * @package Elementor_MCP
+ * @package EMCP_Tools
  * @since   1.7.1
  */
 
@@ -19,14 +19,14 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * @since 1.7.1
  */
-class Elementor_MCP_Pro_Templates {
+class EMCP_Tools_Pro_Templates {
 
 	/**
 	 * Transient key for the cached bundle.
 	 *
 	 * @var string
 	 */
-	const CACHE_KEY = 'elementor_mcp_pro_templates_bundle';
+	const CACHE_KEY = 'emcp_tools_pro_templates_bundle';
 
 	/**
 	 * Transient TTL in seconds. 24 hours.
@@ -36,7 +36,7 @@ class Elementor_MCP_Pro_Templates {
 	const CACHE_TTL = 86400;
 
 	/**
-	 * Default endpoint. Filterable via `elementor_mcp_pro_templates_endpoint`.
+	 * Default endpoint. Filterable via `emcp_tools_pro_templates_endpoint`.
 	 *
 	 * @var string
 	 */
@@ -50,10 +50,10 @@ class Elementor_MCP_Pro_Templates {
 	 * @return bool
 	 */
 	public static function user_has_access(): bool {
-		if ( ! function_exists( 'emcp_pro_fs' ) ) {
+		if ( ! function_exists( 'emcp_tools_fs' ) ) {
 			return false;
 		}
-		return emcp_pro_fs()->can_use_premium_code();
+		return emcp_tools_fs()->can_use_premium_code();
 	}
 
 	/**
@@ -86,7 +86,7 @@ class Elementor_MCP_Pro_Templates {
 	 */
 	public static function get_bundle( bool $force_refresh = false ) {
 		if ( ! self::user_has_access() ) {
-			return new WP_Error( 'no_license', __( 'A valid EMCP Tools Pro license is required to access premium templates.', 'elementor-mcp' ) );
+			return new WP_Error( 'no_license', __( 'A valid EMCP Tools Pro license is required to access premium templates.', 'emcp-tools' ) );
 		}
 
 		if ( ! $force_refresh ) {
@@ -138,10 +138,10 @@ class Elementor_MCP_Pro_Templates {
 		$license_key = self::get_license_key();
 		$license_id  = self::get_license_id();
 		if ( '' === $license_key || '' === $license_id ) {
-			return new WP_Error( 'no_license_key', __( 'No active EMCP Tools Pro license was found on this site.', 'elementor-mcp' ) );
+			return new WP_Error( 'no_license_key', __( 'No active EMCP Tools Pro license was found on this site.', 'emcp-tools' ) );
 		}
 
-		$endpoint = apply_filters( 'elementor_mcp_pro_templates_endpoint', self::DEFAULT_ENDPOINT );
+		$endpoint = apply_filters( 'emcp_tools_pro_templates_endpoint', self::DEFAULT_ENDPOINT );
 
 		$response = wp_remote_get(
 			$endpoint,
@@ -152,7 +152,7 @@ class Elementor_MCP_Pro_Templates {
 					'Authorization'         => 'Bearer ' . $license_key,
 					'X-EMCP-License-Id'     => $license_id,
 					'X-EMCP-Site'           => home_url(),
-					'X-EMCP-Plugin-Version' => ELEMENTOR_MCP_VERSION,
+					'X-EMCP-Plugin-Version' => EMCP_TOOLS_VERSION,
 				),
 			)
 		);
@@ -166,14 +166,14 @@ class Elementor_MCP_Pro_Templates {
 		if ( 403 === $code ) {
 			return new WP_Error(
 				'forbidden',
-				__( 'Premium Templates are unavailable on this site. Make sure your EMCP Tools Pro license is active and this site is on its activated-sites list. Contact support if the issue persists.', 'elementor-mcp' )
+				__( 'Premium Templates are unavailable on this site. Make sure your EMCP Tools Pro license is active and this site is on its activated-sites list. Contact support if the issue persists.', 'emcp-tools' )
 			);
 		}
 
 		if ( 429 === $code ) {
 			return new WP_Error(
 				'rate_limited',
-				__( 'Premium Templates endpoint is rate-limiting this site. Try again in a few minutes.', 'elementor-mcp' )
+				__( 'Premium Templates endpoint is rate-limiting this site. Try again in a few minutes.', 'emcp-tools' )
 			);
 		}
 
@@ -182,7 +182,7 @@ class Elementor_MCP_Pro_Templates {
 				'remote_error',
 				sprintf(
 					/* translators: %d: HTTP status code */
-					__( 'Templates endpoint returned HTTP %d. Please try again later or contact support.', 'elementor-mcp' ),
+					__( 'Templates endpoint returned HTTP %d. Please try again later or contact support.', 'emcp-tools' ),
 					$code
 				)
 			);
@@ -192,7 +192,7 @@ class Elementor_MCP_Pro_Templates {
 		$bundle = json_decode( $body, true );
 
 		if ( ! is_array( $bundle ) || ! isset( $bundle['categories'] ) || ! is_array( $bundle['categories'] ) ) {
-			return new WP_Error( 'invalid_payload', __( 'Templates endpoint returned an unexpected payload.', 'elementor-mcp' ) );
+			return new WP_Error( 'invalid_payload', __( 'Templates endpoint returned an unexpected payload.', 'emcp-tools' ) );
 		}
 
 		$bundle['fetched_at'] = time();
@@ -209,10 +209,10 @@ class Elementor_MCP_Pro_Templates {
 	 * @return string
 	 */
 	private static function get_license_key(): string {
-		if ( ! function_exists( 'emcp_pro_fs' ) ) {
+		if ( ! function_exists( 'emcp_tools_fs' ) ) {
 			return '';
 		}
-		$license = emcp_pro_fs()->_get_license();
+		$license = emcp_tools_fs()->_get_license();
 		if ( ! $license || empty( $license->secret_key ) ) {
 			return '';
 		}
@@ -227,10 +227,10 @@ class Elementor_MCP_Pro_Templates {
 	 * @return string
 	 */
 	private static function get_license_id(): string {
-		if ( ! function_exists( 'emcp_pro_fs' ) ) {
+		if ( ! function_exists( 'emcp_tools_fs' ) ) {
 			return '';
 		}
-		$license = emcp_pro_fs()->_get_license();
+		$license = emcp_tools_fs()->_get_license();
 		if ( ! $license || empty( $license->id ) ) {
 			return '';
 		}
@@ -262,7 +262,7 @@ class Elementor_MCP_Pro_Templates {
 	public static function apply_template( string $category_slug, string $template_slug, int $target_post_id ) {
 		$template = self::find_template( $category_slug, $template_slug );
 		if ( ! $template || empty( $template['data'] ) || ! is_array( $template['data'] ) ) {
-			return new WP_Error( 'template_not_found', __( 'Template not found in the cached bundle. Try clicking Sync Library first.', 'elementor-mcp' ) );
+			return new WP_Error( 'template_not_found', __( 'Template not found in the cached bundle. Try clicking Sync Library first.', 'emcp-tools' ) );
 		}
 
 		$elementor_data = $template['data'];
@@ -270,20 +270,20 @@ class Elementor_MCP_Pro_Templates {
 		if ( $target_post_id > 0 ) {
 			$post = get_post( $target_post_id );
 			if ( ! $post ) {
-				return new WP_Error( 'post_not_found', __( 'The target page no longer exists.', 'elementor-mcp' ) );
+				return new WP_Error( 'post_not_found', __( 'The target page no longer exists.', 'emcp-tools' ) );
 			}
 			if ( ! current_user_can( 'edit_post', $target_post_id ) ) {
-				return new WP_Error( 'forbidden', __( 'You do not have permission to edit that page.', 'elementor-mcp' ) );
+				return new WP_Error( 'forbidden', __( 'You do not have permission to edit that page.', 'emcp-tools' ) );
 			}
 			$post_id = $target_post_id;
 			$action  = 'replaced';
 		} else {
 			if ( ! current_user_can( 'edit_pages' ) ) {
-				return new WP_Error( 'forbidden', __( 'You do not have permission to create pages.', 'elementor-mcp' ) );
+				return new WP_Error( 'forbidden', __( 'You do not have permission to create pages.', 'emcp-tools' ) );
 			}
 			$post_id = wp_insert_post(
 				array(
-					'post_title'  => isset( $template['title'] ) ? (string) $template['title'] : __( 'Untitled Template', 'elementor-mcp' ),
+					'post_title'  => isset( $template['title'] ) ? (string) $template['title'] : __( 'Untitled Template', 'emcp-tools' ),
 					'post_type'   => 'page',
 					'post_status' => 'draft',
 				),
@@ -342,18 +342,18 @@ class Elementor_MCP_Pro_Templates {
 	public static function import_to_library( string $category_slug, string $template_slug ) {
 		$template = self::find_template( $category_slug, $template_slug );
 		if ( ! $template || empty( $template['data'] ) || ! is_array( $template['data'] ) ) {
-			return new WP_Error( 'template_not_found', __( 'Template not found in the cached bundle. Try clicking Sync Library first.', 'elementor-mcp' ) );
+			return new WP_Error( 'template_not_found', __( 'Template not found in the cached bundle. Try clicking Sync Library first.', 'emcp-tools' ) );
 		}
 
 		if ( ! current_user_can( 'edit_posts' ) ) {
-			return new WP_Error( 'forbidden', __( 'You do not have permission to import templates.', 'elementor-mcp' ) );
+			return new WP_Error( 'forbidden', __( 'You do not have permission to import templates.', 'emcp-tools' ) );
 		}
 
 		if ( ! post_type_exists( 'elementor_library' ) ) {
-			return new WP_Error( 'no_library', __( 'Elementor template library post type is not available. Make sure Elementor is active.', 'elementor-mcp' ) );
+			return new WP_Error( 'no_library', __( 'Elementor template library post type is not available. Make sure Elementor is active.', 'emcp-tools' ) );
 		}
 
-		$title = isset( $template['title'] ) ? (string) $template['title'] : __( 'Untitled Template', 'elementor-mcp' );
+		$title = isset( $template['title'] ) ? (string) $template['title'] : __( 'Untitled Template', 'emcp-tools' );
 
 		$post_id = wp_insert_post(
 			array(

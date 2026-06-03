@@ -32,11 +32,11 @@
  *   F-021 AFTER fix  → only canonical local TLDs (.test, .local, .localhost,
  *                       .dev, .invalid) match as final labels.
  *
- * @package Elementor_MCP\Tests\Security
+ * @package EMCP_Tools\Tests\Security
  * @since   1.0.0
  */
 
-namespace Elementor_MCP\Tests\Security;
+namespace EMCP_Tools\Tests\Security;
 
 use PHPUnit\Framework\TestCase;
 

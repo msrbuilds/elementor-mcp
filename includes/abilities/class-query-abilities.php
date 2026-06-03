@@ -5,7 +5,7 @@
  * Registers 7 read-only tools that let AI agents discover widgets,
  * inspect page structures, and read Elementor data.
  *
- * @package Elementor_MCP
+ * @package EMCP_Tools
  * @since   1.0.0
  */
 
@@ -18,19 +18,19 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * @since 1.0.0
  */
-class Elementor_MCP_Query_Abilities {
+class EMCP_Tools_Query_Abilities {
 
 	/**
 	 * The data access layer.
 	 *
-	 * @var Elementor_MCP_Data
+	 * @var EMCP_Tools_Data
 	 */
 	private $data;
 
 	/**
 	 * The schema generator.
 	 *
-	 * @var Elementor_MCP_Schema_Generator
+	 * @var EMCP_Tools_Schema_Generator
 	 */
 	private $schema_generator;
 
@@ -39,10 +39,10 @@ class Elementor_MCP_Query_Abilities {
 	 *
 	 * @since 1.0.0
 	 *
-	 * @param Elementor_MCP_Data             $data             The data access layer.
-	 * @param Elementor_MCP_Schema_Generator $schema_generator The schema generator.
+	 * @param EMCP_Tools_Data             $data             The data access layer.
+	 * @param EMCP_Tools_Schema_Generator $schema_generator The schema generator.
 	 */
-	public function __construct( Elementor_MCP_Data $data, Elementor_MCP_Schema_Generator $schema_generator ) {
+	public function __construct( EMCP_Tools_Data $data, EMCP_Tools_Schema_Generator $schema_generator ) {
 		$this->data             = $data;
 		$this->schema_generator = $schema_generator;
 	}
@@ -104,12 +104,12 @@ class Elementor_MCP_Query_Abilities {
 	 * @since 1.0.0
 	 */
 	private function register_list_widgets(): void {
-		elementor_mcp_register_ability(
+		emcp_tools_register_ability(
 			'elementor-mcp/list-widgets',
 			array(
-				'label'               => __( 'List Elementor Widgets', 'elementor-mcp' ),
-				'description'         => __( 'Returns all registered Elementor widget types with their names, titles, icons, categories, and keywords. Optionally filter by widget category.', 'elementor-mcp' ),
-				'category'            => 'elementor-mcp',
+				'label'               => __( 'List Elementor Widgets', 'emcp-tools' ),
+				'description'         => __( 'Returns all registered Elementor widget types with their names, titles, icons, categories, and keywords. Optionally filter by widget category.', 'emcp-tools' ),
+				'category'            => 'emcp-tools',
 				'execute_callback'    => array( $this, 'execute_list_widgets' ),
 				'permission_callback' => array( $this, 'check_read_permission' ),
 				'input_schema'        => array(
@@ -117,7 +117,7 @@ class Elementor_MCP_Query_Abilities {
 					'properties' => array(
 						'category' => array(
 							'type'        => 'string',
-							'description' => __( 'Filter widgets by category slug.', 'elementor-mcp' ),
+							'description' => __( 'Filter widgets by category slug.', 'emcp-tools' ),
 						),
 					),
 				),
@@ -195,12 +195,12 @@ class Elementor_MCP_Query_Abilities {
 	 * @since 1.0.0
 	 */
 	private function register_get_widget_schema(): void {
-		elementor_mcp_register_ability(
+		emcp_tools_register_ability(
 			'elementor-mcp/get-widget-schema',
 			array(
-				'label'               => __( 'Get Widget Schema', 'elementor-mcp' ),
-				'description'         => __( 'Returns the full JSON Schema for a widget type\'s settings, describing all available controls and their types. Use this to discover what settings a widget accepts before creating or updating it.', 'elementor-mcp' ),
-				'category'            => 'elementor-mcp',
+				'label'               => __( 'Get Widget Schema', 'emcp-tools' ),
+				'description'         => __( 'Returns the full JSON Schema for a widget type\'s settings, describing all available controls and their types. Use this to discover what settings a widget accepts before creating or updating it.', 'emcp-tools' ),
+				'category'            => 'emcp-tools',
 				'execute_callback'    => array( $this, 'execute_get_widget_schema' ),
 				'permission_callback' => array( $this, 'check_read_permission' ),
 				'input_schema'        => array(
@@ -208,7 +208,7 @@ class Elementor_MCP_Query_Abilities {
 					'properties' => array(
 						'widget_type' => array(
 							'type'        => 'string',
-							'description' => __( 'The widget type name, e.g. "heading", "button", "image".', 'elementor-mcp' ),
+							'description' => __( 'The widget type name, e.g. "heading", "button", "image".', 'emcp-tools' ),
 						),
 					),
 					'required'   => array( 'widget_type' ),
@@ -245,7 +245,7 @@ class Elementor_MCP_Query_Abilities {
 		$widget_type = $input['widget_type'] ?? '';
 
 		if ( empty( $widget_type ) ) {
-			return new \WP_Error( 'missing_widget_type', __( 'The widget_type parameter is required.', 'elementor-mcp' ) );
+			return new \WP_Error( 'missing_widget_type', __( 'The widget_type parameter is required.', 'emcp-tools' ) );
 		}
 
 		$widget = \Elementor\Plugin::$instance->widgets_manager->get_widget_types( $widget_type );
@@ -254,7 +254,7 @@ class Elementor_MCP_Query_Abilities {
 				'widget_not_found',
 				sprintf(
 					/* translators: %s: widget type name */
-					__( 'Widget type "%s" not found.', 'elementor-mcp' ),
+					__( 'Widget type "%s" not found.', 'emcp-tools' ),
 					$widget_type
 				)
 			);
@@ -278,12 +278,12 @@ class Elementor_MCP_Query_Abilities {
 	// -------------------------------------------------------------------------
 
 	private function register_get_container_schema(): void {
-		elementor_mcp_register_ability(
+		emcp_tools_register_ability(
 			'elementor-mcp/get-container-schema',
 			array(
-				'label'               => __( 'Get Container Schema', 'elementor-mcp' ),
-				'description'         => __( 'Returns JSON Schema for all container controls (flex + grid), including flex_direction, justify_content, align_items, flex_wrap, gap, content_width, min_height, container_type, grid controls, background, border, padding, and more.', 'elementor-mcp' ),
-				'category'            => 'elementor-mcp',
+				'label'               => __( 'Get Container Schema', 'emcp-tools' ),
+				'description'         => __( 'Returns JSON Schema for all container controls (flex + grid), including flex_direction, justify_content, align_items, flex_wrap, gap, content_width, min_height, container_type, grid controls, background, border, padding, and more.', 'emcp-tools' ),
+				'category'            => 'emcp-tools',
 				'execute_callback'    => array( $this, 'execute_get_container_schema' ),
 				'permission_callback' => array( $this, 'check_read_permission' ),
 				'input_schema'        => array(
@@ -316,7 +316,7 @@ class Elementor_MCP_Query_Abilities {
 		$element_type = \Elementor\Plugin::$instance->elements_manager->get_element_types( 'container' );
 
 		if ( ! $element_type ) {
-			return new \WP_Error( 'container_not_found', __( 'Container element type not available.', 'elementor-mcp' ) );
+			return new \WP_Error( 'container_not_found', __( 'Container element type not available.', 'emcp-tools' ) );
 		}
 
 		$controls = $element_type->get_controls();
@@ -402,12 +402,12 @@ class Elementor_MCP_Query_Abilities {
 	 * @since 1.0.0
 	 */
 	private function register_get_page_structure(): void {
-		elementor_mcp_register_ability(
+		emcp_tools_register_ability(
 			'elementor-mcp/get-page-structure',
 			array(
-				'label'               => __( 'Get Page Structure', 'elementor-mcp' ),
-				'description'         => __( 'Returns the element tree for an Elementor page, showing all containers, widgets, and their nesting structure. Each element includes its ID, type, widget type (for widgets), and child elements.', 'elementor-mcp' ),
-				'category'            => 'elementor-mcp',
+				'label'               => __( 'Get Page Structure', 'emcp-tools' ),
+				'description'         => __( 'Returns the element tree for an Elementor page, showing all containers, widgets, and their nesting structure. Each element includes its ID, type, widget type (for widgets), and child elements.', 'emcp-tools' ),
+				'category'            => 'emcp-tools',
 				'execute_callback'    => array( $this, 'execute_get_page_structure' ),
 				'permission_callback' => array( $this, 'check_read_permission' ),
 				'input_schema'        => array(
@@ -415,7 +415,7 @@ class Elementor_MCP_Query_Abilities {
 					'properties' => array(
 						'post_id' => array(
 							'type'        => 'integer',
-							'description' => __( 'The WordPress post/page ID.', 'elementor-mcp' ),
+							'description' => __( 'The WordPress post/page ID.', 'emcp-tools' ),
 						),
 					),
 					'required'   => array( 'post_id' ),
@@ -453,12 +453,12 @@ class Elementor_MCP_Query_Abilities {
 		$post_id = absint( $input['post_id'] ?? 0 );
 
 		if ( ! $post_id ) {
-			return new \WP_Error( 'missing_post_id', __( 'The post_id parameter is required.', 'elementor-mcp' ) );
+			return new \WP_Error( 'missing_post_id', __( 'The post_id parameter is required.', 'emcp-tools' ) );
 		}
 
 		$post = get_post( $post_id );
 		if ( ! $post ) {
-			return new \WP_Error( 'post_not_found', __( 'Post not found.', 'elementor-mcp' ) );
+			return new \WP_Error( 'post_not_found', __( 'Post not found.', 'emcp-tools' ) );
 		}
 
 		$data = $this->data->get_page_data( $post_id );
@@ -562,12 +562,12 @@ class Elementor_MCP_Query_Abilities {
 	 * @since 1.0.0
 	 */
 	private function register_get_element_settings(): void {
-		elementor_mcp_register_ability(
+		emcp_tools_register_ability(
 			'elementor-mcp/get-element-settings',
 			array(
-				'label'               => __( 'Get Element Settings', 'elementor-mcp' ),
-				'description'         => __( 'Returns the current settings for a specific element on a page. Provide the post ID and element ID to retrieve all control values for that element.', 'elementor-mcp' ),
-				'category'            => 'elementor-mcp',
+				'label'               => __( 'Get Element Settings', 'emcp-tools' ),
+				'description'         => __( 'Returns the current settings for a specific element on a page. Provide the post ID and element ID to retrieve all control values for that element.', 'emcp-tools' ),
+				'category'            => 'emcp-tools',
 				'execute_callback'    => array( $this, 'execute_get_element_settings' ),
 				'permission_callback' => array( $this, 'check_read_permission' ),
 				'input_schema'        => array(
@@ -575,11 +575,11 @@ class Elementor_MCP_Query_Abilities {
 					'properties' => array(
 						'post_id'    => array(
 							'type'        => 'integer',
-							'description' => __( 'The WordPress post/page ID.', 'elementor-mcp' ),
+							'description' => __( 'The WordPress post/page ID.', 'emcp-tools' ),
 						),
 						'element_id' => array(
 							'type'        => 'string',
-							'description' => __( 'The Elementor element ID.', 'elementor-mcp' ),
+							'description' => __( 'The Elementor element ID.', 'emcp-tools' ),
 						),
 					),
 					'required'   => array( 'post_id', 'element_id' ),
@@ -618,11 +618,11 @@ class Elementor_MCP_Query_Abilities {
 		$element_id = sanitize_text_field( $input['element_id'] ?? '' );
 
 		if ( ! $post_id ) {
-			return new \WP_Error( 'missing_post_id', __( 'The post_id parameter is required.', 'elementor-mcp' ) );
+			return new \WP_Error( 'missing_post_id', __( 'The post_id parameter is required.', 'emcp-tools' ) );
 		}
 
 		if ( empty( $element_id ) ) {
-			return new \WP_Error( 'missing_element_id', __( 'The element_id parameter is required.', 'elementor-mcp' ) );
+			return new \WP_Error( 'missing_element_id', __( 'The element_id parameter is required.', 'emcp-tools' ) );
 		}
 
 		$data = $this->data->get_page_data( $post_id );
@@ -638,7 +638,7 @@ class Elementor_MCP_Query_Abilities {
 				'element_not_found',
 				sprintf(
 					/* translators: %s: element ID */
-					__( 'Element "%s" not found on this page.', 'elementor-mcp' ),
+					__( 'Element "%s" not found on this page.', 'emcp-tools' ),
 					$element_id
 				)
 			);
@@ -657,12 +657,12 @@ class Elementor_MCP_Query_Abilities {
 	// -------------------------------------------------------------------------
 
 	private function register_find_element(): void {
-		elementor_mcp_register_ability(
+		emcp_tools_register_ability(
 			'elementor-mcp/find-element',
 			array(
-				'label'               => __( 'Find Element', 'elementor-mcp' ),
-				'description'         => __( 'Searches elements on a page by type, widget type, or settings content. Returns matching element IDs, types, and a settings preview.', 'elementor-mcp' ),
-				'category'            => 'elementor-mcp',
+				'label'               => __( 'Find Element', 'emcp-tools' ),
+				'description'         => __( 'Searches elements on a page by type, widget type, or settings content. Returns matching element IDs, types, and a settings preview.', 'emcp-tools' ),
+				'category'            => 'emcp-tools',
 				'execute_callback'    => array( $this, 'execute_find_element' ),
 				'permission_callback' => array( $this, 'check_read_permission' ),
 				'input_schema'        => array(
@@ -670,28 +670,28 @@ class Elementor_MCP_Query_Abilities {
 					'properties' => array(
 						'post_id'       => array(
 							'type'        => 'integer',
-							'description' => __( 'The post/page ID to search.', 'elementor-mcp' ),
+							'description' => __( 'The post/page ID to search.', 'emcp-tools' ),
 						),
 						'widget_type'   => array(
 							'type'        => 'string',
-							'description' => __( 'Filter by widget type (e.g. "heading", "button"). Leave empty for all.', 'elementor-mcp' ),
+							'description' => __( 'Filter by widget type (e.g. "heading", "button"). Leave empty for all.', 'emcp-tools' ),
 						),
 						'element_type'  => array(
 							'type'        => 'string',
 							'enum'        => array( 'container', 'widget' ),
-							'description' => __( 'Filter by element type.', 'elementor-mcp' ),
+							'description' => __( 'Filter by element type.', 'emcp-tools' ),
 						),
 						'search_text'   => array(
 							'type'        => 'string',
-							'description' => __( 'Search for text content in settings values (case-insensitive).', 'elementor-mcp' ),
+							'description' => __( 'Search for text content in settings values (case-insensitive).', 'emcp-tools' ),
 						),
 						'setting_key'   => array(
 							'type'        => 'string',
-							'description' => __( 'Filter by setting key existence (e.g. "title_color").', 'elementor-mcp' ),
+							'description' => __( 'Filter by setting key existence (e.g. "title_color").', 'emcp-tools' ),
 						),
 						'setting_value' => array(
 							'type'        => 'string',
-							'description' => __( 'Filter by setting value (requires setting_key).', 'elementor-mcp' ),
+							'description' => __( 'Filter by setting value (requires setting_key).', 'emcp-tools' ),
 						),
 					),
 					'required'   => array( 'post_id' ),
@@ -735,7 +735,7 @@ class Elementor_MCP_Query_Abilities {
 		$setting_value = $input['setting_value'] ?? null;
 
 		if ( ! $post_id ) {
-			return new \WP_Error( 'missing_post_id', __( 'The post_id parameter is required.', 'elementor-mcp' ) );
+			return new \WP_Error( 'missing_post_id', __( 'The post_id parameter is required.', 'emcp-tools' ) );
 		}
 
 		$data = $this->data->get_page_data( $post_id );
@@ -837,12 +837,12 @@ class Elementor_MCP_Query_Abilities {
 	 * @since 1.0.0
 	 */
 	private function register_list_pages(): void {
-		elementor_mcp_register_ability(
+		emcp_tools_register_ability(
 			'elementor-mcp/list-pages',
 			array(
-				'label'               => __( 'List Elementor Pages', 'elementor-mcp' ),
-				'description'         => __( 'Returns all WordPress pages and posts that are built with Elementor. Optionally filter by post type and status.', 'elementor-mcp' ),
-				'category'            => 'elementor-mcp',
+				'label'               => __( 'List Elementor Pages', 'emcp-tools' ),
+				'description'         => __( 'Returns all WordPress pages and posts that are built with Elementor. Optionally filter by post type and status.', 'emcp-tools' ),
+				'category'            => 'emcp-tools',
 				'execute_callback'    => array( $this, 'execute_list_pages' ),
 				'permission_callback' => array( $this, 'check_read_permission' ),
 				'input_schema'        => array(
@@ -850,11 +850,11 @@ class Elementor_MCP_Query_Abilities {
 					'properties' => array(
 						'post_type' => array(
 							'type'        => 'string',
-							'description' => __( 'Filter by post type (e.g. "page", "post"). Default: any.', 'elementor-mcp' ),
+							'description' => __( 'Filter by post type (e.g. "page", "post"). Default: any.', 'emcp-tools' ),
 						),
 						'status'    => array(
 							'type'        => 'string',
-							'description' => __( 'Filter by post status (e.g. "publish", "draft"). Default: any.', 'elementor-mcp' ),
+							'description' => __( 'Filter by post status (e.g. "publish", "draft"). Default: any.', 'emcp-tools' ),
 						),
 					),
 				),
@@ -936,12 +936,12 @@ class Elementor_MCP_Query_Abilities {
 	 * @since 1.0.0
 	 */
 	private function register_list_templates(): void {
-		elementor_mcp_register_ability(
+		emcp_tools_register_ability(
 			'elementor-mcp/list-templates',
 			array(
-				'label'               => __( 'List Elementor Templates', 'elementor-mcp' ),
-				'description'         => __( 'Returns all saved Elementor templates from the template library. Optionally filter by template type (page, section, container).', 'elementor-mcp' ),
-				'category'            => 'elementor-mcp',
+				'label'               => __( 'List Elementor Templates', 'emcp-tools' ),
+				'description'         => __( 'Returns all saved Elementor templates from the template library. Optionally filter by template type (page, section, container).', 'emcp-tools' ),
+				'category'            => 'emcp-tools',
 				'execute_callback'    => array( $this, 'execute_list_templates' ),
 				'permission_callback' => array( $this, 'check_read_permission' ),
 				'input_schema'        => array(
@@ -949,7 +949,7 @@ class Elementor_MCP_Query_Abilities {
 					'properties' => array(
 						'template_type' => array(
 							'type'        => 'string',
-							'description' => __( 'Filter by template type (e.g. "page", "section", "container").', 'elementor-mcp' ),
+							'description' => __( 'Filter by template type (e.g. "page", "section", "container").', 'emcp-tools' ),
 						),
 					),
 				),
@@ -1031,12 +1031,12 @@ class Elementor_MCP_Query_Abilities {
 	 * @since 1.0.0
 	 */
 	private function register_get_global_settings(): void {
-		elementor_mcp_register_ability(
+		emcp_tools_register_ability(
 			'elementor-mcp/get-global-settings',
 			array(
-				'label'               => __( 'Get Global Settings', 'elementor-mcp' ),
-				'description'         => __( 'Returns the active Elementor kit/global settings including colors, typography, spacing, and breakpoints. These are the site-wide design tokens used across all pages.', 'elementor-mcp' ),
-				'category'            => 'elementor-mcp',
+				'label'               => __( 'Get Global Settings', 'emcp-tools' ),
+				'description'         => __( 'Returns the active Elementor kit/global settings including colors, typography, spacing, and breakpoints. These are the site-wide design tokens used across all pages.', 'emcp-tools' ),
+				'category'            => 'emcp-tools',
 				'execute_callback'    => array( $this, 'execute_get_global_settings' ),
 				'permission_callback' => array( $this, 'check_read_permission' ),
 				'input_schema'        => array(
@@ -1076,7 +1076,7 @@ class Elementor_MCP_Query_Abilities {
 		$kit          = $kits_manager->get_active_kit();
 
 		if ( ! $kit ) {
-			return new \WP_Error( 'kit_not_found', __( 'Active Elementor kit not found.', 'elementor-mcp' ) );
+			return new \WP_Error( 'kit_not_found', __( 'Active Elementor kit not found.', 'emcp-tools' ) );
 		}
 
 		$settings = $kit->get_settings();

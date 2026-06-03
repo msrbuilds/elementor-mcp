@@ -40,11 +40,11 @@
  * guard patterns and JSON-RPC error structure by simulating the proxy's
  * response construction logic in PHP.
  *
- * @package Elementor_MCP\Tests\Security
+ * @package EMCP_Tools\Tests\Security
  * @since   1.0.0
  */
 
-namespace Elementor_MCP\Tests\Security;
+namespace EMCP_Tools\Tests\Security;
 
 use PHPUnit\Framework\TestCase;
 

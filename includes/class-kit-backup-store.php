@@ -8,7 +8,7 @@
  * hole. A CPT is self-owned, never web-addressable, listable via WP_Query, and
  * carries no third-party surface. See docs/BRAND_KITS_PLAN.md §§ 5.4, 5.5.
  *
- * @package Elementor_MCP
+ * @package EMCP_Tools
  * @since   1.8.0
  */
 
@@ -21,7 +21,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * @since 1.8.0
  */
-class Elementor_MCP_Kit_Backup_Store {
+class EMCP_Tools_Kit_Backup_Store {
 
 	/**
 	 * Custom post type name.
@@ -59,7 +59,7 @@ class Elementor_MCP_Kit_Backup_Store {
 				'map_meta_cap'        => true,
 				'supports'            => array( 'title', 'author' ),
 				'labels'              => array(
-					'name' => __( 'EMCP Brand Kit Backups', 'elementor-mcp' ),
+					'name' => __( 'EMCP Brand Kit Backups', 'emcp-tools' ),
 				),
 			)
 		);
@@ -88,14 +88,14 @@ class Elementor_MCP_Kit_Backup_Store {
 	 */
 	public static function create( string $label = '' ) {
 		if ( ! self::user_has_access() ) {
-			return new WP_Error( 'forbidden', __( 'You do not have permission to create brand kit backups.', 'elementor-mcp' ) );
+			return new WP_Error( 'forbidden', __( 'You do not have permission to create brand kit backups.', 'emcp-tools' ) );
 		}
 
-		if ( ! class_exists( 'Elementor_MCP_System_Kit_Writer' ) ) {
-			return new WP_Error( 'no_writer', __( 'The kit writer service is unavailable.', 'elementor-mcp' ) );
+		if ( ! class_exists( 'EMCP_Tools_System_Kit_Writer' ) ) {
+			return new WP_Error( 'no_writer', __( 'The kit writer service is unavailable.', 'emcp-tools' ) );
 		}
 
-		$snapshot = Elementor_MCP_System_Kit_Writer::snapshot();
+		$snapshot = EMCP_Tools_System_Kit_Writer::snapshot();
 		if ( is_wp_error( $snapshot ) ) {
 			return $snapshot;
 		}
@@ -105,9 +105,9 @@ class Elementor_MCP_Kit_Backup_Store {
 		$stamp = current_time( 'Y-m-d H:i:s' );
 		$title = '' !== $label
 			/* translators: 1: brand kit label, 2: date/time */
-			? sprintf( __( 'Before "%1$s" — %2$s', 'elementor-mcp' ), $label, $stamp )
+			? sprintf( __( 'Before "%1$s" — %2$s', 'emcp-tools' ), $label, $stamp )
 			/* translators: %s: date/time */
-			: sprintf( __( 'Backup — %s', 'elementor-mcp' ), $stamp );
+			: sprintf( __( 'Backup — %s', 'emcp-tools' ), $stamp );
 
 		$post_id = wp_insert_post(
 			array(
@@ -171,17 +171,17 @@ class Elementor_MCP_Kit_Backup_Store {
 	public static function get_snapshot( int $backup_id ) {
 		$post = get_post( $backup_id );
 		if ( ! $post || self::POST_TYPE !== $post->post_type ) {
-			return new WP_Error( 'not_found', __( 'Backup not found.', 'elementor-mcp' ) );
+			return new WP_Error( 'not_found', __( 'Backup not found.', 'emcp-tools' ) );
 		}
 
 		$raw = get_post_meta( $backup_id, self::META_SNAPSHOT, true );
 		if ( empty( $raw ) ) {
-			return new WP_Error( 'empty_backup', __( 'That backup is empty or corrupted.', 'elementor-mcp' ) );
+			return new WP_Error( 'empty_backup', __( 'That backup is empty or corrupted.', 'emcp-tools' ) );
 		}
 
 		$snapshot = json_decode( $raw, true );
 		if ( ! is_array( $snapshot ) ) {
-			return new WP_Error( 'invalid_backup', __( 'That backup could not be decoded.', 'elementor-mcp' ) );
+			return new WP_Error( 'invalid_backup', __( 'That backup could not be decoded.', 'emcp-tools' ) );
 		}
 
 		return $snapshot;
@@ -198,7 +198,7 @@ class Elementor_MCP_Kit_Backup_Store {
 	 */
 	public static function restore( int $backup_id, bool $full_clobber = false ) {
 		if ( ! self::user_has_access() ) {
-			return new WP_Error( 'forbidden', __( 'You do not have permission to restore brand kit backups.', 'elementor-mcp' ) );
+			return new WP_Error( 'forbidden', __( 'You do not have permission to restore brand kit backups.', 'emcp-tools' ) );
 		}
 
 		$snapshot = self::get_snapshot( $backup_id );
@@ -206,10 +206,10 @@ class Elementor_MCP_Kit_Backup_Store {
 			return $snapshot;
 		}
 
-		if ( ! class_exists( 'Elementor_MCP_System_Kit_Writer' ) ) {
-			return new WP_Error( 'no_writer', __( 'The kit writer service is unavailable.', 'elementor-mcp' ) );
+		if ( ! class_exists( 'EMCP_Tools_System_Kit_Writer' ) ) {
+			return new WP_Error( 'no_writer', __( 'The kit writer service is unavailable.', 'emcp-tools' ) );
 		}
 
-		return Elementor_MCP_System_Kit_Writer::restore_snapshot( $snapshot, $full_clobber );
+		return EMCP_Tools_System_Kit_Writer::restore_snapshot( $snapshot, $full_clobber );
 	}
 }

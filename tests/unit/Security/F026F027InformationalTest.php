@@ -37,11 +37,11 @@
  * These are informational tests documenting the current state. Many describe
  * desired post-fix behavior and will PASS after the corresponding cleanup.
  *
- * @package Elementor_MCP\Tests\Security
+ * @package EMCP_Tools\Tests\Security
  * @since   1.0.0
  */
 
-namespace Elementor_MCP\Tests\Security;
+namespace EMCP_Tools\Tests\Security;
 
 use PHPUnit\Framework\TestCase;
 

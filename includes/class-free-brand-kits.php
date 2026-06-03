@@ -2,21 +2,21 @@
 /**
  * Free Brand Kits — the 10 bundled, no-license-required brand kits.
  *
- * This is the free-tier counterpart to Elementor_MCP_Pro_Brand_Kits. Where the
+ * This is the free-tier counterpart to EMCP_Tools_Pro_Brand_Kits. Where the
  * Pro service fetches 50+ kits from emcp.msrbuilds.com behind a license, this
  * one reads a small curated set shipped inside the plugin
  * (`assets/brand-kits/free-brand-kits.json`) and is available to everyone — the
  * same model as the 5 bundled sample prompts.
  *
  * It only PROVIDES the kit data; applying still routes through the shared
- * Elementor_MCP_System_Kit_Writer (and backups through
- * Elementor_MCP_Kit_Backup_Store), exactly like the Pro path.
+ * EMCP_Tools_System_Kit_Writer (and backups through
+ * EMCP_Tools_Kit_Backup_Store), exactly like the Pro path.
  *
  * Previews use the pre-rendered, font-outlined SVGs shipped alongside the JSON
  * in `assets/brand-kits/{slug}.svg`; their URLs are injected at read time since
  * the JSON can't know the plugin URL.
  *
- * @package Elementor_MCP
+ * @package EMCP_Tools
  * @since   1.9.0
  */
 
@@ -29,7 +29,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * @since 1.9.0
  */
-class Elementor_MCP_Free_Brand_Kits {
+class EMCP_Tools_Free_Brand_Kits {
 
 	/**
 	 * In-memory cache of the parsed bundle for the current request.
@@ -65,7 +65,7 @@ class Elementor_MCP_Free_Brand_Kits {
 			return self::$bundle;
 		}
 
-		$file = ELEMENTOR_MCP_DIR . self::DATA_PATH;
+		$file = EMCP_TOOLS_DIR . self::DATA_PATH;
 		if ( ! is_readable( $file ) ) {
 			self::$bundle = array( 'categories' => array() );
 			return self::$bundle;
@@ -78,8 +78,8 @@ class Elementor_MCP_Free_Brand_Kits {
 			return self::$bundle;
 		}
 
-		$assets_url = ELEMENTOR_MCP_URL . 'assets/brand-kits/';
-		$assets_dir = ELEMENTOR_MCP_DIR . 'assets/brand-kits/';
+		$assets_url = EMCP_TOOLS_URL . 'assets/brand-kits/';
+		$assets_dir = EMCP_TOOLS_DIR . 'assets/brand-kits/';
 
 		foreach ( $decoded['categories'] as &$category ) {
 			if ( empty( $category['kits'] ) || ! is_array( $category['kits'] ) ) {

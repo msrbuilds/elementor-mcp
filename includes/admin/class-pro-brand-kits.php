@@ -5,12 +5,12 @@
  *
  * Mirror of class-pro-templates.php for brand kits: same auth flow, same 24h
  * transient cache, different endpoint and bundle shape. `apply_kit()` is a thin
- * orchestrator that routes ALL writes through Elementor_MCP_System_Kit_Writer
+ * orchestrator that routes ALL writes through EMCP_Tools_System_Kit_Writer
  * (§ 4.2.1) — it never calls the abilities.
  *
  * See docs/BRAND_KITS_PLAN.md §§ 2.3, 3.2, 4.2.
  *
- * @package Elementor_MCP
+ * @package EMCP_Tools
  * @since   1.8.0
  */
 
@@ -23,14 +23,14 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * @since 1.8.0
  */
-class Elementor_MCP_Pro_Brand_Kits {
+class EMCP_Tools_Pro_Brand_Kits {
 
 	/**
 	 * Transient key for the cached bundle.
 	 *
 	 * @var string
 	 */
-	const CACHE_KEY = 'elementor_mcp_pro_brand_kits_bundle';
+	const CACHE_KEY = 'emcp_tools_pro_brand_kits_bundle';
 
 	/**
 	 * Transient TTL in seconds. 24 hours.
@@ -40,7 +40,7 @@ class Elementor_MCP_Pro_Brand_Kits {
 	const CACHE_TTL = 86400;
 
 	/**
-	 * Default endpoint. Filterable via `elementor_mcp_pro_brand_kits_endpoint`.
+	 * Default endpoint. Filterable via `emcp_tools_pro_brand_kits_endpoint`.
 	 *
 	 * @var string
 	 */
@@ -54,10 +54,10 @@ class Elementor_MCP_Pro_Brand_Kits {
 	 * @return bool
 	 */
 	public static function user_has_access(): bool {
-		if ( ! function_exists( 'emcp_pro_fs' ) ) {
+		if ( ! function_exists( 'emcp_tools_fs' ) ) {
 			return false;
 		}
-		return emcp_pro_fs()->can_use_premium_code();
+		return emcp_tools_fs()->can_use_premium_code();
 	}
 
 	/**
@@ -78,7 +78,7 @@ class Elementor_MCP_Pro_Brand_Kits {
 	 */
 	public static function get_bundle( bool $force_refresh = false ) {
 		if ( ! self::user_has_access() ) {
-			return new WP_Error( 'no_license', __( 'A valid EMCP Tools Pro license is required to access premium brand kits.', 'elementor-mcp' ) );
+			return new WP_Error( 'no_license', __( 'A valid EMCP Tools Pro license is required to access premium brand kits.', 'emcp-tools' ) );
 		}
 
 		if ( ! $force_refresh ) {
@@ -130,14 +130,14 @@ class Elementor_MCP_Pro_Brand_Kits {
 	 * @return array|WP_Error Summary of what was applied.
 	 */
 	public static function apply_kit( array $kit ) {
-		if ( ! class_exists( 'Elementor_MCP_System_Kit_Writer' ) ) {
-			return new WP_Error( 'no_writer', __( 'The kit writer service is unavailable.', 'elementor-mcp' ) );
+		if ( ! class_exists( 'EMCP_Tools_System_Kit_Writer' ) ) {
+			return new WP_Error( 'no_writer', __( 'The kit writer service is unavailable.', 'emcp-tools' ) );
 		}
 
 		// Delegate to the neutral writer orchestrator (capability-gated per
 		// write). Applying is a free feature as of 1.9.0; the Pro value is the
 		// larger remote library + the MCP brand-kit tools, gated elsewhere.
-		return Elementor_MCP_System_Kit_Writer::apply_kit( $kit );
+		return EMCP_Tools_System_Kit_Writer::apply_kit( $kit );
 	}
 
 	/**
@@ -151,10 +151,10 @@ class Elementor_MCP_Pro_Brand_Kits {
 		$license_key = self::get_license_key();
 		$license_id  = self::get_license_id();
 		if ( '' === $license_key || '' === $license_id ) {
-			return new WP_Error( 'no_license_key', __( 'No active EMCP Tools Pro license was found on this site.', 'elementor-mcp' ) );
+			return new WP_Error( 'no_license_key', __( 'No active EMCP Tools Pro license was found on this site.', 'emcp-tools' ) );
 		}
 
-		$endpoint = apply_filters( 'elementor_mcp_pro_brand_kits_endpoint', self::DEFAULT_ENDPOINT );
+		$endpoint = apply_filters( 'emcp_tools_pro_brand_kits_endpoint', self::DEFAULT_ENDPOINT );
 
 		$response = wp_remote_get(
 			$endpoint,
@@ -165,7 +165,7 @@ class Elementor_MCP_Pro_Brand_Kits {
 					'Authorization'         => 'Bearer ' . $license_key,
 					'X-EMCP-License-Id'     => $license_id,
 					'X-EMCP-Site'           => home_url(),
-					'X-EMCP-Plugin-Version' => ELEMENTOR_MCP_VERSION,
+					'X-EMCP-Plugin-Version' => EMCP_TOOLS_VERSION,
 				),
 			)
 		);
@@ -179,14 +179,14 @@ class Elementor_MCP_Pro_Brand_Kits {
 		if ( 403 === $code ) {
 			return new WP_Error(
 				'forbidden',
-				__( 'Premium Brand Kits are unavailable on this site. Make sure your EMCP Tools Pro license is active and this site is on its activated-sites list. Contact support if the issue persists.', 'elementor-mcp' )
+				__( 'Premium Brand Kits are unavailable on this site. Make sure your EMCP Tools Pro license is active and this site is on its activated-sites list. Contact support if the issue persists.', 'emcp-tools' )
 			);
 		}
 
 		if ( 429 === $code ) {
 			return new WP_Error(
 				'rate_limited',
-				__( 'Brand Kits endpoint is rate-limiting this site. Try again in a few minutes.', 'elementor-mcp' )
+				__( 'Brand Kits endpoint is rate-limiting this site. Try again in a few minutes.', 'emcp-tools' )
 			);
 		}
 
@@ -195,7 +195,7 @@ class Elementor_MCP_Pro_Brand_Kits {
 				'remote_error',
 				sprintf(
 					/* translators: %d: HTTP status code */
-					__( 'Brand Kits endpoint returned HTTP %d. Please try again later or contact support.', 'elementor-mcp' ),
+					__( 'Brand Kits endpoint returned HTTP %d. Please try again later or contact support.', 'emcp-tools' ),
 					$code
 				)
 			);
@@ -205,7 +205,7 @@ class Elementor_MCP_Pro_Brand_Kits {
 		$bundle = json_decode( $body, true );
 
 		if ( ! is_array( $bundle ) || ! isset( $bundle['categories'] ) || ! is_array( $bundle['categories'] ) ) {
-			return new WP_Error( 'invalid_payload', __( 'Brand Kits endpoint returned an unexpected payload.', 'elementor-mcp' ) );
+			return new WP_Error( 'invalid_payload', __( 'Brand Kits endpoint returned an unexpected payload.', 'emcp-tools' ) );
 		}
 
 		$bundle['fetched_at'] = time();
@@ -243,10 +243,10 @@ class Elementor_MCP_Pro_Brand_Kits {
 	 * @return string
 	 */
 	private static function get_license_key(): string {
-		if ( ! function_exists( 'emcp_pro_fs' ) ) {
+		if ( ! function_exists( 'emcp_tools_fs' ) ) {
 			return '';
 		}
-		$license = emcp_pro_fs()->_get_license();
+		$license = emcp_tools_fs()->_get_license();
 		if ( ! $license || empty( $license->secret_key ) ) {
 			return '';
 		}
@@ -261,10 +261,10 @@ class Elementor_MCP_Pro_Brand_Kits {
 	 * @return string
 	 */
 	private static function get_license_id(): string {
-		if ( ! function_exists( 'emcp_pro_fs' ) ) {
+		if ( ! function_exists( 'emcp_tools_fs' ) ) {
 			return '';
 		}
-		$license = emcp_pro_fs()->_get_license();
+		$license = emcp_tools_fs()->_get_license();
 		if ( ! $license || empty( $license->id ) ) {
 			return '';
 		}

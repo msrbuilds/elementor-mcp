@@ -6,7 +6,7 @@
  * Openverse is WordPress.org's open-source media search engine with
  * Creative Commons and public domain content.
  *
- * @package Elementor_MCP
+ * @package EMCP_Tools
  * @since   1.1.0
  */
 
@@ -19,7 +19,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * @since 1.1.0
  */
-class Elementor_MCP_Openverse_Client {
+class EMCP_Tools_Openverse_Client {
 
 	/**
 	 * Openverse API base URL.
@@ -58,7 +58,7 @@ class Elementor_MCP_Openverse_Client {
 		if ( empty( $params['q'] ) ) {
 			return new \WP_Error(
 				'missing_query',
-				__( 'The search query parameter is required.', 'elementor-mcp' )
+				__( 'The search query parameter is required.', 'emcp-tools' )
 			);
 		}
 
@@ -111,7 +111,7 @@ class Elementor_MCP_Openverse_Client {
 			$url,
 			array(
 				'timeout'    => self::TIMEOUT,
-				'user-agent' => 'Elementor-MCP/' . ELEMENTOR_MCP_VERSION . ' (WordPress/' . get_bloginfo( 'version' ) . ')',
+				'user-agent' => 'Elementor-MCP/' . EMCP_TOOLS_VERSION . ' (WordPress/' . get_bloginfo( 'version' ) . ')',
 				'headers'    => array(
 					'Accept' => 'application/json',
 				),
@@ -123,7 +123,7 @@ class Elementor_MCP_Openverse_Client {
 				'api_request_failed',
 				sprintf(
 					/* translators: %s: error message */
-					__( 'Openverse API request failed: %s', 'elementor-mcp' ),
+					__( 'Openverse API request failed: %s', 'emcp-tools' ),
 					$response->get_error_message()
 				)
 			);
@@ -134,7 +134,7 @@ class Elementor_MCP_Openverse_Client {
 		if ( 429 === $status_code ) {
 			return new \WP_Error(
 				'rate_limited',
-				__( 'Openverse API rate limit reached. Anonymous access allows 100 requests/day and 5 requests/hour. Please wait before making more requests.', 'elementor-mcp' )
+				__( 'Openverse API rate limit reached. Anonymous access allows 100 requests/day and 5 requests/hour. Please wait before making more requests.', 'emcp-tools' )
 			);
 		}
 
@@ -143,7 +143,7 @@ class Elementor_MCP_Openverse_Client {
 				'api_error',
 				sprintf(
 					/* translators: %d: HTTP status code */
-					__( 'Openverse API returned HTTP %d.', 'elementor-mcp' ),
+					__( 'Openverse API returned HTTP %d.', 'emcp-tools' ),
 					$status_code
 				)
 			);
@@ -155,7 +155,7 @@ class Elementor_MCP_Openverse_Client {
 		if ( null === $data ) {
 			return new \WP_Error(
 				'json_parse_error',
-				__( 'Failed to parse Openverse API response.', 'elementor-mcp' )
+				__( 'Failed to parse Openverse API response.', 'emcp-tools' )
 			);
 		}
 

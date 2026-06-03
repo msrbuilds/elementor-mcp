@@ -20,10 +20,10 @@
  *
  * @group regression
  * @group atomic
- * @package Elementor_MCP\Tests\Regression
+ * @package EMCP_Tools\Tests\Regression
  */
 
-namespace Elementor_MCP\Tests\Regression;
+namespace EMCP_Tools\Tests\Regression;
 
 use PHPUnit\Framework\TestCase;
 
@@ -46,7 +46,7 @@ class AtomicDetectionRegressionTest extends TestCase {
 	 * Classic site: no atomic experiment, no atomic element types → not atomic.
 	 */
 	public function classic_site_is_not_atomic(): void {
-		$this->assertFalse( \Elementor_MCP_Atomic_Props::is_atomic_supported() );
+		$this->assertFalse( \EMCP_Tools_Atomic_Props::is_atomic_supported() );
 	}
 
 	/**
@@ -58,7 +58,7 @@ class AtomicDetectionRegressionTest extends TestCase {
 	 */
 	public function registered_atomic_element_type_marks_atomic_supported( string $slug ): void {
 		$GLOBALS['_registered_element_types'] = [ $slug ];
-		$this->assertTrue( \Elementor_MCP_Atomic_Props::is_atomic_supported(), "Registered type '$slug' should enable atomic." );
+		$this->assertTrue( \EMCP_Tools_Atomic_Props::is_atomic_supported(), "Registered type '$slug' should enable atomic." );
 	}
 
 	/**
@@ -79,7 +79,7 @@ class AtomicDetectionRegressionTest extends TestCase {
 	 */
 	public function atomic_element_experiment_marks_atomic_supported( string $slug ): void {
 		$GLOBALS['_active_experiments'] = [ $slug ];
-		$this->assertTrue( \Elementor_MCP_Atomic_Props::is_atomic_supported(), "Experiment '$slug' should enable atomic." );
+		$this->assertTrue( \EMCP_Tools_Atomic_Props::is_atomic_supported(), "Experiment '$slug' should enable atomic." );
 	}
 
 	/**
@@ -102,7 +102,7 @@ class AtomicDetectionRegressionTest extends TestCase {
 	public function v4_page_optin_alone_is_not_atomic(): void {
 		$GLOBALS['_active_experiments'] = [ 'e_opt_in_v4_page' ]; // page editor opt-in only
 		$this->assertFalse(
-			\Elementor_MCP_Atomic_Props::is_atomic_supported(),
+			\EMCP_Tools_Atomic_Props::is_atomic_supported(),
 			'e_opt_in_v4_page without registered atomic element types must not enable atomic tools.'
 		);
 	}
@@ -113,6 +113,6 @@ class AtomicDetectionRegressionTest extends TestCase {
 	 */
 	public function unrelated_experiment_is_not_atomic(): void {
 		$GLOBALS['_active_experiments'] = [ 'some_other_feature' ];
-		$this->assertFalse( \Elementor_MCP_Atomic_Props::is_atomic_supported() );
+		$this->assertFalse( \EMCP_Tools_Atomic_Props::is_atomic_supported() );
 	}
 }

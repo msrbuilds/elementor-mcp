@@ -4,7 +4,7 @@
  *
  * Registers 2 tools for saving and applying Elementor templates.
  *
- * @package Elementor_MCP
+ * @package EMCP_Tools
  * @since   1.0.0
  */
 
@@ -17,15 +17,15 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * @since 1.0.0
  */
-class Elementor_MCP_Template_Abilities {
+class EMCP_Tools_Template_Abilities {
 
 	/**
-	 * @var Elementor_MCP_Data
+	 * @var EMCP_Tools_Data
 	 */
 	private $data;
 
 	/**
-	 * @var Elementor_MCP_Element_Factory
+	 * @var EMCP_Tools_Element_Factory
 	 */
 	private $factory;
 
@@ -34,10 +34,10 @@ class Elementor_MCP_Template_Abilities {
 	 *
 	 * @since 1.0.0
 	 *
-	 * @param Elementor_MCP_Data            $data    The data access layer.
-	 * @param Elementor_MCP_Element_Factory $factory The element factory.
+	 * @param EMCP_Tools_Data            $data    The data access layer.
+	 * @param EMCP_Tools_Element_Factory $factory The element factory.
 	 */
-	public function __construct( Elementor_MCP_Data $data, Elementor_MCP_Element_Factory $factory ) {
+	public function __construct( EMCP_Tools_Data $data, EMCP_Tools_Element_Factory $factory ) {
 		$this->data    = $data;
 		$this->factory = $factory;
 	}
@@ -112,12 +112,12 @@ class Elementor_MCP_Template_Abilities {
 	// -------------------------------------------------------------------------
 
 	private function register_save_as_template(): void {
-		elementor_mcp_register_ability(
+		emcp_tools_register_ability(
 			'elementor-mcp/save-as-template',
 			array(
-				'label'               => __( 'Save As Template', 'elementor-mcp' ),
-				'description'         => __( 'Saves a page or a specific element as a reusable Elementor template.', 'elementor-mcp' ),
-				'category'            => 'elementor-mcp',
+				'label'               => __( 'Save As Template', 'emcp-tools' ),
+				'description'         => __( 'Saves a page or a specific element as a reusable Elementor template.', 'emcp-tools' ),
+				'category'            => 'emcp-tools',
 				'execute_callback'    => array( $this, 'execute_save_as_template' ),
 				'permission_callback' => array( $this, 'check_edit_permission' ),
 				'input_schema'        => array(
@@ -125,20 +125,20 @@ class Elementor_MCP_Template_Abilities {
 					'properties' => array(
 						'post_id'       => array(
 							'type'        => 'integer',
-							'description' => __( 'The source post/page ID.', 'elementor-mcp' ),
+							'description' => __( 'The source post/page ID.', 'emcp-tools' ),
 						),
 						'element_id'    => array(
 							'type'        => 'string',
-							'description' => __( 'Specific element ID to save. Omit to save the entire page.', 'elementor-mcp' ),
+							'description' => __( 'Specific element ID to save. Omit to save the entire page.', 'emcp-tools' ),
 						),
 						'title'         => array(
 							'type'        => 'string',
-							'description' => __( 'Template title.', 'elementor-mcp' ),
+							'description' => __( 'Template title.', 'emcp-tools' ),
 						),
 						'template_type' => array(
 							'type'        => 'string',
 							'enum'        => array( 'page', 'section', 'container' ),
-							'description' => __( 'Template type. Default: page.', 'elementor-mcp' ),
+							'description' => __( 'Template type. Default: page.', 'emcp-tools' ),
 						),
 					),
 					'required'   => array( 'post_id', 'title' ),
@@ -177,7 +177,7 @@ class Elementor_MCP_Template_Abilities {
 		$template_type = sanitize_key( $input['template_type'] ?? 'page' );
 
 		if ( ! $post_id || empty( $title ) ) {
-			return new \WP_Error( 'missing_params', __( 'post_id and title are required.', 'elementor-mcp' ) );
+			return new \WP_Error( 'missing_params', __( 'post_id and title are required.', 'emcp-tools' ) );
 		}
 
 		$page_data = $this->data->get_page_data( $post_id );
@@ -190,7 +190,7 @@ class Elementor_MCP_Template_Abilities {
 		if ( ! empty( $element_id ) ) {
 			$element = $this->data->find_element_by_id( $page_data, $element_id );
 			if ( null === $element ) {
-				return new \WP_Error( 'element_not_found', __( 'Element not found.', 'elementor-mcp' ) );
+				return new \WP_Error( 'element_not_found', __( 'Element not found.', 'emcp-tools' ) );
 			}
 			$elements_data = array( $element );
 		} else {
@@ -236,12 +236,12 @@ class Elementor_MCP_Template_Abilities {
 	// -------------------------------------------------------------------------
 
 	private function register_apply_template(): void {
-		elementor_mcp_register_ability(
+		emcp_tools_register_ability(
 			'elementor-mcp/apply-template',
 			array(
-				'label'               => __( 'Apply Template', 'elementor-mcp' ),
-				'description'         => __( 'Applies a saved Elementor template to a page at a given position, inserting its elements with fresh IDs.', 'elementor-mcp' ),
-				'category'            => 'elementor-mcp',
+				'label'               => __( 'Apply Template', 'emcp-tools' ),
+				'description'         => __( 'Applies a saved Elementor template to a page at a given position, inserting its elements with fresh IDs.', 'emcp-tools' ),
+				'category'            => 'emcp-tools',
 				'execute_callback'    => array( $this, 'execute_apply_template' ),
 				'permission_callback' => array( $this, 'check_edit_permission' ),
 				'input_schema'        => array(
@@ -249,19 +249,19 @@ class Elementor_MCP_Template_Abilities {
 					'properties' => array(
 						'post_id'     => array(
 							'type'        => 'integer',
-							'description' => __( 'The target post/page ID.', 'elementor-mcp' ),
+							'description' => __( 'The target post/page ID.', 'emcp-tools' ),
 						),
 						'template_id' => array(
 							'type'        => 'integer',
-							'description' => __( 'The template post ID to apply.', 'elementor-mcp' ),
+							'description' => __( 'The template post ID to apply.', 'emcp-tools' ),
 						),
 						'parent_id'   => array(
 							'type'        => 'string',
-							'description' => __( 'Parent container ID. Empty for top-level.', 'elementor-mcp' ),
+							'description' => __( 'Parent container ID. Empty for top-level.', 'emcp-tools' ),
 						),
 						'position'    => array(
 							'type'        => 'integer',
-							'description' => __( 'Insert position. -1 = append.', 'elementor-mcp' ),
+							'description' => __( 'Insert position. -1 = append.', 'emcp-tools' ),
 						),
 					),
 					'required'   => array( 'post_id', 'template_id' ),
@@ -300,7 +300,7 @@ class Elementor_MCP_Template_Abilities {
 		$position    = intval( $input['position'] ?? -1 );
 
 		if ( ! $post_id || ! $template_id ) {
-			return new \WP_Error( 'missing_params', __( 'post_id and template_id are required.', 'elementor-mcp' ) );
+			return new \WP_Error( 'missing_params', __( 'post_id and template_id are required.', 'emcp-tools' ) );
 		}
 
 		// Get the template elements.
@@ -311,7 +311,7 @@ class Elementor_MCP_Template_Abilities {
 		}
 
 		if ( empty( $template_data ) ) {
-			return new \WP_Error( 'empty_template', __( 'Template has no elements.', 'elementor-mcp' ) );
+			return new \WP_Error( 'empty_template', __( 'Template has no elements.', 'emcp-tools' ) );
 		}
 
 		// Get the target page data.
@@ -337,7 +337,7 @@ class Elementor_MCP_Template_Abilities {
 						'parent_not_found',
 						sprintf(
 							/* translators: %s: parent element ID */
-							__( 'Parent element "%s" not found.', 'elementor-mcp' ),
+							__( 'Parent element "%s" not found.', 'emcp-tools' ),
 							$parent_id
 						)
 					);
@@ -367,12 +367,12 @@ class Elementor_MCP_Template_Abilities {
 	// ── Phase 6: Theme Builder Template Tools ─────────────────────────
 
 	private function register_create_theme_template(): void {
-		elementor_mcp_register_ability(
+		emcp_tools_register_ability(
 			'elementor-mcp/create-theme-template',
 			array(
-				'label'               => __( 'Create Theme Template', 'elementor-mcp' ),
-				'description'         => __( 'Creates a new Elementor Pro theme builder template (header, footer, single, archive, 404, etc.).', 'elementor-mcp' ),
-				'category'            => 'elementor-mcp',
+				'label'               => __( 'Create Theme Template', 'emcp-tools' ),
+				'description'         => __( 'Creates a new Elementor Pro theme builder template (header, footer, single, archive, 404, etc.).', 'emcp-tools' ),
+				'category'            => 'emcp-tools',
 				'execute_callback'    => array( $this, 'execute_create_theme_template' ),
 				'permission_callback' => array( $this, 'check_edit_permission' ),
 				'input_schema'        => array(
@@ -380,12 +380,12 @@ class Elementor_MCP_Template_Abilities {
 					'properties' => array(
 						'title'         => array(
 							'type'        => 'string',
-							'description' => __( 'Template title.', 'elementor-mcp' ),
+							'description' => __( 'Template title.', 'emcp-tools' ),
 						),
 						'template_type' => array(
 							'type'        => 'string',
 							'enum'        => array( 'header', 'footer', 'single', 'single-post', 'single-page', 'archive', 'search-results', 'error-404', 'loop-item' ),
-							'description' => __( 'Theme template type.', 'elementor-mcp' ),
+							'description' => __( 'Theme template type.', 'emcp-tools' ),
 						),
 					),
 					'required'   => array( 'title', 'template_type' ),
@@ -411,7 +411,7 @@ class Elementor_MCP_Template_Abilities {
 		$template_type = sanitize_key( $input['template_type'] ?? '' );
 
 		if ( empty( $title ) || empty( $template_type ) ) {
-			return new \WP_Error( 'missing_params', __( 'title and template_type are required.', 'elementor-mcp' ) );
+			return new \WP_Error( 'missing_params', __( 'title and template_type are required.', 'emcp-tools' ) );
 		}
 
 		// Create the template post.
@@ -445,12 +445,12 @@ class Elementor_MCP_Template_Abilities {
 	}
 
 	private function register_set_template_conditions(): void {
-		elementor_mcp_register_ability(
+		emcp_tools_register_ability(
 			'elementor-mcp/set-template-conditions',
 			array(
-				'label'               => __( 'Set Template Conditions', 'elementor-mcp' ),
-				'description'         => __( 'Sets display conditions for a theme builder template (e.g., Entire Site, specific pages, post types).', 'elementor-mcp' ),
-				'category'            => 'elementor-mcp',
+				'label'               => __( 'Set Template Conditions', 'emcp-tools' ),
+				'description'         => __( 'Sets display conditions for a theme builder template (e.g., Entire Site, specific pages, post types).', 'emcp-tools' ),
+				'category'            => 'emcp-tools',
 				'execute_callback'    => array( $this, 'execute_set_template_conditions' ),
 				'permission_callback' => array( $this, 'check_edit_permission' ),
 				'input_schema'        => array(
@@ -458,11 +458,11 @@ class Elementor_MCP_Template_Abilities {
 					'properties' => array(
 						'post_id'    => array(
 							'type'        => 'integer',
-							'description' => __( 'The template post ID.', 'elementor-mcp' ),
+							'description' => __( 'The template post ID.', 'emcp-tools' ),
 						),
 						'conditions' => array(
 							'type'        => 'array',
-							'description' => __( 'Array of condition rules. Each is an array like ["include", "general"] for Entire Site, or ["include", "singular", "post"] for all posts.', 'elementor-mcp' ),
+							'description' => __( 'Array of condition rules. Each is an array like ["include", "general"] for Entire Site, or ["include", "singular", "post"] for all posts.', 'emcp-tools' ),
 							'items'       => array(
 								'type'  => 'array',
 								'items' => array( 'type' => 'string' ),
@@ -490,7 +490,7 @@ class Elementor_MCP_Template_Abilities {
 		$conditions = $input['conditions'] ?? array();
 
 		if ( ! $post_id || empty( $conditions ) ) {
-			return new \WP_Error( 'missing_params', __( 'post_id and conditions are required.', 'elementor-mcp' ) );
+			return new \WP_Error( 'missing_params', __( 'post_id and conditions are required.', 'emcp-tools' ) );
 		}
 
 		// Elementor Pro stores conditions in the meta key '_elementor_conditions'.
@@ -516,12 +516,12 @@ class Elementor_MCP_Template_Abilities {
 	// ── Phase 6: Dynamic Tags ─────────────────────────────────────────
 
 	private function register_list_dynamic_tags(): void {
-		elementor_mcp_register_ability(
+		emcp_tools_register_ability(
 			'elementor-mcp/list-dynamic-tags',
 			array(
-				'label'               => __( 'List Dynamic Tags', 'elementor-mcp' ),
-				'description'         => __( 'Lists all available Elementor Pro dynamic tags with their names, groups, and categories.', 'elementor-mcp' ),
-				'category'            => 'elementor-mcp',
+				'label'               => __( 'List Dynamic Tags', 'emcp-tools' ),
+				'description'         => __( 'Lists all available Elementor Pro dynamic tags with their names, groups, and categories.', 'emcp-tools' ),
+				'category'            => 'emcp-tools',
 				'execute_callback'    => array( $this, 'execute_list_dynamic_tags' ),
 				'permission_callback' => array( $this, 'check_edit_permission' ),
 				'input_schema'        => array(
@@ -529,7 +529,7 @@ class Elementor_MCP_Template_Abilities {
 					'properties' => array(
 						'group' => array(
 							'type'        => 'string',
-							'description' => __( 'Filter by tag group (e.g., "post", "site", "author", "media", "action", "woocommerce"). Omit for all.', 'elementor-mcp' ),
+							'description' => __( 'Filter by tag group (e.g., "post", "site", "author", "media", "action", "woocommerce"). Omit for all.', 'emcp-tools' ),
 						),
 					),
 				),
@@ -553,7 +553,7 @@ class Elementor_MCP_Template_Abilities {
 
 		$dynamic_tags_manager = \Elementor\Plugin::instance()->dynamic_tags;
 		if ( ! $dynamic_tags_manager ) {
-			return new \WP_Error( 'no_dynamic_tags', __( 'Dynamic tags manager not available.', 'elementor-mcp' ) );
+			return new \WP_Error( 'no_dynamic_tags', __( 'Dynamic tags manager not available.', 'emcp-tools' ) );
 		}
 
 		$tags_info = $dynamic_tags_manager->get_tags();
@@ -586,12 +586,12 @@ class Elementor_MCP_Template_Abilities {
 	}
 
 	private function register_set_dynamic_tag(): void {
-		elementor_mcp_register_ability(
+		emcp_tools_register_ability(
 			'elementor-mcp/set-dynamic-tag',
 			array(
-				'label'               => __( 'Set Dynamic Tag', 'elementor-mcp' ),
-				'description'         => __( 'Sets a dynamic tag on a specific setting of an element. This makes the setting value dynamic (e.g., title becomes post title).', 'elementor-mcp' ),
-				'category'            => 'elementor-mcp',
+				'label'               => __( 'Set Dynamic Tag', 'emcp-tools' ),
+				'description'         => __( 'Sets a dynamic tag on a specific setting of an element. This makes the setting value dynamic (e.g., title becomes post title).', 'emcp-tools' ),
+				'category'            => 'emcp-tools',
 				'execute_callback'    => array( $this, 'execute_set_dynamic_tag' ),
 				'permission_callback' => array( $this, 'check_edit_permission' ),
 				'input_schema'        => array(
@@ -599,23 +599,23 @@ class Elementor_MCP_Template_Abilities {
 					'properties' => array(
 						'post_id'     => array(
 							'type'        => 'integer',
-							'description' => __( 'The page/post ID.', 'elementor-mcp' ),
+							'description' => __( 'The page/post ID.', 'emcp-tools' ),
 						),
 						'element_id'  => array(
 							'type'        => 'string',
-							'description' => __( 'The element ID to modify.', 'elementor-mcp' ),
+							'description' => __( 'The element ID to modify.', 'emcp-tools' ),
 						),
 						'setting_key' => array(
 							'type'        => 'string',
-							'description' => __( 'The setting key to make dynamic (e.g., "title", "url", "image").', 'elementor-mcp' ),
+							'description' => __( 'The setting key to make dynamic (e.g., "title", "url", "image").', 'emcp-tools' ),
 						),
 						'tag_name'    => array(
 							'type'        => 'string',
-							'description' => __( 'The dynamic tag name (e.g., "post-title", "site-title", "post-featured-image").', 'elementor-mcp' ),
+							'description' => __( 'The dynamic tag name (e.g., "post-title", "site-title", "post-featured-image").', 'emcp-tools' ),
 						),
 						'tag_settings' => array(
 							'type'        => 'object',
-							'description' => __( 'Optional settings for the dynamic tag.', 'elementor-mcp' ),
+							'description' => __( 'Optional settings for the dynamic tag.', 'emcp-tools' ),
 						),
 					),
 					'required'   => array( 'post_id', 'element_id', 'setting_key', 'tag_name' ),
@@ -642,7 +642,7 @@ class Elementor_MCP_Template_Abilities {
 		$tag_settings = $input['tag_settings'] ?? array();
 
 		if ( ! $post_id || empty( $element_id ) || empty( $setting_key ) || empty( $tag_name ) ) {
-			return new \WP_Error( 'missing_params', __( 'post_id, element_id, setting_key, and tag_name are required.', 'elementor-mcp' ) );
+			return new \WP_Error( 'missing_params', __( 'post_id, element_id, setting_key, and tag_name are required.', 'emcp-tools' ) );
 		}
 
 		$page_data = $this->data->get_page_data( $post_id );
@@ -653,7 +653,7 @@ class Elementor_MCP_Template_Abilities {
 		// Find the element to read its current __dynamic__ settings.
 		$element = $this->data->find_element_by_id( $page_data, $element_id );
 		if ( null === $element ) {
-			return new \WP_Error( 'element_not_found', __( 'Element not found.', 'elementor-mcp' ) );
+			return new \WP_Error( 'element_not_found', __( 'Element not found.', 'emcp-tools' ) );
 		}
 
 		// Build the dynamic tag value in Elementor's format.
@@ -667,7 +667,7 @@ class Elementor_MCP_Template_Abilities {
 		// Use update_element_settings to write back (operates by reference on $page_data).
 		$updated = $this->data->update_element_settings( $page_data, $element_id, array( '__dynamic__' => $dynamic ) );
 		if ( ! $updated ) {
-			return new \WP_Error( 'update_failed', __( 'Failed to update element settings.', 'elementor-mcp' ) );
+			return new \WP_Error( 'update_failed', __( 'Failed to update element settings.', 'emcp-tools' ) );
 		}
 
 		$result = $this->data->save_page_data( $post_id, $page_data );
@@ -681,12 +681,12 @@ class Elementor_MCP_Template_Abilities {
 	// ── Phase 6: Popup Builder ────────────────────────────────────────
 
 	private function register_create_popup(): void {
-		elementor_mcp_register_ability(
+		emcp_tools_register_ability(
 			'elementor-mcp/create-popup',
 			array(
-				'label'               => __( 'Create Popup', 'elementor-mcp' ),
-				'description'         => __( 'Creates a new Elementor Pro popup template.', 'elementor-mcp' ),
-				'category'            => 'elementor-mcp',
+				'label'               => __( 'Create Popup', 'emcp-tools' ),
+				'description'         => __( 'Creates a new Elementor Pro popup template.', 'emcp-tools' ),
+				'category'            => 'emcp-tools',
 				'execute_callback'    => array( $this, 'execute_create_popup' ),
 				'permission_callback' => array( $this, 'check_edit_permission' ),
 				'input_schema'        => array(
@@ -694,7 +694,7 @@ class Elementor_MCP_Template_Abilities {
 					'properties' => array(
 						'title' => array(
 							'type'        => 'string',
-							'description' => __( 'Popup title.', 'elementor-mcp' ),
+							'description' => __( 'Popup title.', 'emcp-tools' ),
 						),
 					),
 					'required'   => array( 'title' ),
@@ -719,7 +719,7 @@ class Elementor_MCP_Template_Abilities {
 		$title = sanitize_text_field( $input['title'] ?? '' );
 
 		if ( empty( $title ) ) {
-			return new \WP_Error( 'missing_params', __( 'title is required.', 'elementor-mcp' ) );
+			return new \WP_Error( 'missing_params', __( 'title is required.', 'emcp-tools' ) );
 		}
 
 		$post_id = wp_insert_post(
@@ -750,12 +750,12 @@ class Elementor_MCP_Template_Abilities {
 	}
 
 	private function register_set_popup_settings(): void {
-		elementor_mcp_register_ability(
+		emcp_tools_register_ability(
 			'elementor-mcp/set-popup-settings',
 			array(
-				'label'               => __( 'Set Popup Settings', 'elementor-mcp' ),
-				'description'         => __( 'Configures popup triggers, timing, and display conditions for an Elementor Pro popup.', 'elementor-mcp' ),
-				'category'            => 'elementor-mcp',
+				'label'               => __( 'Set Popup Settings', 'emcp-tools' ),
+				'description'         => __( 'Configures popup triggers, timing, and display conditions for an Elementor Pro popup.', 'emcp-tools' ),
+				'category'            => 'emcp-tools',
 				'execute_callback'    => array( $this, 'execute_set_popup_settings' ),
 				'permission_callback' => array( $this, 'check_edit_permission' ),
 				'input_schema'        => array(
@@ -763,20 +763,20 @@ class Elementor_MCP_Template_Abilities {
 					'properties' => array(
 						'post_id'    => array(
 							'type'        => 'integer',
-							'description' => __( 'The popup post ID.', 'elementor-mcp' ),
+							'description' => __( 'The popup post ID.', 'emcp-tools' ),
 						),
 						'triggers'   => array(
 							'type'        => 'object',
-							'description' => __( 'Trigger settings: { "on_page_load": {"enabled": true, "delay": 3}, "on_scroll": {"enabled": true, "direction": "down", "offset": 50}, "on_click": {"enabled": true, "times": 1}, "on_exit_intent": {"enabled": true}, "on_inactivity": {"enabled": true, "time": 30} }.', 'elementor-mcp' ),
+							'description' => __( 'Trigger settings: { "on_page_load": {"enabled": true, "delay": 3}, "on_scroll": {"enabled": true, "direction": "down", "offset": 50}, "on_click": {"enabled": true, "times": 1}, "on_exit_intent": {"enabled": true}, "on_inactivity": {"enabled": true, "time": 30} }.', 'emcp-tools' ),
 						),
 						'conditions' => array(
 							'type'        => 'array',
-							'description' => __( 'Display conditions, same format as set-template-conditions.', 'elementor-mcp' ),
+							'description' => __( 'Display conditions, same format as set-template-conditions.', 'emcp-tools' ),
 							'items'       => array( 'type' => 'array', 'items' => array( 'type' => 'string' ) ),
 						),
 						'timing'     => array(
 							'type'        => 'object',
-							'description' => __( 'Timing rules: { "devices": ["desktop","tablet","mobile"], "show_after_x_page_views": 0, "show_after_x_sessions": 0, "show_up_to_x_times": 0, "url_contains": "", "url_not_contains": "" }.', 'elementor-mcp' ),
+							'description' => __( 'Timing rules: { "devices": ["desktop","tablet","mobile"], "show_after_x_page_views": 0, "show_after_x_sessions": 0, "show_up_to_x_times": 0, "url_contains": "", "url_not_contains": "" }.', 'emcp-tools' ),
 						),
 					),
 					'required'   => array( 'post_id' ),
@@ -802,7 +802,7 @@ class Elementor_MCP_Template_Abilities {
 		$timing     = $input['timing'] ?? null;
 
 		if ( ! $post_id ) {
-			return new \WP_Error( 'missing_params', __( 'post_id is required.', 'elementor-mcp' ) );
+			return new \WP_Error( 'missing_params', __( 'post_id is required.', 'emcp-tools' ) );
 		}
 
 		// Elementor Pro stores popup settings in post meta.

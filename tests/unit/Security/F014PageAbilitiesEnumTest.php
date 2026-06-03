@@ -29,16 +29,16 @@
  *   post_type: in_array($pt, ['page', 'post', 'elementor_library'], true)
  *   status:    in_array($st, ['draft', 'publish', 'pending', 'private'], true)
  *
- * @package Elementor_MCP\Tests\Security
+ * @package EMCP_Tools\Tests\Security
  * @since   1.0.0
  */
 
-namespace Elementor_MCP\Tests\Security;
+namespace EMCP_Tools\Tests\Security;
 
 use PHPUnit\Framework\TestCase;
 
 /**
- * @covers \Elementor_MCP_Page_Abilities::execute_create_page
+ * @covers \EMCP_Tools_Page_Abilities::execute_create_page
  */
 class F014PageAbilitiesEnumTest extends TestCase {
 

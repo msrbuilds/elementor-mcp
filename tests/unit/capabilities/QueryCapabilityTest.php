@@ -4,22 +4,22 @@
  * All 9 tools use check_read_permission() → requires edit_posts.
  * @group capabilities
  * @group query
- * @package Elementor_MCP\Tests\Capabilities
+ * @package EMCP_Tools\Tests\Capabilities
  */
-namespace Elementor_MCP\Tests\Capabilities;
+namespace EMCP_Tools\Tests\Capabilities;
 
 require_once dirname(__DIR__) . '/class-ability-test-case.php';
 
-use Elementor_MCP\Tests\Ability_Test_Case;
+use EMCP_Tools\Tests\Ability_Test_Case;
 
 class QueryCapabilityTest extends Ability_Test_Case {
-    private \Elementor_MCP_Query_Abilities $ability;
+    private \EMCP_Tools_Query_Abilities $ability;
 
     protected function setUp(): void {
         parent::setUp();
-        $data   = $this->createStub(\Elementor_MCP_Data::class);
-        $schema = $this->createStub(\Elementor_MCP_Schema_Generator::class);
-        $this->ability = new \Elementor_MCP_Query_Abilities($data, $schema);
+        $data   = $this->createStub(\EMCP_Tools_Data::class);
+        $schema = $this->createStub(\EMCP_Tools_Schema_Generator::class);
+        $this->ability = new \EMCP_Tools_Query_Abilities($data, $schema);
     }
 
     // T2.1 denied

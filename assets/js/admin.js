@@ -1,7 +1,7 @@
 /**
  * MCP Tools for Elementor — Admin Settings Scripts
  *
- * @package Elementor_MCP
+ * @package EMCP_Tools
  * @since   1.0.0
  */
 
@@ -130,23 +130,23 @@
 				return;
 			}
 
-			if ( typeof elementorMcpAdmin === 'undefined' || ! elementorMcpAdmin.ajaxUrl || ! elementorMcpAdmin.createPwNonce ) {
+			if ( typeof emcpToolsAdmin === 'undefined' || ! emcpToolsAdmin.ajaxUrl || ! emcpToolsAdmin.createPwNonce ) {
 				setCredStatus( 'Cannot create an application password automatically. Enter one manually below.', true );
 				return;
 			}
 
 			var origLabel = generateBtn.textContent;
 			generateBtn.disabled = true;
-			generateBtn.textContent = elementorMcpAdmin.generating || 'Generating…';
+			generateBtn.textContent = emcpToolsAdmin.generating || 'Generating…';
 			setCredStatus( '', false );
 
 			var payload = new FormData();
-			payload.append( 'action', 'elementor_mcp_create_app_password' );
-			payload.append( 'nonce', elementorMcpAdmin.createPwNonce );
+			payload.append( 'action', 'emcp_tools_create_app_password' );
+			payload.append( 'nonce', emcpToolsAdmin.createPwNonce );
 			payload.append( 'user_id', usernameEl.value );
 
 			/* global fetch */
-			fetch( elementorMcpAdmin.ajaxUrl, {
+			fetch( emcpToolsAdmin.ajaxUrl, {
 				method: 'POST',
 				credentials: 'same-origin',
 				body: payload
@@ -162,7 +162,7 @@
 					return;
 				}
 
-				setCredStatus( elementorMcpAdmin.pwCreated || 'Application password created — save it below, it is shown only once.', false );
+				setCredStatus( emcpToolsAdmin.pwCreated || 'Application password created — save it below, it is shown only once.', false );
 				renderGeneratedPassword( result.data.password );
 				renderConfigs( result.data.username, result.data.password );
 			} ).catch( function () {
@@ -224,13 +224,13 @@
 				resultCopy.value = headerValue;
 			}
 
-			if ( typeof elementorMcpAdmin === 'undefined' || ! elementorMcpAdmin.mcpEndpoint ) {
+			if ( typeof emcpToolsAdmin === 'undefined' || ! emcpToolsAdmin.mcpEndpoint ) {
 				return;
 			}
 
-			var endpoint = elementorMcpAdmin.mcpEndpoint;
-			var siteUrl = elementorMcpAdmin.siteUrl || '';
-			var proxyPath = elementorMcpAdmin.proxyPath || '';
+			var endpoint = emcpToolsAdmin.mcpEndpoint;
+			var siteUrl = emcpToolsAdmin.siteUrl || '';
+			var proxyPath = emcpToolsAdmin.proxyPath || '';
 
 			// Show the proxy config blocks container.
 			var proxyConfigsDiv = document.getElementById( 'elementor-mcp-proxy-configs' );
@@ -484,7 +484,7 @@
 				return;
 			}
 
-			var copiedText = ( typeof elementorMcpAdmin !== 'undefined' && elementorMcpAdmin.copied ) ? elementorMcpAdmin.copied : 'Copied!';
+			var copiedText = ( typeof emcpToolsAdmin !== 'undefined' && emcpToolsAdmin.copied ) ? emcpToolsAdmin.copied : 'Copied!';
 
 			copyToClipboard( source.value ).then( function () {
 				var original = btn.textContent;
@@ -659,22 +659,22 @@
 	function initProSync() {
 		document.querySelectorAll( '.elementor-mcp-pro-sync-btn' ).forEach( function ( btn ) {
 			btn.addEventListener( 'click', function () {
-				if ( typeof elementorMcpAdmin === 'undefined' || ! elementorMcpAdmin.ajaxUrl ) {
+				if ( typeof emcpToolsAdmin === 'undefined' || ! emcpToolsAdmin.ajaxUrl ) {
 					return;
 				}
 				var original = btn.innerHTML;
 				btn.disabled = true;
-				btn.innerHTML = '<span class="dashicons dashicons-update spin" aria-hidden="true"></span> ' + ( elementorMcpAdmin.syncing || 'Syncing…' );
+				btn.innerHTML = '<span class="dashicons dashicons-update spin" aria-hidden="true"></span> ' + ( emcpToolsAdmin.syncing || 'Syncing…' );
 
 				// Action override via data-sync-action lets the same button
 				// pattern work for prompts and templates. Falls back to the
 				// prompts action for backwards compat with the existing UI.
-				var action = btn.getAttribute( 'data-sync-action' ) || 'elementor_mcp_sync_pro_prompts';
+				var action = btn.getAttribute( 'data-sync-action' ) || 'emcp_tools_sync_pro_prompts';
 				var body = new URLSearchParams();
 				body.append( 'action', action );
 				body.append( 'nonce', btn.getAttribute( 'data-nonce' ) || '' );
 
-				fetch( elementorMcpAdmin.ajaxUrl, {
+				fetch( emcpToolsAdmin.ajaxUrl, {
 					method: 'POST',
 					credentials: 'same-origin',
 					headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -720,12 +720,12 @@
 			if ( ! btn ) {
 				return;
 			}
-			if ( typeof elementorMcpAdmin === 'undefined' || ! elementorMcpAdmin.ajaxUrl ) {
+			if ( typeof emcpToolsAdmin === 'undefined' || ! emcpToolsAdmin.ajaxUrl ) {
 				return;
 			}
 
 			var isApply = !! applyBtn;
-			var action  = isApply ? 'elementor_mcp_apply_pro_template' : 'elementor_mcp_import_pro_template';
+			var action  = isApply ? 'emcp_tools_apply_pro_template' : 'emcp_tools_import_pro_template';
 			var nonce   = isApply ? applyNonce : importNonce;
 			var pending = isApply ? 'Creating…' : 'Importing…';
 			var failMsg = isApply ? 'Create failed.' : 'Import failed.';
@@ -745,7 +745,7 @@
 				body.append( 'target_post_id', '0' );
 			}
 
-			fetch( elementorMcpAdmin.ajaxUrl, {
+			fetch( emcpToolsAdmin.ajaxUrl, {
 				method: 'POST',
 				credentials: 'same-origin',
 				headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -794,7 +794,7 @@
 			link.href = viewUrl;
 			link.target = '_blank';
 			link.rel = 'noopener noreferrer';
-			link.textContent = ( typeof elementorMcpAdmin !== 'undefined' && elementorMcpAdmin.viewSite ) ? elementorMcpAdmin.viewSite : 'View site →';
+			link.textContent = ( typeof emcpToolsAdmin !== 'undefined' && emcpToolsAdmin.viewSite ) ? emcpToolsAdmin.viewSite : 'View site →';
 			toast.appendChild( link );
 		}
 		document.body.appendChild( toast );
@@ -814,7 +814,7 @@
 	 */
 	function initBrandKits() {
 		var root = document.querySelector( '.elementor-mcp-brand-kits' );
-		if ( ! root || typeof elementorMcpAdmin === 'undefined' || ! elementorMcpAdmin.ajaxUrl ) {
+		if ( ! root || typeof emcpToolsAdmin === 'undefined' || ! emcpToolsAdmin.ajaxUrl ) {
 			return;
 		}
 
@@ -847,7 +847,7 @@
 				};
 				var titleEl = modal.querySelector( '.elementor-mcp-brand-kit-modal__title' );
 				if ( titleEl ) {
-					var tpl = ( elementorMcpAdmin.applyKitTitle || 'Apply "%s" brand kit?' );
+					var tpl = ( emcpToolsAdmin.applyKitTitle || 'Apply "%s" brand kit?' );
 					titleEl.textContent = tpl.replace( '%s', pending.title );
 				}
 				var bk = modal.querySelector( '.elementor-mcp-brand-kit-modal__backup-input' );
@@ -872,16 +872,16 @@
 				var title = pending.title;
 				var orig = confirmBtn.textContent;
 				confirmBtn.disabled = true;
-				confirmBtn.textContent = elementorMcpAdmin.applying || 'Applying…';
+				confirmBtn.textContent = emcpToolsAdmin.applying || 'Applying…';
 
 				var body = new URLSearchParams();
-				body.append( 'action', 'elementor_mcp_apply_pro_brand_kit' );
+				body.append( 'action', 'emcp_tools_apply_pro_brand_kit' );
 				body.append( 'nonce', grid.getAttribute( 'data-apply-nonce' ) || '' );
 				body.append( 'kit_slug', pending.slug );
 				body.append( 'category_slug', pending.cat );
 				body.append( 'backup', doBackup ? '1' : '0' );
 
-				fetch( elementorMcpAdmin.ajaxUrl, {
+				fetch( emcpToolsAdmin.ajaxUrl, {
 					method: 'POST',
 					credentials: 'same-origin',
 					headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -893,7 +893,7 @@
 						confirmBtn.textContent = orig;
 						if ( res && res.success ) {
 							closeModal();
-							var applied = ( elementorMcpAdmin.kitApplied || '%s applied.' ).replace( '%s', title );
+							var applied = ( emcpToolsAdmin.kitApplied || '%s applied.' ).replace( '%s', title );
 							showBrandKitToast( applied, res.data && res.data.view_url );
 						} else {
 							var msg = ( res && res.data && res.data.message ) ? res.data.message : 'Apply failed.';
@@ -919,20 +919,20 @@
 					if ( ! select || ! select.value ) {
 						return;
 					}
-					if ( ! window.confirm( elementorMcpAdmin.restoreConfirm || 'Restore global colors and typography from this backup?' ) ) {
+					if ( ! window.confirm( emcpToolsAdmin.restoreConfirm || 'Restore global colors and typography from this backup?' ) ) {
 						return;
 					}
 					var orig = restoreBtn.textContent;
 					restoreBtn.disabled = true;
-					restoreBtn.textContent = elementorMcpAdmin.restoring || 'Restoring…';
+					restoreBtn.textContent = emcpToolsAdmin.restoring || 'Restoring…';
 
 					var body = new URLSearchParams();
-					body.append( 'action', 'elementor_mcp_restore_pro_brand_kit' );
+					body.append( 'action', 'emcp_tools_restore_pro_brand_kit' );
 					body.append( 'nonce', restore.getAttribute( 'data-restore-nonce' ) || '' );
 					body.append( 'backup_id', select.value );
 					body.append( 'full_clobber', ( clobber && clobber.checked ) ? '1' : '0' );
 
-					fetch( elementorMcpAdmin.ajaxUrl, {
+					fetch( emcpToolsAdmin.ajaxUrl, {
 						method: 'POST',
 						credentials: 'same-origin',
 						headers: { 'Content-Type': 'application/x-www-form-urlencoded' },

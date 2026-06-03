@@ -5,7 +5,7 @@
  * Registers tools for adding custom CSS, JavaScript, and site-wide
  * code snippets via the MCP Tools for Elementor server.
  *
- * @package Elementor_MCP
+ * @package EMCP_Tools
  * @since   1.3.0
  */
 
@@ -18,15 +18,15 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * @since 1.3.0
  */
-class Elementor_MCP_Custom_Code_Abilities {
+class EMCP_Tools_Custom_Code_Abilities {
 
 	/**
-	 * @var Elementor_MCP_Data
+	 * @var EMCP_Tools_Data
 	 */
 	private $data;
 
 	/**
-	 * @var Elementor_MCP_Element_Factory
+	 * @var EMCP_Tools_Element_Factory
 	 */
 	private $factory;
 
@@ -42,10 +42,10 @@ class Elementor_MCP_Custom_Code_Abilities {
 	 *
 	 * @since 1.3.0
 	 *
-	 * @param Elementor_MCP_Data            $data    The data access layer.
-	 * @param Elementor_MCP_Element_Factory $factory The element factory.
+	 * @param EMCP_Tools_Data            $data    The data access layer.
+	 * @param EMCP_Tools_Element_Factory $factory The element factory.
 	 */
-	public function __construct( Elementor_MCP_Data $data, Elementor_MCP_Element_Factory $factory ) {
+	public function __construct( EMCP_Tools_Data $data, EMCP_Tools_Element_Factory $factory ) {
 		$this->data    = $data;
 		$this->factory = $factory;
 	}
@@ -104,6 +104,23 @@ class Elementor_MCP_Custom_Code_Abilities {
 	}
 
 	/**
+	 * Permission check for injecting raw JavaScript into a page.
+	 *
+	 * Requires the same per-post edit rights as other page edits PLUS the
+	 * unfiltered_html capability, since this tool injects an executable
+	 * <script> tag that WordPress would otherwise strip from a user who lacks
+	 * unfiltered_html (e.g. non-super-admins on multisite).
+	 *
+	 * @since 1.9.1
+	 *
+	 * @param array|null $input The input data.
+	 * @return bool
+	 */
+	public function check_js_permission( $input = null ): bool {
+		return $this->check_edit_permission( $input ) && current_user_can( 'unfiltered_html' );
+	}
+
+	/**
 	 * Permission check for creating site-wide code snippets.
 	 *
 	 * @since 1.3.0
@@ -137,12 +154,12 @@ class Elementor_MCP_Custom_Code_Abilities {
 	private function register_add_custom_css(): void {
 		$this->ability_names[] = 'elementor-mcp/add-custom-css';
 
-		elementor_mcp_register_ability(
+		emcp_tools_register_ability(
 			'elementor-mcp/add-custom-css',
 			array(
-				'label'               => __( 'Add Custom CSS', 'elementor-mcp' ),
-				'description'         => __( 'Adds custom CSS to a specific element or to the entire page. Requires Elementor Pro. For element-level CSS, use the keyword "selector" as a placeholder for the element\'s CSS wrapper (e.g. "selector .heading { color: red; }" or "selector:hover { transform: scale(1.05); }"). For page-level CSS, omit element_id. Appends to existing CSS by default; set replace=true to overwrite.', 'elementor-mcp' ),
-				'category'            => 'elementor-mcp',
+				'label'               => __( 'Add Custom CSS', 'emcp-tools' ),
+				'description'         => __( 'Adds custom CSS to a specific element or to the entire page. Requires Elementor Pro. For element-level CSS, use the keyword "selector" as a placeholder for the element\'s CSS wrapper (e.g. "selector .heading { color: red; }" or "selector:hover { transform: scale(1.05); }"). For page-level CSS, omit element_id. Appends to existing CSS by default; set replace=true to overwrite.', 'emcp-tools' ),
+				'category'            => 'emcp-tools',
 				'execute_callback'    => array( $this, 'execute_add_custom_css' ),
 				'permission_callback' => array( $this, 'check_edit_permission' ),
 				'input_schema'        => array(
@@ -150,19 +167,19 @@ class Elementor_MCP_Custom_Code_Abilities {
 					'properties' => array(
 						'post_id'    => array(
 							'type'        => 'integer',
-							'description' => __( 'The post/page ID.', 'elementor-mcp' ),
+							'description' => __( 'The post/page ID.', 'emcp-tools' ),
 						),
 						'element_id' => array(
 							'type'        => 'string',
-							'description' => __( 'Optional element ID to apply CSS to. If omitted, CSS is applied at the page level.', 'elementor-mcp' ),
+							'description' => __( 'Optional element ID to apply CSS to. If omitted, CSS is applied at the page level.', 'emcp-tools' ),
 						),
 						'css'        => array(
 							'type'        => 'string',
-							'description' => __( 'CSS rules to add. Use "selector" as the element wrapper placeholder for element-level CSS.', 'elementor-mcp' ),
+							'description' => __( 'CSS rules to add. Use "selector" as the element wrapper placeholder for element-level CSS.', 'emcp-tools' ),
 						),
 						'replace'    => array(
 							'type'        => 'boolean',
-							'description' => __( 'If true, replaces existing custom CSS instead of appending. Default: false.', 'elementor-mcp' ),
+							'description' => __( 'If true, replaces existing custom CSS instead of appending. Default: false.', 'emcp-tools' ),
 						),
 					),
 					'required'   => array( 'post_id', 'css' ),
@@ -202,7 +219,7 @@ class Elementor_MCP_Custom_Code_Abilities {
 		$replace    = ! empty( $input['replace'] );
 
 		if ( ! $post_id || empty( $css ) ) {
-			return new \WP_Error( 'missing_params', __( 'post_id and css are required.', 'elementor-mcp' ) );
+			return new \WP_Error( 'missing_params', __( 'post_id and css are required.', 'emcp-tools' ) );
 		}
 
 		// Basic sanitization: strip PHP tags and script tags.
@@ -220,7 +237,7 @@ class Elementor_MCP_Custom_Code_Abilities {
 			$element = $this->data->find_element_by_id( $page_data, $element_id );
 
 			if ( null === $element ) {
-				return new \WP_Error( 'element_not_found', __( 'Element not found.', 'elementor-mcp' ) );
+				return new \WP_Error( 'element_not_found', __( 'Element not found.', 'emcp-tools' ) );
 			}
 
 			$existing_css = $element['settings']['custom_css'] ?? '';
@@ -233,7 +250,7 @@ class Elementor_MCP_Custom_Code_Abilities {
 			);
 
 			if ( ! $updated ) {
-				return new \WP_Error( 'update_failed', __( 'Failed to update element settings.', 'elementor-mcp' ) );
+				return new \WP_Error( 'update_failed', __( 'Failed to update element settings.', 'emcp-tools' ) );
 			}
 
 			$result = $this->data->save_page_data( $post_id, $page_data );
@@ -287,36 +304,36 @@ class Elementor_MCP_Custom_Code_Abilities {
 	private function register_add_custom_js(): void {
 		$this->ability_names[] = 'elementor-mcp/add-custom-js';
 
-		elementor_mcp_register_ability(
+		emcp_tools_register_ability(
 			'elementor-mcp/add-custom-js',
 			array(
-				'label'               => __( 'Add Custom JavaScript', 'elementor-mcp' ),
-				'description'         => __( 'Adds a custom JavaScript snippet to a page by inserting an HTML widget containing a <script> tag. Works with free Elementor (no Pro required). The JS code is automatically wrapped in <script> tags — do NOT include them yourself. Use wrap_dom_ready=true to wrap in a DOMContentLoaded listener. For site-wide JS, use add-code-snippet instead (requires Pro).', 'elementor-mcp' ),
-				'category'            => 'elementor-mcp',
+				'label'               => __( 'Add Custom JavaScript', 'emcp-tools' ),
+				'description'         => __( 'Adds a custom JavaScript snippet to a page by inserting an HTML widget containing a <script> tag. Works with free Elementor (no Pro required). The JS code is automatically wrapped in <script> tags — do NOT include them yourself. Use wrap_dom_ready=true to wrap in a DOMContentLoaded listener. For site-wide JS, use add-code-snippet instead (requires Pro).', 'emcp-tools' ),
+				'category'            => 'emcp-tools',
 				'execute_callback'    => array( $this, 'execute_add_custom_js' ),
-				'permission_callback' => array( $this, 'check_edit_permission' ),
+				'permission_callback' => array( $this, 'check_js_permission' ),
 				'input_schema'        => array(
 					'type'       => 'object',
 					'properties' => array(
 						'post_id'        => array(
 							'type'        => 'integer',
-							'description' => __( 'The post/page ID.', 'elementor-mcp' ),
+							'description' => __( 'The post/page ID.', 'emcp-tools' ),
 						),
 						'parent_id'      => array(
 							'type'        => 'string',
-							'description' => __( 'Parent container element ID.', 'elementor-mcp' ),
+							'description' => __( 'Parent container element ID.', 'emcp-tools' ),
 						),
 						'js'             => array(
 							'type'        => 'string',
-							'description' => __( 'JavaScript code to inject. Do NOT include <script> tags — they are added automatically.', 'elementor-mcp' ),
+							'description' => __( 'JavaScript code to inject. Do NOT include <script> tags — they are added automatically.', 'emcp-tools' ),
 						),
 						'position'       => array(
 							'type'        => 'integer',
-							'description' => __( 'Insert position within parent. -1 = append (default).', 'elementor-mcp' ),
+							'description' => __( 'Insert position within parent. -1 = append (default).', 'emcp-tools' ),
 						),
 						'wrap_dom_ready' => array(
 							'type'        => 'boolean',
-							'description' => __( 'Wrap the code in a DOMContentLoaded listener. Default: false.', 'elementor-mcp' ),
+							'description' => __( 'Wrap the code in a DOMContentLoaded listener. Default: false.', 'emcp-tools' ),
 						),
 					),
 					'required'   => array( 'post_id', 'parent_id', 'js' ),
@@ -356,7 +373,7 @@ class Elementor_MCP_Custom_Code_Abilities {
 		$wrap_dom_ready = ! empty( $input['wrap_dom_ready'] );
 
 		if ( ! $post_id || empty( $parent_id ) || empty( $js ) ) {
-			return new \WP_Error( 'missing_params', __( 'post_id, parent_id, and js are required.', 'elementor-mcp' ) );
+			return new \WP_Error( 'missing_params', __( 'post_id, parent_id, and js are required.', 'emcp-tools' ) );
 		}
 
 		// Strip any existing script tags the caller may have included.
@@ -384,7 +401,7 @@ class Elementor_MCP_Custom_Code_Abilities {
 				'parent_not_found',
 				sprintf(
 					/* translators: %s: parent element ID */
-					__( 'Parent element "%s" not found.', 'elementor-mcp' ),
+					__( 'Parent element "%s" not found.', 'emcp-tools' ),
 					$parent_id
 				)
 			);
@@ -414,12 +431,12 @@ class Elementor_MCP_Custom_Code_Abilities {
 	private function register_add_code_snippet(): void {
 		$this->ability_names[] = 'elementor-mcp/add-code-snippet';
 
-		elementor_mcp_register_ability(
+		emcp_tools_register_ability(
 			'elementor-mcp/add-code-snippet',
 			array(
-				'label'               => __( 'Add Code Snippet', 'elementor-mcp' ),
-				'description'         => __( 'Creates a site-wide Custom Code snippet using Elementor Pro. Injects CSS or JavaScript into the <head>, after <body> open, or before </body> close on ALL pages. Use this for analytics scripts, site-wide CSS overrides, meta tags, or tracking pixels. Requires Elementor Pro and manage_options capability.', 'elementor-mcp' ),
-				'category'            => 'elementor-mcp',
+				'label'               => __( 'Add Code Snippet', 'emcp-tools' ),
+				'description'         => __( 'Creates a site-wide Custom Code snippet using Elementor Pro. Injects CSS or JavaScript into the <head>, after <body> open, or before </body> close on ALL pages. Use this for analytics scripts, site-wide CSS overrides, meta tags, or tracking pixels. Requires Elementor Pro and manage_options capability.', 'emcp-tools' ),
+				'category'            => 'emcp-tools',
 				'execute_callback'    => array( $this, 'execute_add_code_snippet' ),
 				'permission_callback' => array( $this, 'check_snippet_permission' ),
 				'input_schema'        => array(
@@ -427,29 +444,29 @@ class Elementor_MCP_Custom_Code_Abilities {
 					'properties' => array(
 						'title'         => array(
 							'type'        => 'string',
-							'description' => __( 'Descriptive title for the snippet (e.g. "Google Analytics", "Global CSS overrides").', 'elementor-mcp' ),
+							'description' => __( 'Descriptive title for the snippet (e.g. "Google Analytics", "Global CSS overrides").', 'emcp-tools' ),
 						),
 						'code'          => array(
 							'type'        => 'string',
-							'description' => __( 'The full code to inject. Include <script>, <style>, or <meta> tags as needed.', 'elementor-mcp' ),
+							'description' => __( 'The full code to inject. Include <script>, <style>, or <meta> tags as needed.', 'emcp-tools' ),
 						),
 						'location'      => array(
 							'type'        => 'string',
 							'enum'        => array( 'head', 'body_start', 'body_end' ),
-							'description' => __( 'Where to inject: "head" = <head> tag, "body_start" = after <body>, "body_end" = before </body>. Default: head.', 'elementor-mcp' ),
+							'description' => __( 'Where to inject: "head" = <head> tag, "body_start" = after <body>, "body_end" = before </body>. Default: head.', 'emcp-tools' ),
 						),
 						'priority'      => array(
 							'type'        => 'integer',
-							'description' => __( 'Load order priority (1-10, lower = earlier). Default: 1.', 'elementor-mcp' ),
+							'description' => __( 'Load order priority (1-10, lower = earlier). Default: 1.', 'emcp-tools' ),
 						),
 						'status'        => array(
 							'type'        => 'string',
 							'enum'        => array( 'publish', 'draft' ),
-							'description' => __( 'Post status. "publish" = active immediately. "draft" = saved but not active. Default: publish.', 'elementor-mcp' ),
+							'description' => __( 'Post status. "publish" = active immediately. "draft" = saved but not active. Default: publish.', 'emcp-tools' ),
 						),
 						'ensure_jquery' => array(
 							'type'        => 'boolean',
-							'description' => __( 'If true, ensures jQuery is loaded before this snippet runs. Default: false.', 'elementor-mcp' ),
+							'description' => __( 'If true, ensures jQuery is loaded before this snippet runs. Default: false.', 'emcp-tools' ),
 						),
 					),
 					'required'   => array( 'title', 'code' ),
@@ -494,7 +511,7 @@ class Elementor_MCP_Custom_Code_Abilities {
 		$ensure_jquery = ! empty( $input['ensure_jquery'] );
 
 		if ( empty( $title ) || empty( $code ) ) {
-			return new \WP_Error( 'missing_params', __( 'title and code are required.', 'elementor-mcp' ) );
+			return new \WP_Error( 'missing_params', __( 'title and code are required.', 'emcp-tools' ) );
 		}
 
 		// Map user-friendly location names to Elementor's internal values.
@@ -564,12 +581,12 @@ class Elementor_MCP_Custom_Code_Abilities {
 	private function register_list_code_snippets(): void {
 		$this->ability_names[] = 'elementor-mcp/list-code-snippets';
 
-		elementor_mcp_register_ability(
+		emcp_tools_register_ability(
 			'elementor-mcp/list-code-snippets',
 			array(
-				'label'               => __( 'List Code Snippets', 'elementor-mcp' ),
-				'description'         => __( 'Lists all existing Elementor Pro Custom Code snippets with their titles, locations, priorities, and statuses. Requires Elementor Pro.', 'elementor-mcp' ),
-				'category'            => 'elementor-mcp',
+				'label'               => __( 'List Code Snippets', 'emcp-tools' ),
+				'description'         => __( 'Lists all existing Elementor Pro Custom Code snippets with their titles, locations, priorities, and statuses. Requires Elementor Pro.', 'emcp-tools' ),
+				'category'            => 'emcp-tools',
 				'execute_callback'    => array( $this, 'execute_list_code_snippets' ),
 				'permission_callback' => array( $this, 'check_manage_permission' ),
 				'input_schema'        => array(
@@ -578,12 +595,12 @@ class Elementor_MCP_Custom_Code_Abilities {
 						'location' => array(
 							'type'        => 'string',
 							'enum'        => array( 'head', 'body_start', 'body_end' ),
-							'description' => __( 'Optional filter by location.', 'elementor-mcp' ),
+							'description' => __( 'Optional filter by location.', 'emcp-tools' ),
 						),
 						'status'   => array(
 							'type'        => 'string',
 							'enum'        => array( 'publish', 'draft', 'any' ),
-							'description' => __( 'Filter by post status. Default: any.', 'elementor-mcp' ),
+							'description' => __( 'Filter by post status. Default: any.', 'emcp-tools' ),
 						),
 					),
 				),

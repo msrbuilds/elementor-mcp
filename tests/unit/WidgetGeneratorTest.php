@@ -1,27 +1,27 @@
 <?php
 /**
- * Unit tests for Elementor_MCP_Widget_Generator.
+ * Unit tests for EMCP_Tools_Widget_Generator.
  *
  * Covers spec validation (rejections + acceptance), that generated code is
  * parseable PHP, and that the template compiler escapes each control type
  * correctly. The generator is the only component that emits PHP, so its
  * correctness is the security boundary for the widget builder.
  *
- * @package Elementor_MCP\Tests
+ * @package EMCP_Tools\Tests
  * @since   1.9.0
  */
 
-namespace Elementor_MCP\Tests;
+namespace EMCP_Tools\Tests;
 
 use PHPUnit\Framework\TestCase;
 
 /**
- * @covers \Elementor_MCP_Widget_Generator
+ * @covers \EMCP_Tools_Widget_Generator
  */
 final class WidgetGeneratorTest extends TestCase {
 
 	public static function setUpBeforeClass(): void {
-		require_once ELEMENTOR_MCP_DIR . 'includes/class-widget-generator.php';
+		require_once EMCP_TOOLS_DIR . 'includes/class-widget-generator.php';
 	}
 
 	/**
@@ -71,7 +71,7 @@ final class WidgetGeneratorTest extends TestCase {
 	}
 
 	public function test_control_types_exposes_core_set(): void {
-		$types = \Elementor_MCP_Widget_Generator::control_types();
+		$types = \EMCP_Tools_Widget_Generator::control_types();
 		foreach ( array( 'text', 'textarea', 'wysiwyg', 'number', 'url', 'select', 'switcher', 'color', 'media', 'icon', 'repeater' ) as $t ) {
 			$this->assertArrayHasKey( $t, $types, "missing control type $t" );
 		}
@@ -80,35 +80,35 @@ final class WidgetGeneratorTest extends TestCase {
 	public function test_validate_rejects_missing_title(): void {
 		$spec = $this->valid_spec();
 		unset( $spec['meta']['title'] );
-		$this->assertWpError( \Elementor_MCP_Widget_Generator::validate_spec( $spec ) );
+		$this->assertWpError( \EMCP_Tools_Widget_Generator::validate_spec( $spec ) );
 	}
 
 	public function test_validate_rejects_no_sections(): void {
-		$this->assertWpError( \Elementor_MCP_Widget_Generator::validate_spec( array( 'meta' => array( 'title' => 'X' ), 'sections' => array(), 'html_template' => '<p>x</p>' ) ) );
+		$this->assertWpError( \EMCP_Tools_Widget_Generator::validate_spec( array( 'meta' => array( 'title' => 'X' ), 'sections' => array(), 'html_template' => '<p>x</p>' ) ) );
 	}
 
 	public function test_validate_rejects_unknown_control_type(): void {
 		$spec = $this->valid_spec();
 		$spec['sections'][0]['controls'][0]['type'] = 'banana';
-		$this->assertWpError( \Elementor_MCP_Widget_Generator::validate_spec( $spec ) );
+		$this->assertWpError( \EMCP_Tools_Widget_Generator::validate_spec( $spec ) );
 	}
 
 	public function test_validate_rejects_select_without_options(): void {
 		$spec = $this->valid_spec();
 		$spec['sections'][0]['controls'][] = array( 'name' => 'pick', 'type' => 'select', 'label' => 'Pick' );
-		$this->assertWpError( \Elementor_MCP_Widget_Generator::validate_spec( $spec ) );
+		$this->assertWpError( \EMCP_Tools_Widget_Generator::validate_spec( $spec ) );
 	}
 
 	public function test_validate_rejects_missing_template(): void {
 		$spec = $this->valid_spec();
 		unset( $spec['html_template'] );
-		$this->assertWpError( \Elementor_MCP_Widget_Generator::validate_spec( $spec ) );
+		$this->assertWpError( \EMCP_Tools_Widget_Generator::validate_spec( $spec ) );
 	}
 
 	public function test_validate_rejects_duplicate_control_names(): void {
 		$spec = $this->valid_spec();
 		$spec['sections'][1]['controls'][] = array( 'name' => 'heading', 'type' => 'text', 'label' => 'Dup' );
-		$this->assertWpError( \Elementor_MCP_Widget_Generator::validate_spec( $spec ) );
+		$this->assertWpError( \EMCP_Tools_Widget_Generator::validate_spec( $spec ) );
 	}
 
 	public function test_validate_rejects_nested_repeater(): void {
@@ -119,15 +119,15 @@ final class WidgetGeneratorTest extends TestCase {
 			'label'  => 'Inner',
 			'fields' => array( array( 'name' => 'x', 'type' => 'text', 'label' => 'X' ) ),
 		);
-		$this->assertWpError( \Elementor_MCP_Widget_Generator::validate_spec( $spec ) );
+		$this->assertWpError( \EMCP_Tools_Widget_Generator::validate_spec( $spec ) );
 	}
 
 	public function test_validate_accepts_valid_spec(): void {
-		$this->assertTrue( \Elementor_MCP_Widget_Generator::validate_spec( $this->valid_spec() ) );
+		$this->assertTrue( \EMCP_Tools_Widget_Generator::validate_spec( $this->valid_spec() ) );
 	}
 
 	public function test_generate_produces_parseable_widget_class(): void {
-		$php = \Elementor_MCP_Widget_Generator::generate( $this->valid_spec(), 'EMCP_Widget_99', 'emcp_custom_99' );
+		$php = \EMCP_Tools_Widget_Generator::generate( $this->valid_spec(), 'EMCP_Widget_99', 'emcp_custom_99' );
 		$this->assertIsString( $php, is_object( $php ) ? 'generate returned WP_Error' : '' );
 		$this->assertStringContainsString( 'class EMCP_Widget_99 extends \Elementor\Widget_Base', $php );
 		$this->assertStringContainsString( "return 'emcp_custom_99';", $php );
@@ -143,7 +143,7 @@ final class WidgetGeneratorTest extends TestCase {
 	}
 
 	public function test_render_escapes_by_control_type(): void {
-		$php = \Elementor_MCP_Widget_Generator::generate( $this->valid_spec(), 'EMCP_Widget_1', 'emcp_custom_1' );
+		$php = \EMCP_Tools_Widget_Generator::generate( $this->valid_spec(), 'EMCP_Widget_1', 'emcp_custom_1' );
 		$this->assertIsString( $php );
 
 		// text in HTML content → esc_html
@@ -181,7 +181,7 @@ final class WidgetGeneratorTest extends TestCase {
 			),
 			'html_template' => '<div>x</div>',
 		);
-		$php = \Elementor_MCP_Widget_Generator::generate( $spec, 'EMCP_Widget_3', 'emcp_custom_3' );
+		$php = \EMCP_Tools_Widget_Generator::generate( $spec, 'EMCP_Widget_3', 'emcp_custom_3' );
 		$this->assertIsString( $php );
 		$this->assertStringContainsString( "'default' => array( 'size' => 10, 'unit' => 'px' )", $php );
 		$this->assertStringContainsString( "'range' => array( 'px' => array( 'min' => 0, 'max' => 80, 'step' => 1 ) )", $php );
@@ -216,7 +216,7 @@ final class WidgetGeneratorTest extends TestCase {
 			),
 			'html_template' => '<div>x</div>',
 		);
-		$php = \Elementor_MCP_Widget_Generator::generate( $spec, 'EMCP_Widget_4', 'emcp_custom_4' );
+		$php = \EMCP_Tools_Widget_Generator::generate( $spec, 'EMCP_Widget_4', 'emcp_custom_4' );
 		$this->assertIsString( $php );
 		// Default heuristic eicons for alignment values.
 		$this->assertStringContainsString( "'flex-start' => array( 'title' => 'Left', 'icon' => 'eicon-text-align-left' )", $php );
@@ -230,13 +230,13 @@ final class WidgetGeneratorTest extends TestCase {
 		$spec = $this->valid_spec();
 
 		// No handles → no depends methods.
-		$plain = \Elementor_MCP_Widget_Generator::generate( $spec, 'EMCP_Widget_5', 'emcp_custom_5' );
+		$plain = \EMCP_Tools_Widget_Generator::generate( $spec, 'EMCP_Widget_5', 'emcp_custom_5' );
 		$this->assertIsString( $plain );
 		$this->assertStringNotContainsString( 'get_style_depends', $plain );
 		$this->assertStringNotContainsString( 'get_script_depends', $plain );
 
 		// Handles passed → depends methods returning those handles.
-		$withAssets = \Elementor_MCP_Widget_Generator::generate(
+		$withAssets = \EMCP_Tools_Widget_Generator::generate(
 			$spec,
 			'EMCP_Widget_6',
 			'emcp_custom_6',
@@ -262,7 +262,7 @@ final class WidgetGeneratorTest extends TestCase {
 			),
 			'html_template' => '<div class="x"><h3>t</h3></div>',
 		);
-		$php = \Elementor_MCP_Widget_Generator::generate( $spec, 'EMCP_Widget_7', 'emcp_custom_7' );
+		$php = \EMCP_Tools_Widget_Generator::generate( $spec, 'EMCP_Widget_7', 'emcp_custom_7' );
 		$this->assertIsString( $php );
 		$this->assertStringContainsString( "add_group_control( \\Elementor\\Group_Control_Typography::get_type(), array( 'name' => 'typo', 'label' => 'Typo', 'selector' => '{{WRAPPER}} .x h3' )", $php );
 		$this->assertStringContainsString( 'Group_Control_Background::get_type()', $php );
@@ -275,7 +275,7 @@ final class WidgetGeneratorTest extends TestCase {
 			'sections'      => array( array( 'id' => 's', 'tab' => 'style', 'controls' => array( array( 'name' => 'typo', 'type' => 'typography', 'label' => 'Typo' ) ) ) ),
 			'html_template' => '<div>x</div>',
 		);
-		$this->assertWpError( \Elementor_MCP_Widget_Generator::validate_spec( $spec ) );
+		$this->assertWpError( \EMCP_Tools_Widget_Generator::validate_spec( $spec ) );
 	}
 
 	public function test_condition_and_select2_multiple(): void {
@@ -293,7 +293,7 @@ final class WidgetGeneratorTest extends TestCase {
 			),
 			'html_template' => '<div>x</div>',
 		);
-		$php = \Elementor_MCP_Widget_Generator::generate( $spec, 'EMCP_Widget_8', 'emcp_custom_8' );
+		$php = \EMCP_Tools_Widget_Generator::generate( $spec, 'EMCP_Widget_8', 'emcp_custom_8' );
 		$this->assertIsString( $php );
 		$this->assertStringContainsString( "'multiple' => true", $php );
 		$this->assertStringContainsString( "'condition' => array( 'show' => 'yes' )", $php );
@@ -305,7 +305,7 @@ final class WidgetGeneratorTest extends TestCase {
 			'sections'      => array( array( 'id' => 's', 'tab' => 'content', 'controls' => array( array( 'name' => 'imgs', 'type' => 'gallery', 'label' => 'Images' ) ) ) ),
 			'html_template' => '<div>{{#each imgs}}<img src="{{url}}" data-id="{{id}}">{{/each}}</div>',
 		);
-		$php = \Elementor_MCP_Widget_Generator::generate( $spec, 'EMCP_Widget_9', 'emcp_custom_9' );
+		$php = \EMCP_Tools_Widget_Generator::generate( $spec, 'EMCP_Widget_9', 'emcp_custom_9' );
 		$this->assertIsString( $php );
 		$this->assertStringContainsString( "foreach ( \$settings['imgs'] as \$emcp_item )", $php );
 		$this->assertStringContainsString( "esc_url( \$emcp_item['url'] ?? '' )", $php );
@@ -314,7 +314,7 @@ final class WidgetGeneratorTest extends TestCase {
 	public function test_generate_rejects_invalid_icon_to_safe_default(): void {
 		$spec               = $this->valid_spec();
 		$spec['meta']['icon'] = 'javascript:alert(1)';
-		$php                = \Elementor_MCP_Widget_Generator::generate( $spec, 'EMCP_Widget_2', 'emcp_custom_2' );
+		$php                = \EMCP_Tools_Widget_Generator::generate( $spec, 'EMCP_Widget_2', 'emcp_custom_2' );
 		$this->assertIsString( $php );
 		$this->assertStringContainsString( "return 'eicon-code';", $php );
 	}

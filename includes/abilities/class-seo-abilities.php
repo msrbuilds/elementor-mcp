@@ -17,7 +17,7 @@
  * / build_jsonld) so it unit-tests with fixtures and the execute callbacks stay
  * thin.
  *
- * @package Elementor_MCP
+ * @package EMCP_Tools
  * @since   1.8.0
  */
 
@@ -30,21 +30,21 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * @since 1.8.0
  */
-class Elementor_MCP_Seo_Abilities {
+class EMCP_Tools_Seo_Abilities {
 
 	/**
 	 * Data access layer.
 	 *
-	 * @var Elementor_MCP_Data
+	 * @var EMCP_Tools_Data
 	 */
 	private $data;
 
 	/**
 	 * Constructor.
 	 *
-	 * @param Elementor_MCP_Data $data Data access layer.
+	 * @param EMCP_Tools_Data $data Data access layer.
 	 */
-	public function __construct( Elementor_MCP_Data $data ) {
+	public function __construct( EMCP_Tools_Data $data ) {
 		$this->data = $data;
 	}
 
@@ -58,7 +58,7 @@ class Elementor_MCP_Seo_Abilities {
 	 * @return bool
 	 */
 	private function has_access(): bool {
-		return function_exists( 'emcp_pro_fs' ) && emcp_pro_fs()->can_use_premium_code();
+		return function_exists( 'emcp_tools_fs' ) && emcp_tools_fs()->can_use_premium_code();
 	}
 
 	/**
@@ -130,9 +130,9 @@ class Elementor_MCP_Seo_Abilities {
 			return $page;
 		}
 		if ( ! is_array( $page ) ) {
-			return new \WP_Error( 'no_data', __( 'No Elementor data found for this page.', 'elementor-mcp' ) );
+			return new \WP_Error( 'no_data', __( 'No Elementor data found for this page.', 'emcp-tools' ) );
 		}
-		return Elementor_MCP_Content_Extractor::extract( $page, $this->site_host() );
+		return EMCP_Tools_Content_Extractor::extract( $page, $this->site_host() );
 	}
 
 	// =========================================================================
@@ -140,19 +140,19 @@ class Elementor_MCP_Seo_Abilities {
 	// =========================================================================
 
 	private function register_audit_page_seo(): void {
-		elementor_mcp_register_ability(
+		emcp_tools_register_ability(
 			'elementor-mcp/audit-page-seo',
 			array(
-				'label'               => __( 'Audit Page SEO', 'elementor-mcp' ),
-				'description'         => __( 'Audits on-page SEO for an Elementor page (H1, title/meta length, canonical, heading hierarchy, image alts, internal links, word count, optional target-keyword usage). Read-only; returns a scored report.', 'elementor-mcp' ),
-				'category'            => 'elementor-mcp',
+				'label'               => __( 'Audit Page SEO', 'emcp-tools' ),
+				'description'         => __( 'Audits on-page SEO for an Elementor page (H1, title/meta length, canonical, heading hierarchy, image alts, internal links, word count, optional target-keyword usage). Read-only; returns a scored report.', 'emcp-tools' ),
+				'category'            => 'emcp-tools',
 				'execute_callback'    => array( $this, 'execute_audit_page_seo' ),
 				'permission_callback' => array( $this, 'check_read_permission' ),
 				'input_schema'        => array(
 					'type'       => 'object',
 					'properties' => array(
-						'post_id'        => array( 'type' => 'integer', 'description' => __( 'The page/post ID to audit.', 'elementor-mcp' ) ),
-						'target_keyword' => array( 'type' => 'string', 'description' => __( 'Optional focus keyword to check usage of.', 'elementor-mcp' ) ),
+						'post_id'        => array( 'type' => 'integer', 'description' => __( 'The page/post ID to audit.', 'emcp-tools' ) ),
+						'target_keyword' => array( 'type' => 'string', 'description' => __( 'Optional focus keyword to check usage of.', 'emcp-tools' ) ),
 					),
 					'required'   => array( 'post_id' ),
 				),
@@ -178,17 +178,17 @@ class Elementor_MCP_Seo_Abilities {
 	 */
 	public function execute_audit_page_seo( $input ) {
 		if ( ! $this->has_access() ) {
-			return new \WP_Error( 'no_license', __( 'A valid EMCP Tools Pro license is required.', 'elementor-mcp' ) );
+			return new \WP_Error( 'no_license', __( 'A valid EMCP Tools Pro license is required.', 'emcp-tools' ) );
 		}
 		$post_id = isset( $input['post_id'] ) ? absint( $input['post_id'] ) : 0;
 		if ( $post_id <= 0 ) {
-			return new \WP_Error( 'missing_post_id', __( 'A valid post_id is required.', 'elementor-mcp' ) );
+			return new \WP_Error( 'missing_post_id', __( 'A valid post_id is required.', 'emcp-tools' ) );
 		}
 		$extracted = $this->extracted( $post_id );
 		if ( is_wp_error( $extracted ) ) {
 			return $extracted;
 		}
-		$seo    = Elementor_MCP_Seo_Meta::get( $post_id );
+		$seo    = EMCP_Tools_Seo_Meta::get( $post_id );
 		$target = isset( $input['target_keyword'] ) ? sanitize_text_field( (string) $input['target_keyword'] ) : '';
 		return self::build_seo_report( $extracted, $seo, $target );
 	}
@@ -198,19 +198,19 @@ class Elementor_MCP_Seo_Abilities {
 	// =========================================================================
 
 	private function register_extract_keywords(): void {
-		elementor_mcp_register_ability(
+		emcp_tools_register_ability(
 			'elementor-mcp/extract-keywords-from-content',
 			array(
-				'label'               => __( 'Extract Keywords from Content', 'elementor-mcp' ),
-				'description'         => __( 'Extracts the most frequent meaningful keywords and two-word phrases from a page\'s text (stop-word filtered). No external service. Useful for choosing a target keyword.', 'elementor-mcp' ),
-				'category'            => 'elementor-mcp',
+				'label'               => __( 'Extract Keywords from Content', 'emcp-tools' ),
+				'description'         => __( 'Extracts the most frequent meaningful keywords and two-word phrases from a page\'s text (stop-word filtered). No external service. Useful for choosing a target keyword.', 'emcp-tools' ),
+				'category'            => 'emcp-tools',
 				'execute_callback'    => array( $this, 'execute_extract_keywords' ),
 				'permission_callback' => array( $this, 'check_read_permission' ),
 				'input_schema'        => array(
 					'type'       => 'object',
 					'properties' => array(
 						'post_id' => array( 'type' => 'integer' ),
-						'limit'   => array( 'type' => 'integer', 'description' => __( 'Max keywords to return (default 20).', 'elementor-mcp' ) ),
+						'limit'   => array( 'type' => 'integer', 'description' => __( 'Max keywords to return (default 20).', 'emcp-tools' ) ),
 					),
 					'required'   => array( 'post_id' ),
 				),
@@ -236,11 +236,11 @@ class Elementor_MCP_Seo_Abilities {
 	 */
 	public function execute_extract_keywords( $input ) {
 		if ( ! $this->has_access() ) {
-			return new \WP_Error( 'no_license', __( 'A valid EMCP Tools Pro license is required.', 'elementor-mcp' ) );
+			return new \WP_Error( 'no_license', __( 'A valid EMCP Tools Pro license is required.', 'emcp-tools' ) );
 		}
 		$post_id = isset( $input['post_id'] ) ? absint( $input['post_id'] ) : 0;
 		if ( $post_id <= 0 ) {
-			return new \WP_Error( 'missing_post_id', __( 'A valid post_id is required.', 'elementor-mcp' ) );
+			return new \WP_Error( 'missing_post_id', __( 'A valid post_id is required.', 'emcp-tools' ) );
 		}
 		$extracted = $this->extracted( $post_id );
 		if ( is_wp_error( $extracted ) ) {
@@ -255,12 +255,12 @@ class Elementor_MCP_Seo_Abilities {
 	// =========================================================================
 
 	private function register_generate_meta_tags(): void {
-		elementor_mcp_register_ability(
+		emcp_tools_register_ability(
 			'elementor-mcp/generate-meta-tags',
 			array(
-				'label'               => __( 'Generate Meta Tags', 'elementor-mcp' ),
-				'description'         => __( 'Proposes an SEO title (<=60 chars) and meta description (<=155 chars) from the page content, keyword-front-loaded when a target keyword is given. Dry-run by default; with apply:true writes them to the active SEO plugin (Yoast / Rank Math).', 'elementor-mcp' ),
-				'category'            => 'elementor-mcp',
+				'label'               => __( 'Generate Meta Tags', 'emcp-tools' ),
+				'description'         => __( 'Proposes an SEO title (<=60 chars) and meta description (<=155 chars) from the page content, keyword-front-loaded when a target keyword is given. Dry-run by default; with apply:true writes them to the active SEO plugin (Yoast / Rank Math).', 'emcp-tools' ),
+				'category'            => 'emcp-tools',
 				'execute_callback'    => array( $this, 'execute_generate_meta_tags' ),
 				'permission_callback' => array( $this, 'check_read_permission' ),
 				'input_schema'        => array(
@@ -268,7 +268,7 @@ class Elementor_MCP_Seo_Abilities {
 					'properties' => array(
 						'post_id'        => array( 'type' => 'integer' ),
 						'target_keyword' => array( 'type' => 'string' ),
-						'apply'          => array( 'type' => 'boolean', 'description' => __( 'Write the proposed meta to the active SEO plugin. Defaults to false (dry-run).', 'elementor-mcp' ) ),
+						'apply'          => array( 'type' => 'boolean', 'description' => __( 'Write the proposed meta to the active SEO plugin. Defaults to false (dry-run).', 'emcp-tools' ) ),
 					),
 					'required'   => array( 'post_id' ),
 				),
@@ -299,17 +299,17 @@ class Elementor_MCP_Seo_Abilities {
 	 */
 	public function execute_generate_meta_tags( $input ) {
 		if ( ! $this->has_access() ) {
-			return new \WP_Error( 'no_license', __( 'A valid EMCP Tools Pro license is required.', 'elementor-mcp' ) );
+			return new \WP_Error( 'no_license', __( 'A valid EMCP Tools Pro license is required.', 'emcp-tools' ) );
 		}
 		$post_id = isset( $input['post_id'] ) ? absint( $input['post_id'] ) : 0;
 		if ( $post_id <= 0 ) {
-			return new \WP_Error( 'missing_post_id', __( 'A valid post_id is required.', 'elementor-mcp' ) );
+			return new \WP_Error( 'missing_post_id', __( 'A valid post_id is required.', 'emcp-tools' ) );
 		}
 		$extracted = $this->extracted( $post_id );
 		if ( is_wp_error( $extracted ) ) {
 			return $extracted;
 		}
-		$seo       = Elementor_MCP_Seo_Meta::get( $post_id );
+		$seo       = EMCP_Tools_Seo_Meta::get( $post_id );
 		$target    = isset( $input['target_keyword'] ) ? sanitize_text_field( (string) $input['target_keyword'] ) : '';
 		$site_name = function_exists( 'get_bloginfo' ) ? (string) get_bloginfo( 'name' ) : '';
 		$proposal  = self::propose_meta( $extracted, $seo, $target, $site_name );
@@ -320,14 +320,14 @@ class Elementor_MCP_Seo_Abilities {
 
 		if ( ! empty( $input['apply'] ) ) {
 			if ( ! current_user_can( 'edit_post', $post_id ) ) {
-				return new \WP_Error( 'forbidden', __( 'You do not have permission to edit this page.', 'elementor-mcp' ) );
+				return new \WP_Error( 'forbidden', __( 'You do not have permission to edit this page.', 'emcp-tools' ) );
 			}
-			$w                          = Elementor_MCP_Seo_Meta::write( $post_id, $proposal['proposed_title'], $proposal['proposed_description'] );
+			$w                          = EMCP_Tools_Seo_Meta::write( $post_id, $proposal['proposed_title'], $proposal['proposed_description'] );
 			$proposal['applied']        = $w['written'];
 			$proposal['write_source']   = $w['source'];
 			$proposal['written_fields'] = $w['fields'];
 			if ( ! $w['written'] && 'none' === $w['source'] ) {
-				$proposal['notes'][] = __( 'No SEO plugin (Yoast / Rank Math) detected — meta was not persisted. Install one, or add the tags via generate-schema-markup / a head snippet.', 'elementor-mcp' );
+				$proposal['notes'][] = __( 'No SEO plugin (Yoast / Rank Math) detected — meta was not persisted. Install one, or add the tags via generate-schema-markup / a head snippet.', 'emcp-tools' );
 			}
 		}
 
@@ -339,12 +339,12 @@ class Elementor_MCP_Seo_Abilities {
 	// =========================================================================
 
 	private function register_generate_schema_markup(): void {
-		elementor_mcp_register_ability(
+		emcp_tools_register_ability(
 			'elementor-mcp/generate-schema-markup',
 			array(
-				'label'               => __( 'Generate Schema Markup', 'elementor-mcp' ),
-				'description'         => __( 'Generates JSON-LD structured data for the page (Article, LocalBusiness, FAQPage, Service, or Product). LocalBusiness requires a business object (name/address/phone). FAQPage uses a provided faqs array. Dry-run by default; with apply:true injects it into the page via a managed HTML widget (replaced in place on re-apply).', 'elementor-mcp' ),
-				'category'            => 'elementor-mcp',
+				'label'               => __( 'Generate Schema Markup', 'emcp-tools' ),
+				'description'         => __( 'Generates JSON-LD structured data for the page (Article, LocalBusiness, FAQPage, Service, or Product). LocalBusiness requires a business object (name/address/phone). FAQPage uses a provided faqs array. Dry-run by default; with apply:true injects it into the page via a managed HTML widget (replaced in place on re-apply).', 'emcp-tools' ),
+				'category'            => 'emcp-tools',
 				'execute_callback'    => array( $this, 'execute_generate_schema_markup' ),
 				'permission_callback' => array( $this, 'check_read_permission' ),
 				'input_schema'        => array(
@@ -354,17 +354,17 @@ class Elementor_MCP_Seo_Abilities {
 						'schema_type' => array(
 							'type'        => 'string',
 							'enum'        => array( 'auto', 'Article', 'LocalBusiness', 'FAQPage', 'Service', 'Product' ),
-							'description' => __( 'Schema type, or "auto" to infer.', 'elementor-mcp' ),
+							'description' => __( 'Schema type, or "auto" to infer.', 'emcp-tools' ),
 						),
 						'business'    => array(
 							'type'        => 'object',
-							'description' => __( 'NAP for LocalBusiness: { name, street, locality, region, postal_code, country, phone, url, price_range }.', 'elementor-mcp' ),
+							'description' => __( 'NAP for LocalBusiness: { name, street, locality, region, postal_code, country, phone, url, price_range }.', 'emcp-tools' ),
 						),
 						'faqs'        => array(
 							'type'        => 'array',
-							'description' => __( 'For FAQPage: array of { question, answer }.', 'elementor-mcp' ),
+							'description' => __( 'For FAQPage: array of { question, answer }.', 'emcp-tools' ),
 						),
-						'apply'       => array( 'type' => 'boolean', 'description' => __( 'Inject the JSON-LD into the page. Defaults to false (dry-run).', 'elementor-mcp' ) ),
+						'apply'       => array( 'type' => 'boolean', 'description' => __( 'Inject the JSON-LD into the page. Defaults to false (dry-run).', 'emcp-tools' ) ),
 					),
 					'required'   => array( 'post_id' ),
 				),
@@ -393,17 +393,17 @@ class Elementor_MCP_Seo_Abilities {
 	 */
 	public function execute_generate_schema_markup( $input ) {
 		if ( ! $this->has_access() ) {
-			return new \WP_Error( 'no_license', __( 'A valid EMCP Tools Pro license is required.', 'elementor-mcp' ) );
+			return new \WP_Error( 'no_license', __( 'A valid EMCP Tools Pro license is required.', 'emcp-tools' ) );
 		}
 		$post_id = isset( $input['post_id'] ) ? absint( $input['post_id'] ) : 0;
 		if ( $post_id <= 0 ) {
-			return new \WP_Error( 'missing_post_id', __( 'A valid post_id is required.', 'elementor-mcp' ) );
+			return new \WP_Error( 'missing_post_id', __( 'A valid post_id is required.', 'emcp-tools' ) );
 		}
 		$extracted = $this->extracted( $post_id );
 		if ( is_wp_error( $extracted ) ) {
 			return $extracted;
 		}
-		$seo      = Elementor_MCP_Seo_Meta::get( $post_id );
+		$seo      = EMCP_Tools_Seo_Meta::get( $post_id );
 		$type     = isset( $input['schema_type'] ) ? sanitize_text_field( (string) $input['schema_type'] ) : 'auto';
 		$business = isset( $input['business'] ) && is_array( $input['business'] ) ? $input['business'] : array();
 		$faqs     = isset( $input['faqs'] ) && is_array( $input['faqs'] ) ? $input['faqs'] : array();
@@ -415,10 +415,10 @@ class Elementor_MCP_Seo_Abilities {
 
 		if ( ! empty( $input['apply'] ) ) {
 			if ( ! current_user_can( 'edit_post', $post_id ) ) {
-				return new \WP_Error( 'forbidden', __( 'You do not have permission to edit this page.', 'elementor-mcp' ) );
+				return new \WP_Error( 'forbidden', __( 'You do not have permission to edit this page.', 'emcp-tools' ) );
 			}
 			if ( '' === $result['jsonld'] ) {
-				$result['notes'][] = __( 'No JSON-LD was generated, so nothing was injected.', 'elementor-mcp' );
+				$result['notes'][] = __( 'No JSON-LD was generated, so nothing was injected.', 'emcp-tools' );
 				return $result;
 			}
 			$injected = $this->inject_schema( $post_id, $result['jsonld'] );
@@ -459,14 +459,14 @@ class Elementor_MCP_Seo_Abilities {
 		if ( '' !== $stored && null !== $this->data->find_element_by_id( $page, $stored ) ) {
 			// Replace in place.
 			if ( ! $this->data->update_element_settings( $page, $stored, array( 'html' => $script ) ) ) {
-				return new \WP_Error( 'inject_failed', __( 'Could not update the existing schema widget.', 'elementor-mcp' ) );
+				return new \WP_Error( 'inject_failed', __( 'Could not update the existing schema widget.', 'emcp-tools' ) );
 			}
 			$element_id = $stored;
 		} else {
 			// Fresh injection: append a full-width container with an HTML widget.
-			$element_id = Elementor_MCP_Id_Generator::generate();
+			$element_id = EMCP_Tools_Id_Generator::generate();
 			$container  = array(
-				'id'         => Elementor_MCP_Id_Generator::generate(),
+				'id'         => EMCP_Tools_Id_Generator::generate(),
 				'elType'     => 'container',
 				'widgetType' => null,
 				'settings'   => array( 'content_width' => 'full' ),
@@ -517,10 +517,10 @@ class Elementor_MCP_Seo_Abilities {
 		}
 		$checks[] = self::check(
 			'h1_present',
-			__( 'Single H1', 'elementor-mcp' ),
+			__( 'Single H1', 'emcp-tools' ),
 			( 1 === $h1 ) ? 'pass' : ( 0 === $h1 ? 'fail' : 'warn' ),
-			sprintf( /* translators: %d: count */ __( '%d H1 heading(s) found.', 'elementor-mcp' ), $h1 ),
-			( 1 === $h1 ) ? '' : __( 'A page should have exactly one H1.', 'elementor-mcp' )
+			sprintf( /* translators: %d: count */ __( '%d H1 heading(s) found.', 'emcp-tools' ), $h1 ),
+			( 1 === $h1 ) ? '' : __( 'A page should have exactly one H1.', 'emcp-tools' )
 		);
 
 		// Heading hierarchy (no skipped levels).
@@ -538,41 +538,41 @@ class Elementor_MCP_Seo_Abilities {
 		}
 		$checks[] = self::check(
 			'heading_hierarchy',
-			__( 'Heading hierarchy', 'elementor-mcp' ),
+			__( 'Heading hierarchy', 'emcp-tools' ),
 			$skip ? 'warn' : 'pass',
-			$skip ? __( 'A heading level is skipped (e.g. H1 → H3).', 'elementor-mcp' ) : __( 'No skipped heading levels.', 'elementor-mcp' ),
-			$skip ? __( 'Avoid jumping heading levels; keep them sequential.', 'elementor-mcp' ) : ''
+			$skip ? __( 'A heading level is skipped (e.g. H1 → H3).', 'emcp-tools' ) : __( 'No skipped heading levels.', 'emcp-tools' ),
+			$skip ? __( 'Avoid jumping heading levels; keep them sequential.', 'emcp-tools' ) : ''
 		);
 
 		// Title length.
 		$title_len = self::mb_len( $seo['title'] ?? '' );
-		$tpl_note  = ! empty( $seo['title_is_template'] ) ? __( ' (contains SEO-plugin template tokens — length is approximate)', 'elementor-mcp' ) : '';
+		$tpl_note  = ! empty( $seo['title_is_template'] ) ? __( ' (contains SEO-plugin template tokens — length is approximate)', 'emcp-tools' ) : '';
 		$checks[]  = self::check(
 			'title_length',
-			__( 'Title length', 'elementor-mcp' ),
+			__( 'Title length', 'emcp-tools' ),
 			( 0 === $title_len ) ? 'fail' : ( ( $title_len >= 30 && $title_len <= 60 ) ? 'pass' : 'warn' ),
-			sprintf( /* translators: 1: length, 2: note */ __( 'SEO title is %1$d characters%2$s.', 'elementor-mcp' ), $title_len, $tpl_note ),
-			( $title_len >= 30 && $title_len <= 60 ) ? '' : __( 'Aim for a 30–60 character title.', 'elementor-mcp' )
+			sprintf( /* translators: 1: length, 2: note */ __( 'SEO title is %1$d characters%2$s.', 'emcp-tools' ), $title_len, $tpl_note ),
+			( $title_len >= 30 && $title_len <= 60 ) ? '' : __( 'Aim for a 30–60 character title.', 'emcp-tools' )
 		);
 
 		// Meta description.
 		$desc_len = self::mb_len( $seo['description'] ?? '' );
 		$checks[] = self::check(
 			'meta_description',
-			__( 'Meta description', 'elementor-mcp' ),
+			__( 'Meta description', 'emcp-tools' ),
 			( 0 === $desc_len ) ? 'fail' : ( ( $desc_len >= 120 && $desc_len <= 160 ) ? 'pass' : 'warn' ),
-			( 0 === $desc_len ) ? __( 'No meta description set.', 'elementor-mcp' ) : sprintf( /* translators: %d: length */ __( 'Meta description is %d characters.', 'elementor-mcp' ), $desc_len ),
-			( $desc_len >= 120 && $desc_len <= 160 ) ? '' : __( 'Aim for a 120–160 character meta description.', 'elementor-mcp' )
+			( 0 === $desc_len ) ? __( 'No meta description set.', 'emcp-tools' ) : sprintf( /* translators: %d: length */ __( 'Meta description is %d characters.', 'emcp-tools' ), $desc_len ),
+			( $desc_len >= 120 && $desc_len <= 160 ) ? '' : __( 'Aim for a 120–160 character meta description.', 'emcp-tools' )
 		);
 
 		// Canonical.
 		$has_canonical = '' !== trim( (string) ( $seo['canonical'] ?? '' ) );
 		$checks[]      = self::check(
 			'canonical',
-			__( 'Canonical URL', 'elementor-mcp' ),
+			__( 'Canonical URL', 'emcp-tools' ),
 			$has_canonical ? 'pass' : 'warn',
-			$has_canonical ? __( 'Canonical URL is present.', 'elementor-mcp' ) : __( 'No canonical URL resolved.', 'elementor-mcp' ),
-			$has_canonical ? '' : __( 'Set a canonical URL (your SEO plugin usually does this automatically).', 'elementor-mcp' )
+			$has_canonical ? __( 'Canonical URL is present.', 'emcp-tools' ) : __( 'No canonical URL resolved.', 'emcp-tools' ),
+			$has_canonical ? '' : __( 'Set a canonical URL (your SEO plugin usually does this automatically).', 'emcp-tools' )
 		);
 
 		// Image alts.
@@ -585,10 +585,10 @@ class Elementor_MCP_Seo_Abilities {
 		$total_img = count( $ex['images'] );
 		$checks[]  = self::check(
 			'image_alts',
-			__( 'Image alt text', 'elementor-mcp' ),
+			__( 'Image alt text', 'emcp-tools' ),
 			( 0 === $missing_alt ) ? 'pass' : 'fail',
-			sprintf( /* translators: 1: missing, 2: total */ __( '%1$d of %2$d images are missing alt text.', 'elementor-mcp' ), $missing_alt, $total_img ),
-			( 0 === $missing_alt ) ? '' : __( 'Add descriptive alt text to every meaningful image.', 'elementor-mcp' )
+			sprintf( /* translators: 1: missing, 2: total */ __( '%1$d of %2$d images are missing alt text.', 'emcp-tools' ), $missing_alt, $total_img ),
+			( 0 === $missing_alt ) ? '' : __( 'Add descriptive alt text to every meaningful image.', 'emcp-tools' )
 		);
 
 		// Internal links.
@@ -600,20 +600,20 @@ class Elementor_MCP_Seo_Abilities {
 		}
 		$checks[] = self::check(
 			'internal_links',
-			__( 'Internal links', 'elementor-mcp' ),
+			__( 'Internal links', 'emcp-tools' ),
 			( $internal >= 1 ) ? 'pass' : 'warn',
-			sprintf( /* translators: %d: count */ __( '%d internal link(s).', 'elementor-mcp' ), $internal ),
-			( $internal >= 1 ) ? '' : __( 'Add at least one internal link to related content.', 'elementor-mcp' )
+			sprintf( /* translators: %d: count */ __( '%d internal link(s).', 'emcp-tools' ), $internal ),
+			( $internal >= 1 ) ? '' : __( 'Add at least one internal link to related content.', 'emcp-tools' )
 		);
 
 		// Word count.
 		$wc       = (int) $ex['word_count'];
 		$checks[] = self::check(
 			'word_count',
-			__( 'Content length', 'elementor-mcp' ),
+			__( 'Content length', 'emcp-tools' ),
 			( $wc >= 300 ) ? 'pass' : ( $wc >= 150 ? 'warn' : 'fail' ),
-			sprintf( /* translators: %d: words */ __( '%d words of content.', 'elementor-mcp' ), $wc ),
-			( $wc >= 300 ) ? '' : __( 'Thin content — aim for 300+ words where appropriate.', 'elementor-mcp' )
+			sprintf( /* translators: %d: words */ __( '%d words of content.', 'emcp-tools' ), $wc ),
+			( $wc >= 300 ) ? '' : __( 'Thin content — aim for 300+ words where appropriate.', 'emcp-tools' )
 		);
 
 		// Target keyword usage.
@@ -632,17 +632,17 @@ class Elementor_MCP_Seo_Abilities {
 			$hits     = ( $title_has ? 1 : 0 ) + ( $desc_has ? 1 : 0 ) + ( $h1_has ? 1 : 0 );
 			$checks[] = self::check(
 				'keyword_usage',
-				__( 'Target keyword usage', 'elementor-mcp' ),
+				__( 'Target keyword usage', 'emcp-tools' ),
 				( $hits >= 2 ) ? 'pass' : ( $hits >= 1 ? 'warn' : 'fail' ),
 				sprintf(
 					/* translators: 1: keyword, 2: in title, 3: in h1, 4: in description */
-					__( '"%1$s" — title: %2$s, H1: %3$s, meta: %4$s.', 'elementor-mcp' ),
+					__( '"%1$s" — title: %2$s, H1: %3$s, meta: %4$s.', 'emcp-tools' ),
 					$target,
 					$title_has ? '✓' : '✗',
 					$h1_has ? '✓' : '✗',
 					$desc_has ? '✓' : '✗'
 				),
-				( $hits >= 2 ) ? '' : __( 'Use the target keyword in the title, H1, and meta description.', 'elementor-mcp' )
+				( $hits >= 2 ) ? '' : __( 'Use the target keyword in the title, H1, and meta description.', 'emcp-tools' )
 			);
 		}
 
@@ -745,8 +745,8 @@ class Elementor_MCP_Seo_Abilities {
 			$base = $ex['headings'][0]['text'];
 		}
 		if ( '' === $base ) {
-			$base = __( 'Untitled', 'elementor-mcp' );
-			$notes[] = __( 'No heading found — title falls back to a placeholder.', 'elementor-mcp' );
+			$base = __( 'Untitled', 'emcp-tools' );
+			$notes[] = __( 'No heading found — title falls back to a placeholder.', 'emcp-tools' );
 		}
 
 		$title = $base;
@@ -770,11 +770,11 @@ class Elementor_MCP_Seo_Abilities {
 		$desc = $body;
 		if ( '' !== $target && false === mb_strpos( self::mb_lower( $desc ), self::mb_lower( $target ) ) ) {
 			$desc = rtrim( ucfirst( $target ), '.' ) . ': ' . $desc;
-			$notes[] = __( 'Target keyword front-loaded into the description.', 'elementor-mcp' );
+			$notes[] = __( 'Target keyword front-loaded into the description.', 'emcp-tools' );
 		}
 		$desc = self::truncate( $desc, 155 );
 		if ( '' === $desc ) {
-			$notes[] = __( 'No body text found to build a description from.', 'elementor-mcp' );
+			$notes[] = __( 'No body text found to build a description from.', 'emcp-tools' );
 		}
 
 		return array(
@@ -819,13 +819,13 @@ class Elementor_MCP_Seo_Abilities {
 			} else {
 				$type = 'Article';
 			}
-			$notes[] = sprintf( /* translators: %s: type */ __( 'Auto-detected schema type: %s.', 'elementor-mcp' ), $type );
+			$notes[] = sprintf( /* translators: %s: type */ __( 'Auto-detected schema type: %s.', 'emcp-tools' ), $type );
 		}
 
 		switch ( $type ) {
 			case 'LocalBusiness':
 				if ( empty( $business ) ) {
-					$notes[] = __( 'LocalBusiness needs a business object (name/address/phone) — emitting a minimal stub.', 'elementor-mcp' );
+					$notes[] = __( 'LocalBusiness needs a business object (name/address/phone) — emitting a minimal stub.', 'emcp-tools' );
 				}
 				$schema = array(
 					'@context' => 'https://schema.org',
@@ -867,7 +867,7 @@ class Elementor_MCP_Seo_Abilities {
 					);
 				}
 				if ( empty( $entities ) ) {
-					$notes[] = __( 'FAQPage needs a faqs array of {question, answer} — none provided.', 'elementor-mcp' );
+					$notes[] = __( 'FAQPage needs a faqs array of {question, answer} — none provided.', 'emcp-tools' );
 				}
 				$schema = array(
 					'@context'   => 'https://schema.org',
@@ -916,7 +916,7 @@ class Elementor_MCP_Seo_Abilities {
 		return array(
 			'detected_type' => $type,
 			'jsonld'        => is_string( $jsonld ) ? $jsonld : '',
-			'insert_hint'   => __( 'Insert inside a <script type="application/ld+json"> tag in the page head or via your SEO plugin.', 'elementor-mcp' ),
+			'insert_hint'   => __( 'Insert inside a <script type="application/ld+json"> tag in the page head or via your SEO plugin.', 'emcp-tools' ),
 			'notes'         => $notes,
 		);
 	}

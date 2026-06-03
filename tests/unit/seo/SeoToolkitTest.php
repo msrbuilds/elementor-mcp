@@ -3,16 +3,16 @@
  * Unit tests for the SEO toolkit pure analysis helpers + Seo_Meta.
  *
  * @group seo
- * @package Elementor_MCP\Tests\Seo
+ * @package EMCP_Tools\Tests\Seo
  */
 
-namespace Elementor_MCP\Tests\Seo;
+namespace EMCP_Tools\Tests\Seo;
 
 require_once dirname( __DIR__ ) . '/class-ability-test-case.php';
 
-use Elementor_MCP\Tests\Ability_Test_Case;
-use Elementor_MCP_Seo_Abilities;
-use Elementor_MCP_Seo_Meta;
+use EMCP_Tools\Tests\Ability_Test_Case;
+use EMCP_Tools_Seo_Abilities;
+use EMCP_Tools_Seo_Meta;
 
 class SeoToolkitTest extends Ability_Test_Case {
 
@@ -53,7 +53,7 @@ class SeoToolkitTest extends Ability_Test_Case {
 	// ---- build_seo_report ---------------------------------------------------
 
 	public function test_good_page_scores_high_and_passes_core_checks(): void {
-		$report = Elementor_MCP_Seo_Abilities::build_seo_report( $this->good_extract(), $this->good_seo(), 'family dentist' );
+		$report = EMCP_Tools_Seo_Abilities::build_seo_report( $this->good_extract(), $this->good_seo(), 'family dentist' );
 
 		$this->assertGreaterThanOrEqual( 90, $report['score'] );
 		$status = array_column( $report['checks'], 'status', 'id' );
@@ -70,7 +70,7 @@ class SeoToolkitTest extends Ability_Test_Case {
 		$ex['headings'] = array( array( 'level' => 2, 'text' => 'No H1 here', 'element_id' => 'b' ) ); // 0 H1
 		$ex['images'][] = array( 'element_id' => 'e', 'attachment_id' => 2, 'url' => 'y.jpg', 'alt' => '' ); // missing alt
 
-		$report = Elementor_MCP_Seo_Abilities::build_seo_report( $ex, $this->good_seo(), '' );
+		$report = EMCP_Tools_Seo_Abilities::build_seo_report( $ex, $this->good_seo(), '' );
 		$status = array_column( $report['checks'], 'status', 'id' );
 
 		$this->assertSame( 'fail', $status['h1_present'] );
@@ -84,7 +84,7 @@ class SeoToolkitTest extends Ability_Test_Case {
 			array( 'level' => 1, 'text' => 'Title', 'element_id' => 'a' ),
 			array( 'level' => 3, 'text' => 'Jumped', 'element_id' => 'b' ), // H1 -> H3 skip
 		);
-		$report = Elementor_MCP_Seo_Abilities::build_seo_report( $ex, $this->good_seo(), '' );
+		$report = EMCP_Tools_Seo_Abilities::build_seo_report( $ex, $this->good_seo(), '' );
 		$status = array_column( $report['checks'], 'status', 'id' );
 		$this->assertSame( 'warn', $status['heading_hierarchy'] );
 	}
@@ -92,7 +92,7 @@ class SeoToolkitTest extends Ability_Test_Case {
 	public function test_empty_meta_description_fails(): void {
 		$seo                = $this->good_seo();
 		$seo['description'] = '';
-		$report             = Elementor_MCP_Seo_Abilities::build_seo_report( $this->good_extract(), $seo, '' );
+		$report             = EMCP_Tools_Seo_Abilities::build_seo_report( $this->good_extract(), $seo, '' );
 		$status             = array_column( $report['checks'], 'status', 'id' );
 		$this->assertSame( 'fail', $status['meta_description'] );
 	}
@@ -104,7 +104,7 @@ class SeoToolkitTest extends Ability_Test_Case {
 			'headings'    => array( array( 'level' => 1, 'text' => 'Coffee Coffee Coffee', 'element_id' => 'a' ) ),
 			'text_blocks' => array( array( 'text' => 'The the the beans beans roast', 'element_id' => 'b' ) ),
 		);
-		$r     = Elementor_MCP_Seo_Abilities::rank_keywords( $ex, 10 );
+		$r     = EMCP_Tools_Seo_Abilities::rank_keywords( $ex, 10 );
 		$terms = array_column( $r['keywords'], 'count', 'term' );
 
 		$this->assertArrayHasKey( 'coffee', $terms );
@@ -118,7 +118,7 @@ class SeoToolkitTest extends Ability_Test_Case {
 			'headings'    => array(),
 			'text_blocks' => array( array( 'text' => 'family dentist springfield family dentist springfield', 'element_id' => 'b' ) ),
 		);
-		$r       = Elementor_MCP_Seo_Abilities::rank_keywords( $ex, 10 );
+		$r       = EMCP_Tools_Seo_Abilities::rank_keywords( $ex, 10 );
 		$bigrams = array_column( $r['bigrams'], 'count', 'term' );
 		$this->assertArrayHasKey( 'family dentist', $bigrams );
 		$this->assertGreaterThanOrEqual( 2, $bigrams['family dentist'] );
@@ -127,7 +127,7 @@ class SeoToolkitTest extends Ability_Test_Case {
 	// ---- propose_meta -------------------------------------------------------
 
 	public function test_propose_meta_builds_title_with_site_name_within_limit(): void {
-		$r = Elementor_MCP_Seo_Abilities::propose_meta( $this->good_extract(), $this->good_seo(), '', 'Bright Smiles' );
+		$r = EMCP_Tools_Seo_Abilities::propose_meta( $this->good_extract(), $this->good_seo(), '', 'Bright Smiles' );
 		$this->assertStringContainsString( 'Family Dentist in Springfield', $r['proposed_title'] );
 		$this->assertLessThanOrEqual( 60, $r['title_length'] );
 		$this->assertLessThanOrEqual( 155, $r['description_length'] );
@@ -136,14 +136,14 @@ class SeoToolkitTest extends Ability_Test_Case {
 	public function test_propose_meta_front_loads_target_keyword(): void {
 		$ex = $this->good_extract();
 		$ex['text_blocks'] = array( array( 'text' => 'We offer gentle care and modern equipment for every patient visiting us.', 'element_id' => 'c' ) );
-		$r  = Elementor_MCP_Seo_Abilities::propose_meta( $ex, $this->good_seo(), 'Emergency Dentist', '' );
+		$r  = EMCP_Tools_Seo_Abilities::propose_meta( $ex, $this->good_seo(), 'Emergency Dentist', '' );
 		$this->assertStringStartsWith( 'Emergency Dentist', $r['proposed_description'] );
 	}
 
 	// ---- build_jsonld -------------------------------------------------------
 
 	public function test_jsonld_auto_with_business_is_localbusiness(): void {
-		$r = Elementor_MCP_Seo_Abilities::build_jsonld(
+		$r = EMCP_Tools_Seo_Abilities::build_jsonld(
 			'auto',
 			$this->good_extract(),
 			$this->good_seo(),
@@ -159,7 +159,7 @@ class SeoToolkitTest extends Ability_Test_Case {
 	}
 
 	public function test_jsonld_auto_with_faqs_is_faqpage(): void {
-		$r = Elementor_MCP_Seo_Abilities::build_jsonld(
+		$r = EMCP_Tools_Seo_Abilities::build_jsonld(
 			'auto',
 			$this->good_extract(),
 			$this->good_seo(),
@@ -173,7 +173,7 @@ class SeoToolkitTest extends Ability_Test_Case {
 	}
 
 	public function test_jsonld_auto_default_is_article(): void {
-		$r       = Elementor_MCP_Seo_Abilities::build_jsonld( 'auto', $this->good_extract(), $this->good_seo(), array(), array(), 'https://example.com/x/' );
+		$r       = EMCP_Tools_Seo_Abilities::build_jsonld( 'auto', $this->good_extract(), $this->good_seo(), array(), array(), 'https://example.com/x/' );
 		$this->assertSame( 'Article', $r['detected_type'] );
 		$decoded = json_decode( $r['jsonld'], true );
 		$this->assertSame( 'Family Dentist in Springfield', $decoded['headline'] );
@@ -183,14 +183,14 @@ class SeoToolkitTest extends Ability_Test_Case {
 
 	public function test_seo_meta_falls_back_to_core_in_test_env(): void {
 		// No SEO plugin constants defined + stubbed get_post_meta('') → core source.
-		$meta = Elementor_MCP_Seo_Meta::get( 123 );
+		$meta = EMCP_Tools_Seo_Meta::get( 123 );
 		$this->assertSame( 'core', $meta['source'] );
 		$this->assertSame( 'Test Post', $meta['title'] ); // from get_the_title stub
 	}
 
 	public function test_seo_meta_write_noops_without_seo_plugin(): void {
 		// No Yoast/Rank Math constants or existing meta → nothing persisted.
-		$r = Elementor_MCP_Seo_Meta::write( 123, 'A Title', 'A description.' );
+		$r = EMCP_Tools_Seo_Meta::write( 123, 'A Title', 'A description.' );
 		$this->assertFalse( $r['written'] );
 		$this->assertSame( 'none', $r['source'] );
 		$this->assertSame( array(), $r['fields'] );

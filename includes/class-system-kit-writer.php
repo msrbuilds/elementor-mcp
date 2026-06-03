@@ -12,7 +12,7 @@
  *
  * See docs/BRAND_KITS_PLAN.md §§ 2.1, 2.1.1, 4.2.1, 4.3, 6.1.
  *
- * @package Elementor_MCP
+ * @package EMCP_Tools
  * @since   1.8.0
  */
 
@@ -25,7 +25,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * @since 1.8.0
  */
-class Elementor_MCP_System_Kit_Writer {
+class EMCP_Tools_System_Kit_Writer {
 
 	/**
 	 * Prefix applied to the `_id` of every custom color a brand kit adds, so
@@ -106,7 +106,7 @@ class Elementor_MCP_System_Kit_Writer {
 	 */
 	public static function apply_kit( array $kit ) {
 		if ( empty( $kit['colors'] ) || ! is_array( $kit['colors'] ) || empty( $kit['typography'] ) || ! is_array( $kit['typography'] ) ) {
-			return new WP_Error( 'invalid_kit', __( 'This brand kit is missing its colors or typography data.', 'elementor-mcp' ) );
+			return new WP_Error( 'invalid_kit', __( 'This brand kit is missing its colors or typography data.', 'emcp-tools' ) );
 		}
 
 		// 1) System colors.
@@ -158,7 +158,7 @@ class Elementor_MCP_System_Kit_Writer {
 	 */
 	public static function replace_system_colors( array $colors ) {
 		if ( ! self::user_has_access() ) {
-			return new WP_Error( 'insufficient_capability', __( 'You need the manage_options capability to apply brand kits.', 'elementor-mcp' ) );
+			return new WP_Error( 'insufficient_capability', __( 'You need the manage_options capability to apply brand kits.', 'emcp-tools' ) );
 		}
 
 		$kit = self::get_kit();
@@ -172,7 +172,7 @@ class Elementor_MCP_System_Kit_Writer {
 				return new WP_Error(
 					'incomplete_palette',
 					/* translators: %s: missing system color slot name */
-					sprintf( __( 'Brand kit colors must include all four system slots. Missing: %s.', 'elementor-mcp' ), $slot )
+					sprintf( __( 'Brand kit colors must include all four system slots. Missing: %s.', 'emcp-tools' ), $slot )
 				);
 			}
 
@@ -181,7 +181,7 @@ class Elementor_MCP_System_Kit_Writer {
 				return new WP_Error(
 					'invalid_color',
 					/* translators: %s: system color slot name */
-					sprintf( __( 'The "%s" slot has an invalid hex color. Aborting — a brand kit replaces the whole palette or none of it.', 'elementor-mcp' ), $slot )
+					sprintf( __( 'The "%s" slot has an invalid hex color. Aborting — a brand kit replaces the whole palette or none of it.', 'emcp-tools' ), $slot )
 				);
 			}
 
@@ -195,7 +195,7 @@ class Elementor_MCP_System_Kit_Writer {
 		}
 
 		if ( ! self::persist( $kit, array( 'system_colors' => $entries ) ) ) {
-			return new WP_Error( 'persist_failed', __( 'Could not persist the new system colors to the Elementor kit.', 'elementor-mcp' ) );
+			return new WP_Error( 'persist_failed', __( 'Could not persist the new system colors to the Elementor kit.', 'emcp-tools' ) );
 		}
 
 		return array( 'colors_applied' => count( $entries ) );
@@ -213,7 +213,7 @@ class Elementor_MCP_System_Kit_Writer {
 	 */
 	public static function replace_system_typography( array $typography ) {
 		if ( ! self::user_has_access() ) {
-			return new WP_Error( 'insufficient_capability', __( 'You need the manage_options capability to apply brand kits.', 'elementor-mcp' ) );
+			return new WP_Error( 'insufficient_capability', __( 'You need the manage_options capability to apply brand kits.', 'emcp-tools' ) );
 		}
 
 		$kit = self::get_kit();
@@ -227,7 +227,7 @@ class Elementor_MCP_System_Kit_Writer {
 				return new WP_Error(
 					'incomplete_typography',
 					/* translators: %s: missing system typography slot name */
-					sprintf( __( 'Brand kit typography must include all four system slots. Missing: %s.', 'elementor-mcp' ), $slot )
+					sprintf( __( 'Brand kit typography must include all four system slots. Missing: %s.', 'emcp-tools' ), $slot )
 				);
 			}
 
@@ -235,7 +235,7 @@ class Elementor_MCP_System_Kit_Writer {
 		}
 
 		if ( ! self::persist( $kit, array( 'system_typography' => $entries ) ) ) {
-			return new WP_Error( 'persist_failed', __( 'Could not persist the new system typography to the Elementor kit.', 'elementor-mcp' ) );
+			return new WP_Error( 'persist_failed', __( 'Could not persist the new system typography to the Elementor kit.', 'emcp-tools' ) );
 		}
 
 		return array( 'typography_applied' => count( $entries ) );
@@ -254,7 +254,7 @@ class Elementor_MCP_System_Kit_Writer {
 	 */
 	public static function replace_brand_custom_colors( array $custom_colors ) {
 		if ( ! self::user_has_access() ) {
-			return new WP_Error( 'insufficient_capability', __( 'You need the manage_options capability to apply brand kits.', 'elementor-mcp' ) );
+			return new WP_Error( 'insufficient_capability', __( 'You need the manage_options capability to apply brand kits.', 'emcp-tools' ) );
 		}
 
 		$kit = self::get_kit();
@@ -289,14 +289,14 @@ class Elementor_MCP_System_Kit_Writer {
 
 			$kept[] = array(
 				'_id'   => self::BRAND_PREFIX . $slug . '_' . ( $added + 1 ),
-				'title' => '' !== $title ? $title : __( 'Brand Color', 'elementor-mcp' ),
+				'title' => '' !== $title ? $title : __( 'Brand Color', 'emcp-tools' ),
 				'color' => $hex,
 			);
 			$added++;
 		}
 
 		if ( ! self::persist( $kit, array( 'custom_colors' => array_values( $kept ) ) ) ) {
-			return new WP_Error( 'persist_failed', __( 'Could not persist the brand custom colors to the Elementor kit.', 'elementor-mcp' ) );
+			return new WP_Error( 'persist_failed', __( 'Could not persist the brand custom colors to the Elementor kit.', 'emcp-tools' ) );
 		}
 
 		return array( 'custom_colors_added' => $added );
@@ -325,7 +325,7 @@ class Elementor_MCP_System_Kit_Writer {
 	 */
 	public static function apply_theme_style( array $colors, array $typography ) {
 		if ( ! self::user_has_access() ) {
-			return new WP_Error( 'insufficient_capability', __( 'You need the manage_options capability to apply brand kits.', 'elementor-mcp' ) );
+			return new WP_Error( 'insufficient_capability', __( 'You need the manage_options capability to apply brand kits.', 'emcp-tools' ) );
 		}
 
 		$kit = self::get_kit();
@@ -344,7 +344,7 @@ class Elementor_MCP_System_Kit_Writer {
 		$accent_color    = sanitize_hex_color( (string) ( $colors['accent']['color'] ?? '' ) );
 
 		if ( '' === $body_family || '' === $heading_family || empty( $text_color ) ) {
-			return new WP_Error( 'incomplete_theme_style', __( 'Brand kit is missing the fonts or text color needed to set theme defaults.', 'elementor-mcp' ) );
+			return new WP_Error( 'incomplete_theme_style', __( 'Brand kit is missing the fonts or text color needed to set theme defaults.', 'emcp-tools' ) );
 		}
 
 		$settings = array(
@@ -368,7 +368,7 @@ class Elementor_MCP_System_Kit_Writer {
 		}
 
 		if ( ! self::persist( $kit, $settings ) ) {
-			return new WP_Error( 'persist_failed', __( 'Could not persist the theme style defaults to the Elementor kit.', 'elementor-mcp' ) );
+			return new WP_Error( 'persist_failed', __( 'Could not persist the theme style defaults to the Elementor kit.', 'emcp-tools' ) );
 		}
 
 		return array( 'theme_style_applied' => true );
@@ -446,7 +446,7 @@ class Elementor_MCP_System_Kit_Writer {
 	 */
 	public static function restore_snapshot( array $snapshot, bool $full_clobber = false ) {
 		if ( ! self::user_has_access() ) {
-			return new WP_Error( 'insufficient_capability', __( 'You need the manage_options capability to restore brand kits.', 'elementor-mcp' ) );
+			return new WP_Error( 'insufficient_capability', __( 'You need the manage_options capability to restore brand kits.', 'emcp-tools' ) );
 		}
 
 		$kit = self::get_kit();
@@ -511,11 +511,11 @@ class Elementor_MCP_System_Kit_Writer {
 		}
 
 		if ( empty( $write ) ) {
-			return new WP_Error( 'empty_snapshot', __( 'The backup did not contain any global settings to restore.', 'elementor-mcp' ) );
+			return new WP_Error( 'empty_snapshot', __( 'The backup did not contain any global settings to restore.', 'emcp-tools' ) );
 		}
 
 		if ( ! self::persist( $kit, $write ) ) {
-			return new WP_Error( 'persist_failed', __( 'Could not persist the restored global settings to the Elementor kit.', 'elementor-mcp' ) );
+			return new WP_Error( 'persist_failed', __( 'Could not persist the restored global settings to the Elementor kit.', 'emcp-tools' ) );
 		}
 
 		return array( 'restored' => array_keys( $write ) );
@@ -534,12 +534,12 @@ class Elementor_MCP_System_Kit_Writer {
 	 */
 	private static function get_kit() {
 		if ( ! class_exists( '\Elementor\Plugin' ) || ! isset( \Elementor\Plugin::$instance->kits_manager ) ) {
-			return new WP_Error( 'no_elementor', __( 'Elementor is not available.', 'elementor-mcp' ) );
+			return new WP_Error( 'no_elementor', __( 'Elementor is not available.', 'emcp-tools' ) );
 		}
 
 		$kit = \Elementor\Plugin::$instance->kits_manager->get_active_kit();
 		if ( ! $kit || ! $kit->get_id() ) {
-			return new WP_Error( 'kit_not_found', __( 'Active Elementor kit not found.', 'elementor-mcp' ) );
+			return new WP_Error( 'kit_not_found', __( 'Active Elementor kit not found.', 'emcp-tools' ) );
 		}
 
 		return $kit;

@@ -7,11 +7,11 @@
  * - Asserting WP_Error results and their codes
  * - Resetting recording stubs between tests
  *
- * @package Elementor_MCP\Tests
+ * @package EMCP_Tools\Tests
  * @since   1.0.0
  */
 
-namespace Elementor_MCP\Tests;
+namespace EMCP_Tools\Tests;
 
 use PHPUnit\Framework\TestCase;
 
@@ -127,12 +127,12 @@ abstract class Ability_Test_Case extends TestCase {
 	// -------------------------------------------------------------------------
 
 	/**
-	 * Build a minimal Elementor_MCP_Data stub whose save_page_data() returns true.
+	 * Build a minimal EMCP_Tools_Data stub whose save_page_data() returns true.
 	 *
 	 * Use this when the test only needs a data stub that succeeds.
 	 */
 	protected function make_data_stub( bool $save_succeeds = true ) {
-		$stub = $this->createStub( \Elementor_MCP_Data::class );
+		$stub = $this->createStub( \EMCP_Tools_Data::class );
 		$stub->method( 'save_page_data' )
 		     ->willReturn( $save_succeeds ? true : new \WP_Error( 'save_failed', 'Save failed in test stub.' ) );
 		$stub->method( 'save_page_settings' )
@@ -145,9 +145,9 @@ abstract class Ability_Test_Case extends TestCase {
 	}
 
 	/**
-	 * Build a minimal Elementor_MCP_Element_Factory instance.
+	 * Build a minimal EMCP_Tools_Element_Factory instance.
 	 */
-	protected function make_factory(): \Elementor_MCP_Element_Factory {
-		return new \Elementor_MCP_Element_Factory();
+	protected function make_factory(): \EMCP_Tools_Element_Factory {
+		return new \EMCP_Tools_Element_Factory();
 	}
 }

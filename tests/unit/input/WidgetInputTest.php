@@ -6,33 +6,33 @@
  *
  * @group input
  * @group widget
- * @package Elementor_MCP\Tests\Input
+ * @package EMCP_Tools\Tests\Input
  */
 
-namespace Elementor_MCP\Tests\Input;
+namespace EMCP_Tools\Tests\Input;
 
 require_once dirname( __DIR__ ) . '/class-ability-test-case.php';
 
-use Elementor_MCP\Tests\Ability_Test_Case;
+use EMCP_Tools\Tests\Ability_Test_Case;
 
 class WidgetInputTest extends Ability_Test_Case {
 
-	/** @var \Elementor_MCP_Widget_Abilities */
+	/** @var \EMCP_Tools_Widget_Abilities */
 	private $ability;
 
 	protected function setUp(): void {
 		parent::setUp();
 
-		$data = $this->createStub( \Elementor_MCP_Data::class );
+		$data = $this->createStub( \EMCP_Tools_Data::class );
 		$data->method( 'get_page_data' )
 		     ->willReturn( new \WP_Error( 'no_data', 'No page data.' ) );
 		$data->method( 'save_page_data' )->willReturn( true );
 
-		$schema    = $this->createStub( \Elementor_MCP_Schema_Generator::class );
-		$validator = $this->createStub( \Elementor_MCP_Settings_Validator::class );
+		$schema    = $this->createStub( \EMCP_Tools_Schema_Generator::class );
+		$validator = $this->createStub( \EMCP_Tools_Settings_Validator::class );
 		$validator->method( 'validate' )->willReturn( true );
 
-		$this->ability = new \Elementor_MCP_Widget_Abilities(
+		$this->ability = new \EMCP_Tools_Widget_Abilities(
 			$data, $this->make_factory(), $schema, $validator
 		);
 		$this->allow_all_caps();

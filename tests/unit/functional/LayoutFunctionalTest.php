@@ -7,7 +7,7 @@
  *
  * The data stub is configured so get_page_data() returns an empty array
  * (valid existing page) and save_page_data() returns true.  A real
- * Elementor_MCP_Data::insert_element() is called (it mutates the array),
+ * EMCP_Tools_Data::insert_element() is called (it mutates the array),
  * so the data stub does NOT stub insert_element — that method is on the
  * real data class and is not called through the stub.
  *
@@ -16,25 +16,25 @@
  * insert_element (which is a real method).  We use a spy-style stub with
  * a real implementation injected via the class under test.
  *
- * To simplify, we inject a concrete Elementor_MCP_Data stub that always
+ * To simplify, we inject a concrete EMCP_Tools_Data stub that always
  * succeeds by returning [] for get_page_data and true for save_page_data,
  * and we rely on the fact that insert_element on an empty $page_data
  * always appends the container at position 0 in the top level.
  *
  * @group functional
  * @group layout
- * @package Elementor_MCP\Tests\Functional
+ * @package EMCP_Tools\Tests\Functional
  */
 
-namespace Elementor_MCP\Tests\Functional;
+namespace EMCP_Tools\Tests\Functional;
 
 require_once dirname( __DIR__ ) . '/class-ability-test-case.php';
 
-use Elementor_MCP\Tests\Ability_Test_Case;
+use EMCP_Tools\Tests\Ability_Test_Case;
 
 class LayoutFunctionalTest extends Ability_Test_Case {
 
-	/** @var \Elementor_MCP_Layout_Abilities */
+	/** @var \EMCP_Tools_Layout_Abilities */
 	private $ability;
 
 	protected function setUp(): void {
@@ -45,20 +45,20 @@ class LayoutFunctionalTest extends Ability_Test_Case {
 		// but since we're stubbing the full class we use a forwarding stub.
 		$data = $this->make_data_stub_with_empty_page();
 
-		$this->ability = new \Elementor_MCP_Layout_Abilities( $data, $this->make_factory() );
+		$this->ability = new \EMCP_Tools_Layout_Abilities( $data, $this->make_factory() );
 		$this->allow_all_caps();
 	}
 
 	/**
 	 * Build a data stub where get_page_data returns [] and save returns true.
 	 *
-	 * insert_element is NOT a method on Elementor_MCP_Data's public interface
+	 * insert_element is NOT a method on EMCP_Tools_Data's public interface
 	 * used by Layout Abilities — the ability calls $this->data->insert_element().
 	 * We need a real implementation for that.  We create a lightweight anonymous
-	 * class that extends Elementor_MCP_Data to override only the I/O methods.
+	 * class that extends EMCP_Tools_Data to override only the I/O methods.
 	 */
-	private function make_data_stub_with_empty_page(): \Elementor_MCP_Data {
-		return new class extends \Elementor_MCP_Data {
+	private function make_data_stub_with_empty_page(): \EMCP_Tools_Data {
+		return new class extends \EMCP_Tools_Data {
 			public function __construct() {} // skip parent constructor
 
 			public function get_page_data( int $post_id ): array {
@@ -115,7 +115,7 @@ class LayoutFunctionalTest extends Ability_Test_Case {
 	 * @test
 	 * @group t4
 	 *
-	 * element_id is a non-empty string (7-char hex ID from Elementor_MCP_Id_Generator).
+	 * element_id is a non-empty string (7-char hex ID from EMCP_Tools_Id_Generator).
 	 */
 	public function test_add_container_element_id_is_non_empty_string(): void {
 		$result = $this->ability->execute_add_container( [ 'post_id' => 10 ] );

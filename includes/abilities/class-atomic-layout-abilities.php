@@ -5,7 +5,7 @@
  * Registers tools for creating flexbox and div-block containers.
  * Only registers when Elementor >= 4.0 is active.
  *
- * @package Elementor_MCP
+ * @package EMCP_Tools
  * @since   1.5.0
  */
 
@@ -18,22 +18,22 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * @since 1.5.0
  */
-class Elementor_MCP_Atomic_Layout_Abilities {
+class EMCP_Tools_Atomic_Layout_Abilities {
 
-	/** @var Elementor_MCP_Data */
+	/** @var EMCP_Tools_Data */
 	private $data;
 
-	/** @var Elementor_MCP_Element_Factory */
+	/** @var EMCP_Tools_Element_Factory */
 	private $factory;
 
 	/** @var string[] */
 	private $ability_names = array();
 
 	/**
-	 * @param Elementor_MCP_Data            $data    The data access layer.
-	 * @param Elementor_MCP_Element_Factory $factory The element factory.
+	 * @param EMCP_Tools_Data            $data    The data access layer.
+	 * @param EMCP_Tools_Element_Factory $factory The element factory.
 	 */
-	public function __construct( Elementor_MCP_Data $data, Elementor_MCP_Element_Factory $factory ) {
+	public function __construct( EMCP_Tools_Data $data, EMCP_Tools_Element_Factory $factory ) {
 		$this->data    = $data;
 		$this->factory = $factory;
 	}
@@ -49,7 +49,7 @@ class Elementor_MCP_Atomic_Layout_Abilities {
 	 * Skips registration if Elementor < 4.0.
 	 */
 	public function register(): void {
-		if ( ! Elementor_MCP_Atomic_Props::is_atomic_supported() ) {
+		if ( ! EMCP_Tools_Atomic_Props::is_atomic_supported() ) {
 			return;
 		}
 
@@ -64,12 +64,12 @@ class Elementor_MCP_Atomic_Layout_Abilities {
 	 */
 	public function check_edit_permission( $input ) {
 		if ( ! current_user_can( 'edit_posts' ) ) {
-			return new \WP_Error( 'forbidden', __( 'You do not have permission to edit posts.', 'elementor-mcp' ) );
+			return new \WP_Error( 'forbidden', __( 'You do not have permission to edit posts.', 'emcp-tools' ) );
 		}
 
 		$post_id = $input['post_id'] ?? 0;
 		if ( $post_id && ! current_user_can( 'edit_post', $post_id ) ) {
-			return new \WP_Error( 'forbidden', __( 'You do not have permission to edit this post.', 'elementor-mcp' ) );
+			return new \WP_Error( 'forbidden', __( 'You do not have permission to edit this post.', 'emcp-tools' ) );
 		}
 
 		return true;
@@ -83,31 +83,31 @@ class Elementor_MCP_Atomic_Layout_Abilities {
 		$name                  = 'elementor-mcp/add-flexbox';
 		$this->ability_names[] = $name;
 
-		elementor_mcp_register_ability(
+		emcp_tools_register_ability(
 			$name,
 			array(
-				'label'               => __( 'Add Flexbox', 'elementor-mcp' ),
-				'description'         => __( 'Adds an Elementor 4.0 flexbox container. Layout properties (direction, justify, align, gap) are applied as local styles automatically. Use this instead of add-container for Elementor 4.0+ sites.', 'elementor-mcp' ),
-				'category'            => 'elementor-mcp',
+				'label'               => __( 'Add Flexbox', 'emcp-tools' ),
+				'description'         => __( 'Adds an Elementor 4.0 flexbox container. Layout properties (direction, justify, align, gap) are applied as local styles automatically. Use this instead of add-container for Elementor 4.0+ sites.', 'emcp-tools' ),
+				'category'            => 'emcp-tools',
 				'execute_callback'    => array( $this, 'execute_add_flexbox' ),
 				'permission_callback' => array( $this, 'check_edit_permission' ),
 				'input_schema'        => array(
 					'type'       => 'object',
 					'properties' => array(
-						'post_id'         => array( 'type' => 'integer', 'description' => __( 'The post/page ID.', 'elementor-mcp' ) ),
-						'parent_id'       => array( 'type' => 'string', 'description' => __( 'Parent element ID. Empty for top-level.', 'elementor-mcp' ) ),
-						'position'        => array( 'type' => 'integer', 'description' => __( 'Insert position. -1 = append.', 'elementor-mcp' ) ),
-						'tag'             => array( 'type' => 'string', 'enum' => array( 'div', 'header', 'section', 'article', 'aside', 'footer' ), 'description' => __( 'HTML tag. Default: div.', 'elementor-mcp' ) ),
-						'direction'       => array( 'type' => 'string', 'enum' => array( 'row', 'column', 'row-reverse', 'column-reverse' ), 'description' => __( 'Flex direction. Default: column.', 'elementor-mcp' ) ),
-						'justify'         => array( 'type' => 'string', 'enum' => array( 'flex-start', 'center', 'flex-end', 'space-between', 'space-around', 'space-evenly' ), 'description' => __( 'Justify content.', 'elementor-mcp' ) ),
-						'align'           => array( 'type' => 'string', 'enum' => array( 'flex-start', 'center', 'flex-end', 'stretch', 'baseline' ), 'description' => __( 'Align items.', 'elementor-mcp' ) ),
-						'gap'             => array( 'type' => 'number', 'description' => __( 'Gap between children (px by default).', 'elementor-mcp' ) ),
-						'gap_unit'        => array( 'type' => 'string', 'enum' => array( 'px', 'em', 'rem', '%', 'vw' ), 'description' => __( 'Gap unit. Default: px.', 'elementor-mcp' ) ),
-						'wrap'            => array( 'type' => 'string', 'enum' => array( 'nowrap', 'wrap', 'wrap-reverse' ), 'description' => __( 'Flex wrap.', 'elementor-mcp' ) ),
-						'css_id'          => array( 'type' => 'string', 'description' => __( 'Optional CSS ID.', 'elementor-mcp' ) ),
-						'padding'         => array( 'type' => 'number', 'description' => __( 'Padding on all sides (px by default).', 'elementor-mcp' ) ),
-						'background_color' => array( 'type' => 'string', 'description' => __( 'Background color (hex/rgba).', 'elementor-mcp' ) ),
-						'min_height'      => array( 'type' => 'number', 'description' => __( 'Minimum height (px by default).', 'elementor-mcp' ) ),
+						'post_id'         => array( 'type' => 'integer', 'description' => __( 'The post/page ID.', 'emcp-tools' ) ),
+						'parent_id'       => array( 'type' => 'string', 'description' => __( 'Parent element ID. Empty for top-level.', 'emcp-tools' ) ),
+						'position'        => array( 'type' => 'integer', 'description' => __( 'Insert position. -1 = append.', 'emcp-tools' ) ),
+						'tag'             => array( 'type' => 'string', 'enum' => array( 'div', 'header', 'section', 'article', 'aside', 'footer' ), 'description' => __( 'HTML tag. Default: div.', 'emcp-tools' ) ),
+						'direction'       => array( 'type' => 'string', 'enum' => array( 'row', 'column', 'row-reverse', 'column-reverse' ), 'description' => __( 'Flex direction. Default: column.', 'emcp-tools' ) ),
+						'justify'         => array( 'type' => 'string', 'enum' => array( 'flex-start', 'center', 'flex-end', 'space-between', 'space-around', 'space-evenly' ), 'description' => __( 'Justify content.', 'emcp-tools' ) ),
+						'align'           => array( 'type' => 'string', 'enum' => array( 'flex-start', 'center', 'flex-end', 'stretch', 'baseline' ), 'description' => __( 'Align items.', 'emcp-tools' ) ),
+						'gap'             => array( 'type' => 'number', 'description' => __( 'Gap between children (px by default).', 'emcp-tools' ) ),
+						'gap_unit'        => array( 'type' => 'string', 'enum' => array( 'px', 'em', 'rem', '%', 'vw' ), 'description' => __( 'Gap unit. Default: px.', 'emcp-tools' ) ),
+						'wrap'            => array( 'type' => 'string', 'enum' => array( 'nowrap', 'wrap', 'wrap-reverse' ), 'description' => __( 'Flex wrap.', 'emcp-tools' ) ),
+						'css_id'          => array( 'type' => 'string', 'description' => __( 'Optional CSS ID.', 'emcp-tools' ) ),
+						'padding'         => array( 'type' => 'number', 'description' => __( 'Padding on all sides (px by default).', 'emcp-tools' ) ),
+						'background_color' => array( 'type' => 'string', 'description' => __( 'Background color (hex/rgba).', 'emcp-tools' ) ),
+						'min_height'      => array( 'type' => 'number', 'description' => __( 'Minimum height (px by default).', 'emcp-tools' ) ),
 					),
 					'required'   => array( 'post_id' ),
 				),
@@ -138,10 +138,10 @@ class Elementor_MCP_Atomic_Layout_Abilities {
 		$settings = array();
 
 		if ( ! empty( $input['tag'] ) ) {
-			$settings['tag'] = Elementor_MCP_Atomic_Props::string( sanitize_text_field( $input['tag'] ) );
+			$settings['tag'] = EMCP_Tools_Atomic_Props::string( sanitize_text_field( $input['tag'] ) );
 		}
 		if ( ! empty( $input['css_id'] ) ) {
-			$settings['_cssid'] = Elementor_MCP_Atomic_Props::string( sanitize_text_field( $input['css_id'] ) );
+			$settings['_cssid'] = EMCP_Tools_Atomic_Props::string( sanitize_text_field( $input['css_id'] ) );
 		}
 
 		// Style props extracted from input.
@@ -194,24 +194,24 @@ class Elementor_MCP_Atomic_Layout_Abilities {
 		$name                  = 'elementor-mcp/add-div-block';
 		$this->ability_names[] = $name;
 
-		elementor_mcp_register_ability(
+		emcp_tools_register_ability(
 			$name,
 			array(
-				'label'               => __( 'Add Div Block', 'elementor-mcp' ),
-				'description'         => __( 'Adds an Elementor 4.0 div-block container (block flow layout). Use for non-flex containers.', 'elementor-mcp' ),
-				'category'            => 'elementor-mcp',
+				'label'               => __( 'Add Div Block', 'emcp-tools' ),
+				'description'         => __( 'Adds an Elementor 4.0 div-block container (block flow layout). Use for non-flex containers.', 'emcp-tools' ),
+				'category'            => 'emcp-tools',
 				'execute_callback'    => array( $this, 'execute_add_div_block' ),
 				'permission_callback' => array( $this, 'check_edit_permission' ),
 				'input_schema'        => array(
 					'type'       => 'object',
 					'properties' => array(
-						'post_id'          => array( 'type' => 'integer', 'description' => __( 'The post/page ID.', 'elementor-mcp' ) ),
-						'parent_id'        => array( 'type' => 'string', 'description' => __( 'Parent element ID. Empty for top-level.', 'elementor-mcp' ) ),
-						'position'         => array( 'type' => 'integer', 'description' => __( 'Insert position. -1 = append.', 'elementor-mcp' ) ),
-						'tag'              => array( 'type' => 'string', 'enum' => array( 'div', 'header', 'section', 'article', 'aside', 'footer' ), 'description' => __( 'HTML tag. Default: div.', 'elementor-mcp' ) ),
-						'css_id'           => array( 'type' => 'string', 'description' => __( 'Optional CSS ID.', 'elementor-mcp' ) ),
-						'padding'          => array( 'type' => 'number', 'description' => __( 'Padding on all sides (px by default).', 'elementor-mcp' ) ),
-						'background_color' => array( 'type' => 'string', 'description' => __( 'Background color (hex/rgba).', 'elementor-mcp' ) ),
+						'post_id'          => array( 'type' => 'integer', 'description' => __( 'The post/page ID.', 'emcp-tools' ) ),
+						'parent_id'        => array( 'type' => 'string', 'description' => __( 'Parent element ID. Empty for top-level.', 'emcp-tools' ) ),
+						'position'         => array( 'type' => 'integer', 'description' => __( 'Insert position. -1 = append.', 'emcp-tools' ) ),
+						'tag'              => array( 'type' => 'string', 'enum' => array( 'div', 'header', 'section', 'article', 'aside', 'footer' ), 'description' => __( 'HTML tag. Default: div.', 'emcp-tools' ) ),
+						'css_id'           => array( 'type' => 'string', 'description' => __( 'Optional CSS ID.', 'emcp-tools' ) ),
+						'padding'          => array( 'type' => 'number', 'description' => __( 'Padding on all sides (px by default).', 'emcp-tools' ) ),
+						'background_color' => array( 'type' => 'string', 'description' => __( 'Background color (hex/rgba).', 'emcp-tools' ) ),
 					),
 					'required'   => array( 'post_id' ),
 				),
@@ -242,10 +242,10 @@ class Elementor_MCP_Atomic_Layout_Abilities {
 		$settings = array();
 
 		if ( ! empty( $input['tag'] ) ) {
-			$settings['tag'] = Elementor_MCP_Atomic_Props::string( sanitize_text_field( $input['tag'] ) );
+			$settings['tag'] = EMCP_Tools_Atomic_Props::string( sanitize_text_field( $input['tag'] ) );
 		}
 		if ( ! empty( $input['css_id'] ) ) {
-			$settings['_cssid'] = Elementor_MCP_Atomic_Props::string( sanitize_text_field( $input['css_id'] ) );
+			$settings['_cssid'] = EMCP_Tools_Atomic_Props::string( sanitize_text_field( $input['css_id'] ) );
 		}
 
 		$style_params = array();
@@ -298,12 +298,12 @@ class Elementor_MCP_Atomic_Layout_Abilities {
 		$name                  = 'elementor-mcp/detect-elementor-version';
 		$this->ability_names[] = $name;
 
-		elementor_mcp_register_ability(
+		emcp_tools_register_ability(
 			$name,
 			array(
-				'label'               => __( 'Detect Elementor Version', 'elementor-mcp' ),
-				'description'         => __( 'Returns the Elementor version and whether atomic elements (v4.0+) are supported. Call this first to decide whether to use legacy tools (add-heading, add-container) or atomic tools (add-atomic-heading, add-flexbox).', 'elementor-mcp' ),
-				'category'            => 'elementor-mcp',
+				'label'               => __( 'Detect Elementor Version', 'emcp-tools' ),
+				'description'         => __( 'Returns the Elementor version and whether atomic elements (v4.0+) are supported. Call this first to decide whether to use legacy tools (add-heading, add-container) or atomic tools (add-atomic-heading, add-flexbox).', 'emcp-tools' ),
+				'category'            => 'emcp-tools',
 				'execute_callback'    => function () {
 					$core_version = defined( 'ELEMENTOR_VERSION' ) ? ELEMENTOR_VERSION : 'unknown';
 					$pro_version  = defined( 'ELEMENTOR_PRO_VERSION' ) ? ELEMENTOR_PRO_VERSION : null;
@@ -311,12 +311,12 @@ class Elementor_MCP_Atomic_Layout_Abilities {
 					return array(
 						'elementor_version'     => $core_version,
 						'elementor_pro_version' => $pro_version,
-						'supports_atomic'       => Elementor_MCP_Atomic_Props::is_atomic_supported(),
-						'recommended_mode'      => Elementor_MCP_Atomic_Props::is_atomic_supported() ? 'atomic' : 'legacy',
+						'supports_atomic'       => EMCP_Tools_Atomic_Props::is_atomic_supported(),
+						'recommended_mode'      => EMCP_Tools_Atomic_Props::is_atomic_supported() ? 'atomic' : 'legacy',
 					);
 				},
 				'permission_callback' => function () {
-					return current_user_can( 'edit_posts' ) ? true : new \WP_Error( 'forbidden', __( 'Insufficient permissions.', 'elementor-mcp' ) );
+					return current_user_can( 'edit_posts' ) ? true : new \WP_Error( 'forbidden', __( 'Insufficient permissions.', 'emcp-tools' ) );
 				},
 				'input_schema'        => array(
 					'type'       => 'object',

@@ -3,15 +3,15 @@
  * Unit tests for the A11y toolkit pure analysis helper.
  *
  * @group a11y
- * @package Elementor_MCP\Tests\Seo
+ * @package EMCP_Tools\Tests\Seo
  */
 
-namespace Elementor_MCP\Tests\Seo;
+namespace EMCP_Tools\Tests\Seo;
 
 require_once dirname( __DIR__ ) . '/class-ability-test-case.php';
 
-use Elementor_MCP\Tests\Ability_Test_Case;
-use Elementor_MCP_A11y_Abilities;
+use EMCP_Tools\Tests\Ability_Test_Case;
+use EMCP_Tools_A11y_Abilities;
 
 class A11yToolkitTest extends Ability_Test_Case {
 
@@ -39,7 +39,7 @@ class A11yToolkitTest extends Ability_Test_Case {
 	}
 
 	public function test_clean_page_passes_everything(): void {
-		$report = Elementor_MCP_A11y_Abilities::build_a11y_report( $this->clean_extract() );
+		$report = EMCP_Tools_A11y_Abilities::build_a11y_report( $this->clean_extract() );
 		$status = array_column( $report['checks'], 'status', 'id' );
 
 		$this->assertSame( 'pass', $status['color_contrast'] );
@@ -56,7 +56,7 @@ class A11yToolkitTest extends Ability_Test_Case {
 		$ex['text_style_contexts'] = array(
 			array( 'element_id' => 'a', 'color' => '#999999', 'background' => '#FFFFFF', 'background_source' => 'element' ), // ~2.85:1
 		);
-		$report = Elementor_MCP_A11y_Abilities::build_a11y_report( $ex );
+		$report = EMCP_Tools_A11y_Abilities::build_a11y_report( $ex );
 		$status = array_column( $report['checks'], 'status', 'id' );
 		$this->assertSame( 'fail', $status['color_contrast'] );
 	}
@@ -66,7 +66,7 @@ class A11yToolkitTest extends Ability_Test_Case {
 		$ex['text_style_contexts'] = array(
 			array( 'element_id' => 'a', 'color' => '#777777', 'background' => null, 'background_source' => 'none' ),
 		);
-		$report = Elementor_MCP_A11y_Abilities::build_a11y_report( $ex );
+		$report = EMCP_Tools_A11y_Abilities::build_a11y_report( $ex );
 		$status = array_column( $report['checks'], 'status', 'id' );
 
 		$this->assertSame( 'inconclusive', $status['color_contrast'] );
@@ -78,7 +78,7 @@ class A11yToolkitTest extends Ability_Test_Case {
 	public function test_missing_alt_fails(): void {
 		$ex             = $this->clean_extract();
 		$ex['images'][] = array( 'element_id' => 'i2', 'attachment_id' => 2, 'url' => 'y.jpg', 'alt' => '' );
-		$report         = Elementor_MCP_A11y_Abilities::build_a11y_report( $ex );
+		$report         = EMCP_Tools_A11y_Abilities::build_a11y_report( $ex );
 		$status         = array_column( $report['checks'], 'status', 'id' );
 		$this->assertSame( 'fail', $status['image_alts'] );
 	}
@@ -89,7 +89,7 @@ class A11yToolkitTest extends Ability_Test_Case {
 			array( 'url' => '/a', 'text' => 'click here', 'internal' => true, 'element_id' => 'x' ),
 			array( 'url' => '/b', 'text' => '', 'internal' => true, 'element_id' => 'y' ),
 		);
-		$report = Elementor_MCP_A11y_Abilities::build_a11y_report( $ex );
+		$report = EMCP_Tools_A11y_Abilities::build_a11y_report( $ex );
 		$status = array_column( $report['checks'], 'status', 'id' );
 		$this->assertSame( 'warn', $status['link_text_quality'] );
 	}
@@ -100,7 +100,7 @@ class A11yToolkitTest extends Ability_Test_Case {
 			array( 'label' => 'Email', 'type' => 'email', 'element_id' => 'f' ),
 			array( 'label' => '', 'type' => 'text', 'element_id' => 'g' ),
 		);
-		$report = Elementor_MCP_A11y_Abilities::build_a11y_report( $ex );
+		$report = EMCP_Tools_A11y_Abilities::build_a11y_report( $ex );
 		$status = array_column( $report['checks'], 'status', 'id' );
 		$this->assertSame( 'fail', $status['form_label_coverage'] );
 	}
@@ -111,7 +111,7 @@ class A11yToolkitTest extends Ability_Test_Case {
 			array( 'level' => 1, 'text' => 'Title', 'element_id' => 'a' ),
 			array( 'level' => 4, 'text' => 'Jumped', 'element_id' => 'b' ),
 		);
-		$report = Elementor_MCP_A11y_Abilities::build_a11y_report( $ex );
+		$report = EMCP_Tools_A11y_Abilities::build_a11y_report( $ex );
 		$status = array_column( $report['checks'], 'status', 'id' );
 		$this->assertSame( 'warn', $status['heading_hierarchy'] );
 	}
@@ -119,7 +119,7 @@ class A11yToolkitTest extends Ability_Test_Case {
 	public function test_form_check_absent_when_no_form(): void {
 		$ex                = $this->clean_extract();
 		$ex['form_fields'] = array();
-		$report            = Elementor_MCP_A11y_Abilities::build_a11y_report( $ex );
+		$report            = EMCP_Tools_A11y_Abilities::build_a11y_report( $ex );
 		$ids               = array_column( $report['checks'], 'id' );
 		$this->assertNotContains( 'form_label_coverage', $ids );
 	}
@@ -132,7 +132,7 @@ class A11yToolkitTest extends Ability_Test_Case {
 				array( 'element_id' => 'a', 'color' => '#999999', 'color_key' => 'title_color', 'background' => '#FFFFFF', 'background_source' => 'element' ),
 			),
 		);
-		$fixes = Elementor_MCP_A11y_Abilities::propose_contrast_fixes( $ex, null );
+		$fixes = EMCP_Tools_A11y_Abilities::propose_contrast_fixes( $ex, null );
 		$this->assertCount( 1, $fixes );
 		$this->assertSame( 'a', $fixes[0]['element_id'] );
 		$this->assertSame( 'title_color', $fixes[0]['color_key'] );
@@ -147,7 +147,7 @@ class A11yToolkitTest extends Ability_Test_Case {
 				array( 'element_id' => 'incon', 'color' => '#777777', 'color_key' => 'color', 'background' => null, 'background_source' => 'none' ),
 			),
 		);
-		$this->assertSame( array(), Elementor_MCP_A11y_Abilities::propose_contrast_fixes( $ex, null ) );
+		$this->assertSame( array(), EMCP_Tools_A11y_Abilities::propose_contrast_fixes( $ex, null ) );
 	}
 
 	public function test_propose_contrast_fixes_element_filter(): void {
@@ -157,7 +157,7 @@ class A11yToolkitTest extends Ability_Test_Case {
 				array( 'element_id' => 'b', 'color' => '#888888', 'color_key' => 'color', 'background' => '#FFFFFF', 'background_source' => 'element' ),
 			),
 		);
-		$fixes = Elementor_MCP_A11y_Abilities::propose_contrast_fixes( $ex, 'b' );
+		$fixes = EMCP_Tools_A11y_Abilities::propose_contrast_fixes( $ex, 'b' );
 		$this->assertCount( 1, $fixes );
 		$this->assertSame( 'b', $fixes[0]['element_id'] );
 	}
@@ -165,14 +165,14 @@ class A11yToolkitTest extends Ability_Test_Case {
 	// ---- alt_from_filename / propose_alt_texts ------------------------------
 
 	public function test_alt_from_filename_descriptive(): void {
-		$this->assertSame( 'Summer sale banner', Elementor_MCP_A11y_Abilities::alt_from_filename( 'https://x.com/wp-content/uploads/summer-sale-banner-1024x768.jpg' ) );
-		$this->assertSame( 'Our team', Elementor_MCP_A11y_Abilities::alt_from_filename( '/uploads/our-team-photo.png' ) );
+		$this->assertSame( 'Summer sale banner', EMCP_Tools_A11y_Abilities::alt_from_filename( 'https://x.com/wp-content/uploads/summer-sale-banner-1024x768.jpg' ) );
+		$this->assertSame( 'Our team', EMCP_Tools_A11y_Abilities::alt_from_filename( '/uploads/our-team-photo.png' ) );
 	}
 
 	public function test_alt_from_filename_non_descriptive_returns_empty(): void {
-		$this->assertSame( '', Elementor_MCP_A11y_Abilities::alt_from_filename( '/uploads/IMG_1234.jpg' ) );
-		$this->assertSame( '', Elementor_MCP_A11y_Abilities::alt_from_filename( '/uploads/photo.jpg' ) );
-		$this->assertSame( '', Elementor_MCP_A11y_Abilities::alt_from_filename( '/uploads/20230101.png' ) );
+		$this->assertSame( '', EMCP_Tools_A11y_Abilities::alt_from_filename( '/uploads/IMG_1234.jpg' ) );
+		$this->assertSame( '', EMCP_Tools_A11y_Abilities::alt_from_filename( '/uploads/photo.jpg' ) );
+		$this->assertSame( '', EMCP_Tools_A11y_Abilities::alt_from_filename( '/uploads/20230101.png' ) );
 	}
 
 	public function test_propose_alt_texts_sources_and_skips(): void {
@@ -184,7 +184,7 @@ class A11yToolkitTest extends Ability_Test_Case {
 				array( 'element_id' => 'html', 'attachment_id' => 0, 'url' => '/up/DSC_1.jpg', 'alt' => '', 'context_heading' => '' ),
 			),
 		);
-		$p     = Elementor_MCP_A11y_Abilities::propose_alt_texts( $ex, 'Acme Farms' );
+		$p     = EMCP_Tools_A11y_Abilities::propose_alt_texts( $ex, 'Acme Farms' );
 		$by_id = array();
 		foreach ( $p as $row ) {
 			$by_id[ $row['element_id'] ] = $row;

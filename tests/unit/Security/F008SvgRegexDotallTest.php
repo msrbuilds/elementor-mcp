@@ -34,16 +34,16 @@
  * removes every attribute whose name begins with "on".
  * Minimal fix: add the /s flag → '/\s+on\w+\s*=\s*(["\']).*?\1/is'
  *
- * @package Elementor_MCP\Tests\Security
+ * @package EMCP_Tools\Tests\Security
  * @since   1.0.0
  */
 
-namespace Elementor_MCP\Tests\Security;
+namespace EMCP_Tools\Tests\Security;
 
 use PHPUnit\Framework\TestCase;
 
 /**
- * @covers \Elementor_MCP_SVG_Icon_Abilities::sanitize_svg_content
+ * @covers \EMCP_Tools_SVG_Icon_Abilities::sanitize_svg_content
  */
 class F008SvgRegexDotallTest extends TestCase {
 

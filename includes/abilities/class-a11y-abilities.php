@@ -13,7 +13,7 @@
  * abilities. The report logic is a pure static helper (build_a11y_report) so it
  * unit-tests with fixtures and the execute callback stays thin.
  *
- * @package Elementor_MCP
+ * @package EMCP_Tools
  * @since   1.8.0
  */
 
@@ -26,12 +26,12 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * @since 1.8.0
  */
-class Elementor_MCP_A11y_Abilities {
+class EMCP_Tools_A11y_Abilities {
 
 	/**
 	 * Data access layer.
 	 *
-	 * @var Elementor_MCP_Data
+	 * @var EMCP_Tools_Data
 	 */
 	private $data;
 
@@ -47,9 +47,9 @@ class Elementor_MCP_A11y_Abilities {
 	/**
 	 * Constructor.
 	 *
-	 * @param Elementor_MCP_Data $data Data access layer.
+	 * @param EMCP_Tools_Data $data Data access layer.
 	 */
-	public function __construct( Elementor_MCP_Data $data ) {
+	public function __construct( EMCP_Tools_Data $data ) {
 		$this->data = $data;
 	}
 
@@ -59,7 +59,7 @@ class Elementor_MCP_A11y_Abilities {
 	 * @return bool
 	 */
 	private function has_access(): bool {
-		return function_exists( 'emcp_pro_fs' ) && emcp_pro_fs()->can_use_premium_code();
+		return function_exists( 'emcp_tools_fs' ) && emcp_tools_fs()->can_use_premium_code();
 	}
 
 	/**
@@ -110,18 +110,18 @@ class Elementor_MCP_A11y_Abilities {
 	}
 
 	private function register_audit_page_a11y(): void {
-		elementor_mcp_register_ability(
+		emcp_tools_register_ability(
 			'elementor-mcp/audit-page-a11y',
 			array(
-				'label'               => __( 'Audit Page Accessibility', 'elementor-mcp' ),
-				'description'         => __( 'Audits a page for accessibility issues: color contrast (best-effort), missing image alt text, heading hierarchy, generic link text, and form-label coverage. Read-only; returns a scored WCAG-oriented report.', 'elementor-mcp' ),
-				'category'            => 'elementor-mcp',
+				'label'               => __( 'Audit Page Accessibility', 'emcp-tools' ),
+				'description'         => __( 'Audits a page for accessibility issues: color contrast (best-effort), missing image alt text, heading hierarchy, generic link text, and form-label coverage. Read-only; returns a scored WCAG-oriented report.', 'emcp-tools' ),
+				'category'            => 'emcp-tools',
 				'execute_callback'    => array( $this, 'execute_audit_page_a11y' ),
 				'permission_callback' => array( $this, 'check_read_permission' ),
 				'input_schema'        => array(
 					'type'       => 'object',
 					'properties' => array(
-						'post_id' => array( 'type' => 'integer', 'description' => __( 'The page/post ID to audit.', 'elementor-mcp' ) ),
+						'post_id' => array( 'type' => 'integer', 'description' => __( 'The page/post ID to audit.', 'emcp-tools' ) ),
 					),
 					'required'   => array( 'post_id' ),
 				),
@@ -147,21 +147,21 @@ class Elementor_MCP_A11y_Abilities {
 	 */
 	public function execute_audit_page_a11y( $input ) {
 		if ( ! $this->has_access() ) {
-			return new \WP_Error( 'no_license', __( 'A valid EMCP Tools Pro license is required.', 'elementor-mcp' ) );
+			return new \WP_Error( 'no_license', __( 'A valid EMCP Tools Pro license is required.', 'emcp-tools' ) );
 		}
 		$post_id = isset( $input['post_id'] ) ? absint( $input['post_id'] ) : 0;
 		if ( $post_id <= 0 ) {
-			return new \WP_Error( 'missing_post_id', __( 'A valid post_id is required.', 'elementor-mcp' ) );
+			return new \WP_Error( 'missing_post_id', __( 'A valid post_id is required.', 'emcp-tools' ) );
 		}
 		$page = $this->data->get_page_data( $post_id );
 		if ( is_wp_error( $page ) ) {
 			return $page;
 		}
 		if ( ! is_array( $page ) ) {
-			return new \WP_Error( 'no_data', __( 'No Elementor data found for this page.', 'elementor-mcp' ) );
+			return new \WP_Error( 'no_data', __( 'No Elementor data found for this page.', 'emcp-tools' ) );
 		}
 		$host = function_exists( 'home_url' ) ? (string) wp_parse_url( home_url(), PHP_URL_HOST ) : '';
-		$ex   = Elementor_MCP_Content_Extractor::extract( $page, $host );
+		$ex   = EMCP_Tools_Content_Extractor::extract( $page, $host );
 		return self::build_a11y_report( $ex );
 	}
 
@@ -170,21 +170,21 @@ class Elementor_MCP_A11y_Abilities {
 	// =========================================================================
 
 	private function register_fix_color_contrast(): void {
-		elementor_mcp_register_ability(
+		emcp_tools_register_ability(
 			'elementor-mcp/fix-color-contrast',
 			array(
-				'label'               => __( 'Fix Color Contrast', 'elementor-mcp' ),
-				'description'         => __( 'Proposes (and, with apply:true, writes) adjusted text colors so failing text/background pairs meet WCAG AA. Dry-run by default — returns the proposed changes without modifying the page unless apply is true. Reversible via Elementor revisions.', 'elementor-mcp' ),
-				'category'            => 'elementor-mcp',
+				'label'               => __( 'Fix Color Contrast', 'emcp-tools' ),
+				'description'         => __( 'Proposes (and, with apply:true, writes) adjusted text colors so failing text/background pairs meet WCAG AA. Dry-run by default — returns the proposed changes without modifying the page unless apply is true. Reversible via Elementor revisions.', 'emcp-tools' ),
+				'category'            => 'emcp-tools',
 				'execute_callback'    => array( $this, 'execute_fix_color_contrast' ),
 				'permission_callback' => array( $this, 'check_edit_permission' ),
 				'input_schema'        => array(
 					'type'       => 'object',
 					'properties' => array(
 						'post_id'      => array( 'type' => 'integer' ),
-						'element_id'   => array( 'type' => 'string', 'description' => __( 'Optional: only fix this element.', 'elementor-mcp' ) ),
-						'target_ratio' => array( 'type' => 'number', 'description' => __( 'Target contrast ratio (default 4.5).', 'elementor-mcp' ) ),
-						'apply'        => array( 'type' => 'boolean', 'description' => __( 'Write the changes. Defaults to false (dry-run preview).', 'elementor-mcp' ) ),
+						'element_id'   => array( 'type' => 'string', 'description' => __( 'Optional: only fix this element.', 'emcp-tools' ) ),
+						'target_ratio' => array( 'type' => 'number', 'description' => __( 'Target contrast ratio (default 4.5).', 'emcp-tools' ) ),
+						'apply'        => array( 'type' => 'boolean', 'description' => __( 'Write the changes. Defaults to false (dry-run preview).', 'emcp-tools' ) ),
 					),
 					'required'   => array( 'post_id' ),
 				),
@@ -211,24 +211,24 @@ class Elementor_MCP_A11y_Abilities {
 	 */
 	public function execute_fix_color_contrast( $input ) {
 		if ( ! $this->has_access() ) {
-			return new \WP_Error( 'no_license', __( 'A valid EMCP Tools Pro license is required.', 'elementor-mcp' ) );
+			return new \WP_Error( 'no_license', __( 'A valid EMCP Tools Pro license is required.', 'emcp-tools' ) );
 		}
 		$post_id = isset( $input['post_id'] ) ? absint( $input['post_id'] ) : 0;
 		if ( $post_id <= 0 ) {
-			return new \WP_Error( 'missing_post_id', __( 'A valid post_id is required.', 'elementor-mcp' ) );
+			return new \WP_Error( 'missing_post_id', __( 'A valid post_id is required.', 'emcp-tools' ) );
 		}
 		$page = $this->data->get_page_data( $post_id );
 		if ( is_wp_error( $page ) ) {
 			return $page;
 		}
 		if ( ! is_array( $page ) ) {
-			return new \WP_Error( 'no_data', __( 'No Elementor data found for this page.', 'elementor-mcp' ) );
+			return new \WP_Error( 'no_data', __( 'No Elementor data found for this page.', 'emcp-tools' ) );
 		}
 
 		$host       = function_exists( 'home_url' ) ? (string) wp_parse_url( home_url(), PHP_URL_HOST ) : '';
-		$ex         = Elementor_MCP_Content_Extractor::extract( $page, $host );
+		$ex         = EMCP_Tools_Content_Extractor::extract( $page, $host );
 		$element_id = isset( $input['element_id'] ) ? sanitize_text_field( (string) $input['element_id'] ) : '';
-		$target     = isset( $input['target_ratio'] ) ? (float) $input['target_ratio'] : Elementor_MCP_Color_Contrast::AA_NORMAL;
+		$target     = isset( $input['target_ratio'] ) ? (float) $input['target_ratio'] : EMCP_Tools_Color_Contrast::AA_NORMAL;
 		$fixes      = self::propose_contrast_fixes( $ex, ( '' !== $element_id ) ? $element_id : null, $target );
 
 		if ( empty( $input['apply'] ) ) {
@@ -237,7 +237,7 @@ class Elementor_MCP_A11y_Abilities {
 
 		// Writes require per-post ownership.
 		if ( ! current_user_can( 'edit_post', $post_id ) ) {
-			return new \WP_Error( 'forbidden', __( 'You do not have permission to edit this page.', 'elementor-mcp' ) );
+			return new \WP_Error( 'forbidden', __( 'You do not have permission to edit this page.', 'emcp-tools' ) );
 		}
 
 		$applied = 0;
@@ -263,19 +263,19 @@ class Elementor_MCP_A11y_Abilities {
 	// =========================================================================
 
 	private function register_add_alt_text(): void {
-		elementor_mcp_register_ability(
+		emcp_tools_register_ability(
 			'elementor-mcp/add-alt-text-from-context',
 			array(
-				'label'               => __( 'Add Alt Text from Context', 'elementor-mcp' ),
-				'description'         => __( 'Proposes (and, with apply:true, writes) alt text for images that lack it, derived from the image filename, the nearest heading, or the page title. No AI call. Dry-run by default; writes to the media library alt + the image widget when applied.', 'elementor-mcp' ),
-				'category'            => 'elementor-mcp',
+				'label'               => __( 'Add Alt Text from Context', 'emcp-tools' ),
+				'description'         => __( 'Proposes (and, with apply:true, writes) alt text for images that lack it, derived from the image filename, the nearest heading, or the page title. No AI call. Dry-run by default; writes to the media library alt + the image widget when applied.', 'emcp-tools' ),
+				'category'            => 'emcp-tools',
 				'execute_callback'    => array( $this, 'execute_add_alt_text' ),
 				'permission_callback' => array( $this, 'check_edit_permission' ),
 				'input_schema'        => array(
 					'type'       => 'object',
 					'properties' => array(
 						'post_id' => array( 'type' => 'integer' ),
-						'apply'   => array( 'type' => 'boolean', 'description' => __( 'Write the alt text. Defaults to false (dry-run preview).', 'elementor-mcp' ) ),
+						'apply'   => array( 'type' => 'boolean', 'description' => __( 'Write the alt text. Defaults to false (dry-run preview).', 'emcp-tools' ) ),
 					),
 					'required'   => array( 'post_id' ),
 				),
@@ -303,22 +303,22 @@ class Elementor_MCP_A11y_Abilities {
 	 */
 	public function execute_add_alt_text( $input ) {
 		if ( ! $this->has_access() ) {
-			return new \WP_Error( 'no_license', __( 'A valid EMCP Tools Pro license is required.', 'elementor-mcp' ) );
+			return new \WP_Error( 'no_license', __( 'A valid EMCP Tools Pro license is required.', 'emcp-tools' ) );
 		}
 		$post_id = isset( $input['post_id'] ) ? absint( $input['post_id'] ) : 0;
 		if ( $post_id <= 0 ) {
-			return new \WP_Error( 'missing_post_id', __( 'A valid post_id is required.', 'elementor-mcp' ) );
+			return new \WP_Error( 'missing_post_id', __( 'A valid post_id is required.', 'emcp-tools' ) );
 		}
 		$page = $this->data->get_page_data( $post_id );
 		if ( is_wp_error( $page ) ) {
 			return $page;
 		}
 		if ( ! is_array( $page ) ) {
-			return new \WP_Error( 'no_data', __( 'No Elementor data found for this page.', 'elementor-mcp' ) );
+			return new \WP_Error( 'no_data', __( 'No Elementor data found for this page.', 'emcp-tools' ) );
 		}
 
 		$host      = function_exists( 'home_url' ) ? (string) wp_parse_url( home_url(), PHP_URL_HOST ) : '';
-		$ex        = Elementor_MCP_Content_Extractor::extract( $page, $host );
+		$ex        = EMCP_Tools_Content_Extractor::extract( $page, $host );
 		$title     = function_exists( 'get_the_title' ) ? (string) get_the_title( $post_id ) : '';
 		$proposals = self::propose_alt_texts( $ex, $title );
 
@@ -327,7 +327,7 @@ class Elementor_MCP_A11y_Abilities {
 		}
 
 		if ( ! current_user_can( 'edit_post', $post_id ) ) {
-			return new \WP_Error( 'forbidden', __( 'You do not have permission to edit this page.', 'elementor-mcp' ) );
+			return new \WP_Error( 'forbidden', __( 'You do not have permission to edit this page.', 'emcp-tools' ) );
 		}
 
 		$applied = 0;
@@ -389,12 +389,12 @@ class Elementor_MCP_A11y_Abilities {
 				$inconclusive++;
 				continue;
 			}
-			$ratio = Elementor_MCP_Color_Contrast::contrast_ratio( (string) $ctx['color'], (string) $bg );
+			$ratio = EMCP_Tools_Color_Contrast::contrast_ratio( (string) $ctx['color'], (string) $bg );
 			if ( null === $ratio ) {
 				$inconclusive++;
 				continue;
 			}
-			if ( Elementor_MCP_Color_Contrast::passes( $ratio ) ) {
+			if ( EMCP_Tools_Color_Contrast::passes( $ratio ) ) {
 				$pass++;
 			} else {
 				$fail++;
@@ -404,12 +404,12 @@ class Elementor_MCP_A11y_Abilities {
 		$total_ctx = $pass + $fail + $inconclusive;
 		if ( 0 === $total_ctx ) {
 			$contrast_status = 'inconclusive';
-			$contrast_detail = __( 'No resolvable text/background color pairs found (colors may use globals or theme defaults).', 'elementor-mcp' );
+			$contrast_detail = __( 'No resolvable text/background color pairs found (colors may use globals or theme defaults).', 'emcp-tools' );
 		} elseif ( $fail > 0 ) {
 			$contrast_status = 'fail';
 			$contrast_detail = sprintf(
 				/* translators: 1: fail count, 2: worst list, 3: inconclusive count */
-				__( '%1$d text/background pair(s) below 4.5:1 — %2$s. %3$d pair(s) inconclusive.', 'elementor-mcp' ),
+				__( '%1$d text/background pair(s) below 4.5:1 — %2$s. %3$d pair(s) inconclusive.', 'emcp-tools' ),
 				$fail,
 				implode( ', ', array_slice( $worst, 0, 5 ) ),
 				$inconclusive
@@ -418,20 +418,20 @@ class Elementor_MCP_A11y_Abilities {
 			$contrast_status = ( $inconclusive > 0 ) ? 'warn' : 'pass';
 			$contrast_detail = sprintf(
 				/* translators: 1: pass count, 2: inconclusive count */
-				__( '%1$d pair(s) meet 4.5:1; %2$d inconclusive (couldn\'t resolve background).', 'elementor-mcp' ),
+				__( '%1$d pair(s) meet 4.5:1; %2$d inconclusive (couldn\'t resolve background).', 'emcp-tools' ),
 				$pass,
 				$inconclusive
 			);
 		} else {
 			$contrast_status = 'inconclusive';
-			$contrast_detail = sprintf( /* translators: %d: count */ __( '%d color pair(s) inconclusive — background could not be resolved.', 'elementor-mcp' ), $inconclusive );
+			$contrast_detail = sprintf( /* translators: %d: count */ __( '%d color pair(s) inconclusive — background could not be resolved.', 'emcp-tools' ), $inconclusive );
 		}
 		$checks[] = self::check(
 			'color_contrast',
-			__( 'Color contrast (WCAG AA)', 'elementor-mcp' ),
+			__( 'Color contrast (WCAG AA)', 'emcp-tools' ),
 			$contrast_status,
 			$contrast_detail,
-			( 'fail' === $contrast_status ) ? __( 'Increase text/background contrast to at least 4.5:1 (3:1 for large text).', 'elementor-mcp' ) : ''
+			( 'fail' === $contrast_status ) ? __( 'Increase text/background contrast to at least 4.5:1 (3:1 for large text).', 'emcp-tools' ) : ''
 		);
 
 		// --- Image alt text --------------------------------------------------
@@ -443,10 +443,10 @@ class Elementor_MCP_A11y_Abilities {
 		}
 		$checks[] = self::check(
 			'image_alts',
-			__( 'Image alt text', 'elementor-mcp' ),
+			__( 'Image alt text', 'emcp-tools' ),
 			( 0 === $missing ) ? 'pass' : 'fail',
-			sprintf( /* translators: 1: missing, 2: total */ __( '%1$d of %2$d images are missing alt text.', 'elementor-mcp' ), $missing, count( $ex['images'] ) ),
-			( 0 === $missing ) ? '' : __( 'Add descriptive alt text (or empty alt="" for purely decorative images).', 'elementor-mcp' )
+			sprintf( /* translators: 1: missing, 2: total */ __( '%1$d of %2$d images are missing alt text.', 'emcp-tools' ), $missing, count( $ex['images'] ) ),
+			( 0 === $missing ) ? '' : __( 'Add descriptive alt text (or empty alt="" for purely decorative images).', 'emcp-tools' )
 		);
 
 		// --- Heading hierarchy ----------------------------------------------
@@ -462,10 +462,10 @@ class Elementor_MCP_A11y_Abilities {
 		}
 		$checks[] = self::check(
 			'heading_hierarchy',
-			__( 'Heading hierarchy', 'elementor-mcp' ),
+			__( 'Heading hierarchy', 'emcp-tools' ),
 			$skip ? 'warn' : 'pass',
-			$skip ? __( 'A heading level is skipped, which disorients screen-reader users.', 'elementor-mcp' ) : __( 'Headings are sequential.', 'elementor-mcp' ),
-			$skip ? __( 'Use heading levels in order (don\'t jump from H1 to H3).', 'elementor-mcp' ) : ''
+			$skip ? __( 'A heading level is skipped, which disorients screen-reader users.', 'emcp-tools' ) : __( 'Headings are sequential.', 'emcp-tools' ),
+			$skip ? __( 'Use heading levels in order (don\'t jump from H1 to H3).', 'emcp-tools' ) : ''
 		);
 
 		// --- Link text quality ----------------------------------------------
@@ -482,15 +482,15 @@ class Elementor_MCP_A11y_Abilities {
 		$bad     = $generic + $empty;
 		$checks[] = self::check(
 			'link_text_quality',
-			__( 'Link text quality', 'elementor-mcp' ),
+			__( 'Link text quality', 'emcp-tools' ),
 			( 0 === $bad ) ? 'pass' : 'warn',
 			sprintf(
 				/* translators: 1: generic count, 2: empty count */
-				__( '%1$d generic ("click here"-style) and %2$d empty link text(s).', 'elementor-mcp' ),
+				__( '%1$d generic ("click here"-style) and %2$d empty link text(s).', 'emcp-tools' ),
 				$generic,
 				$empty
 			),
-			( 0 === $bad ) ? '' : __( 'Use descriptive link text that makes sense out of context.', 'elementor-mcp' )
+			( 0 === $bad ) ? '' : __( 'Use descriptive link text that makes sense out of context.', 'emcp-tools' )
 		);
 
 		// --- Form label coverage --------------------------------------------
@@ -503,10 +503,10 @@ class Elementor_MCP_A11y_Abilities {
 		if ( ! empty( $ex['form_fields'] ) ) {
 			$checks[] = self::check(
 				'form_label_coverage',
-				__( 'Form label coverage', 'elementor-mcp' ),
+				__( 'Form label coverage', 'emcp-tools' ),
 				( 0 === $unlabeled ) ? 'pass' : 'fail',
-				sprintf( /* translators: 1: unlabeled, 2: total */ __( '%1$d of %2$d form fields have no label.', 'elementor-mcp' ), $unlabeled, count( $ex['form_fields'] ) ),
-				( 0 === $unlabeled ) ? '' : __( 'Give every form field a visible label.', 'elementor-mcp' )
+				sprintf( /* translators: 1: unlabeled, 2: total */ __( '%1$d of %2$d form fields have no label.', 'emcp-tools' ), $unlabeled, count( $ex['form_fields'] ) ),
+				( 0 === $unlabeled ) ? '' : __( 'Give every form field a visible label.', 'emcp-tools' )
 			);
 		}
 
@@ -528,7 +528,7 @@ class Elementor_MCP_A11y_Abilities {
 	 * @param float       $target     Target contrast ratio.
 	 * @return array[] Each: { element_id, color_key, background, from, to, old_ratio, new_ratio }.
 	 */
-	public static function propose_contrast_fixes( array $ex, ?string $element_id, float $target = Elementor_MCP_Color_Contrast::AA_NORMAL ): array {
+	public static function propose_contrast_fixes( array $ex, ?string $element_id, float $target = EMCP_Tools_Color_Contrast::AA_NORMAL ): array {
 		$fixes = array();
 		foreach ( $ex['text_style_contexts'] as $ctx ) {
 			if ( null !== $element_id && ( $ctx['element_id'] ?? '' ) !== $element_id ) {
@@ -538,15 +538,15 @@ class Elementor_MCP_A11y_Abilities {
 			if ( null === $bg || '' === $bg ) {
 				continue; // Can't fix what we can't measure.
 			}
-			$ratio = Elementor_MCP_Color_Contrast::contrast_ratio( (string) $ctx['color'], (string) $bg );
-			if ( null === $ratio || Elementor_MCP_Color_Contrast::passes( $ratio ) ) {
+			$ratio = EMCP_Tools_Color_Contrast::contrast_ratio( (string) $ctx['color'], (string) $bg );
+			if ( null === $ratio || EMCP_Tools_Color_Contrast::passes( $ratio ) ) {
 				continue;
 			}
-			$suggest = Elementor_MCP_Color_Contrast::suggest_adjusted( (string) $ctx['color'], (string) $bg, $target );
+			$suggest = EMCP_Tools_Color_Contrast::suggest_adjusted( (string) $ctx['color'], (string) $bg, $target );
 			if ( null === $suggest ) {
 				continue;
 			}
-			$new_ratio = Elementor_MCP_Color_Contrast::contrast_ratio( $suggest, (string) $bg );
+			$new_ratio = EMCP_Tools_Color_Contrast::contrast_ratio( $suggest, (string) $bg );
 			$fixes[]   = array(
 				'element_id' => (string) $ctx['element_id'],
 				'color_key'  => (string) ( $ctx['color_key'] ?? '' ),

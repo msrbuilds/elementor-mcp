@@ -5,7 +5,7 @@
  * Registers the build-page tool that creates a complete page from
  * a declarative structure in a single call.
  *
- * @package Elementor_MCP
+ * @package EMCP_Tools
  * @since   1.0.0
  */
 
@@ -18,15 +18,15 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * @since 1.0.0
  */
-class Elementor_MCP_Composite_Abilities {
+class EMCP_Tools_Composite_Abilities {
 
 	/**
-	 * @var Elementor_MCP_Data
+	 * @var EMCP_Tools_Data
 	 */
 	private $data;
 
 	/**
-	 * @var Elementor_MCP_Element_Factory
+	 * @var EMCP_Tools_Element_Factory
 	 */
 	private $factory;
 
@@ -42,10 +42,10 @@ class Elementor_MCP_Composite_Abilities {
 	 *
 	 * @since 1.0.0
 	 *
-	 * @param Elementor_MCP_Data            $data    The data access layer.
-	 * @param Elementor_MCP_Element_Factory $factory The element factory.
+	 * @param EMCP_Tools_Data            $data    The data access layer.
+	 * @param EMCP_Tools_Element_Factory $factory The element factory.
 	 */
-	public function __construct( Elementor_MCP_Data $data, Elementor_MCP_Element_Factory $factory ) {
+	public function __construct( EMCP_Tools_Data $data, EMCP_Tools_Element_Factory $factory ) {
 		$this->data    = $data;
 		$this->factory = $factory;
 	}
@@ -88,12 +88,12 @@ class Elementor_MCP_Composite_Abilities {
 	// -------------------------------------------------------------------------
 
 	private function register_build_page(): void {
-		elementor_mcp_register_ability(
+		emcp_tools_register_ability(
 			'elementor-mcp/build-page',
 			array(
-				'label'               => __( 'Build Page', 'elementor-mcp' ),
-				'description'         => __( 'Creates a complete Elementor page from a declarative structure in a single call. Supports nested containers and any widget types. IMPORTANT LAYOUT RULES: (1) For side-by-side columns, use a parent container with flex_direction=row — children are auto-set to content_width=full with equal percentage widths (e.g. 2 children = 50%, 3 = 33.33%). (2) NEVER set flex_wrap or _flex_size in settings — these cause layout overflow. The tool handles layout automatically. (3) Background colors: set background_background=classic and background_color=#hex on containers. (4) Background images: set background_background=classic, background_image={url,id}, background_size=cover. (5) Background overlay: background_overlay_background=classic, background_overlay_color=#hex, background_overlay_opacity={size:0.7,unit:px}. (6) Text alignment: text_align on text/heading widgets. (7) Use search-images and sideload-image tools to get real images before building.', 'elementor-mcp' ),
-				'category'            => 'elementor-mcp',
+				'label'               => __( 'Build Page', 'emcp-tools' ),
+				'description'         => __( 'Creates a complete Elementor page from a declarative structure in a single call. Supports nested containers and any widget types. IMPORTANT LAYOUT RULES: (1) For side-by-side columns, use a parent container with flex_direction=row — children are auto-set to content_width=full with equal percentage widths (e.g. 2 children = 50%, 3 = 33.33%). (2) NEVER set flex_wrap or _flex_size in settings — these cause layout overflow. The tool handles layout automatically. (3) Background colors: set background_background=classic and background_color=#hex on containers. (4) Background images: set background_background=classic, background_image={url,id}, background_size=cover. (5) Background overlay: background_overlay_background=classic, background_overlay_color=#hex, background_overlay_opacity={size:0.7,unit:px}. (6) Text alignment: text_align on text/heading widgets. (7) Use search-images and sideload-image tools to get real images before building.', 'emcp-tools' ),
+				'category'            => 'emcp-tools',
 				'execute_callback'    => array( $this, 'execute_build_page' ),
 				'permission_callback' => array( $this, 'check_create_permission' ),
 				'input_schema'        => array(
@@ -101,25 +101,25 @@ class Elementor_MCP_Composite_Abilities {
 					'properties' => array(
 						'title'         => array(
 							'type'        => 'string',
-							'description' => __( 'Page title.', 'elementor-mcp' ),
+							'description' => __( 'Page title.', 'emcp-tools' ),
 						),
 						'status'        => array(
 							'type'        => 'string',
 							'enum'        => array( 'draft', 'publish' ),
-							'description' => __( 'Post status. Default: draft.', 'elementor-mcp' ),
+							'description' => __( 'Post status. Default: draft.', 'emcp-tools' ),
 						),
 						'post_type'     => array(
 							'type'        => 'string',
 							'enum'        => array( 'page', 'post' ),
-							'description' => __( 'Post type. Default: page.', 'elementor-mcp' ),
+							'description' => __( 'Post type. Default: page.', 'emcp-tools' ),
 						),
 						'page_settings' => array(
 							'type'        => 'object',
-							'description' => __( 'Page-level Elementor settings (background, padding, etc.).', 'elementor-mcp' ),
+							'description' => __( 'Page-level Elementor settings (background, padding, etc.).', 'emcp-tools' ),
 						),
 						'structure'     => array(
 							'type'        => 'array',
-							'description' => __( 'Declarative element tree. Each item has type (container|widget), settings, and optionally children (for containers) or widget_type (for widgets).', 'elementor-mcp' ),
+							'description' => __( 'Declarative element tree. Each item has type (container|widget), settings, and optionally children (for containers) or widget_type (for widgets).', 'emcp-tools' ),
 							'items'       => array(
 								'type'       => 'object',
 								'properties' => array(
@@ -175,11 +175,11 @@ class Elementor_MCP_Composite_Abilities {
 		$structure     = $input['structure'] ?? array();
 
 		if ( empty( $title ) ) {
-			return new \WP_Error( 'missing_title', __( 'The title parameter is required.', 'elementor-mcp' ) );
+			return new \WP_Error( 'missing_title', __( 'The title parameter is required.', 'emcp-tools' ) );
 		}
 
 		if ( empty( $structure ) || ! is_array( $structure ) ) {
-			return new \WP_Error( 'missing_structure', __( 'The structure parameter is required and must be an array.', 'elementor-mcp' ) );
+			return new \WP_Error( 'missing_structure', __( 'The structure parameter is required and must be an array.', 'emcp-tools' ) );
 		}
 
 		// 1. Create the WordPress post.

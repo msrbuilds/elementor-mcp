@@ -1,6 +1,6 @@
 <?php
 /**
- * Unit tests for F-013: elementor_mcp_ability_names filter return not validated.
+ * Unit tests for F-013: emcp_tools_ability_names filter return not validated.
  *
  * Finding:   F-013 (Low)
  * File:      includes/abilities/class-ability-registrar.php:146
@@ -10,7 +10,7 @@
  * The ability registrar applies a WordPress filter to allow third-party plugins
  * to modify the list of ability names before they are passed to create_server():
  *
- *   $names = apply_filters( 'elementor_mcp_ability_names', $this->ability_names );
+ *   $names = apply_filters( 'emcp_tools_ability_names', $this->ability_names );
  *   $mcp_adapter->create_server( 'elementor-mcp-server', [ 'abilities' => $names ] );
  *
  * The return value of apply_filters() is passed directly to create_server()
@@ -36,11 +36,11 @@
  *       return is_string( $name ) && preg_match( '/^[a-z0-9-]+\/[a-z0-9-]+$/', $name );
  *   } ) );
  *
- * @package Elementor_MCP\Tests\Security
+ * @package EMCP_Tools\Tests\Security
  * @since   1.0.0
  */
 
-namespace Elementor_MCP\Tests\Security;
+namespace EMCP_Tools\Tests\Security;
 
 use PHPUnit\Framework\TestCase;
 

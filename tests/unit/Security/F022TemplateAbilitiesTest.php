@@ -28,16 +28,16 @@
  *
  * Fix: validate against expected schema keys before update_post_meta().
  *
- * @package Elementor_MCP\Tests\Security
+ * @package EMCP_Tools\Tests\Security
  * @since   1.0.0
  */
 
-namespace Elementor_MCP\Tests\Security;
+namespace EMCP_Tools\Tests\Security;
 
 use PHPUnit\Framework\TestCase;
 
 /**
- * @covers \Elementor_MCP_Template_Abilities::execute_set_popup_settings
+ * @covers \EMCP_Tools_Template_Abilities::execute_set_popup_settings
  */
 class F022TemplateAbilitiesTest extends TestCase {
 

@@ -13,11 +13,11 @@
  *
  * All four register ONLY when the site has Pro access — the first layer of the
  * § 6.1 defense-in-depth gate. Each execute callback re-checks the gate, and
- * the underlying Elementor_MCP_System_Kit_Writer re-checks it a third time.
+ * the underlying EMCP_Tools_System_Kit_Writer re-checks it a third time.
  *
  * See docs/BRAND_KITS_PLAN.md §§ 4.3, 6.
  *
- * @package Elementor_MCP
+ * @package EMCP_Tools
  * @since   1.8.0
  */
 
@@ -30,7 +30,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * @since 1.8.0
  */
-class Elementor_MCP_System_Kit_Abilities {
+class EMCP_Tools_System_Kit_Abilities {
 
 	/**
 	 * Whether brand-kit tools should register/run on this site.
@@ -40,7 +40,7 @@ class Elementor_MCP_System_Kit_Abilities {
 	 * @return bool
 	 */
 	private function has_access(): bool {
-		return function_exists( 'emcp_pro_fs' ) && emcp_pro_fs()->can_use_premium_code();
+		return function_exists( 'emcp_tools_fs' ) && emcp_tools_fs()->can_use_premium_code();
 	}
 
 	/**
@@ -116,11 +116,11 @@ class Elementor_MCP_System_Kit_Abilities {
 			'properties' => array(
 				'title' => array(
 					'type'        => 'string',
-					'description' => __( 'Human-readable slot title.', 'elementor-mcp' ),
+					'description' => __( 'Human-readable slot title.', 'emcp-tools' ),
 				),
 				'color' => array(
 					'type'        => 'string',
-					'description' => __( 'Hex color (e.g. "#6366F1").', 'elementor-mcp' ),
+					'description' => __( 'Hex color (e.g. "#6366F1").', 'emcp-tools' ),
 				),
 			),
 			'required'   => array( 'color' ),
@@ -135,7 +135,7 @@ class Elementor_MCP_System_Kit_Abilities {
 	private function typography_slot_schema(): array {
 		$size_obj = array(
 			'type'        => 'object',
-			'description' => __( 'Slider value: { size: number, unit: string }. Omit or leave blank to clear.', 'elementor-mcp' ),
+			'description' => __( 'Slider value: { size: number, unit: string }. Omit or leave blank to clear.', 'emcp-tools' ),
 		);
 		return array(
 			'type'       => 'object',
@@ -160,12 +160,12 @@ class Elementor_MCP_System_Kit_Abilities {
 	// -------------------------------------------------------------------------
 
 	private function register_list_brand_kits(): void {
-		elementor_mcp_register_ability(
+		emcp_tools_register_ability(
 			'elementor-mcp/list-brand-kits',
 			array(
-				'label'               => __( 'List Brand Kits', 'elementor-mcp' ),
-				'description'         => __( 'Lists available premium brand kits (title, slug, description, category) from the cached library. Use apply-brand-kit to apply one.', 'elementor-mcp' ),
-				'category'            => 'elementor-mcp',
+				'label'               => __( 'List Brand Kits', 'emcp-tools' ),
+				'description'         => __( 'Lists available premium brand kits (title, slug, description, category) from the cached library. Use apply-brand-kit to apply one.', 'emcp-tools' ),
+				'category'            => 'emcp-tools',
 				'execute_callback'    => array( $this, 'execute_list_brand_kits' ),
 				'permission_callback' => array( $this, 'check_read_permission' ),
 				'input_schema'        => array(
@@ -173,7 +173,7 @@ class Elementor_MCP_System_Kit_Abilities {
 					'properties' => array(
 						'category_slug' => array(
 							'type'        => 'string',
-							'description' => __( 'Optional: only list kits in this category.', 'elementor-mcp' ),
+							'description' => __( 'Optional: only list kits in this category.', 'emcp-tools' ),
 						),
 					),
 				),
@@ -201,12 +201,12 @@ class Elementor_MCP_System_Kit_Abilities {
 	 */
 	public function execute_list_brand_kits( $input ) {
 		if ( ! $this->has_access() ) {
-			return new \WP_Error( 'no_license', __( 'A valid EMCP Tools Pro license is required to list brand kits.', 'elementor-mcp' ) );
+			return new \WP_Error( 'no_license', __( 'A valid EMCP Tools Pro license is required to list brand kits.', 'emcp-tools' ) );
 		}
 
 		$category_filter = isset( $input['category_slug'] ) ? sanitize_key( (string) $input['category_slug'] ) : '';
 
-		$bundle = Elementor_MCP_Pro_Brand_Kits::get_bundle();
+		$bundle = EMCP_Tools_Pro_Brand_Kits::get_bundle();
 		if ( is_wp_error( $bundle ) ) {
 			return $bundle;
 		}
@@ -236,12 +236,12 @@ class Elementor_MCP_System_Kit_Abilities {
 	// -------------------------------------------------------------------------
 
 	private function register_apply_brand_kit(): void {
-		elementor_mcp_register_ability(
+		emcp_tools_register_ability(
 			'elementor-mcp/apply-brand-kit',
 			array(
-				'label'               => __( 'Apply Brand Kit', 'elementor-mcp' ),
-				'description'         => __( 'Applies a premium brand kit by slug: replaces the active Elementor kit\'s system colors and typography site-wide. Destructive — back up first (backup defaults to true).', 'elementor-mcp' ),
-				'category'            => 'elementor-mcp',
+				'label'               => __( 'Apply Brand Kit', 'emcp-tools' ),
+				'description'         => __( 'Applies a premium brand kit by slug: replaces the active Elementor kit\'s system colors and typography site-wide. Destructive — back up first (backup defaults to true).', 'emcp-tools' ),
+				'category'            => 'emcp-tools',
 				'execute_callback'    => array( $this, 'execute_apply_brand_kit' ),
 				'permission_callback' => array( $this, 'check_manage_permission' ),
 				'input_schema'        => array(
@@ -249,15 +249,15 @@ class Elementor_MCP_System_Kit_Abilities {
 					'properties' => array(
 						'kit_slug'      => array(
 							'type'        => 'string',
-							'description' => __( 'The brand kit slug (e.g. "modern-saas").', 'elementor-mcp' ),
+							'description' => __( 'The brand kit slug (e.g. "modern-saas").', 'emcp-tools' ),
 						),
 						'category_slug' => array(
 							'type'        => 'string',
-							'description' => __( 'Optional category slug to disambiguate the kit.', 'elementor-mcp' ),
+							'description' => __( 'Optional category slug to disambiguate the kit.', 'emcp-tools' ),
 						),
 						'backup'        => array(
 							'type'        => 'boolean',
-							'description' => __( 'Back up current global settings before applying. Defaults to true.', 'elementor-mcp' ),
+							'description' => __( 'Back up current global settings before applying. Defaults to true.', 'emcp-tools' ),
 						),
 					),
 					'required'   => array( 'kit_slug' ),
@@ -292,31 +292,31 @@ class Elementor_MCP_System_Kit_Abilities {
 	 */
 	public function execute_apply_brand_kit( $input ) {
 		if ( ! $this->has_access() ) {
-			return new \WP_Error( 'no_license', __( 'A valid EMCP Tools Pro license is required to apply brand kits.', 'elementor-mcp' ) );
+			return new \WP_Error( 'no_license', __( 'A valid EMCP Tools Pro license is required to apply brand kits.', 'emcp-tools' ) );
 		}
 
 		$kit_slug = isset( $input['kit_slug'] ) ? sanitize_key( (string) $input['kit_slug'] ) : '';
 		if ( '' === $kit_slug ) {
-			return new \WP_Error( 'missing_slug', __( 'A kit_slug is required.', 'elementor-mcp' ) );
+			return new \WP_Error( 'missing_slug', __( 'A kit_slug is required.', 'emcp-tools' ) );
 		}
 		$category_slug = isset( $input['category_slug'] ) ? sanitize_key( (string) $input['category_slug'] ) : '';
 		$do_backup     = ! isset( $input['backup'] ) || (bool) $input['backup'];
 
-		$kit = Elementor_MCP_Pro_Brand_Kits::find_kit( $kit_slug, $category_slug );
+		$kit = EMCP_Tools_Pro_Brand_Kits::find_kit( $kit_slug, $category_slug );
 		if ( null === $kit ) {
-			return new \WP_Error( 'kit_not_found', __( 'Brand kit not found in the cached library. Try syncing the library first.', 'elementor-mcp' ) );
+			return new \WP_Error( 'kit_not_found', __( 'Brand kit not found in the cached library. Try syncing the library first.', 'emcp-tools' ) );
 		}
 
 		// Backup-before-apply, so AI-driven applies are as recoverable as UI ones.
 		$backup_id = null;
-		if ( $do_backup && class_exists( 'Elementor_MCP_Kit_Backup_Store' ) ) {
-			$backup = Elementor_MCP_Kit_Backup_Store::create( isset( $kit['title'] ) ? (string) $kit['title'] : $kit_slug );
+		if ( $do_backup && class_exists( 'EMCP_Tools_Kit_Backup_Store' ) ) {
+			$backup = EMCP_Tools_Kit_Backup_Store::create( isset( $kit['title'] ) ? (string) $kit['title'] : $kit_slug );
 			if ( ! is_wp_error( $backup ) ) {
 				$backup_id = (int) $backup;
 			}
 		}
 
-		$result = Elementor_MCP_Pro_Brand_Kits::apply_kit( $kit );
+		$result = EMCP_Tools_Pro_Brand_Kits::apply_kit( $kit );
 		if ( is_wp_error( $result ) ) {
 			return $result;
 		}
@@ -330,12 +330,12 @@ class Elementor_MCP_System_Kit_Abilities {
 	// -------------------------------------------------------------------------
 
 	private function register_replace_system_colors(): void {
-		elementor_mcp_register_ability(
+		emcp_tools_register_ability(
 			'elementor-mcp/replace-system-colors',
 			array(
-				'label'               => __( 'Replace System Colors', 'elementor-mcp' ),
-				'description'         => __( 'Replaces all four Elementor system color slots (primary, secondary, text, accent) atomically. All four must be provided. Propagates site-wide via global color tokens.', 'elementor-mcp' ),
-				'category'            => 'elementor-mcp',
+				'label'               => __( 'Replace System Colors', 'emcp-tools' ),
+				'description'         => __( 'Replaces all four Elementor system color slots (primary, secondary, text, accent) atomically. All four must be provided. Propagates site-wide via global color tokens.', 'emcp-tools' ),
+				'category'            => 'emcp-tools',
 				'execute_callback'    => array( $this, 'execute_replace_system_colors' ),
 				'permission_callback' => array( $this, 'check_manage_permission' ),
 				'input_schema'        => array(
@@ -343,7 +343,7 @@ class Elementor_MCP_System_Kit_Abilities {
 					'properties' => array(
 						'colors' => array(
 							'type'        => 'object',
-							'description' => __( 'The four system color slots.', 'elementor-mcp' ),
+							'description' => __( 'The four system color slots.', 'emcp-tools' ),
 							'properties'  => array(
 								'primary'   => $this->color_slot_schema(),
 								'secondary' => $this->color_slot_schema(),
@@ -379,10 +379,10 @@ class Elementor_MCP_System_Kit_Abilities {
 	 */
 	public function execute_replace_system_colors( $input ) {
 		if ( ! $this->has_access() ) {
-			return new \WP_Error( 'no_license', __( 'A valid EMCP Tools Pro license is required.', 'elementor-mcp' ) );
+			return new \WP_Error( 'no_license', __( 'A valid EMCP Tools Pro license is required.', 'emcp-tools' ) );
 		}
 		$colors = isset( $input['colors'] ) && is_array( $input['colors'] ) ? $input['colors'] : array();
-		return Elementor_MCP_System_Kit_Writer::replace_system_colors( $colors );
+		return EMCP_Tools_System_Kit_Writer::replace_system_colors( $colors );
 	}
 
 	// -------------------------------------------------------------------------
@@ -390,12 +390,12 @@ class Elementor_MCP_System_Kit_Abilities {
 	// -------------------------------------------------------------------------
 
 	private function register_replace_system_typography(): void {
-		elementor_mcp_register_ability(
+		emcp_tools_register_ability(
 			'elementor-mcp/replace-system-typography',
 			array(
-				'label'               => __( 'Replace System Typography', 'elementor-mcp' ),
-				'description'         => __( 'Replaces all four Elementor system typography slots atomically with a full per-field reset. All four must be provided. Use master-file typography shape (font_family, font_weight, font_size {size,unit}, etc.).', 'elementor-mcp' ),
-				'category'            => 'elementor-mcp',
+				'label'               => __( 'Replace System Typography', 'emcp-tools' ),
+				'description'         => __( 'Replaces all four Elementor system typography slots atomically with a full per-field reset. All four must be provided. Use master-file typography shape (font_family, font_weight, font_size {size,unit}, etc.).', 'emcp-tools' ),
+				'category'            => 'emcp-tools',
 				'execute_callback'    => array( $this, 'execute_replace_system_typography' ),
 				'permission_callback' => array( $this, 'check_manage_permission' ),
 				'input_schema'        => array(
@@ -403,7 +403,7 @@ class Elementor_MCP_System_Kit_Abilities {
 					'properties' => array(
 						'typography' => array(
 							'type'        => 'object',
-							'description' => __( 'The four system typography slots.', 'elementor-mcp' ),
+							'description' => __( 'The four system typography slots.', 'emcp-tools' ),
 							'properties'  => array(
 								'primary'   => $this->typography_slot_schema(),
 								'secondary' => $this->typography_slot_schema(),
@@ -439,9 +439,9 @@ class Elementor_MCP_System_Kit_Abilities {
 	 */
 	public function execute_replace_system_typography( $input ) {
 		if ( ! $this->has_access() ) {
-			return new \WP_Error( 'no_license', __( 'A valid EMCP Tools Pro license is required.', 'elementor-mcp' ) );
+			return new \WP_Error( 'no_license', __( 'A valid EMCP Tools Pro license is required.', 'emcp-tools' ) );
 		}
 		$typography = isset( $input['typography'] ) && is_array( $input['typography'] ) ? $input['typography'] : array();
-		return Elementor_MCP_System_Kit_Writer::replace_system_typography( $typography );
+		return EMCP_Tools_System_Kit_Writer::replace_system_typography( $typography );
 	}
 }

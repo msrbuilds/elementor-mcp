@@ -5,7 +5,7 @@
  * Registers 5 tools for creating, updating, clearing, importing,
  * and exporting Elementor pages.
  *
- * @package Elementor_MCP
+ * @package EMCP_Tools
  * @since   1.0.0
  */
 
@@ -18,15 +18,15 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * @since 1.0.0
  */
-class Elementor_MCP_Page_Abilities {
+class EMCP_Tools_Page_Abilities {
 
 	/**
-	 * @var Elementor_MCP_Data
+	 * @var EMCP_Tools_Data
 	 */
 	private $data;
 
 	/**
-	 * @var Elementor_MCP_Element_Factory
+	 * @var EMCP_Tools_Element_Factory
 	 */
 	private $factory;
 
@@ -35,10 +35,10 @@ class Elementor_MCP_Page_Abilities {
 	 *
 	 * @since 1.0.0
 	 *
-	 * @param Elementor_MCP_Data            $data    The data access layer.
-	 * @param Elementor_MCP_Element_Factory $factory The element factory.
+	 * @param EMCP_Tools_Data            $data    The data access layer.
+	 * @param EMCP_Tools_Element_Factory $factory The element factory.
 	 */
-	public function __construct( Elementor_MCP_Data $data, Elementor_MCP_Element_Factory $factory ) {
+	public function __construct( EMCP_Tools_Data $data, EMCP_Tools_Element_Factory $factory ) {
 		$this->data    = $data;
 		$this->factory = $factory;
 	}
@@ -136,12 +136,12 @@ class Elementor_MCP_Page_Abilities {
 	// -------------------------------------------------------------------------
 
 	private function register_create_page(): void {
-		elementor_mcp_register_ability(
+		emcp_tools_register_ability(
 			'elementor-mcp/create-page',
 			array(
-				'label'               => __( 'Create Elementor Page', 'elementor-mcp' ),
-				'description'         => __( 'Creates a new WordPress page with Elementor enabled. Optionally provide initial element content.', 'elementor-mcp' ),
-				'category'            => 'elementor-mcp',
+				'label'               => __( 'Create Elementor Page', 'emcp-tools' ),
+				'description'         => __( 'Creates a new WordPress page with Elementor enabled. Optionally provide initial element content.', 'emcp-tools' ),
+				'category'            => 'emcp-tools',
 				'execute_callback'    => array( $this, 'execute_create_page' ),
 				'permission_callback' => array( $this, 'check_create_permission' ),
 				'input_schema'        => array(
@@ -149,26 +149,26 @@ class Elementor_MCP_Page_Abilities {
 					'properties' => array(
 						'title'     => array(
 							'type'        => 'string',
-							'description' => __( 'Page title.', 'elementor-mcp' ),
+							'description' => __( 'Page title.', 'emcp-tools' ),
 						),
 						'status'    => array(
 							'type'        => 'string',
 							'enum'        => array( 'draft', 'publish' ),
-							'description' => __( 'Post status. Default: draft.', 'elementor-mcp' ),
+							'description' => __( 'Post status. Default: draft.', 'emcp-tools' ),
 						),
 						'post_type' => array(
 							'type'        => 'string',
 							'enum'        => array( 'page', 'post' ),
-							'description' => __( 'Post type. Default: page.', 'elementor-mcp' ),
+							'description' => __( 'Post type. Default: page.', 'emcp-tools' ),
 						),
 						'template'  => array(
 							'type'        => 'string',
-							'description' => __( 'Elementor template slug.', 'elementor-mcp' ),
+							'description' => __( 'Elementor template slug.', 'emcp-tools' ),
 						),
 						'content'   => array(
 							'type'        => 'array',
 							'items'       => array( 'type' => 'object' ),
-							'description' => __( 'Initial element tree.', 'elementor-mcp' ),
+							'description' => __( 'Initial element tree.', 'emcp-tools' ),
 						),
 					),
 					'required'   => array( 'title' ),
@@ -208,7 +208,7 @@ class Elementor_MCP_Page_Abilities {
 		$post_type = sanitize_key( $input['post_type'] ?? 'page' );
 
 		if ( empty( $title ) ) {
-			return new \WP_Error( 'missing_title', __( 'The title parameter is required.', 'elementor-mcp' ) );
+			return new \WP_Error( 'missing_title', __( 'The title parameter is required.', 'emcp-tools' ) );
 		}
 
 		$post_id = wp_insert_post(
@@ -261,12 +261,12 @@ class Elementor_MCP_Page_Abilities {
 	// -------------------------------------------------------------------------
 
 	private function register_update_page_settings(): void {
-		elementor_mcp_register_ability(
+		emcp_tools_register_ability(
 			'elementor-mcp/update-page-settings',
 			array(
-				'label'               => __( 'Update Page Settings', 'elementor-mcp' ),
-				'description'         => __( 'Updates page-level Elementor settings such as background, padding, custom CSS, and layout options.', 'elementor-mcp' ),
-				'category'            => 'elementor-mcp',
+				'label'               => __( 'Update Page Settings', 'emcp-tools' ),
+				'description'         => __( 'Updates page-level Elementor settings such as background, padding, custom CSS, and layout options.', 'emcp-tools' ),
+				'category'            => 'emcp-tools',
 				'execute_callback'    => array( $this, 'execute_update_page_settings' ),
 				'permission_callback' => array( $this, 'check_edit_permission' ),
 				'input_schema'        => array(
@@ -274,11 +274,11 @@ class Elementor_MCP_Page_Abilities {
 					'properties' => array(
 						'post_id'  => array(
 							'type'        => 'integer',
-							'description' => __( 'The post/page ID.', 'elementor-mcp' ),
+							'description' => __( 'The post/page ID.', 'emcp-tools' ),
 						),
 						'settings' => array(
 							'type'        => 'object',
-							'description' => __( 'Page settings object.', 'elementor-mcp' ),
+							'description' => __( 'Page settings object.', 'emcp-tools' ),
 						),
 					),
 					'required'   => array( 'post_id', 'settings' ),
@@ -307,7 +307,7 @@ class Elementor_MCP_Page_Abilities {
 		$settings = $input['settings'] ?? array();
 
 		if ( ! $post_id ) {
-			return new \WP_Error( 'missing_post_id', __( 'The post_id parameter is required.', 'elementor-mcp' ) );
+			return new \WP_Error( 'missing_post_id', __( 'The post_id parameter is required.', 'emcp-tools' ) );
 		}
 
 		$result = $this->data->save_page_settings( $post_id, $settings );
@@ -327,12 +327,12 @@ class Elementor_MCP_Page_Abilities {
 	// -------------------------------------------------------------------------
 
 	private function register_delete_page_content(): void {
-		elementor_mcp_register_ability(
+		emcp_tools_register_ability(
 			'elementor-mcp/delete-page-content',
 			array(
-				'label'               => __( 'Delete Page Content', 'elementor-mcp' ),
-				'description'         => __( 'Clears all Elementor content from a page, resetting it to blank while keeping the page itself.', 'elementor-mcp' ),
-				'category'            => 'elementor-mcp',
+				'label'               => __( 'Delete Page Content', 'emcp-tools' ),
+				'description'         => __( 'Clears all Elementor content from a page, resetting it to blank while keeping the page itself.', 'emcp-tools' ),
+				'category'            => 'emcp-tools',
 				'execute_callback'    => array( $this, 'execute_delete_page_content' ),
 				'permission_callback' => array( $this, 'check_delete_permission' ),
 				'input_schema'        => array(
@@ -340,7 +340,7 @@ class Elementor_MCP_Page_Abilities {
 					'properties' => array(
 						'post_id' => array(
 							'type'        => 'integer',
-							'description' => __( 'The post/page ID.', 'elementor-mcp' ),
+							'description' => __( 'The post/page ID.', 'emcp-tools' ),
 						),
 					),
 					'required'   => array( 'post_id' ),
@@ -367,7 +367,7 @@ class Elementor_MCP_Page_Abilities {
 		$post_id = absint( $input['post_id'] ?? 0 );
 
 		if ( ! $post_id ) {
-			return new \WP_Error( 'missing_post_id', __( 'The post_id parameter is required.', 'elementor-mcp' ) );
+			return new \WP_Error( 'missing_post_id', __( 'The post_id parameter is required.', 'emcp-tools' ) );
 		}
 
 		$result = $this->data->save_page_data( $post_id, array() );
@@ -384,12 +384,12 @@ class Elementor_MCP_Page_Abilities {
 	// -------------------------------------------------------------------------
 
 	private function register_import_template(): void {
-		elementor_mcp_register_ability(
+		emcp_tools_register_ability(
 			'elementor-mcp/import-template',
 			array(
-				'label'               => __( 'Import Template', 'elementor-mcp' ),
-				'description'         => __( 'Imports a JSON template structure into a page at an optional position.', 'elementor-mcp' ),
-				'category'            => 'elementor-mcp',
+				'label'               => __( 'Import Template', 'emcp-tools' ),
+				'description'         => __( 'Imports a JSON template structure into a page at an optional position.', 'emcp-tools' ),
+				'category'            => 'emcp-tools',
 				'execute_callback'    => array( $this, 'execute_import_template' ),
 				'permission_callback' => array( $this, 'check_edit_permission' ),
 				'input_schema'        => array(
@@ -397,18 +397,18 @@ class Elementor_MCP_Page_Abilities {
 					'properties' => array(
 						'post_id'       => array(
 							'type'        => 'integer',
-							'description' => __( 'The post/page ID.', 'elementor-mcp' ),
+							'description' => __( 'The post/page ID.', 'emcp-tools' ),
 						),
 						'template_json' => array(
 							'type'        => 'array',
-							'description' => __( 'Elementor JSON element structure to import.', 'elementor-mcp' ),
+							'description' => __( 'Elementor JSON element structure to import.', 'emcp-tools' ),
 							'items'       => array(
 								'type' => 'object',
 							),
 						),
 						'position'      => array(
 							'type'        => 'integer',
-							'description' => __( 'Insert position. -1 = append.', 'elementor-mcp' ),
+							'description' => __( 'Insert position. -1 = append.', 'emcp-tools' ),
 						),
 					),
 					'required'   => array( 'post_id', 'template_json' ),
@@ -438,11 +438,11 @@ class Elementor_MCP_Page_Abilities {
 		$position      = intval( $input['position'] ?? -1 );
 
 		if ( ! $post_id ) {
-			return new \WP_Error( 'missing_post_id', __( 'The post_id parameter is required.', 'elementor-mcp' ) );
+			return new \WP_Error( 'missing_post_id', __( 'The post_id parameter is required.', 'emcp-tools' ) );
 		}
 
 		if ( empty( $template_json ) ) {
-			return new \WP_Error( 'missing_template', __( 'The template_json parameter is required.', 'elementor-mcp' ) );
+			return new \WP_Error( 'missing_template', __( 'The template_json parameter is required.', 'emcp-tools' ) );
 		}
 
 		$data = $this->data->get_page_data( $post_id );
@@ -479,12 +479,12 @@ class Elementor_MCP_Page_Abilities {
 	// -------------------------------------------------------------------------
 
 	private function register_export_page(): void {
-		elementor_mcp_register_ability(
+		emcp_tools_register_ability(
 			'elementor-mcp/export-page',
 			array(
-				'label'               => __( 'Export Page', 'elementor-mcp' ),
-				'description'         => __( 'Exports a page\'s full Elementor data as a JSON structure that can be imported elsewhere.', 'elementor-mcp' ),
-				'category'            => 'elementor-mcp',
+				'label'               => __( 'Export Page', 'emcp-tools' ),
+				'description'         => __( 'Exports a page\'s full Elementor data as a JSON structure that can be imported elsewhere.', 'emcp-tools' ),
+				'category'            => 'emcp-tools',
 				'execute_callback'    => array( $this, 'execute_export_page' ),
 				'permission_callback' => array( $this, 'check_edit_permission' ),
 				'input_schema'        => array(
@@ -492,7 +492,7 @@ class Elementor_MCP_Page_Abilities {
 					'properties' => array(
 						'post_id' => array(
 							'type'        => 'integer',
-							'description' => __( 'The post/page ID.', 'elementor-mcp' ),
+							'description' => __( 'The post/page ID.', 'emcp-tools' ),
 						),
 					),
 					'required'   => array( 'post_id' ),
@@ -519,7 +519,7 @@ class Elementor_MCP_Page_Abilities {
 		$post_id = absint( $input['post_id'] ?? 0 );
 
 		if ( ! $post_id ) {
-			return new \WP_Error( 'missing_post_id', __( 'The post_id parameter is required.', 'elementor-mcp' ) );
+			return new \WP_Error( 'missing_post_id', __( 'The post_id parameter is required.', 'emcp-tools' ) );
 		}
 
 		$data = $this->data->get_page_data( $post_id );

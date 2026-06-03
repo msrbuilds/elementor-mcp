@@ -28,16 +28,16 @@
  * Fix: validate each top-level element for required keys ['id', 'elType',
  * 'elements'] before insert_element(). Return WP_Error on invalid structure.
  *
- * @package Elementor_MCP\Tests\Security
+ * @package EMCP_Tools\Tests\Security
  * @since   1.0.0
  */
 
-namespace Elementor_MCP\Tests\Security;
+namespace EMCP_Tools\Tests\Security;
 
 use PHPUnit\Framework\TestCase;
 
 /**
- * @covers \Elementor_MCP_Page_Abilities::execute_import_template
+ * @covers \EMCP_Tools_Page_Abilities::execute_import_template
  */
 class F009ImportTemplateTest extends TestCase {
 

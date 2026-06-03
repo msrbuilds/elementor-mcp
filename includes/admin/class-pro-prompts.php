@@ -8,7 +8,7 @@
  * (including the site-binding check) and returns the full bundle, which
  * the plugin caches for 24 hours.
  *
- * @package Elementor_MCP
+ * @package EMCP_Tools
  * @since   1.7.0
  */
 
@@ -21,14 +21,14 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * @since 1.7.0
  */
-class Elementor_MCP_Pro_Prompts {
+class EMCP_Tools_Pro_Prompts {
 
 	/**
 	 * Transient key for the cached manifest + content bundle.
 	 *
 	 * @var string
 	 */
-	const CACHE_KEY = 'elementor_mcp_pro_prompts_bundle';
+	const CACHE_KEY = 'emcp_tools_pro_prompts_bundle';
 
 	/**
 	 * Transient TTL in seconds. 24 hours.
@@ -39,7 +39,7 @@ class Elementor_MCP_Pro_Prompts {
 
 	/**
 	 * Default endpoint that serves the prompts bundle. Filterable via
-	 * `elementor_mcp_pro_prompts_endpoint` for staging / local testing.
+	 * `emcp_tools_pro_prompts_endpoint` for staging / local testing.
 	 *
 	 * @var string
 	 */
@@ -53,10 +53,10 @@ class Elementor_MCP_Pro_Prompts {
 	 * @return bool
 	 */
 	public static function user_has_access(): bool {
-		if ( ! function_exists( 'emcp_pro_fs' ) ) {
+		if ( ! function_exists( 'emcp_tools_fs' ) ) {
 			return false;
 		}
-		return emcp_pro_fs()->can_use_premium_code();
+		return emcp_tools_fs()->can_use_premium_code();
 	}
 
 	/**
@@ -90,7 +90,7 @@ class Elementor_MCP_Pro_Prompts {
 	 */
 	public static function get_bundle( bool $force_refresh = false ) {
 		if ( ! self::user_has_access() ) {
-			return new WP_Error( 'no_license', __( 'A valid EMCP Tools Pro license is required to access premium prompts.', 'elementor-mcp' ) );
+			return new WP_Error( 'no_license', __( 'A valid EMCP Tools Pro license is required to access premium prompts.', 'emcp-tools' ) );
 		}
 
 		if ( ! $force_refresh ) {
@@ -115,10 +115,10 @@ class Elementor_MCP_Pro_Prompts {
 		$license_key = self::get_license_key();
 		$license_id  = self::get_license_id();
 		if ( '' === $license_key || '' === $license_id ) {
-			return new WP_Error( 'no_license_key', __( 'No active EMCP Tools Pro license was found on this site.', 'elementor-mcp' ) );
+			return new WP_Error( 'no_license_key', __( 'No active EMCP Tools Pro license was found on this site.', 'emcp-tools' ) );
 		}
 
-		$endpoint = apply_filters( 'elementor_mcp_pro_prompts_endpoint', self::DEFAULT_ENDPOINT );
+		$endpoint = apply_filters( 'emcp_tools_pro_prompts_endpoint', self::DEFAULT_ENDPOINT );
 
 		// Auth + site/version metadata travel in headers, never the URL. License
 		// keys are credentials — query strings get logged by every proxy in the
@@ -140,7 +140,7 @@ class Elementor_MCP_Pro_Prompts {
 					'Authorization'         => 'Bearer ' . $license_key,
 					'X-EMCP-License-Id'     => $license_id,
 					'X-EMCP-Site'           => home_url(),
-					'X-EMCP-Plugin-Version' => ELEMENTOR_MCP_VERSION,
+					'X-EMCP-Plugin-Version' => EMCP_TOOLS_VERSION,
 				),
 			)
 		);
@@ -159,14 +159,14 @@ class Elementor_MCP_Pro_Prompts {
 		if ( 403 === $code ) {
 			return new WP_Error(
 				'forbidden',
-				__( 'Premium Prompts are unavailable on this site. Make sure your EMCP Tools Pro license is active and this site is on its activated-sites list. Contact support if the issue persists.', 'elementor-mcp' )
+				__( 'Premium Prompts are unavailable on this site. Make sure your EMCP Tools Pro license is active and this site is on its activated-sites list. Contact support if the issue persists.', 'emcp-tools' )
 			);
 		}
 
 		if ( 429 === $code ) {
 			return new WP_Error(
 				'rate_limited',
-				__( 'Premium Prompts endpoint is rate-limiting this site. Try again in a few minutes.', 'elementor-mcp' )
+				__( 'Premium Prompts endpoint is rate-limiting this site. Try again in a few minutes.', 'emcp-tools' )
 			);
 		}
 
@@ -175,7 +175,7 @@ class Elementor_MCP_Pro_Prompts {
 				'remote_error',
 				sprintf(
 					/* translators: %d: HTTP status code */
-					__( 'Prompts endpoint returned HTTP %d. Please try again later or contact support.', 'elementor-mcp' ),
+					__( 'Prompts endpoint returned HTTP %d. Please try again later or contact support.', 'emcp-tools' ),
 					$code
 				)
 			);
@@ -185,7 +185,7 @@ class Elementor_MCP_Pro_Prompts {
 		$bundle = json_decode( $body, true );
 
 		if ( ! is_array( $bundle ) || empty( $bundle['categories'] ) || ! is_array( $bundle['categories'] ) ) {
-			return new WP_Error( 'invalid_payload', __( 'Prompts endpoint returned an unexpected payload.', 'elementor-mcp' ) );
+			return new WP_Error( 'invalid_payload', __( 'Prompts endpoint returned an unexpected payload.', 'emcp-tools' ) );
 		}
 
 		$bundle['fetched_at'] = time();
@@ -202,10 +202,10 @@ class Elementor_MCP_Pro_Prompts {
 	 * @return string
 	 */
 	private static function get_license_key(): string {
-		if ( ! function_exists( 'emcp_pro_fs' ) ) {
+		if ( ! function_exists( 'emcp_tools_fs' ) ) {
 			return '';
 		}
-		$license = emcp_pro_fs()->_get_license();
+		$license = emcp_tools_fs()->_get_license();
 		if ( ! $license || empty( $license->secret_key ) ) {
 			return '';
 		}
@@ -222,10 +222,10 @@ class Elementor_MCP_Pro_Prompts {
 	 * @return string
 	 */
 	private static function get_license_id(): string {
-		if ( ! function_exists( 'emcp_pro_fs' ) ) {
+		if ( ! function_exists( 'emcp_tools_fs' ) ) {
 			return '';
 		}
-		$license = emcp_pro_fs()->_get_license();
+		$license = emcp_tools_fs()->_get_license();
 		if ( ! $license || empty( $license->id ) ) {
 			return '';
 		}

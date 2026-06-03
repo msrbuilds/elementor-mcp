@@ -6,7 +6,7 @@
  * for atomic widgets (e-heading, e-paragraph, e-button, e-image, etc.).
  * Only registers when Elementor >= 4.0 is active.
  *
- * @package Elementor_MCP
+ * @package EMCP_Tools
  * @since   1.5.0
  */
 
@@ -19,22 +19,22 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * @since 1.5.0
  */
-class Elementor_MCP_Atomic_Widget_Abilities {
+class EMCP_Tools_Atomic_Widget_Abilities {
 
-	/** @var Elementor_MCP_Data */
+	/** @var EMCP_Tools_Data */
 	private $data;
 
-	/** @var Elementor_MCP_Element_Factory */
+	/** @var EMCP_Tools_Element_Factory */
 	private $factory;
 
 	/** @var string[] */
 	private $ability_names = array();
 
 	/**
-	 * @param Elementor_MCP_Data            $data    The data access layer.
-	 * @param Elementor_MCP_Element_Factory $factory The element factory.
+	 * @param EMCP_Tools_Data            $data    The data access layer.
+	 * @param EMCP_Tools_Element_Factory $factory The element factory.
 	 */
-	public function __construct( Elementor_MCP_Data $data, Elementor_MCP_Element_Factory $factory ) {
+	public function __construct( EMCP_Tools_Data $data, EMCP_Tools_Element_Factory $factory ) {
 		$this->data    = $data;
 		$this->factory = $factory;
 	}
@@ -50,7 +50,7 @@ class Elementor_MCP_Atomic_Widget_Abilities {
 	 * Skips registration entirely if Elementor < 4.0.
 	 */
 	public function register(): void {
-		if ( ! Elementor_MCP_Atomic_Props::is_atomic_supported() ) {
+		if ( ! EMCP_Tools_Atomic_Props::is_atomic_supported() ) {
 			return;
 		}
 
@@ -76,12 +76,12 @@ class Elementor_MCP_Atomic_Widget_Abilities {
 	 */
 	public function check_edit_permission( $input ) {
 		if ( ! current_user_can( 'edit_posts' ) ) {
-			return new \WP_Error( 'forbidden', __( 'You do not have permission to edit posts.', 'elementor-mcp' ) );
+			return new \WP_Error( 'forbidden', __( 'You do not have permission to edit posts.', 'emcp-tools' ) );
 		}
 
 		$post_id = $input['post_id'] ?? 0;
 		if ( $post_id && ! current_user_can( 'edit_post', $post_id ) ) {
-			return new \WP_Error( 'forbidden', __( 'You do not have permission to edit this post.', 'elementor-mcp' ) );
+			return new \WP_Error( 'forbidden', __( 'You do not have permission to edit this post.', 'emcp-tools' ) );
 		}
 
 		return true;
@@ -95,22 +95,22 @@ class Elementor_MCP_Atomic_Widget_Abilities {
 		$name                  = 'elementor-mcp/add-atomic-widget';
 		$this->ability_names[] = $name;
 
-		elementor_mcp_register_ability(
+		emcp_tools_register_ability(
 			$name,
 			array(
-				'label'               => __( 'Add Atomic Widget', 'elementor-mcp' ),
-				'description'         => __( 'Adds any Elementor 4.0+ atomic widget to a container. Settings must use the $$type prop format. For simpler usage, prefer the convenience tools (add-atomic-heading, etc.).', 'elementor-mcp' ),
-				'category'            => 'elementor-mcp',
+				'label'               => __( 'Add Atomic Widget', 'emcp-tools' ),
+				'description'         => __( 'Adds any Elementor 4.0+ atomic widget to a container. Settings must use the $$type prop format. For simpler usage, prefer the convenience tools (add-atomic-heading, etc.).', 'emcp-tools' ),
+				'category'            => 'emcp-tools',
 				'execute_callback'    => array( $this, 'execute_add_atomic_widget' ),
 				'permission_callback' => array( $this, 'check_edit_permission' ),
 				'input_schema'        => array(
 					'type'       => 'object',
 					'properties' => array(
-						'post_id'     => array( 'type' => 'integer', 'description' => __( 'The post/page ID.', 'elementor-mcp' ) ),
-						'parent_id'   => array( 'type' => 'string', 'description' => __( 'Parent container element ID.', 'elementor-mcp' ) ),
-						'position'    => array( 'type' => 'integer', 'description' => __( 'Insert position. -1 = append.', 'elementor-mcp' ) ),
-						'widget_type' => array( 'type' => 'string', 'description' => __( 'Atomic widget type name (e.g. e-heading, e-button).', 'elementor-mcp' ) ),
-						'settings'    => array( 'type' => 'object', 'description' => __( 'Widget settings with $$type-wrapped values.', 'elementor-mcp' ) ),
+						'post_id'     => array( 'type' => 'integer', 'description' => __( 'The post/page ID.', 'emcp-tools' ) ),
+						'parent_id'   => array( 'type' => 'string', 'description' => __( 'Parent container element ID.', 'emcp-tools' ) ),
+						'position'    => array( 'type' => 'integer', 'description' => __( 'Insert position. -1 = append.', 'emcp-tools' ) ),
+						'widget_type' => array( 'type' => 'string', 'description' => __( 'Atomic widget type name (e.g. e-heading, e-button).', 'emcp-tools' ) ),
+						'settings'    => array( 'type' => 'object', 'description' => __( 'Widget settings with $$type-wrapped values.', 'emcp-tools' ) ),
 					),
 					'required'   => array( 'post_id', 'parent_id', 'widget_type' ),
 				),
@@ -138,7 +138,7 @@ class Elementor_MCP_Atomic_Widget_Abilities {
 		$settings    = $input['settings'] ?? array();
 
 		if ( empty( $widget_type ) ) {
-			return new \WP_Error( 'missing_widget_type', __( 'widget_type is required.', 'elementor-mcp' ) );
+			return new \WP_Error( 'missing_widget_type', __( 'widget_type is required.', 'emcp-tools' ) );
 		}
 
 		$element = $this->factory->create_atomic_widget( $widget_type, $settings );
@@ -165,20 +165,20 @@ class Elementor_MCP_Atomic_Widget_Abilities {
 		$name                  = 'elementor-mcp/update-atomic-widget';
 		$this->ability_names[] = $name;
 
-		elementor_mcp_register_ability(
+		emcp_tools_register_ability(
 			$name,
 			array(
-				'label'               => __( 'Update Atomic Widget', 'elementor-mcp' ),
-				'description'         => __( 'Updates settings on an existing Elementor 4.0+ atomic widget. Performs a partial merge — only provided keys are changed.', 'elementor-mcp' ),
-				'category'            => 'elementor-mcp',
+				'label'               => __( 'Update Atomic Widget', 'emcp-tools' ),
+				'description'         => __( 'Updates settings on an existing Elementor 4.0+ atomic widget. Performs a partial merge — only provided keys are changed.', 'emcp-tools' ),
+				'category'            => 'emcp-tools',
 				'execute_callback'    => array( $this, 'execute_update_atomic_widget' ),
 				'permission_callback' => array( $this, 'check_edit_permission' ),
 				'input_schema'        => array(
 					'type'       => 'object',
 					'properties' => array(
-						'post_id'    => array( 'type' => 'integer', 'description' => __( 'The post/page ID.', 'elementor-mcp' ) ),
-						'element_id' => array( 'type' => 'string', 'description' => __( 'The element ID to update.', 'elementor-mcp' ) ),
-						'settings'   => array( 'type' => 'object', 'description' => __( 'Partial settings to merge ($$type-wrapped values).', 'elementor-mcp' ) ),
+						'post_id'    => array( 'type' => 'integer', 'description' => __( 'The post/page ID.', 'emcp-tools' ) ),
+						'element_id' => array( 'type' => 'string', 'description' => __( 'The element ID to update.', 'emcp-tools' ) ),
+						'settings'   => array( 'type' => 'object', 'description' => __( 'Partial settings to merge ($$type-wrapped values).', 'emcp-tools' ) ),
 					),
 					'required'   => array( 'post_id', 'element_id', 'settings' ),
 				),
@@ -249,28 +249,28 @@ class Elementor_MCP_Atomic_Widget_Abilities {
 		$this->ability_names[] = $full_name;
 
 		$base_props = array(
-			'post_id'   => array( 'type' => 'integer', 'description' => __( 'The post/page ID.', 'elementor-mcp' ) ),
-			'parent_id' => array( 'type' => 'string', 'description' => __( 'Parent container element ID (e-flexbox or e-div-block).', 'elementor-mcp' ) ),
-			'position'  => array( 'type' => 'integer', 'description' => __( 'Insert position. -1 = append.', 'elementor-mcp' ) ),
+			'post_id'   => array( 'type' => 'integer', 'description' => __( 'The post/page ID.', 'emcp-tools' ) ),
+			'parent_id' => array( 'type' => 'string', 'description' => __( 'Parent container element ID (e-flexbox or e-div-block).', 'emcp-tools' ) ),
+			'position'  => array( 'type' => 'integer', 'description' => __( 'Insert position. -1 = append.', 'emcp-tools' ) ),
 		);
 
 		$all_required = array_unique( array_merge( array( 'post_id', 'parent_id' ), $required ) );
 
-		elementor_mcp_register_ability(
+		emcp_tools_register_ability(
 			$full_name,
 			array(
 				'label'               => $label,
 				'description'         => $description,
-				'category'            => 'elementor-mcp',
+				'category'            => 'emcp-tools',
 				'execute_callback'    => function ( $input ) use ( $widget_type, $settings_fn ) {
 					$settings = $settings_fn( $input );
 					$element  = $this->factory->create_atomic_widget( $widget_type, $settings );
 
 					// Apply styles if style params are present.
-					$common_css = Elementor_MCP_Atomic_Styles::build_common_props( $input );
+					$common_css = EMCP_Tools_Atomic_Styles::build_common_props( $input );
 					if ( ! empty( $common_css ) ) {
-						$style = Elementor_MCP_Atomic_Styles::create_local_class( $element['id'], $common_css );
-						Elementor_MCP_Atomic_Styles::apply_to_element( $element, $style['class_id'], $style['style_def'] );
+						$style = EMCP_Tools_Atomic_Styles::create_local_class( $element['id'], $common_css );
+						EMCP_Tools_Atomic_Styles::apply_to_element( $element, $style['class_id'], $style['style_def'] );
 					}
 
 					$post_id   = absint( $input['post_id'] ?? 0 );
@@ -317,29 +317,29 @@ class Elementor_MCP_Atomic_Widget_Abilities {
 	private function register_add_atomic_heading(): void {
 		$this->register_atomic_convenience(
 			'add-atomic-heading',
-			__( 'Add Atomic Heading', 'elementor-mcp' ),
-			__( 'Adds an Elementor 4.0 atomic heading element. Accepts plain text and tag; $$type wrapping is handled automatically.', 'elementor-mcp' ),
+			__( 'Add Atomic Heading', 'emcp-tools' ),
+			__( 'Adds an Elementor 4.0 atomic heading element. Accepts plain text and tag; $$type wrapping is handled automatically.', 'emcp-tools' ),
 			array(
-				'title'  => array( 'type' => 'string', 'description' => __( 'Heading text content.', 'elementor-mcp' ) ),
-				'tag'    => array( 'type' => 'string', 'enum' => array( 'h1', 'h2', 'h3', 'h4', 'h5', 'h6' ), 'description' => __( 'HTML tag. Default: h2.', 'elementor-mcp' ) ),
-				'link'   => array( 'type' => 'string', 'description' => __( 'Optional URL to link the heading.', 'elementor-mcp' ) ),
-				'css_id' => array( 'type' => 'string', 'description' => __( 'Optional CSS ID for the element.', 'elementor-mcp' ) ),
+				'title'  => array( 'type' => 'string', 'description' => __( 'Heading text content.', 'emcp-tools' ) ),
+				'tag'    => array( 'type' => 'string', 'enum' => array( 'h1', 'h2', 'h3', 'h4', 'h5', 'h6' ), 'description' => __( 'HTML tag. Default: h2.', 'emcp-tools' ) ),
+				'link'   => array( 'type' => 'string', 'description' => __( 'Optional URL to link the heading.', 'emcp-tools' ) ),
+				'css_id' => array( 'type' => 'string', 'description' => __( 'Optional CSS ID for the element.', 'emcp-tools' ) ),
 			),
 			array(),
 			'e-heading',
 			function ( $input ) {
 				$settings = array();
-				$settings['title'] = Elementor_MCP_Atomic_Props::html( sanitize_text_field( $input['title'] ?? 'Heading' ) );
-				$settings['tag']   = Elementor_MCP_Atomic_Props::string( sanitize_text_field( $input['tag'] ?? 'h2' ) );
+				$settings['title'] = EMCP_Tools_Atomic_Props::html( sanitize_text_field( $input['title'] ?? 'Heading' ) );
+				$settings['tag']   = EMCP_Tools_Atomic_Props::string( sanitize_text_field( $input['tag'] ?? 'h2' ) );
 
 				if ( ! empty( $input['link'] ) ) {
-					$settings['link'] = Elementor_MCP_Atomic_Props::link( esc_url_raw( $input['link'] ) );
+					$settings['link'] = EMCP_Tools_Atomic_Props::link( esc_url_raw( $input['link'] ) );
 				}
 				if ( ! empty( $input['css_id'] ) ) {
-					$settings['_cssid'] = Elementor_MCP_Atomic_Props::string( sanitize_text_field( $input['css_id'] ) );
+					$settings['_cssid'] = EMCP_Tools_Atomic_Props::string( sanitize_text_field( $input['css_id'] ) );
 				}
 
-				$settings['classes'] = Elementor_MCP_Atomic_Props::classes();
+				$settings['classes'] = EMCP_Tools_Atomic_Props::classes();
 				return $settings;
 			}
 		);
@@ -348,27 +348,27 @@ class Elementor_MCP_Atomic_Widget_Abilities {
 	private function register_add_atomic_paragraph(): void {
 		$this->register_atomic_convenience(
 			'add-atomic-paragraph',
-			__( 'Add Atomic Paragraph', 'elementor-mcp' ),
-			__( 'Adds an Elementor 4.0 atomic paragraph element.', 'elementor-mcp' ),
+			__( 'Add Atomic Paragraph', 'emcp-tools' ),
+			__( 'Adds an Elementor 4.0 atomic paragraph element.', 'emcp-tools' ),
 			array(
-				'content' => array( 'type' => 'string', 'description' => __( 'Paragraph text content.', 'elementor-mcp' ) ),
-				'link'    => array( 'type' => 'string', 'description' => __( 'Optional URL to link the paragraph.', 'elementor-mcp' ) ),
-				'css_id'  => array( 'type' => 'string', 'description' => __( 'Optional CSS ID.', 'elementor-mcp' ) ),
+				'content' => array( 'type' => 'string', 'description' => __( 'Paragraph text content.', 'emcp-tools' ) ),
+				'link'    => array( 'type' => 'string', 'description' => __( 'Optional URL to link the paragraph.', 'emcp-tools' ) ),
+				'css_id'  => array( 'type' => 'string', 'description' => __( 'Optional CSS ID.', 'emcp-tools' ) ),
 			),
 			array(),
 			'e-paragraph',
 			function ( $input ) {
 				$settings = array();
-				$settings['text'] = Elementor_MCP_Atomic_Props::html( sanitize_text_field( $input['content'] ?? 'Paragraph text' ) );
+				$settings['text'] = EMCP_Tools_Atomic_Props::html( sanitize_text_field( $input['content'] ?? 'Paragraph text' ) );
 
 				if ( ! empty( $input['link'] ) ) {
-					$settings['link'] = Elementor_MCP_Atomic_Props::link( esc_url_raw( $input['link'] ) );
+					$settings['link'] = EMCP_Tools_Atomic_Props::link( esc_url_raw( $input['link'] ) );
 				}
 				if ( ! empty( $input['css_id'] ) ) {
-					$settings['_cssid'] = Elementor_MCP_Atomic_Props::string( sanitize_text_field( $input['css_id'] ) );
+					$settings['_cssid'] = EMCP_Tools_Atomic_Props::string( sanitize_text_field( $input['css_id'] ) );
 				}
 
-				$settings['classes'] = Elementor_MCP_Atomic_Props::classes();
+				$settings['classes'] = EMCP_Tools_Atomic_Props::classes();
 				return $settings;
 			}
 		);
@@ -377,29 +377,29 @@ class Elementor_MCP_Atomic_Widget_Abilities {
 	private function register_add_atomic_button(): void {
 		$this->register_atomic_convenience(
 			'add-atomic-button',
-			__( 'Add Atomic Button', 'elementor-mcp' ),
-			__( 'Adds an Elementor 4.0 atomic button element.', 'elementor-mcp' ),
+			__( 'Add Atomic Button', 'emcp-tools' ),
+			__( 'Adds an Elementor 4.0 atomic button element.', 'emcp-tools' ),
 			array(
-				'text'         => array( 'type' => 'string', 'description' => __( 'Button label text.', 'elementor-mcp' ) ),
-				'link'         => array( 'type' => 'string', 'description' => __( 'Button URL.', 'elementor-mcp' ) ),
-				'target_blank' => array( 'type' => 'boolean', 'description' => __( 'Open in new tab.', 'elementor-mcp' ) ),
-				'css_id'       => array( 'type' => 'string', 'description' => __( 'Optional CSS ID.', 'elementor-mcp' ) ),
+				'text'         => array( 'type' => 'string', 'description' => __( 'Button label text.', 'emcp-tools' ) ),
+				'link'         => array( 'type' => 'string', 'description' => __( 'Button URL.', 'emcp-tools' ) ),
+				'target_blank' => array( 'type' => 'boolean', 'description' => __( 'Open in new tab.', 'emcp-tools' ) ),
+				'css_id'       => array( 'type' => 'string', 'description' => __( 'Optional CSS ID.', 'emcp-tools' ) ),
 			),
 			array(),
 			'e-button',
 			function ( $input ) {
 				$settings = array();
-				$settings['text'] = Elementor_MCP_Atomic_Props::html( sanitize_text_field( $input['text'] ?? 'Click Here' ) );
+				$settings['text'] = EMCP_Tools_Atomic_Props::html( sanitize_text_field( $input['text'] ?? 'Click Here' ) );
 
 				if ( ! empty( $input['link'] ) ) {
 					$target_blank = ! empty( $input['target_blank'] );
-					$settings['link'] = Elementor_MCP_Atomic_Props::link( esc_url_raw( $input['link'] ), $target_blank );
+					$settings['link'] = EMCP_Tools_Atomic_Props::link( esc_url_raw( $input['link'] ), $target_blank );
 				}
 				if ( ! empty( $input['css_id'] ) ) {
-					$settings['_cssid'] = Elementor_MCP_Atomic_Props::string( sanitize_text_field( $input['css_id'] ) );
+					$settings['_cssid'] = EMCP_Tools_Atomic_Props::string( sanitize_text_field( $input['css_id'] ) );
 				}
 
-				$settings['classes'] = Elementor_MCP_Atomic_Props::classes();
+				$settings['classes'] = EMCP_Tools_Atomic_Props::classes();
 				return $settings;
 			}
 		);
@@ -408,14 +408,14 @@ class Elementor_MCP_Atomic_Widget_Abilities {
 	private function register_add_atomic_image(): void {
 		$this->register_atomic_convenience(
 			'add-atomic-image',
-			__( 'Add Atomic Image', 'elementor-mcp' ),
-			__( 'Adds an Elementor 4.0 atomic image element. Provide either image_id (from media library) or image_url.', 'elementor-mcp' ),
+			__( 'Add Atomic Image', 'emcp-tools' ),
+			__( 'Adds an Elementor 4.0 atomic image element. Provide either image_id (from media library) or image_url.', 'emcp-tools' ),
 			array(
-				'image_id'  => array( 'type' => 'integer', 'description' => __( 'WordPress media library attachment ID.', 'elementor-mcp' ) ),
-				'image_url' => array( 'type' => 'string', 'description' => __( 'Image URL (if not using media library).', 'elementor-mcp' ) ),
-				'alt'       => array( 'type' => 'string', 'description' => __( 'Alt text for the image.', 'elementor-mcp' ) ),
-				'link'      => array( 'type' => 'string', 'description' => __( 'Optional link URL.', 'elementor-mcp' ) ),
-				'css_id'    => array( 'type' => 'string', 'description' => __( 'Optional CSS ID.', 'elementor-mcp' ) ),
+				'image_id'  => array( 'type' => 'integer', 'description' => __( 'WordPress media library attachment ID.', 'emcp-tools' ) ),
+				'image_url' => array( 'type' => 'string', 'description' => __( 'Image URL (if not using media library).', 'emcp-tools' ) ),
+				'alt'       => array( 'type' => 'string', 'description' => __( 'Alt text for the image.', 'emcp-tools' ) ),
+				'link'      => array( 'type' => 'string', 'description' => __( 'Optional link URL.', 'emcp-tools' ) ),
+				'css_id'    => array( 'type' => 'string', 'description' => __( 'Optional CSS ID.', 'emcp-tools' ) ),
 			),
 			array(),
 			'e-image',
@@ -427,22 +427,22 @@ class Elementor_MCP_Atomic_Widget_Abilities {
 
 				if ( $image_id ) {
 					$url = wp_get_attachment_url( $image_id );
-					$settings['image'] = Elementor_MCP_Atomic_Props::image( $image_id, $url ?: '' );
+					$settings['image'] = EMCP_Tools_Atomic_Props::image( $image_id, $url ?: '' );
 				} elseif ( $image_url ) {
-					$settings['image'] = Elementor_MCP_Atomic_Props::image( 0, $image_url );
+					$settings['image'] = EMCP_Tools_Atomic_Props::image( 0, $image_url );
 				}
 
 				if ( ! empty( $input['alt'] ) ) {
-					$settings['alt'] = Elementor_MCP_Atomic_Props::string( sanitize_text_field( $input['alt'] ) );
+					$settings['alt'] = EMCP_Tools_Atomic_Props::string( sanitize_text_field( $input['alt'] ) );
 				}
 				if ( ! empty( $input['link'] ) ) {
-					$settings['link'] = Elementor_MCP_Atomic_Props::link( esc_url_raw( $input['link'] ) );
+					$settings['link'] = EMCP_Tools_Atomic_Props::link( esc_url_raw( $input['link'] ) );
 				}
 				if ( ! empty( $input['css_id'] ) ) {
-					$settings['_cssid'] = Elementor_MCP_Atomic_Props::string( sanitize_text_field( $input['css_id'] ) );
+					$settings['_cssid'] = EMCP_Tools_Atomic_Props::string( sanitize_text_field( $input['css_id'] ) );
 				}
 
-				$settings['classes'] = Elementor_MCP_Atomic_Props::classes();
+				$settings['classes'] = EMCP_Tools_Atomic_Props::classes();
 				return $settings;
 			}
 		);
@@ -451,12 +451,12 @@ class Elementor_MCP_Atomic_Widget_Abilities {
 	private function register_add_atomic_svg(): void {
 		$this->register_atomic_convenience(
 			'add-atomic-svg',
-			__( 'Add Atomic SVG', 'elementor-mcp' ),
-			__( 'Adds an Elementor 4.0 atomic SVG element.', 'elementor-mcp' ),
+			__( 'Add Atomic SVG', 'emcp-tools' ),
+			__( 'Adds an Elementor 4.0 atomic SVG element.', 'emcp-tools' ),
 			array(
-				'svg_id'  => array( 'type' => 'integer', 'description' => __( 'WordPress media library SVG attachment ID.', 'elementor-mcp' ) ),
-				'svg_url' => array( 'type' => 'string', 'description' => __( 'SVG URL (if not using media library).', 'elementor-mcp' ) ),
-				'css_id'  => array( 'type' => 'string', 'description' => __( 'Optional CSS ID.', 'elementor-mcp' ) ),
+				'svg_id'  => array( 'type' => 'integer', 'description' => __( 'WordPress media library SVG attachment ID.', 'emcp-tools' ) ),
+				'svg_url' => array( 'type' => 'string', 'description' => __( 'SVG URL (if not using media library).', 'emcp-tools' ) ),
+				'css_id'  => array( 'type' => 'string', 'description' => __( 'Optional CSS ID.', 'emcp-tools' ) ),
 			),
 			array(),
 			'e-svg',
@@ -468,16 +468,16 @@ class Elementor_MCP_Atomic_Widget_Abilities {
 
 				if ( $svg_id ) {
 					$url = wp_get_attachment_url( $svg_id );
-					$settings['svg'] = Elementor_MCP_Atomic_Props::image( $svg_id, $url ?: '' );
+					$settings['svg'] = EMCP_Tools_Atomic_Props::image( $svg_id, $url ?: '' );
 				} elseif ( $svg_url ) {
-					$settings['svg'] = Elementor_MCP_Atomic_Props::image( 0, $svg_url );
+					$settings['svg'] = EMCP_Tools_Atomic_Props::image( 0, $svg_url );
 				}
 
 				if ( ! empty( $input['css_id'] ) ) {
-					$settings['_cssid'] = Elementor_MCP_Atomic_Props::string( sanitize_text_field( $input['css_id'] ) );
+					$settings['_cssid'] = EMCP_Tools_Atomic_Props::string( sanitize_text_field( $input['css_id'] ) );
 				}
 
-				$settings['classes'] = Elementor_MCP_Atomic_Props::classes();
+				$settings['classes'] = EMCP_Tools_Atomic_Props::classes();
 				return $settings;
 			}
 		);
@@ -486,23 +486,23 @@ class Elementor_MCP_Atomic_Widget_Abilities {
 	private function register_add_atomic_youtube(): void {
 		$this->register_atomic_convenience(
 			'add-atomic-youtube',
-			__( 'Add Atomic YouTube', 'elementor-mcp' ),
-			__( 'Adds an Elementor 4.0 atomic YouTube video element.', 'elementor-mcp' ),
+			__( 'Add Atomic YouTube', 'emcp-tools' ),
+			__( 'Adds an Elementor 4.0 atomic YouTube video element.', 'emcp-tools' ),
 			array(
-				'video_url' => array( 'type' => 'string', 'description' => __( 'YouTube video URL.', 'elementor-mcp' ) ),
-				'css_id'    => array( 'type' => 'string', 'description' => __( 'Optional CSS ID.', 'elementor-mcp' ) ),
+				'video_url' => array( 'type' => 'string', 'description' => __( 'YouTube video URL.', 'emcp-tools' ) ),
+				'css_id'    => array( 'type' => 'string', 'description' => __( 'Optional CSS ID.', 'emcp-tools' ) ),
 			),
 			array( 'video_url' ),
 			'e-youtube',
 			function ( $input ) {
 				$settings = array();
-				$settings['url'] = Elementor_MCP_Atomic_Props::url( esc_url_raw( $input['video_url'] ?? '' ) );
+				$settings['url'] = EMCP_Tools_Atomic_Props::url( esc_url_raw( $input['video_url'] ?? '' ) );
 
 				if ( ! empty( $input['css_id'] ) ) {
-					$settings['_cssid'] = Elementor_MCP_Atomic_Props::string( sanitize_text_field( $input['css_id'] ) );
+					$settings['_cssid'] = EMCP_Tools_Atomic_Props::string( sanitize_text_field( $input['css_id'] ) );
 				}
 
-				$settings['classes'] = Elementor_MCP_Atomic_Props::classes();
+				$settings['classes'] = EMCP_Tools_Atomic_Props::classes();
 				return $settings;
 			}
 		);
@@ -511,12 +511,12 @@ class Elementor_MCP_Atomic_Widget_Abilities {
 	private function register_add_atomic_video(): void {
 		$this->register_atomic_convenience(
 			'add-atomic-video',
-			__( 'Add Atomic Video', 'elementor-mcp' ),
-			__( 'Adds an Elementor 4.0 atomic self-hosted video element.', 'elementor-mcp' ),
+			__( 'Add Atomic Video', 'emcp-tools' ),
+			__( 'Adds an Elementor 4.0 atomic self-hosted video element.', 'emcp-tools' ),
 			array(
-				'video_url' => array( 'type' => 'string', 'description' => __( 'Self-hosted video URL.', 'elementor-mcp' ) ),
-				'video_id'  => array( 'type' => 'integer', 'description' => __( 'Media library video attachment ID.', 'elementor-mcp' ) ),
-				'css_id'    => array( 'type' => 'string', 'description' => __( 'Optional CSS ID.', 'elementor-mcp' ) ),
+				'video_url' => array( 'type' => 'string', 'description' => __( 'Self-hosted video URL.', 'emcp-tools' ) ),
+				'video_id'  => array( 'type' => 'integer', 'description' => __( 'Media library video attachment ID.', 'emcp-tools' ) ),
+				'css_id'    => array( 'type' => 'string', 'description' => __( 'Optional CSS ID.', 'emcp-tools' ) ),
 			),
 			array(),
 			'e-self-hosted-video',
@@ -528,16 +528,16 @@ class Elementor_MCP_Atomic_Widget_Abilities {
 
 				if ( $video_id ) {
 					$url = wp_get_attachment_url( $video_id );
-					$settings['source'] = Elementor_MCP_Atomic_Props::url( $url ?: '' );
+					$settings['source'] = EMCP_Tools_Atomic_Props::url( $url ?: '' );
 				} elseif ( $video_url ) {
-					$settings['source'] = Elementor_MCP_Atomic_Props::url( $video_url );
+					$settings['source'] = EMCP_Tools_Atomic_Props::url( $video_url );
 				}
 
 				if ( ! empty( $input['css_id'] ) ) {
-					$settings['_cssid'] = Elementor_MCP_Atomic_Props::string( sanitize_text_field( $input['css_id'] ) );
+					$settings['_cssid'] = EMCP_Tools_Atomic_Props::string( sanitize_text_field( $input['css_id'] ) );
 				}
 
-				$settings['classes'] = Elementor_MCP_Atomic_Props::classes();
+				$settings['classes'] = EMCP_Tools_Atomic_Props::classes();
 				return $settings;
 			}
 		);
@@ -546,10 +546,10 @@ class Elementor_MCP_Atomic_Widget_Abilities {
 	private function register_add_atomic_divider(): void {
 		$this->register_atomic_convenience(
 			'add-atomic-divider',
-			__( 'Add Atomic Divider', 'elementor-mcp' ),
-			__( 'Adds an Elementor 4.0 atomic divider element.', 'elementor-mcp' ),
+			__( 'Add Atomic Divider', 'emcp-tools' ),
+			__( 'Adds an Elementor 4.0 atomic divider element.', 'emcp-tools' ),
 			array(
-				'css_id' => array( 'type' => 'string', 'description' => __( 'Optional CSS ID.', 'elementor-mcp' ) ),
+				'css_id' => array( 'type' => 'string', 'description' => __( 'Optional CSS ID.', 'emcp-tools' ) ),
 			),
 			array(),
 			'e-divider',
@@ -557,10 +557,10 @@ class Elementor_MCP_Atomic_Widget_Abilities {
 				$settings = array();
 
 				if ( ! empty( $input['css_id'] ) ) {
-					$settings['_cssid'] = Elementor_MCP_Atomic_Props::string( sanitize_text_field( $input['css_id'] ) );
+					$settings['_cssid'] = EMCP_Tools_Atomic_Props::string( sanitize_text_field( $input['css_id'] ) );
 				}
 
-				$settings['classes'] = Elementor_MCP_Atomic_Props::classes();
+				$settings['classes'] = EMCP_Tools_Atomic_Props::classes();
 				return $settings;
 			}
 		);

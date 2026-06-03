@@ -39,16 +39,16 @@
  *          if ( is_wp_error( $r ) ) { wp_delete_post( $post_id, true ); return $r; }
  *   F-011: Add wp_delete_post( $post_id, true ) before returning WP_Error.
  *
- * @package Elementor_MCP\Tests\Security
+ * @package EMCP_Tools\Tests\Security
  * @since   1.0.0
  */
 
-namespace Elementor_MCP\Tests\Security;
+namespace EMCP_Tools\Tests\Security;
 
 use PHPUnit\Framework\TestCase;
 
 /**
- * @covers \Elementor_MCP_Composite_Abilities::execute_build_page
+ * @covers \EMCP_Tools_Composite_Abilities::execute_build_page
  */
 class F010F011BuildPageTest extends TestCase {
 

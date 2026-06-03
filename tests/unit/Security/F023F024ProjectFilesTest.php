@@ -27,11 +27,11 @@
  *   F-024 BEFORE fix → CONTRIBUTING.md does not exist.
  *   F-024 AFTER fix  → CONTRIBUTING.md exists with setup instructions.
  *
- * @package Elementor_MCP\Tests\Security
+ * @package EMCP_Tools\Tests\Security
  * @since   1.0.0
  */
 
-namespace Elementor_MCP\Tests\Security;
+namespace EMCP_Tools\Tests\Security;
 
 use PHPUnit\Framework\TestCase;
 

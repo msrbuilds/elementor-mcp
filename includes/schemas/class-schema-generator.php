@@ -2,7 +2,7 @@
 /**
  * Auto-generates JSON Schema from Elementor widget control definitions.
  *
- * @package Elementor_MCP
+ * @package EMCP_Tools
  * @since   1.0.0
  */
 
@@ -15,7 +15,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * @since 1.0.0
  */
-class Elementor_MCP_Schema_Generator {
+class EMCP_Tools_Schema_Generator {
 
 	/**
 	 * Generates a JSON Schema for a widget type's settings.
@@ -34,7 +34,7 @@ class Elementor_MCP_Schema_Generator {
 				'widget_not_found',
 				sprintf(
 					/* translators: %s: widget type name */
-					__( 'Widget type "%s" not found.', 'elementor-mcp' ),
+					__( 'Widget type "%s" not found.', 'emcp-tools' ),
 					$widget_type
 				)
 			);
@@ -47,11 +47,11 @@ class Elementor_MCP_Schema_Generator {
 			foreach ( $controls as $control_id => $control ) {
 				$control_type = $control['type'] ?? '';
 
-				if ( Elementor_MCP_Control_Mapper::should_skip( $control_type ) ) {
+				if ( EMCP_Tools_Control_Mapper::should_skip( $control_type ) ) {
 					continue;
 				}
 
-				$schema_fragment = Elementor_MCP_Control_Mapper::map( $control );
+				$schema_fragment = EMCP_Tools_Control_Mapper::map( $control );
 				if ( ! empty( $schema_fragment ) ) {
 					$properties[ $control_id ] = $schema_fragment;
 				}
@@ -62,7 +62,7 @@ class Elementor_MCP_Schema_Generator {
 			'type'        => 'object',
 			'description' => sprintf(
 				/* translators: %s: widget title */
-				__( 'Settings for the %s widget.', 'elementor-mcp' ),
+				__( 'Settings for the %s widget.', 'emcp-tools' ),
 				$widget->get_title()
 			),
 			'properties'  => $properties,

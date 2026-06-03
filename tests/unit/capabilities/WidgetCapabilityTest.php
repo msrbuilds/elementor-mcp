@@ -6,24 +6,24 @@
  * WC tools only registered when WooCommerce class exists.
  * @group capabilities
  * @group widget
- * @package Elementor_MCP\Tests\Capabilities
+ * @package EMCP_Tools\Tests\Capabilities
  */
-namespace Elementor_MCP\Tests\Capabilities;
+namespace EMCP_Tools\Tests\Capabilities;
 
 require_once dirname(__DIR__) . '/class-ability-test-case.php';
 
-use Elementor_MCP\Tests\Ability_Test_Case;
+use EMCP_Tools\Tests\Ability_Test_Case;
 
 class WidgetCapabilityTest extends Ability_Test_Case {
-    private \Elementor_MCP_Widget_Abilities $ability;
+    private \EMCP_Tools_Widget_Abilities $ability;
 
     protected function setUp(): void {
         parent::setUp();
-        $data      = $this->createStub(\Elementor_MCP_Data::class);
+        $data      = $this->createStub(\EMCP_Tools_Data::class);
         $factory   = $this->make_factory();
-        $schema    = $this->createStub(\Elementor_MCP_Schema_Generator::class);
-        $validator = $this->createStub(\Elementor_MCP_Settings_Validator::class);
-        $this->ability = new \Elementor_MCP_Widget_Abilities($data, $factory, $schema, $validator);
+        $schema    = $this->createStub(\EMCP_Tools_Schema_Generator::class);
+        $validator = $this->createStub(\EMCP_Tools_Settings_Validator::class);
+        $this->ability = new \EMCP_Tools_Widget_Abilities($data, $factory, $schema, $validator);
         // register() populates $ability_names; wp_register_ability() is a no-op stub.
         $this->ability->register();
     }

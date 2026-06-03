@@ -6,7 +6,7 @@
  * avoid redundancy with the header CTA there). Dismissed-per-user via
  * user_meta — once dismissed, stays dismissed indefinitely.
  *
- * @package Elementor_MCP
+ * @package EMCP_Tools
  * @since   1.7.1
  */
 
@@ -14,22 +14,22 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class Elementor_MCP_Upgrade_Notice {
+class EMCP_Tools_Upgrade_Notice {
 
 	/**
 	 * User-meta key that records when this user dismissed the notice.
 	 * Value: Unix timestamp, or empty/false if never dismissed.
 	 */
-	const META_KEY = 'elementor_mcp_upgrade_notice_dismissed';
+	const META_KEY = 'emcp_tools_upgrade_notice_dismissed';
 
 	/**
 	 * AJAX nonce action name.
 	 */
-	const NONCE_ACTION = 'elementor_mcp_dismiss_upgrade_notice';
+	const NONCE_ACTION = 'emcp_tools_dismiss_upgrade_notice';
 
 	public function init(): void {
 		add_action( 'admin_notices', array( $this, 'maybe_render' ) );
-		add_action( 'wp_ajax_elementor_mcp_dismiss_upgrade_notice', array( $this, 'ajax_dismiss' ) );
+		add_action( 'wp_ajax_emcp_tools_dismiss_upgrade_notice', array( $this, 'ajax_dismiss' ) );
 	}
 
 	/**
@@ -42,7 +42,7 @@ class Elementor_MCP_Upgrade_Notice {
 		}
 
 		// Hide for sites with an active Pro license.
-		if ( function_exists( 'emcp_pro_fs' ) && emcp_pro_fs()->can_use_premium_code() ) {
+		if ( function_exists( 'emcp_tools_fs' ) && emcp_tools_fs()->can_use_premium_code() ) {
 			return false;
 		}
 
@@ -55,7 +55,7 @@ class Elementor_MCP_Upgrade_Notice {
 		// an Upgrade button there, and we don't want two CTAs stacked.
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		$page = isset( $_GET['page'] ) ? sanitize_key( wp_unslash( $_GET['page'] ) ) : '';
-		if ( '' !== $page && 0 === strpos( $page, 'elementor-mcp' ) ) {
+		if ( '' !== $page && 0 === strpos( $page, 'emcp-tools' ) ) {
 			return false;
 		}
 
@@ -67,8 +67,8 @@ class Elementor_MCP_Upgrade_Notice {
 			return;
 		}
 
-		$upgrade_url = function_exists( 'elementor_mcp_upgrade_url' )
-			? elementor_mcp_upgrade_url()
+		$upgrade_url = function_exists( 'emcp_tools_upgrade_url' )
+			? emcp_tools_upgrade_url()
 			: 'https://emcp.msrbuilds.com/pricing';
 		$docs_url    = 'https://emcp.msrbuilds.com/docs/prompts/premium-library';
 		$nonce       = wp_create_nonce( self::NONCE_ACTION );
@@ -249,23 +249,23 @@ class Elementor_MCP_Upgrade_Notice {
 				<rect x="10" y="10" width="80" height="80" rx="14" fill="rgba(255,255,255,0.05)" transform="rotate(18 50 50)" />
 			</svg>
 
-			<button type="button" class="emcp-upgrade-banner__dismiss" aria-label="<?php esc_attr_e( 'Dismiss this notice', 'elementor-mcp' ); ?>">
+			<button type="button" class="emcp-upgrade-banner__dismiss" aria-label="<?php esc_attr_e( 'Dismiss this notice', 'emcp-tools' ); ?>">
 				<svg viewBox="0 0 20 20" width="14" height="14" aria-hidden="true"><path d="M5.3 4.3a1 1 0 011.4 0L10 7.6l3.3-3.3a1 1 0 111.4 1.4L11.4 9l3.3 3.3a1 1 0 11-1.4 1.4L10 10.4l-3.3 3.3a1 1 0 11-1.4-1.4L8.6 9 5.3 5.7a1 1 0 010-1.4z" fill="currentColor"/></svg>
 			</button>
 
 			<div class="emcp-upgrade-banner__content">
 				<div class="emcp-upgrade-banner__lede">
-					<span class="emcp-upgrade-banner__eyebrow"><?php esc_html_e( 'EMCP Tools Pro', 'elementor-mcp' ); ?></span>
+					<span class="emcp-upgrade-banner__eyebrow"><?php esc_html_e( 'EMCP Tools Pro', 'emcp-tools' ); ?></span>
 					<h2 class="emcp-upgrade-banner__title">
-						<?php esc_html_e( 'Branded landing pages in minutes — straight from your AI.', 'elementor-mcp' ); ?>
+						<?php esc_html_e( 'Branded landing pages in minutes — straight from your AI.', 'emcp-tools' ); ?>
 					</h2>
 					<div class="emcp-upgrade-banner__actions">
 					<a class="emcp-upgrade-banner__btn emcp-upgrade-banner__btn--primary" href="<?php echo esc_url( $upgrade_url ); ?>" target="_blank" rel="noopener noreferrer">
-						<?php esc_html_e( 'Upgrade to Pro', 'elementor-mcp' ); ?>
+						<?php esc_html_e( 'Upgrade to Pro', 'emcp-tools' ); ?>
 						<svg viewBox="0 0 20 20" width="14" height="14" aria-hidden="true"><path d="M11 3a1 1 0 100 2h2.6L7.3 11.3a1 1 0 101.4 1.4L15 6.4V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z" fill="currentColor"/><path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 100-2H5z" fill="currentColor"/></svg>
 					</a>
 					<a class="emcp-upgrade-banner__btn emcp-upgrade-banner__btn--ghost" href="<?php echo esc_url( $docs_url ); ?>" target="_blank" rel="noopener noreferrer">
-						<?php esc_html_e( 'What\'s included', 'elementor-mcp' ); ?>
+						<?php esc_html_e( 'What\'s included', 'emcp-tools' ); ?>
 					</a>
 				</div>
 				</div>
@@ -274,29 +274,29 @@ class Elementor_MCP_Upgrade_Notice {
 					<li>
 						<span class="emcp-upgrade-banner__check" aria-hidden="true">&#10003;</span>
 						<div class="emcp-upgrade-banner__feature-text">
-							<strong><?php esc_html_e( '50+ Premium Prompts', 'elementor-mcp' ); ?></strong>
-							<span><?php esc_html_e( 'across 10 industries', 'elementor-mcp' ); ?></span>
+							<strong><?php esc_html_e( '50+ Premium Prompts', 'emcp-tools' ); ?></strong>
+							<span><?php esc_html_e( 'across 10 industries', 'emcp-tools' ); ?></span>
 						</div>
 					</li>
 					<li>
 						<span class="emcp-upgrade-banner__check" aria-hidden="true">&#10003;</span>
 						<div class="emcp-upgrade-banner__feature-text">
-							<strong><?php esc_html_e( 'Templates Library', 'elementor-mcp' ); ?></strong>
-							<span><?php esc_html_e( 'one-click apply to any page', 'elementor-mcp' ); ?></span>
+							<strong><?php esc_html_e( 'Templates Library', 'emcp-tools' ); ?></strong>
+							<span><?php esc_html_e( 'one-click apply to any page', 'emcp-tools' ); ?></span>
 						</div>
 					</li>
 					<li>
 						<span class="emcp-upgrade-banner__check" aria-hidden="true">&#10003;</span>
 						<div class="emcp-upgrade-banner__feature-text">
-							<strong><?php esc_html_e( 'Priority Support', 'elementor-mcp' ); ?></strong>
-							<span><?php esc_html_e( 'fast email responses', 'elementor-mcp' ); ?></span>
+							<strong><?php esc_html_e( 'Priority Support', 'emcp-tools' ); ?></strong>
+							<span><?php esc_html_e( 'fast email responses', 'emcp-tools' ); ?></span>
 						</div>
 					</li>
 					<li>
 						<span class="emcp-upgrade-banner__check" aria-hidden="true">&#10003;</span>
 						<div class="emcp-upgrade-banner__feature-text">
-							<strong><?php esc_html_e( 'Lifetime Option', 'elementor-mcp' ); ?></strong>
-							<span><?php esc_html_e( 'pay once, own forever', 'elementor-mcp' ); ?></span>
+							<strong><?php esc_html_e( 'Lifetime Option', 'emcp-tools' ); ?></strong>
+							<span><?php esc_html_e( 'pay once, own forever', 'emcp-tools' ); ?></span>
 						</div>
 					</li>
 				</ul>
@@ -314,7 +314,7 @@ class Elementor_MCP_Upgrade_Notice {
 			dismissBtn.addEventListener( 'click', function () {
 				banner.classList.add( 'is-dismissed' );
 				var body = new URLSearchParams();
-				body.append( 'action', 'elementor_mcp_dismiss_upgrade_notice' );
+				body.append( 'action', 'emcp_tools_dismiss_upgrade_notice' );
 				body.append( 'nonce', banner.getAttribute( 'data-emcp-nonce' ) || '' );
 				fetch( ajaxurl, {
 					method: 'POST',

@@ -19,10 +19,10 @@
  *
  * @group regression
  * @group php-compat
- * @package Elementor_MCP\Tests\Regression
+ * @package EMCP_Tools\Tests\Regression
  */
 
-namespace Elementor_MCP\Tests\Regression;
+namespace EMCP_Tools\Tests\Regression;
 
 use PHPUnit\Framework\TestCase;
 
@@ -90,10 +90,10 @@ class PhpCompatRegressionTest extends TestCase {
 
 		$this->assertTrue( str_contains( 'hello world', 'world' ) );
 		$this->assertFalse( str_contains( 'hello world', 'xyz' ) );
-		$this->assertTrue( str_starts_with( 'elementor-mcp', 'elementor' ) );
-		$this->assertFalse( str_starts_with( 'elementor-mcp', 'mcp' ) );
-		$this->assertTrue( str_ends_with( 'elementor-mcp', 'mcp' ) );
-		$this->assertFalse( str_ends_with( 'elementor-mcp', 'elementor' ) );
+		$this->assertTrue( str_starts_with( 'emcp-tools', 'emcp' ) );
+		$this->assertFalse( str_starts_with( 'emcp-tools', 'mcp' ) );
+		$this->assertTrue( str_ends_with( 'emcp-tools', 'tools' ) );
+		$this->assertFalse( str_ends_with( 'emcp-tools', 'elementor' ) );
 	}
 
 	// -------------------------------------------------------------------------

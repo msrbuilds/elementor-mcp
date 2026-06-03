@@ -5,7 +5,7 @@
  * Registers 3 tools for searching, sideloading, and adding stock images
  * from the Openverse API (WordPress.org's Creative Commons image search).
  *
- * @package Elementor_MCP
+ * @package EMCP_Tools
  * @since   1.1.0
  */
 
@@ -18,20 +18,20 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * @since 1.1.0
  */
-class Elementor_MCP_Stock_Image_Abilities {
+class EMCP_Tools_Stock_Image_Abilities {
 
 	/**
-	 * @var Elementor_MCP_Data
+	 * @var EMCP_Tools_Data
 	 */
 	private $data;
 
 	/**
-	 * @var Elementor_MCP_Element_Factory
+	 * @var EMCP_Tools_Element_Factory
 	 */
 	private $factory;
 
 	/**
-	 * @var Elementor_MCP_Openverse_Client
+	 * @var EMCP_Tools_Openverse_Client
 	 */
 	private $openverse;
 
@@ -40,13 +40,13 @@ class Elementor_MCP_Stock_Image_Abilities {
 	 *
 	 * @since 1.1.0
 	 *
-	 * @param Elementor_MCP_Data            $data    The data access layer.
-	 * @param Elementor_MCP_Element_Factory $factory The element factory.
+	 * @param EMCP_Tools_Data            $data    The data access layer.
+	 * @param EMCP_Tools_Element_Factory $factory The element factory.
 	 */
-	public function __construct( Elementor_MCP_Data $data, Elementor_MCP_Element_Factory $factory ) {
+	public function __construct( EMCP_Tools_Data $data, EMCP_Tools_Element_Factory $factory ) {
 		$this->data      = $data;
 		$this->factory   = $factory;
-		$this->openverse = new Elementor_MCP_Openverse_Client();
+		$this->openverse = new EMCP_Tools_Openverse_Client();
 	}
 
 	/**
@@ -127,12 +127,12 @@ class Elementor_MCP_Stock_Image_Abilities {
 	// -------------------------------------------------------------------------
 
 	private function register_search_images(): void {
-		elementor_mcp_register_ability(
+		emcp_tools_register_ability(
 			'elementor-mcp/search-images',
 			array(
-				'label'               => __( 'Search Images', 'elementor-mcp' ),
-				'description'         => __( 'Searches Openverse (WordPress.org) for Creative Commons licensed images. Returns image URLs, thumbnails, licensing info, and attribution. Use the returned URLs with sideload-image or add-stock-image.', 'elementor-mcp' ),
-				'category'            => 'elementor-mcp',
+				'label'               => __( 'Search Images', 'emcp-tools' ),
+				'description'         => __( 'Searches Openverse (WordPress.org) for Creative Commons licensed images. Returns image URLs, thumbnails, licensing info, and attribution. Use the returned URLs with sideload-image or add-stock-image.', 'emcp-tools' ),
+				'category'            => 'emcp-tools',
 				'execute_callback'    => array( $this, 'execute_search_images' ),
 				'permission_callback' => array( $this, 'check_read_permission' ),
 				'input_schema'        => array(
@@ -140,39 +140,39 @@ class Elementor_MCP_Stock_Image_Abilities {
 					'properties' => array(
 						'query'        => array(
 							'type'        => 'string',
-							'description' => __( 'Search keywords (e.g. "mountain landscape", "modern office").', 'elementor-mcp' ),
+							'description' => __( 'Search keywords (e.g. "mountain landscape", "modern office").', 'emcp-tools' ),
 						),
 						'page'         => array(
 							'type'        => 'integer',
-							'description' => __( 'Page number. Default: 1.', 'elementor-mcp' ),
+							'description' => __( 'Page number. Default: 1.', 'emcp-tools' ),
 						),
 						'page_size'    => array(
 							'type'        => 'integer',
-							'description' => __( 'Results per page (1-20). Default: 5.', 'elementor-mcp' ),
+							'description' => __( 'Results per page (1-20). Default: 5.', 'emcp-tools' ),
 						),
 						'license'      => array(
 							'type'        => 'string',
 							'enum'        => array( 'by', 'by-sa', 'by-nc', 'cc0', 'pdm' ),
-							'description' => __( 'Filter by Creative Commons license type.', 'elementor-mcp' ),
+							'description' => __( 'Filter by Creative Commons license type.', 'emcp-tools' ),
 						),
 						'source'       => array(
 							'type'        => 'string',
-							'description' => __( 'Filter by source (e.g. "flickr", "wikimedia", "wordpress").', 'elementor-mcp' ),
+							'description' => __( 'Filter by source (e.g. "flickr", "wikimedia", "wordpress").', 'emcp-tools' ),
 						),
 						'aspect_ratio' => array(
 							'type'        => 'string',
 							'enum'        => array( 'tall', 'wide', 'square' ),
-							'description' => __( 'Filter by aspect ratio. Use "wide" for landscape images (recommended for hero banners, cards, and most page layouts). Use "tall" for portrait/sidebar images. Use "square" for avatars and thumbnails.', 'elementor-mcp' ),
+							'description' => __( 'Filter by aspect ratio. Use "wide" for landscape images (recommended for hero banners, cards, and most page layouts). Use "tall" for portrait/sidebar images. Use "square" for avatars and thumbnails.', 'emcp-tools' ),
 						),
 						'size'         => array(
 							'type'        => 'string',
 							'enum'        => array( 'small', 'medium', 'large' ),
-							'description' => __( 'Filter by image size.', 'elementor-mcp' ),
+							'description' => __( 'Filter by image size.', 'emcp-tools' ),
 						),
 						'category'     => array(
 							'type'        => 'string',
 							'enum'        => array( 'photograph', 'illustration', 'digitized_artwork' ),
-							'description' => __( 'Filter by image category.', 'elementor-mcp' ),
+							'description' => __( 'Filter by image category.', 'emcp-tools' ),
 						),
 					),
 					'required'   => array( 'query' ),
@@ -230,7 +230,7 @@ class Elementor_MCP_Stock_Image_Abilities {
 		$query = sanitize_text_field( $input['query'] ?? '' );
 
 		if ( empty( $query ) ) {
-			return new \WP_Error( 'missing_query', __( 'The query parameter is required.', 'elementor-mcp' ) );
+			return new \WP_Error( 'missing_query', __( 'The query parameter is required.', 'emcp-tools' ) );
 		}
 
 		$params = array( 'q' => $query );
@@ -283,12 +283,12 @@ class Elementor_MCP_Stock_Image_Abilities {
 	// -------------------------------------------------------------------------
 
 	private function register_sideload_image(): void {
-		elementor_mcp_register_ability(
+		emcp_tools_register_ability(
 			'elementor-mcp/sideload-image',
 			array(
-				'label'               => __( 'Sideload Image', 'elementor-mcp' ),
-				'description'         => __( 'Downloads an external image URL into the WordPress Media Library and returns the local attachment ID and URL. Use this after search-images to import a chosen image.', 'elementor-mcp' ),
-				'category'            => 'elementor-mcp',
+				'label'               => __( 'Sideload Image', 'emcp-tools' ),
+				'description'         => __( 'Downloads an external image URL into the WordPress Media Library and returns the local attachment ID and URL. Use this after search-images to import a chosen image.', 'emcp-tools' ),
+				'category'            => 'emcp-tools',
 				'execute_callback'    => array( $this, 'execute_sideload_image' ),
 				'permission_callback' => array( $this, 'check_upload_permission' ),
 				'input_schema'        => array(
@@ -296,23 +296,23 @@ class Elementor_MCP_Stock_Image_Abilities {
 					'properties' => array(
 						'url'         => array(
 							'type'        => 'string',
-							'description' => __( 'The external image URL to download.', 'elementor-mcp' ),
+							'description' => __( 'The external image URL to download.', 'emcp-tools' ),
 						),
 						'title'       => array(
 							'type'        => 'string',
-							'description' => __( 'Attachment title. Falls back to the filename.', 'elementor-mcp' ),
+							'description' => __( 'Attachment title. Falls back to the filename.', 'emcp-tools' ),
 						),
 						'alt_text'    => array(
 							'type'        => 'string',
-							'description' => __( 'Alt text for the image.', 'elementor-mcp' ),
+							'description' => __( 'Alt text for the image.', 'emcp-tools' ),
 						),
 						'caption'     => array(
 							'type'        => 'string',
-							'description' => __( 'Image caption.', 'elementor-mcp' ),
+							'description' => __( 'Image caption.', 'emcp-tools' ),
 						),
 						'attribution' => array(
 							'type'        => 'string',
-							'description' => __( 'Attribution text for Creative Commons images. Stored as the attachment caption/excerpt.', 'elementor-mcp' ),
+							'description' => __( 'Attribution text for Creative Commons images. Stored as the attachment caption/excerpt.', 'emcp-tools' ),
 						),
 					),
 					'required'   => array( 'url' ),
@@ -351,7 +351,7 @@ class Elementor_MCP_Stock_Image_Abilities {
 		$url = esc_url_raw( $input['url'] ?? '' );
 
 		if ( empty( $url ) ) {
-			return new \WP_Error( 'missing_url', __( 'The url parameter is required.', 'elementor-mcp' ) );
+			return new \WP_Error( 'missing_url', __( 'The url parameter is required.', 'emcp-tools' ) );
 		}
 
 		// Load required WordPress media functions.
@@ -361,15 +361,16 @@ class Elementor_MCP_Stock_Image_Abilities {
 			require_once ABSPATH . 'wp-admin/includes/image.php';
 		}
 
-		// Download the file to a temp location.
-		$tmp_file = download_url( $url, 30 );
+		// Download the file to a temp location (SSRF-guarded: blocks private/
+		// reserved/loopback hosts and re-validates each redirect hop).
+		$tmp_file = EMCP_Tools_Url_Guard::safe_download( $url, 30 );
 
 		if ( is_wp_error( $tmp_file ) ) {
 			return new \WP_Error(
 				'download_failed',
 				sprintf(
 					/* translators: %s: error message */
-					__( 'Failed to download image: %s', 'elementor-mcp' ),
+					__( 'Failed to download image: %s', 'emcp-tools' ),
 					$tmp_file->get_error_message()
 				)
 			);
@@ -402,7 +403,7 @@ class Elementor_MCP_Stock_Image_Abilities {
 				'sideload_failed',
 				sprintf(
 					/* translators: %s: error message */
-					__( 'Failed to sideload image: %s', 'elementor-mcp' ),
+					__( 'Failed to sideload image: %s', 'emcp-tools' ),
 					$attachment_id->get_error_message()
 				)
 			);
@@ -451,12 +452,12 @@ class Elementor_MCP_Stock_Image_Abilities {
 	// -------------------------------------------------------------------------
 
 	private function register_add_stock_image(): void {
-		elementor_mcp_register_ability(
+		emcp_tools_register_ability(
 			'elementor-mcp/add-stock-image',
 			array(
-				'label'               => __( 'Add Stock Image', 'elementor-mcp' ),
-				'description'         => __( 'Searches Openverse for an image, downloads it to the Media Library, and adds it as an image widget to the page — all in one step. Defaults to landscape (wide) images for consistent layouts. Combines search-images + sideload-image + add-image.', 'elementor-mcp' ),
-				'category'            => 'elementor-mcp',
+				'label'               => __( 'Add Stock Image', 'emcp-tools' ),
+				'description'         => __( 'Searches Openverse for an image, downloads it to the Media Library, and adds it as an image widget to the page — all in one step. Defaults to landscape (wide) images for consistent layouts. Combines search-images + sideload-image + add-image.', 'emcp-tools' ),
+				'category'            => 'emcp-tools',
 				'execute_callback'    => array( $this, 'execute_add_stock_image' ),
 				'permission_callback' => array( $this, 'check_combined_permission' ),
 				'input_schema'        => array(
@@ -464,51 +465,51 @@ class Elementor_MCP_Stock_Image_Abilities {
 					'properties' => array(
 						'post_id'    => array(
 							'type'        => 'integer',
-							'description' => __( 'The post/page ID.', 'elementor-mcp' ),
+							'description' => __( 'The post/page ID.', 'emcp-tools' ),
 						),
 						'parent_id'  => array(
 							'type'        => 'string',
-							'description' => __( 'Parent container element ID.', 'elementor-mcp' ),
+							'description' => __( 'Parent container element ID.', 'emcp-tools' ),
 						),
 						'query'      => array(
 							'type'        => 'string',
-							'description' => __( 'Image search keywords (e.g. "hero banner technology", "team photo office").', 'elementor-mcp' ),
+							'description' => __( 'Image search keywords (e.g. "hero banner technology", "team photo office").', 'emcp-tools' ),
 						),
 						'index'      => array(
 							'type'        => 'integer',
-							'description' => __( 'Which search result to use (0 = best match). Default: 0.', 'elementor-mcp' ),
+							'description' => __( 'Which search result to use (0 = best match). Default: 0.', 'emcp-tools' ),
 						),
 						'position'   => array(
 							'type'        => 'integer',
-							'description' => __( 'Insert position within parent. -1 = append (default).', 'elementor-mcp' ),
+							'description' => __( 'Insert position within parent. -1 = append (default).', 'emcp-tools' ),
 						),
 						'image_size' => array(
 							'type'        => 'string',
 							'enum'        => array( 'thumbnail', 'medium', 'medium_large', 'large', 'full' ),
-							'description' => __( 'Image size preset. Default: full.', 'elementor-mcp' ),
+							'description' => __( 'Image size preset. Default: full.', 'emcp-tools' ),
 						),
 						'align'      => array(
 							'type'        => 'string',
 							'enum'        => array( 'left', 'center', 'right' ),
-							'description' => __( 'Image alignment.', 'elementor-mcp' ),
+							'description' => __( 'Image alignment.', 'emcp-tools' ),
 						),
 						'caption'    => array(
 							'type'        => 'string',
-							'description' => __( 'Caption override. Defaults to Openverse attribution.', 'elementor-mcp' ),
+							'description' => __( 'Caption override. Defaults to Openverse attribution.', 'emcp-tools' ),
 						),
 						'aspect_ratio' => array(
 							'type'        => 'string',
 							'enum'        => array( 'wide', 'tall', 'square', 'any' ),
-							'description' => __( 'Image aspect ratio filter. Default: wide (landscape). Use "wide" for hero banners and card images, "tall" for sidebar/portrait, "square" for thumbnails, "any" for no filter.', 'elementor-mcp' ),
+							'description' => __( 'Image aspect ratio filter. Default: wide (landscape). Use "wide" for hero banners and card images, "tall" for sidebar/portrait, "square" for thumbnails, "any" for no filter.', 'emcp-tools' ),
 						),
 						'alt_text'   => array(
 							'type'        => 'string',
-							'description' => __( 'Alt text override. Defaults to the image title.', 'elementor-mcp' ),
+							'description' => __( 'Alt text override. Defaults to the image title.', 'emcp-tools' ),
 						),
 						'link_to'    => array(
 							'type'        => 'string',
 							'enum'        => array( 'none', 'file', 'custom' ),
-							'description' => __( 'Link behavior. Default: none.', 'elementor-mcp' ),
+							'description' => __( 'Link behavior. Default: none.', 'emcp-tools' ),
 						),
 					),
 					'required'   => array( 'post_id', 'parent_id', 'query' ),
@@ -553,7 +554,7 @@ class Elementor_MCP_Stock_Image_Abilities {
 		$position  = intval( $input['position'] ?? -1 );
 
 		if ( ! $post_id || empty( $parent_id ) || empty( $query ) ) {
-			return new \WP_Error( 'missing_params', __( 'post_id, parent_id, and query are required.', 'elementor-mcp' ) );
+			return new \WP_Error( 'missing_params', __( 'post_id, parent_id, and query are required.', 'emcp-tools' ) );
 		}
 
 		// Default to wide/landscape images for better layout compatibility.
@@ -581,7 +582,7 @@ class Elementor_MCP_Stock_Image_Abilities {
 				'no_results',
 				sprintf(
 					/* translators: %s: search query */
-					__( 'No images found for "%s". Try different keywords.', 'elementor-mcp' ),
+					__( 'No images found for "%s". Try different keywords.', 'emcp-tools' ),
 					$query
 				)
 			);
@@ -592,7 +593,7 @@ class Elementor_MCP_Stock_Image_Abilities {
 				'invalid_index',
 				sprintf(
 					/* translators: %1$d: requested index, %2$d: available count */
-					__( 'Requested image index %1$d but only %2$d results were returned.', 'elementor-mcp' ),
+					__( 'Requested image index %1$d but only %2$d results were returned.', 'emcp-tools' ),
 					$index,
 					count( $search_result['results'] )
 				)
@@ -660,7 +661,7 @@ class Elementor_MCP_Stock_Image_Abilities {
 		$inserted = $this->data->insert_element( $page_data, $parent_id, $widget, $position );
 
 		if ( ! $inserted ) {
-			return new \WP_Error( 'parent_not_found', __( 'Parent container not found.', 'elementor-mcp' ) );
+			return new \WP_Error( 'parent_not_found', __( 'Parent container not found.', 'emcp-tools' ) );
 		}
 
 		$result = $this->data->save_page_data( $post_id, $page_data );

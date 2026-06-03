@@ -9,7 +9,7 @@
  * namespace appears.  Global code lives in `namespace { ... }` blocks;
  * Elementor stubs live in `namespace Elementor { ... }`.
  *
- * @package Elementor_MCP\Tests
+ * @package EMCP_Tools\Tests
  */
 
 // ---------------------------------------------------------------------------
@@ -20,8 +20,8 @@ namespace {
 
 	define( 'ABSPATH', dirname( __DIR__ ) . '/' );
 	define( 'ELEMENTOR_VERSION', '3.25.0' );
-	define( 'ELEMENTOR_MCP_VERSION', '1.5.0' );
-	define( 'ELEMENTOR_MCP_DIR', dirname( __DIR__ ) . '/' );
+	define( 'EMCP_TOOLS_VERSION', '1.5.0' );
+	define( 'EMCP_TOOLS_DIR', dirname( __DIR__ ) . '/' );
 
 	// -----------------------------------------------------------------------
 	// Global state used by recording stubs.
@@ -39,7 +39,7 @@ namespace {
 	//   []             → always returns false (no capabilities)
 	//   ['edit_posts'] → returns true only for listed capabilities
 	//
-	// Use helper Elementor_MCP_Test_Caps::allow(), ::deny(), ::none(), ::all()
+	// Use helper EMCP_Tools_Test_Caps::allow(), ::deny(), ::none(), ::all()
 	// -----------------------------------------------------------------------
 	$GLOBALS['_caps'] = null;
 
@@ -593,32 +593,32 @@ namespace {
 
 		$map = [
 			// Core classes
-			'Elementor_MCP_Atomic_Props'           => 'includes/class-atomic-props.php',
-			'Elementor_MCP_Data'                  => 'includes/class-elementor-data.php',
-			'Elementor_MCP_Element_Factory'        => 'includes/class-element-factory.php',
-			'Elementor_MCP_Id_Generator'           => 'includes/class-id-generator.php',
-			'Elementor_MCP_Openverse_Client'       => 'includes/class-openverse-client.php',
+			'EMCP_Tools_Atomic_Props'           => 'includes/class-atomic-props.php',
+			'EMCP_Tools_Data'                  => 'includes/class-elementor-data.php',
+			'EMCP_Tools_Element_Factory'        => 'includes/class-element-factory.php',
+			'EMCP_Tools_Id_Generator'           => 'includes/class-id-generator.php',
+			'EMCP_Tools_Openverse_Client'       => 'includes/class-openverse-client.php',
 			// Validators / schemas
-			'Elementor_MCP_Settings_Validator'     => 'includes/validators/class-settings-validator.php',
-			'Elementor_MCP_Schema_Generator'       => 'includes/schemas/class-schema-generator.php',
-			'Elementor_MCP_Control_Mapper'         => 'includes/schemas/class-control-mapper.php',
+			'EMCP_Tools_Settings_Validator'     => 'includes/validators/class-settings-validator.php',
+			'EMCP_Tools_Schema_Generator'       => 'includes/schemas/class-schema-generator.php',
+			'EMCP_Tools_Control_Mapper'         => 'includes/schemas/class-control-mapper.php',
 			// SEO / A11y toolkit helpers + abilities
-			'Elementor_MCP_Color_Contrast'         => 'includes/class-color-contrast.php',
-			'Elementor_MCP_Content_Extractor'      => 'includes/class-content-extractor.php',
-			'Elementor_MCP_Seo_Meta'               => 'includes/class-seo-meta.php',
-			'Elementor_MCP_Seo_Abilities'          => 'includes/abilities/class-seo-abilities.php',
-			'Elementor_MCP_A11y_Abilities'         => 'includes/abilities/class-a11y-abilities.php',
+			'EMCP_Tools_Color_Contrast'         => 'includes/class-color-contrast.php',
+			'EMCP_Tools_Content_Extractor'      => 'includes/class-content-extractor.php',
+			'EMCP_Tools_Seo_Meta'               => 'includes/class-seo-meta.php',
+			'EMCP_Tools_Seo_Abilities'          => 'includes/abilities/class-seo-abilities.php',
+			'EMCP_Tools_A11y_Abilities'         => 'includes/abilities/class-a11y-abilities.php',
 			// Ability classes — all groups
-			'Elementor_MCP_Custom_Code_Abilities'  => 'includes/abilities/class-custom-code-abilities.php',
-			'Elementor_MCP_Stock_Image_Abilities'  => 'includes/abilities/class-stock-image-abilities.php',
-			'Elementor_MCP_Composite_Abilities'    => 'includes/abilities/class-composite-abilities.php',
-			'Elementor_MCP_Page_Abilities'         => 'includes/abilities/class-page-abilities.php',
-			'Elementor_MCP_Svg_Icon_Abilities'     => 'includes/abilities/class-svg-icon-abilities.php',
-			'Elementor_MCP_Layout_Abilities'       => 'includes/abilities/class-layout-abilities.php',
-			'Elementor_MCP_Query_Abilities'        => 'includes/abilities/class-query-abilities.php',
-			'Elementor_MCP_Global_Abilities'       => 'includes/abilities/class-global-abilities.php',
-			'Elementor_MCP_Template_Abilities'     => 'includes/abilities/class-template-abilities.php',
-			'Elementor_MCP_Widget_Abilities'       => 'includes/abilities/class-widget-abilities.php',
+			'EMCP_Tools_Custom_Code_Abilities'  => 'includes/abilities/class-custom-code-abilities.php',
+			'EMCP_Tools_Stock_Image_Abilities'  => 'includes/abilities/class-stock-image-abilities.php',
+			'EMCP_Tools_Composite_Abilities'    => 'includes/abilities/class-composite-abilities.php',
+			'EMCP_Tools_Page_Abilities'         => 'includes/abilities/class-page-abilities.php',
+			'EMCP_Tools_Svg_Icon_Abilities'     => 'includes/abilities/class-svg-icon-abilities.php',
+			'EMCP_Tools_Layout_Abilities'       => 'includes/abilities/class-layout-abilities.php',
+			'EMCP_Tools_Query_Abilities'        => 'includes/abilities/class-query-abilities.php',
+			'EMCP_Tools_Global_Abilities'       => 'includes/abilities/class-global-abilities.php',
+			'EMCP_Tools_Template_Abilities'     => 'includes/abilities/class-template-abilities.php',
+			'EMCP_Tools_Widget_Abilities'       => 'includes/abilities/class-widget-abilities.php',
 		];
 
 		if ( isset( $map[ $class ] ) ) {

@@ -8,15 +8,15 @@
  * Vulnerability description
  * -------------------------
  * uninstall.php deletes only 2 plugin options:
- *   delete_option( 'elementor_mcp_settings' );
- *   delete_option( 'elementor_mcp_enabled_tools' );
+ *   delete_option( 'emcp_tools_settings' );
+ *   delete_option( 'emcp_tools_enabled_tools' );
  *
  * It does NOT clean up:
  *   - elementor_library CPT posts created by MCP tools
  *   - elementor_snippet CPT posts (Custom Code snippets)
  *   - SVG media attachments uploaded by add-svg-icon / add-stock-image
  *   - _elementor_data, _elementor_css post meta written by all write tools
- *   - elementor_mcp_* post meta keys
+ *   - emcp_tools_* post meta keys
  *
  * Impact: After uninstallation, these orphaned database records remain,
  * wasting storage and potentially exposing sensitive page content.
@@ -29,11 +29,11 @@
  * Fix: Add WP_Query loops to delete plugin-created posts by CPT;
  *      add delete_post_meta_by_key() for plugin-specific meta keys.
  *
- * @package Elementor_MCP\Tests\Security
+ * @package EMCP_Tools\Tests\Security
  * @since   1.0.0
  */
 
-namespace Elementor_MCP\Tests\Security;
+namespace EMCP_Tools\Tests\Security;
 
 use PHPUnit\Framework\TestCase;
 
@@ -168,15 +168,15 @@ class F015UninstallTest extends TestCase {
 		}
 
 		$this->assertStringContainsString(
-			'elementor_mcp_settings',
+			'emcp_tools_settings',
 			$this->uninstall_src,
-			'uninstall.php must delete the elementor_mcp_settings option.'
+			'uninstall.php must delete the emcp_tools_settings option.'
 		);
 
 		$this->assertStringContainsString(
-			'elementor_mcp_enabled_tools',
+			'emcp_tools_enabled_tools',
 			$this->uninstall_src,
-			'uninstall.php must delete the elementor_mcp_enabled_tools option.'
+			'uninstall.php must delete the emcp_tools_enabled_tools option.'
 		);
 	}
 

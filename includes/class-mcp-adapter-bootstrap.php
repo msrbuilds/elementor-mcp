@@ -18,7 +18,7 @@
  * we register a minimal PSR-4 autoloader for the `WP\MCP\` namespace rather
  * than loading the adapter's Composer autoloader.
  *
- * @package Elementor_MCP
+ * @package EMCP_Tools
  * @since   1.7.4
  */
 
@@ -31,7 +31,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * @since 1.7.4
  */
-final class Elementor_MCP_Adapter_Bootstrap {
+final class EMCP_Tools_Adapter_Bootstrap {
 
 	/**
 	 * Version of the bundled adapter (keep in sync with the copied source).
@@ -59,7 +59,7 @@ final class Elementor_MCP_Adapter_Bootstrap {
 			return;
 		}
 
-		$base = ELEMENTOR_MCP_DIR . 'includes/vendors/mcp-adapter/includes/';
+		$base = EMCP_TOOLS_DIR . 'includes/vendors/mcp-adapter/includes/';
 		if ( ! is_dir( $base ) ) {
 			self::$source = 'none';
 			return;
@@ -84,7 +84,7 @@ final class Elementor_MCP_Adapter_Bootstrap {
 		// parity. WP_MCP_AUTOLOAD=false stops the adapter's own Autoloader from
 		// looking for a Composer vendor/autoload.php we intentionally didn't ship.
 		if ( ! defined( 'WP_MCP_DIR' ) ) {
-			define( 'WP_MCP_DIR', ELEMENTOR_MCP_DIR . 'includes/vendors/mcp-adapter/' );
+			define( 'WP_MCP_DIR', EMCP_TOOLS_DIR . 'includes/vendors/mcp-adapter/' );
 		}
 		if ( ! defined( 'WP_MCP_VERSION' ) ) {
 			define( 'WP_MCP_VERSION', self::BUNDLED_VERSION );

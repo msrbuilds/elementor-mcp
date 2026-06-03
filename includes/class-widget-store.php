@@ -14,7 +14,7 @@
  * Post status is the activation flag: `publish` = active (loaded into Elementor),
  * `draft` = inactive.
  *
- * @package Elementor_MCP
+ * @package EMCP_Tools
  * @since   1.9.0
  */
 
@@ -27,7 +27,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * @since 1.9.0
  */
-class Elementor_MCP_Widget_Store {
+class EMCP_Tools_Widget_Store {
 
 	const POST_TYPE        = 'emcp_widget';
 	const META_SPEC        = '_emcp_spec';
@@ -67,7 +67,7 @@ class Elementor_MCP_Widget_Store {
 				'map_meta_cap'        => true,
 				'supports'            => array( 'title', 'author' ),
 				'labels'              => array(
-					'name' => __( 'EMCP Custom Widgets', 'elementor-mcp' ),
+					'name' => __( 'EMCP Custom Widgets', 'emcp-tools' ),
 				),
 			)
 		);
@@ -82,7 +82,7 @@ class Elementor_MCP_Widget_Store {
 	 * @return bool
 	 */
 	public static function user_has_access(): bool {
-		if ( ! function_exists( 'emcp_pro_fs' ) || ! emcp_pro_fs()->can_use_premium_code() ) {
+		if ( ! function_exists( 'emcp_tools_fs' ) || ! emcp_tools_fs()->can_use_premium_code() ) {
 			return false;
 		}
 		return current_user_can( 'manage_options' );
@@ -140,7 +140,7 @@ class Elementor_MCP_Widget_Store {
 		if ( ! wp_mkdir_p( $widgets_dir ) ) {
 			return new WP_Error(
 				'sandbox_unwritable',
-				__( 'Could not create the widget sandbox directory under uploads. Check filesystem permissions.', 'elementor-mcp' )
+				__( 'Could not create the widget sandbox directory under uploads. Check filesystem permissions.', 'emcp-tools' )
 			);
 		}
 
@@ -279,7 +279,7 @@ class Elementor_MCP_Widget_Store {
 	 */
 	public static function create( array $spec, bool $active = true ) {
 		if ( ! self::user_has_access() ) {
-			return new WP_Error( 'forbidden', __( 'You do not have permission to create widgets.', 'elementor-mcp' ) );
+			return new WP_Error( 'forbidden', __( 'You do not have permission to create widgets.', 'emcp-tools' ) );
 		}
 
 		$ensured = self::ensure_sandbox();
@@ -287,7 +287,7 @@ class Elementor_MCP_Widget_Store {
 			return $ensured;
 		}
 
-		$title = isset( $spec['meta']['title'] ) ? sanitize_text_field( (string) $spec['meta']['title'] ) : __( 'Custom Widget', 'elementor-mcp' );
+		$title = isset( $spec['meta']['title'] ) ? sanitize_text_field( (string) $spec['meta']['title'] ) : __( 'Custom Widget', 'emcp-tools' );
 
 		// Insert the post first so the ID can seed the unique class/widget names.
 		$post_id = wp_insert_post(
@@ -331,12 +331,12 @@ class Elementor_MCP_Widget_Store {
 	 */
 	public static function update( int $post_id, array $spec ) {
 		if ( ! self::user_has_access() ) {
-			return new WP_Error( 'forbidden', __( 'You do not have permission to update widgets.', 'elementor-mcp' ) );
+			return new WP_Error( 'forbidden', __( 'You do not have permission to update widgets.', 'emcp-tools' ) );
 		}
 
 		$post = get_post( $post_id );
 		if ( ! $post || self::POST_TYPE !== $post->post_type ) {
-			return new WP_Error( 'not_found', __( 'Widget not found.', 'elementor-mcp' ) );
+			return new WP_Error( 'not_found', __( 'Widget not found.', 'emcp-tools' ) );
 		}
 
 		$ensured = self::ensure_sandbox();
@@ -390,7 +390,7 @@ class Elementor_MCP_Widget_Store {
 		$has_css = '' !== $css;
 		$has_js  = '' !== $js;
 
-		$php = Elementor_MCP_Widget_Generator::generate(
+		$php = EMCP_Tools_Widget_Generator::generate(
 			$spec,
 			$class_name,
 			$widget_name,
@@ -405,7 +405,7 @@ class Elementor_MCP_Widget_Store {
 
 		$path = self::php_path( $post_id );
 		if ( ! self::write_file( $path, $php ) ) {
-			return new WP_Error( 'write_failed', __( 'Could not write the widget file to the sandbox.', 'elementor-mcp' ) );
+			return new WP_Error( 'write_failed', __( 'Could not write the widget file to the sandbox.', 'emcp-tools' ) );
 		}
 
 		// CSS file (defensively strip any PHP open tag — assets are served static).
@@ -469,7 +469,7 @@ class Elementor_MCP_Widget_Store {
 			include_once $path;
 		}
 		if ( ! class_exists( $class_name ) ) {
-			return new WP_Error( 'class_missing', __( 'The generated widget class did not load.', 'elementor-mcp' ) );
+			return new WP_Error( 'class_missing', __( 'The generated widget class did not load.', 'emcp-tools' ) );
 		}
 		try {
 			$instance = new $class_name();
@@ -508,12 +508,12 @@ class Elementor_MCP_Widget_Store {
 	 */
 	public static function set_status( int $post_id, string $status ) {
 		if ( ! self::user_has_access() ) {
-			return new WP_Error( 'forbidden', __( 'You do not have permission to change widget status.', 'elementor-mcp' ) );
+			return new WP_Error( 'forbidden', __( 'You do not have permission to change widget status.', 'emcp-tools' ) );
 		}
 
 		$post = get_post( $post_id );
 		if ( ! $post || self::POST_TYPE !== $post->post_type ) {
-			return new WP_Error( 'not_found', __( 'Widget not found.', 'elementor-mcp' ) );
+			return new WP_Error( 'not_found', __( 'Widget not found.', 'emcp-tools' ) );
 		}
 
 		$post_status = ( 'active' === $status ) ? 'publish' : 'draft';
@@ -522,7 +522,7 @@ class Elementor_MCP_Widget_Store {
 		// before going live, so a broken widget can never reach the manifest.
 		if ( 'publish' === $post_status ) {
 			if ( ! file_exists( self::php_path( $post_id ) ) ) {
-				return new WP_Error( 'missing_file', __( 'The generated widget file is missing; update the widget to regenerate it.', 'elementor-mcp' ) );
+				return new WP_Error( 'missing_file', __( 'The generated widget file is missing; update the widget to regenerate it.', 'emcp-tools' ) );
 			}
 			$rt = self::runtime_validate( $post_id, (string) get_post_meta( $post_id, self::META_CLASS_NAME, true ) );
 			if ( is_wp_error( $rt ) ) {
@@ -531,7 +531,7 @@ class Elementor_MCP_Widget_Store {
 					'activation_blocked',
 					sprintf(
 						/* translators: %s: error message */
-						__( 'Cannot activate — the widget errors when Elementor builds it: %s. Fix the spec and update the widget.', 'elementor-mcp' ),
+						__( 'Cannot activate — the widget errors when Elementor builds it: %s. Fix the spec and update the widget.', 'emcp-tools' ),
 						$rt->get_error_message()
 					)
 				);
@@ -561,12 +561,12 @@ class Elementor_MCP_Widget_Store {
 	 */
 	public static function delete( int $post_id ) {
 		if ( ! self::user_has_access() ) {
-			return new WP_Error( 'forbidden', __( 'You do not have permission to delete widgets.', 'elementor-mcp' ) );
+			return new WP_Error( 'forbidden', __( 'You do not have permission to delete widgets.', 'emcp-tools' ) );
 		}
 
 		$post = get_post( $post_id );
 		if ( ! $post || self::POST_TYPE !== $post->post_type ) {
-			return new WP_Error( 'not_found', __( 'Widget not found.', 'elementor-mcp' ) );
+			return new WP_Error( 'not_found', __( 'Widget not found.', 'emcp-tools' ) );
 		}
 
 		// Remove the widget's whole directory (widget.php + any css/js).
@@ -633,7 +633,7 @@ class Elementor_MCP_Widget_Store {
 	public static function summary( int $post_id ) {
 		$post = get_post( $post_id );
 		if ( ! $post || self::POST_TYPE !== $post->post_type ) {
-			return new WP_Error( 'not_found', __( 'Widget not found.', 'elementor-mcp' ) );
+			return new WP_Error( 'not_found', __( 'Widget not found.', 'emcp-tools' ) );
 		}
 
 		return array(

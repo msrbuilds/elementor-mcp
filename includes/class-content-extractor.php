@@ -13,7 +13,7 @@
  * with light regex (headings, links, <img> alt), so audits don't silently
  * under-count content that lives in raw HTML.
  *
- * @package Elementor_MCP
+ * @package EMCP_Tools
  * @since   1.8.0
  */
 
@@ -26,7 +26,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * @since 1.8.0
  */
-final class Elementor_MCP_Content_Extractor {
+final class EMCP_Tools_Content_Extractor {
 
 	/**
 	 * Extracts the normalized content view from an element tree.

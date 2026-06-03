@@ -2,6 +2,12 @@
 
 All notable changes to MCP Tools for Elementor are documented in this file.
 
+## [2.0.0]
+
+- Changed: **The plugin was renamed from `elementor-mcp` to `emcp-tools`** as it grows beyond Elementor. The plugin folder, main file, text domain, and every internal PHP identifier were rebranded (`EMCP_Tools_*` classes, `emcp_tools_*` functions, `EMCP_TOOLS_*` constants). **Your AI clients keep working unchanged** — the MCP tool names and server (`elementor-mcp/...`, `elementor-mcp-server`) are intentionally left the same, so no connection config or skill needs editing.
+- New: **Automatic, safe migration from the old install.** If the previous `elementor-mcp` plugin is still active, EMCP Tools pauses (it doesn't register anything) and shows a notice asking you to deactivate and delete it. Your settings — disabled-tool toggles, Low-tools mode, defaults marker, server toggle — and your banner dismissals are copied to the new keys automatically, and the migration runs *before* the old plugin's uninstall can wipe them. Your Freemius license follows the product (id unchanged).
+- Note: Because the folder/slug changed, install `emcp-tools` as a new plugin, then remove the old `elementor-mcp` one when prompted. All PHP symbols are uniquely re-prefixed, so the two can sit side by side during the switch without fatal errors.
+
 ## [1.9.0]
 
 - New: **AI Widget Builder (Pro).** Eight MCP tools let an AI agent design and register custom Elementor widgets from a structured spec — **no hand-written PHP**. A plugin-owned generator compiles the spec + an HTML template (`{{control}}`, `{{#if}}`, `{{#each}}`) into a `Widget_Base` class, escaping every value by control type, and writes it to an isolated sandbox under `uploads/emcp-widgets/` that never touches core, theme, or other plugin files. 35 supported control types — including group controls (typography, border, box-shadow, background), repeaters, responsive controls, and conditions — plus optional per-widget CSS/JS. New widgets auto-activate and appear under a **"Custom (EMCP)"** category in the Elementor panel. A runtime safety net (validation on create/update + a shutdown-handler isolation guard) demotes any malformed widget to draft instead of breaking the editor. Tools: `list-control-types`, `validate-widget-spec`, `create-custom-widget`, `update-custom-widget`, `get-custom-widget`, `list-custom-widgets`, `set-widget-status`, `delete-custom-widget`. Off-by-default; managed on the new **Widget Builder** admin tab. Ships with a `widget-builder` Agent Skill so connected agents know the spec format.

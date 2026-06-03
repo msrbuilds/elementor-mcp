@@ -5,14 +5,14 @@
  * Eight Pro-gated tools. The agent submits a structured spec; the plugin-owned
  * generator (never the agent) compiles it into a Widget_Base subclass stored in
  * an isolated uploads sandbox and loaded into Elementor. See:
- *   - Elementor_MCP_Widget_Generator (spec → PHP)
- *   - Elementor_MCP_Widget_Store     (CPT + sandbox + manifest)
- *   - Elementor_MCP_Widget_Loader    (manifest-driven safe load)
+ *   - EMCP_Tools_Widget_Generator (spec → PHP)
+ *   - EMCP_Tools_Widget_Store     (CPT + sandbox + manifest)
+ *   - EMCP_Tools_Widget_Loader    (manifest-driven safe load)
  *
  * All tools self-guard on Pro access (get_ability_names()/register() are no-ops
  * without a license) so they never enter the MCP surface on free sites.
  *
- * @package Elementor_MCP
+ * @package EMCP_Tools
  * @since   1.9.0
  */
 
@@ -25,7 +25,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * @since 1.9.0
  */
-class Elementor_MCP_Widget_Builder_Abilities {
+class EMCP_Tools_Widget_Builder_Abilities {
 
 	/**
 	 * Registered ability names.
@@ -42,7 +42,7 @@ class Elementor_MCP_Widget_Builder_Abilities {
 	 * @return bool
 	 */
 	private function has_access(): bool {
-		return function_exists( 'emcp_pro_fs' ) && emcp_pro_fs()->can_use_premium_code();
+		return function_exists( 'emcp_tools_fs' ) && emcp_tools_fs()->can_use_premium_code();
 	}
 
 	/**
@@ -131,34 +131,34 @@ class Elementor_MCP_Widget_Builder_Abilities {
 	private function spec_schema(): array {
 		return array(
 			'type'        => 'object',
-			'description' => __( 'Widget definition. Call list-control-types first for the supported control types and template syntax.', 'elementor-mcp' ),
+			'description' => __( 'Widget definition. Call list-control-types first for the supported control types and template syntax.', 'emcp-tools' ),
 			'properties'  => array(
 				'meta'          => array(
 					'type'       => 'object',
 					'properties' => array(
 						'title'    => array(
 							'type'        => 'string',
-							'description' => __( 'Widget display title (required).', 'elementor-mcp' ),
+							'description' => __( 'Widget display title (required).', 'emcp-tools' ),
 						),
 						'name'     => array(
 							'type'        => 'string',
-							'description' => __( 'Optional machine-name hint (a unique name is assigned automatically).', 'elementor-mcp' ),
+							'description' => __( 'Optional machine-name hint (a unique name is assigned automatically).', 'emcp-tools' ),
 						),
 						'icon'     => array(
 							'type'        => 'string',
-							'description' => __( 'Elementor icon class, e.g. eicon-price-table.', 'elementor-mcp' ),
+							'description' => __( 'Elementor icon class, e.g. eicon-price-table.', 'emcp-tools' ),
 						),
 						'keywords' => array(
 							'type'        => 'array',
 							'items'       => array( 'type' => 'string' ),
-							'description' => __( 'Search keywords for the widget panel.', 'elementor-mcp' ),
+							'description' => __( 'Search keywords for the widget panel.', 'emcp-tools' ),
 						),
 					),
 					'required'   => array( 'title' ),
 				),
 				'sections'      => array(
 					'type'        => 'array',
-					'description' => __( 'Control sections, grouped into Content/Style/Advanced tabs.', 'elementor-mcp' ),
+					'description' => __( 'Control sections, grouped into Content/Style/Advanced tabs.', 'emcp-tools' ),
 					'items'       => array(
 						'type'       => 'object',
 						'properties' => array(
@@ -167,11 +167,11 @@ class Elementor_MCP_Widget_Builder_Abilities {
 							'tab'      => array(
 								'type'        => 'string',
 								'enum'        => array( 'content', 'style', 'advanced' ),
-								'description' => __( 'Which panel tab the section appears under.', 'elementor-mcp' ),
+								'description' => __( 'Which panel tab the section appears under.', 'emcp-tools' ),
 							),
 							'controls' => array(
 								'type'        => 'array',
-								'description' => __( 'Controls in this section. Each: { name, type, label, default?, options?, fields? }. See list-control-types.', 'elementor-mcp' ),
+								'description' => __( 'Controls in this section. Each: { name, type, label, default?, options?, fields? }. See list-control-types.', 'emcp-tools' ),
 								'items'       => array( 'type' => 'object' ),
 							),
 						),
@@ -180,15 +180,15 @@ class Elementor_MCP_Widget_Builder_Abilities {
 				),
 				'html_template' => array(
 					'type'        => 'string',
-					'description' => __( 'HTML using {{control_name}} placeholders, {{#if name}}…{{/if}}, and {{#each repeater}}…{{/each}}. Values are escaped automatically by control type.', 'elementor-mcp' ),
+					'description' => __( 'HTML using {{control_name}} placeholders, {{#if name}}…{{/if}}, and {{#each repeater}}…{{/each}}. Values are escaped automatically by control type.', 'emcp-tools' ),
 				),
 				'styles'        => array(
 					'type'        => 'string',
-					'description' => __( 'Optional base CSS for the widget, served as its own style.css and enqueued only when the widget is on the page. Scope rules with your own class names (e.g. .my-card). Prefer control "selectors" for buyer-editable styles.', 'elementor-mcp' ),
+					'description' => __( 'Optional base CSS for the widget, served as its own style.css and enqueued only when the widget is on the page. Scope rules with your own class names (e.g. .my-card). Prefer control "selectors" for buyer-editable styles.', 'emcp-tools' ),
 				),
 				'scripts'       => array(
 					'type'        => 'string',
-					'description' => __( 'Optional front-end JavaScript, served as its own script.js (jQuery available) and enqueued only when the widget is on the page. Runs once per page load — scope DOM queries to your class names and guard against multiple instances.', 'elementor-mcp' ),
+					'description' => __( 'Optional front-end JavaScript, served as its own script.js (jQuery available) and enqueued only when the widget is on the page. Runs once per page load — scope DOM queries to your class names and guard against multiple instances.', 'emcp-tools' ),
 				),
 			),
 			'required'    => array( 'meta', 'sections', 'html_template' ),
@@ -226,12 +226,12 @@ class Elementor_MCP_Widget_Builder_Abilities {
 	 */
 	private function register_list_control_types(): void {
 		$this->ability_names[] = 'elementor-mcp/list-control-types';
-		elementor_mcp_register_ability(
+		emcp_tools_register_ability(
 			'elementor-mcp/list-control-types',
 			array(
-				'label'               => __( 'List Widget Control Types', 'elementor-mcp' ),
-				'description'         => __( 'Returns the control types and template syntax supported by the widget builder, so you can construct a valid widget spec.', 'elementor-mcp' ),
-				'category'            => 'elementor-mcp',
+				'label'               => __( 'List Widget Control Types', 'emcp-tools' ),
+				'description'         => __( 'Returns the control types and template syntax supported by the widget builder, so you can construct a valid widget spec.', 'emcp-tools' ),
+				'category'            => 'emcp-tools',
 				'execute_callback'    => array( $this, 'execute_list_control_types' ),
 				'permission_callback' => array( $this, 'check_read_permission' ),
 				'input_schema'        => array(
@@ -264,7 +264,7 @@ class Elementor_MCP_Widget_Builder_Abilities {
 			return $this->no_license();
 		}
 		$out = array();
-		foreach ( Elementor_MCP_Widget_Generator::control_types() as $type => $meta ) {
+		foreach ( EMCP_Tools_Widget_Generator::control_types() as $type => $meta ) {
 			$out[] = array(
 				'type'        => $type,
 				'has_value'   => (bool) $meta['value'],
@@ -274,7 +274,7 @@ class Elementor_MCP_Widget_Builder_Abilities {
 		}
 		return array(
 			'control_types'   => $out,
-			'template_syntax' => __( 'Use {{control_name}} to output a control value (auto-escaped by type), {{#if name}}…{{/if}} for conditionals (switcher value is "yes"), and {{#each repeater_name}}…{{/each}} to loop a repeater (reference its fields by name inside). Style controls with "selectors": { "{{WRAPPER}} .my-el": "color: {{VALUE}};" }.', 'elementor-mcp' ),
+			'template_syntax' => __( 'Use {{control_name}} to output a control value (auto-escaped by type), {{#if name}}…{{/if}} for conditionals (switcher value is "yes"), and {{#each repeater_name}}…{{/each}} to loop a repeater (reference its fields by name inside). Style controls with "selectors": { "{{WRAPPER}} .my-el": "color: {{VALUE}};" }.', 'emcp-tools' ),
 		);
 	}
 
@@ -289,12 +289,12 @@ class Elementor_MCP_Widget_Builder_Abilities {
 	 */
 	private function register_validate_widget_spec(): void {
 		$this->ability_names[] = 'elementor-mcp/validate-widget-spec';
-		elementor_mcp_register_ability(
+		emcp_tools_register_ability(
 			'elementor-mcp/validate-widget-spec',
 			array(
-				'label'               => __( 'Validate Widget Spec', 'elementor-mcp' ),
-				'description'         => __( 'Validates a widget spec and dry-runs the code generator without saving anything. Returns whether it is valid and any error.', 'elementor-mcp' ),
-				'category'            => 'elementor-mcp',
+				'label'               => __( 'Validate Widget Spec', 'emcp-tools' ),
+				'description'         => __( 'Validates a widget spec and dry-runs the code generator without saving anything. Returns whether it is valid and any error.', 'emcp-tools' ),
+				'category'            => 'emcp-tools',
 				'execute_callback'    => array( $this, 'execute_validate_widget_spec' ),
 				'permission_callback' => array( $this, 'check_read_permission' ),
 				'input_schema'        => array(
@@ -329,12 +329,12 @@ class Elementor_MCP_Widget_Builder_Abilities {
 		}
 		$spec = isset( $input['spec'] ) && is_array( $input['spec'] ) ? $input['spec'] : array();
 
-		$valid = Elementor_MCP_Widget_Generator::validate_spec( $spec );
+		$valid = EMCP_Tools_Widget_Generator::validate_spec( $spec );
 		if ( is_wp_error( $valid ) ) {
 			return array( 'valid' => false, 'error' => $valid->get_error_message() );
 		}
 		// Dry-run the generator (token lint) without persisting.
-		$php = Elementor_MCP_Widget_Generator::generate( $spec, 'EMCP_Widget_Preview', 'emcp_custom_preview' );
+		$php = EMCP_Tools_Widget_Generator::generate( $spec, 'EMCP_Widget_Preview', 'emcp_custom_preview' );
 		if ( is_wp_error( $php ) ) {
 			return array( 'valid' => false, 'error' => $php->get_error_message() );
 		}
@@ -352,12 +352,12 @@ class Elementor_MCP_Widget_Builder_Abilities {
 	 */
 	private function register_create_custom_widget(): void {
 		$this->ability_names[] = 'elementor-mcp/create-custom-widget';
-		elementor_mcp_register_ability(
+		emcp_tools_register_ability(
 			'elementor-mcp/create-custom-widget',
 			array(
-				'label'               => __( 'Create Custom Widget', 'elementor-mcp' ),
-				'description'         => __( 'Generates a custom Elementor widget from a spec, stores it in an isolated sandbox, and activates it so it appears in the Elementor panel under "Custom (EMCP)". Use the returned widget_name with add-widget to place it on a page.', 'elementor-mcp' ),
-				'category'            => 'elementor-mcp',
+				'label'               => __( 'Create Custom Widget', 'emcp-tools' ),
+				'description'         => __( 'Generates a custom Elementor widget from a spec, stores it in an isolated sandbox, and activates it so it appears in the Elementor panel under "Custom (EMCP)". Use the returned widget_name with add-widget to place it on a page.', 'emcp-tools' ),
+				'category'            => 'emcp-tools',
 				'execute_callback'    => array( $this, 'execute_create_custom_widget' ),
 				'permission_callback' => array( $this, 'check_write_permission' ),
 				'input_schema'        => array(
@@ -366,7 +366,7 @@ class Elementor_MCP_Widget_Builder_Abilities {
 						'spec'     => $this->spec_schema(),
 						'activate' => array(
 							'type'        => 'boolean',
-							'description' => __( 'Activate immediately (default true). If false, the widget is created inactive.', 'elementor-mcp' ),
+							'description' => __( 'Activate immediately (default true). If false, the widget is created inactive.', 'emcp-tools' ),
 						),
 					),
 					'required'   => array( 'spec' ),
@@ -392,7 +392,7 @@ class Elementor_MCP_Widget_Builder_Abilities {
 		}
 		$spec = isset( $input['spec'] ) && is_array( $input['spec'] ) ? $input['spec'] : array();
 		$activate = ! isset( $input['activate'] ) || ! empty( $input['activate'] );
-		return Elementor_MCP_Widget_Store::create( $spec, $activate );
+		return EMCP_Tools_Widget_Store::create( $spec, $activate );
 	}
 
 	// -------------------------------------------------------------------------
@@ -406,12 +406,12 @@ class Elementor_MCP_Widget_Builder_Abilities {
 	 */
 	private function register_update_custom_widget(): void {
 		$this->ability_names[] = 'elementor-mcp/update-custom-widget';
-		elementor_mcp_register_ability(
+		emcp_tools_register_ability(
 			'elementor-mcp/update-custom-widget',
 			array(
-				'label'               => __( 'Update Custom Widget', 'elementor-mcp' ),
-				'description'         => __( 'Replaces a custom widget\'s spec and regenerates its code in place.', 'elementor-mcp' ),
-				'category'            => 'elementor-mcp',
+				'label'               => __( 'Update Custom Widget', 'emcp-tools' ),
+				'description'         => __( 'Replaces a custom widget\'s spec and regenerates its code in place.', 'emcp-tools' ),
+				'category'            => 'emcp-tools',
 				'execute_callback'    => array( $this, 'execute_update_custom_widget' ),
 				'permission_callback' => array( $this, 'check_write_permission' ),
 				'input_schema'        => array(
@@ -419,7 +419,7 @@ class Elementor_MCP_Widget_Builder_Abilities {
 					'properties' => array(
 						'widget_id' => array(
 							'type'        => 'integer',
-							'description' => __( 'The widget post ID returned by create/list.', 'elementor-mcp' ),
+							'description' => __( 'The widget post ID returned by create/list.', 'emcp-tools' ),
 						),
 						'spec'      => $this->spec_schema(),
 					),
@@ -447,9 +447,9 @@ class Elementor_MCP_Widget_Builder_Abilities {
 		$widget_id = absint( $input['widget_id'] ?? 0 );
 		$spec      = isset( $input['spec'] ) && is_array( $input['spec'] ) ? $input['spec'] : array();
 		if ( ! $widget_id ) {
-			return new WP_Error( 'missing_params', __( 'widget_id is required.', 'elementor-mcp' ) );
+			return new WP_Error( 'missing_params', __( 'widget_id is required.', 'emcp-tools' ) );
 		}
-		return Elementor_MCP_Widget_Store::update( $widget_id, $spec );
+		return EMCP_Tools_Widget_Store::update( $widget_id, $spec );
 	}
 
 	// -------------------------------------------------------------------------
@@ -463,12 +463,12 @@ class Elementor_MCP_Widget_Builder_Abilities {
 	 */
 	private function register_get_custom_widget(): void {
 		$this->ability_names[] = 'elementor-mcp/get-custom-widget';
-		elementor_mcp_register_ability(
+		emcp_tools_register_ability(
 			'elementor-mcp/get-custom-widget',
 			array(
-				'label'               => __( 'Get Custom Widget', 'elementor-mcp' ),
-				'description'         => __( 'Returns a custom widget\'s spec, generated PHP, status, and any last error.', 'elementor-mcp' ),
-				'category'            => 'elementor-mcp',
+				'label'               => __( 'Get Custom Widget', 'emcp-tools' ),
+				'description'         => __( 'Returns a custom widget\'s spec, generated PHP, status, and any last error.', 'emcp-tools' ),
+				'category'            => 'emcp-tools',
 				'execute_callback'    => array( $this, 'execute_get_custom_widget' ),
 				'permission_callback' => array( $this, 'check_manage_permission' ),
 				'input_schema'        => array(
@@ -505,14 +505,14 @@ class Elementor_MCP_Widget_Builder_Abilities {
 			return $this->no_license();
 		}
 		$widget_id = absint( $input['widget_id'] ?? 0 );
-		$summary   = Elementor_MCP_Widget_Store::summary( $widget_id );
+		$summary   = EMCP_Tools_Widget_Store::summary( $widget_id );
 		if ( is_wp_error( $summary ) ) {
 			return $summary;
 		}
 		return array(
 			'widget'        => $summary,
-			'spec'          => Elementor_MCP_Widget_Store::get_spec( $widget_id ) ?? array(),
-			'generated_php' => Elementor_MCP_Widget_Store::get_php( $widget_id ),
+			'spec'          => EMCP_Tools_Widget_Store::get_spec( $widget_id ) ?? array(),
+			'generated_php' => EMCP_Tools_Widget_Store::get_php( $widget_id ),
 		);
 	}
 
@@ -527,12 +527,12 @@ class Elementor_MCP_Widget_Builder_Abilities {
 	 */
 	private function register_list_custom_widgets(): void {
 		$this->ability_names[] = 'elementor-mcp/list-custom-widgets';
-		elementor_mcp_register_ability(
+		emcp_tools_register_ability(
 			'elementor-mcp/list-custom-widgets',
 			array(
-				'label'               => __( 'List Custom Widgets', 'elementor-mcp' ),
-				'description'         => __( 'Lists all custom widgets generated by the widget builder, with their status.', 'elementor-mcp' ),
-				'category'            => 'elementor-mcp',
+				'label'               => __( 'List Custom Widgets', 'emcp-tools' ),
+				'description'         => __( 'Lists all custom widgets generated by the widget builder, with their status.', 'emcp-tools' ),
+				'category'            => 'emcp-tools',
 				'execute_callback'    => array( $this, 'execute_list_custom_widgets' ),
 				'permission_callback' => array( $this, 'check_manage_permission' ),
 				'input_schema'        => array(
@@ -541,7 +541,7 @@ class Elementor_MCP_Widget_Builder_Abilities {
 						'status' => array(
 							'type'        => 'string',
 							'enum'        => array( 'active', 'draft', 'any' ),
-							'description' => __( 'Filter by status. Default: any.', 'elementor-mcp' ),
+							'description' => __( 'Filter by status. Default: any.', 'emcp-tools' ),
 						),
 					),
 				),
@@ -573,7 +573,7 @@ class Elementor_MCP_Widget_Builder_Abilities {
 		if ( ! in_array( $status, array( 'active', 'draft', 'any' ), true ) ) {
 			$status = 'any';
 		}
-		return array( 'widgets' => Elementor_MCP_Widget_Store::list_widgets( $status ) );
+		return array( 'widgets' => EMCP_Tools_Widget_Store::list_widgets( $status ) );
 	}
 
 	// -------------------------------------------------------------------------
@@ -587,12 +587,12 @@ class Elementor_MCP_Widget_Builder_Abilities {
 	 */
 	private function register_set_widget_status(): void {
 		$this->ability_names[] = 'elementor-mcp/set-widget-status';
-		elementor_mcp_register_ability(
+		emcp_tools_register_ability(
 			'elementor-mcp/set-widget-status',
 			array(
-				'label'               => __( 'Set Widget Status', 'elementor-mcp' ),
-				'description'         => __( 'Activates (loads into Elementor) or deactivates a custom widget.', 'elementor-mcp' ),
-				'category'            => 'elementor-mcp',
+				'label'               => __( 'Set Widget Status', 'emcp-tools' ),
+				'description'         => __( 'Activates (loads into Elementor) or deactivates a custom widget.', 'emcp-tools' ),
+				'category'            => 'emcp-tools',
 				'execute_callback'    => array( $this, 'execute_set_widget_status' ),
 				'permission_callback' => array( $this, 'check_write_permission' ),
 				'input_schema'        => array(
@@ -628,9 +628,9 @@ class Elementor_MCP_Widget_Builder_Abilities {
 		$widget_id = absint( $input['widget_id'] ?? 0 );
 		$status    = isset( $input['status'] ) ? sanitize_key( $input['status'] ) : '';
 		if ( ! $widget_id || ! in_array( $status, array( 'active', 'draft' ), true ) ) {
-			return new WP_Error( 'missing_params', __( 'widget_id and a valid status are required.', 'elementor-mcp' ) );
+			return new WP_Error( 'missing_params', __( 'widget_id and a valid status are required.', 'emcp-tools' ) );
 		}
-		return Elementor_MCP_Widget_Store::set_status( $widget_id, $status );
+		return EMCP_Tools_Widget_Store::set_status( $widget_id, $status );
 	}
 
 	// -------------------------------------------------------------------------
@@ -644,12 +644,12 @@ class Elementor_MCP_Widget_Builder_Abilities {
 	 */
 	private function register_delete_custom_widget(): void {
 		$this->ability_names[] = 'elementor-mcp/delete-custom-widget';
-		elementor_mcp_register_ability(
+		emcp_tools_register_ability(
 			'elementor-mcp/delete-custom-widget',
 			array(
-				'label'               => __( 'Delete Custom Widget', 'elementor-mcp' ),
-				'description'         => __( 'Permanently deletes a custom widget: its record and its sandbox file. Destructive.', 'elementor-mcp' ),
-				'category'            => 'elementor-mcp',
+				'label'               => __( 'Delete Custom Widget', 'emcp-tools' ),
+				'description'         => __( 'Permanently deletes a custom widget: its record and its sandbox file. Destructive.', 'emcp-tools' ),
+				'category'            => 'emcp-tools',
 				'execute_callback'    => array( $this, 'execute_delete_custom_widget' ),
 				'permission_callback' => array( $this, 'check_manage_permission' ),
 				'input_schema'        => array(
@@ -686,9 +686,9 @@ class Elementor_MCP_Widget_Builder_Abilities {
 		}
 		$widget_id = absint( $input['widget_id'] ?? 0 );
 		if ( ! $widget_id ) {
-			return new WP_Error( 'missing_params', __( 'widget_id is required.', 'elementor-mcp' ) );
+			return new WP_Error( 'missing_params', __( 'widget_id is required.', 'emcp-tools' ) );
 		}
-		return Elementor_MCP_Widget_Store::delete( $widget_id );
+		return EMCP_Tools_Widget_Store::delete( $widget_id );
 	}
 
 	// -------------------------------------------------------------------------
@@ -701,6 +701,6 @@ class Elementor_MCP_Widget_Builder_Abilities {
 	 * @return WP_Error
 	 */
 	private function no_license(): WP_Error {
-		return new WP_Error( 'no_license', __( 'A valid EMCP Tools Pro license is required to use the widget builder.', 'elementor-mcp' ) );
+		return new WP_Error( 'no_license', __( 'A valid EMCP Tools Pro license is required to use the widget builder.', 'emcp-tools' ) );
 	}
 }

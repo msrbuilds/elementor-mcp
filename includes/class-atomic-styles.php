@@ -6,7 +6,7 @@
  * In v4, visual styling (flex layout, spacing, colors, typography) is stored
  * in a `styles` map on each element, referenced via class IDs in settings.
  *
- * @package Elementor_MCP
+ * @package EMCP_Tools
  * @since   1.5.0
  */
 
@@ -19,7 +19,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * @since 1.5.0
  */
-class Elementor_MCP_Atomic_Styles {
+class EMCP_Tools_Atomic_Styles {
 
 	/**
 	 * Creates a local style class structure for an element.
@@ -85,23 +85,23 @@ class Elementor_MCP_Atomic_Styles {
 
 		foreach ( $string_mappings as $input_key => $css_prop ) {
 			if ( isset( $params[ $input_key ] ) && '' !== $params[ $input_key ] ) {
-				$props[ $css_prop ] = Elementor_MCP_Atomic_Props::string( (string) $params[ $input_key ] );
+				$props[ $css_prop ] = EMCP_Tools_Atomic_Props::string( (string) $params[ $input_key ] );
 			}
 		}
 
 		if ( isset( $params['gap'] ) ) {
 			$unit = $params['gap_unit'] ?? 'px';
-			$props['gap'] = Elementor_MCP_Atomic_Props::size( (float) $params['gap'], $unit );
+			$props['gap'] = EMCP_Tools_Atomic_Props::size( (float) $params['gap'], $unit );
 		}
 
 		if ( isset( $params['row_gap'] ) ) {
 			$unit = $params['row_gap_unit'] ?? 'px';
-			$props['row-gap'] = Elementor_MCP_Atomic_Props::size( (float) $params['row_gap'], $unit );
+			$props['row-gap'] = EMCP_Tools_Atomic_Props::size( (float) $params['row_gap'], $unit );
 		}
 
 		if ( isset( $params['column_gap'] ) ) {
 			$unit = $params['column_gap_unit'] ?? 'px';
-			$props['column-gap'] = Elementor_MCP_Atomic_Props::size( (float) $params['column_gap'], $unit );
+			$props['column-gap'] = EMCP_Tools_Atomic_Props::size( (float) $params['column_gap'], $unit );
 		}
 
 		return $props;
@@ -131,7 +131,7 @@ class Elementor_MCP_Atomic_Styles {
 		foreach ( $size_mappings as $input_key => $css_prop ) {
 			if ( isset( $params[ $input_key ] ) ) {
 				$unit = $params[ $input_key . '_unit' ] ?? 'px';
-				$props[ $css_prop ] = Elementor_MCP_Atomic_Props::size(
+				$props[ $css_prop ] = EMCP_Tools_Atomic_Props::size(
 					(float) $params[ $input_key ],
 					$unit
 				);
@@ -140,7 +140,7 @@ class Elementor_MCP_Atomic_Styles {
 
 		if ( isset( $params['padding'] ) ) {
 			$unit = $params['padding_unit'] ?? 'px';
-			$size_val = Elementor_MCP_Atomic_Props::size( (float) $params['padding'], $unit );
+			$size_val = EMCP_Tools_Atomic_Props::size( (float) $params['padding'], $unit );
 			$props['padding-block-start']  = $size_val;
 			$props['padding-block-end']    = $size_val;
 			$props['padding-inline-start'] = $size_val;
@@ -148,11 +148,11 @@ class Elementor_MCP_Atomic_Styles {
 		}
 
 		if ( isset( $params['background_color'] ) ) {
-			$props['background-color'] = Elementor_MCP_Atomic_Props::string( $params['background_color'] );
+			$props['background-color'] = EMCP_Tools_Atomic_Props::string( $params['background_color'] );
 		}
 
 		if ( isset( $params['color'] ) ) {
-			$props['color'] = Elementor_MCP_Atomic_Props::string( $params['color'] );
+			$props['color'] = EMCP_Tools_Atomic_Props::string( $params['color'] );
 		}
 
 		return $props;
@@ -170,7 +170,7 @@ class Elementor_MCP_Atomic_Styles {
 	public static function apply_to_element( array &$element, string $class_id, array $style_def ): void {
 		// Add class reference to settings.
 		if ( ! isset( $element['settings']['classes'] ) ) {
-			$element['settings']['classes'] = Elementor_MCP_Atomic_Props::classes( array() );
+			$element['settings']['classes'] = EMCP_Tools_Atomic_Props::classes( array() );
 		}
 		$element['settings']['classes']['value'][] = $class_id;
 

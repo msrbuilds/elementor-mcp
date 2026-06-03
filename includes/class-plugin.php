@@ -5,7 +5,7 @@
  * Singleton that initializes all components, registers hooks for the
  * Abilities API and MCP Adapter, and coordinates the plugin lifecycle.
  *
- * @package Elementor_MCP
+ * @package EMCP_Tools
  * @since   1.0.0
  */
 
@@ -18,7 +18,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * @since 1.0.0
  */
-class Elementor_MCP_Plugin {
+class EMCP_Tools_Plugin {
 
 	/**
 	 * Singleton instance.
@@ -30,35 +30,35 @@ class Elementor_MCP_Plugin {
 	/**
 	 * The data access layer.
 	 *
-	 * @var Elementor_MCP_Data
+	 * @var EMCP_Tools_Data
 	 */
 	private $data;
 
 	/**
 	 * The element factory.
 	 *
-	 * @var Elementor_MCP_Element_Factory
+	 * @var EMCP_Tools_Element_Factory
 	 */
 	private $factory;
 
 	/**
 	 * The schema generator.
 	 *
-	 * @var Elementor_MCP_Schema_Generator
+	 * @var EMCP_Tools_Schema_Generator
 	 */
 	private $schema_generator;
 
 	/**
 	 * The ability registrar.
 	 *
-	 * @var Elementor_MCP_Ability_Registrar
+	 * @var EMCP_Tools_Ability_Registrar
 	 */
 	private $registrar;
 
 	/**
 	 * The admin settings page handler.
 	 *
-	 * @var Elementor_MCP_Admin|null
+	 * @var EMCP_Tools_Admin|null
 	 */
 	private $admin = null;
 
@@ -99,15 +99,15 @@ class Elementor_MCP_Plugin {
 	 */
 	private function init(): void {
 		// Instantiate core components.
-		$this->data             = new Elementor_MCP_Data();
-		$this->factory          = new Elementor_MCP_Element_Factory();
-		$this->schema_generator = new Elementor_MCP_Schema_Generator();
-		$validator              = new Elementor_MCP_Settings_Validator( $this->schema_generator );
-		$this->registrar        = new Elementor_MCP_Ability_Registrar( $this->data, $this->factory, $this->schema_generator, $validator );
+		$this->data             = new EMCP_Tools_Data();
+		$this->factory          = new EMCP_Tools_Element_Factory();
+		$this->schema_generator = new EMCP_Tools_Schema_Generator();
+		$validator              = new EMCP_Tools_Settings_Validator( $this->schema_generator );
+		$this->registrar        = new EMCP_Tools_Ability_Registrar( $this->data, $this->factory, $this->schema_generator, $validator );
 
 		// Admin settings page.
-		if ( is_admin() && class_exists( 'Elementor_MCP_Admin' ) ) {
-			$this->admin = new Elementor_MCP_Admin();
+		if ( is_admin() && class_exists( 'EMCP_Tools_Admin' ) ) {
+			$this->admin = new EMCP_Tools_Admin();
 			$this->admin->init();
 		}
 
@@ -125,7 +125,7 @@ class Elementor_MCP_Plugin {
 		// request. The admin class is only loaded in is_admin() context, so the
 		// MCP REST endpoint would otherwise never see this filter and would
 		// expose every registered tool regardless of what the user disabled.
-		add_filter( 'elementor_mcp_ability_names', array( $this, 'filter_disabled_tools' ) );
+		add_filter( 'emcp_tools_ability_names', array( $this, 'filter_disabled_tools' ) );
 	}
 
 	/**
@@ -137,14 +137,14 @@ class Elementor_MCP_Plugin {
 	 * @return string[] Ability names with disabled tools removed.
 	 */
 	public function filter_disabled_tools( array $names ): array {
-		$disabled = get_option( 'elementor_mcp_disabled_tools', array() );
+		$disabled = get_option( 'emcp_tools_disabled_tools', array() );
 		if ( ! is_array( $disabled ) ) {
 			$disabled = array();
 		}
 
 		// Low-tools mode: drop everything outside the curated essentials list
 		// so clients with a tight tool cap (e.g. Antigravity) stay under it.
-		if ( '1' === (string) get_option( 'elementor_mcp_low_tool_mode', '0' ) ) {
+		if ( '1' === (string) get_option( 'emcp_tools_low_tool_mode', '0' ) ) {
 			$disabled = array_merge( $disabled, array_diff( $names, self::get_essential_tool_slugs() ) );
 		}
 
@@ -253,7 +253,7 @@ class Elementor_MCP_Plugin {
 	 * @since 1.7.4
 	 * @var string
 	 */
-	const OPTION_SERVER_ENABLED = 'elementor_mcp_server_enabled';
+	const OPTION_SERVER_ENABLED = 'emcp_tools_server_enabled';
 
 	/**
 	 * Whether the MCP server should be exposed. On by default; the Connection
@@ -276,10 +276,10 @@ class Elementor_MCP_Plugin {
 	 */
 	public function register_category(): void {
 		wp_register_ability_category(
-			'elementor-mcp',
+			'emcp-tools',
 			array(
-				'label'       => __( 'MCP Tools for Elementor', 'elementor-mcp' ),
-				'description' => __( 'Tools for reading and manipulating Elementor page designs via MCP.', 'elementor-mcp' ),
+				'label'       => __( 'MCP Tools for Elementor', 'emcp-tools' ),
+				'description' => __( 'Tools for reading and manipulating Elementor page designs via MCP.', 'emcp-tools' ),
 			)
 		);
 	}
@@ -320,9 +320,9 @@ class Elementor_MCP_Plugin {
 			'elementor-mcp-server',                                   // server_id
 			'mcp',                                                    // route_namespace
 			'elementor-mcp-server',                                   // route
-			__( 'MCP Tools for Elementor Server', 'elementor-mcp' ),            // server_name
-			__( 'Exposes Elementor data and design tools as MCP tools for AI agents.', 'elementor-mcp' ), // description
-			'v' . ELEMENTOR_MCP_VERSION,                              // version
+			__( 'MCP Tools for Elementor Server', 'emcp-tools' ),            // server_name
+			__( 'Exposes Elementor data and design tools as MCP tools for AI agents.', 'emcp-tools' ), // description
+			'v' . EMCP_TOOLS_VERSION,                              // version
 			array( \WP\MCP\Transport\HttpTransport::class ),          // transports
 			null,                                                     // error_handler (use default)
 			null,                                                     // observability_handler
@@ -338,9 +338,9 @@ class Elementor_MCP_Plugin {
 	 *
 	 * @since 1.0.0
 	 *
-	 * @return Elementor_MCP_Data
+	 * @return EMCP_Tools_Data
 	 */
-	public function get_data(): Elementor_MCP_Data {
+	public function get_data(): EMCP_Tools_Data {
 		return $this->data;
 	}
 
@@ -349,9 +349,9 @@ class Elementor_MCP_Plugin {
 	 *
 	 * @since 1.0.0
 	 *
-	 * @return Elementor_MCP_Element_Factory
+	 * @return EMCP_Tools_Element_Factory
 	 */
-	public function get_factory(): Elementor_MCP_Element_Factory {
+	public function get_factory(): EMCP_Tools_Element_Factory {
 		return $this->factory;
 	}
 
@@ -360,9 +360,9 @@ class Elementor_MCP_Plugin {
 	 *
 	 * @since 1.0.0
 	 *
-	 * @return Elementor_MCP_Schema_Generator
+	 * @return EMCP_Tools_Schema_Generator
 	 */
-	public function get_schema_generator(): Elementor_MCP_Schema_Generator {
+	public function get_schema_generator(): EMCP_Tools_Schema_Generator {
 		return $this->schema_generator;
 	}
 

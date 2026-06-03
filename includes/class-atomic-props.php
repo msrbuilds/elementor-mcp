@@ -6,7 +6,7 @@
  * MCP tools accept simple flat values from AI agents; this class converts
  * them to/from the $$type format that Elementor's atomic engine requires.
  *
- * @package Elementor_MCP
+ * @package EMCP_Tools
  * @since   1.5.0
  */
 
@@ -19,7 +19,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * @since 1.5.0
  */
-class Elementor_MCP_Atomic_Props {
+class EMCP_Tools_Atomic_Props {
 
 	/**
 	 * Wraps a plain string into a typed prop.

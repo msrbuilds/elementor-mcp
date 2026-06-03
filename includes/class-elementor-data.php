@@ -5,7 +5,7 @@
  * Wraps Elementor internals to provide a clean API for reading and writing
  * Elementor page data, widget registrations, and element trees.
  *
- * @package Elementor_MCP
+ * @package EMCP_Tools
  * @since   1.0.0
  */
 
@@ -18,7 +18,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * @since 1.0.0
  */
-class Elementor_MCP_Data {
+class EMCP_Tools_Data {
 
 	/**
 	 * Gets the Elementor document for a post.
@@ -36,7 +36,7 @@ class Elementor_MCP_Data {
 				'document_not_found',
 				sprintf(
 					/* translators: %d: post ID */
-					__( 'Elementor document not found for post ID %d.', 'elementor-mcp' ),
+					__( 'Elementor document not found for post ID %d.', 'emcp-tools' ),
 					$post_id
 				)
 			);
@@ -145,7 +145,7 @@ class Elementor_MCP_Data {
 				'widget_not_found',
 				sprintf(
 					/* translators: %s: widget type name */
-					__( 'Widget type "%s" not found.', 'elementor-mcp' ),
+					__( 'Widget type "%s" not found.', 'emcp-tools' ),
 					$widget_type
 				)
 			);
@@ -210,7 +210,7 @@ class Elementor_MCP_Data {
 			if ( false === $json ) {
 				return new \WP_Error(
 					'json_encode_failed',
-					__( 'Failed to encode element data as JSON.', 'elementor-mcp' )
+					__( 'Failed to encode element data as JSON.', 'emcp-tools' )
 				);
 			}
 
@@ -358,7 +358,7 @@ class Elementor_MCP_Data {
 	 */
 	public function reassign_ids( array $elements ): array {
 		foreach ( $elements as &$element ) {
-			$element['id'] = Elementor_MCP_Id_Generator::generate();
+			$element['id'] = EMCP_Tools_Id_Generator::generate();
 
 			if ( ! empty( $element['elements'] ) && is_array( $element['elements'] ) ) {
 				$element['elements'] = $this->reassign_ids( $element['elements'] );
@@ -377,7 +377,7 @@ class Elementor_MCP_Data {
 	 * @return array The element with new IDs.
 	 */
 	public function reassign_element_ids( array $element ): array {
-		$element['id'] = Elementor_MCP_Id_Generator::generate();
+		$element['id'] = EMCP_Tools_Id_Generator::generate();
 
 		if ( ! empty( $element['elements'] ) && is_array( $element['elements'] ) ) {
 			$element['elements'] = $this->reassign_ids( $element['elements'] );
@@ -431,7 +431,7 @@ class Elementor_MCP_Data {
 				// keys before merging. Without this, the values are saved
 				// but never read by Elementor's CSS generator (issue #32).
 				if ( 'container' === ( $item['elType'] ?? '' ) ) {
-					$settings = Elementor_MCP_Element_Factory::normalize_container_settings( $settings );
+					$settings = EMCP_Tools_Element_Factory::normalize_container_settings( $settings );
 				}
 
 				$item['settings'] = array_merge( $item['settings'], $settings );

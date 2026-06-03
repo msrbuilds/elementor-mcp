@@ -7,7 +7,7 @@
  * future brand-kit contrast checks. Implements the WCAG 2.1 relative-luminance
  * and contrast-ratio definitions.
  *
- * @package Elementor_MCP
+ * @package EMCP_Tools
  * @since   1.8.0
  */
 
@@ -20,7 +20,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * @since 1.8.0
  */
-final class Elementor_MCP_Color_Contrast {
+final class EMCP_Tools_Color_Contrast {
 
 	/** WCAG AA contrast minimum for normal text. */
 	const AA_NORMAL = 4.5;

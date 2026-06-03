@@ -2,7 +2,7 @@
 /**
  * Validates widget settings against Elementor control schemas.
  *
- * @package Elementor_MCP
+ * @package EMCP_Tools
  * @since   1.0.0
  */
 
@@ -15,12 +15,12 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * @since 1.0.0
  */
-class Elementor_MCP_Settings_Validator {
+class EMCP_Tools_Settings_Validator {
 
 	/**
 	 * The schema generator instance.
 	 *
-	 * @var Elementor_MCP_Schema_Generator
+	 * @var EMCP_Tools_Schema_Generator
 	 */
 	private $schema_generator;
 
@@ -29,9 +29,9 @@ class Elementor_MCP_Settings_Validator {
 	 *
 	 * @since 1.0.0
 	 *
-	 * @param Elementor_MCP_Schema_Generator $schema_generator The schema generator.
+	 * @param EMCP_Tools_Schema_Generator $schema_generator The schema generator.
 	 */
-	public function __construct( Elementor_MCP_Schema_Generator $schema_generator ) {
+	public function __construct( EMCP_Tools_Schema_Generator $schema_generator ) {
 		$this->schema_generator = $schema_generator;
 	}
 
@@ -168,7 +168,7 @@ class Elementor_MCP_Settings_Validator {
 				'invalid_setting',
 				sprintf(
 					/* translators: 1: setting key, 2: widget type */
-					__( 'Setting "%1$s" is not a valid control for widget type "%2$s".', 'elementor-mcp' ),
+					__( 'Setting "%1$s" is not a valid control for widget type "%2$s".', 'emcp-tools' ),
 					$key,
 					$widget_type
 				)

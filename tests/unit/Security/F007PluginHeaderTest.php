@@ -22,11 +22,11 @@
  * Fix: change `Requires at least: 6.7` → `Requires at least: 6.9`
  * in the plugin header block of elementor-mcp.php.
  *
- * @package Elementor_MCP\Tests\Security
+ * @package EMCP_Tools\Tests\Security
  * @since   1.0.0
  */
 
-namespace Elementor_MCP\Tests\Security;
+namespace EMCP_Tools\Tests\Security;
 
 use PHPUnit\Framework\TestCase;
 

@@ -34,21 +34,21 @@
  * The fix is: change both `if ( false === $result )` to `if ( ! $result )`
  * at lines 206 and 260 of class-elementor-data.php.
  *
- * @package Elementor_MCP\Tests\Security
+ * @package EMCP_Tools\Tests\Security
  * @since   1.0.0
  */
 
-namespace Elementor_MCP\Tests\Security;
+namespace EMCP_Tools\Tests\Security;
 
 use PHPUnit\Framework\TestCase;
 
 /**
- * @covers \Elementor_MCP_Data::save_page_data
- * @covers \Elementor_MCP_Data::save_page_settings
+ * @covers \EMCP_Tools_Data::save_page_data
+ * @covers \EMCP_Tools_Data::save_page_settings
  */
 class F005NullReturnGuardTest extends TestCase {
 
-	/** @var \Elementor_MCP_Data */
+	/** @var \EMCP_Tools_Data */
 	private $data;
 
 	protected function setUp(): void {
@@ -59,7 +59,7 @@ class F005NullReturnGuardTest extends TestCase {
 
 		// Instantiate the real class — dependency on Elementor\Plugin::$instance
 		// is satisfied by the stub in bootstrap.php.
-		$this->data = new \Elementor_MCP_Data();
+		$this->data = new \EMCP_Tools_Data();
 	}
 
 	// -------------------------------------------------------------------------

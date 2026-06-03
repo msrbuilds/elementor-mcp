@@ -5,7 +5,7 @@
  * Registers 4 tools for adding containers, moving, removing,
  * and duplicating elements within Elementor page trees.
  *
- * @package Elementor_MCP
+ * @package EMCP_Tools
  * @since   1.0.0
  */
 
@@ -18,15 +18,15 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * @since 1.0.0
  */
-class Elementor_MCP_Layout_Abilities {
+class EMCP_Tools_Layout_Abilities {
 
 	/**
-	 * @var Elementor_MCP_Data
+	 * @var EMCP_Tools_Data
 	 */
 	private $data;
 
 	/**
-	 * @var Elementor_MCP_Element_Factory
+	 * @var EMCP_Tools_Element_Factory
 	 */
 	private $factory;
 
@@ -35,10 +35,10 @@ class Elementor_MCP_Layout_Abilities {
 	 *
 	 * @since 1.0.0
 	 *
-	 * @param Elementor_MCP_Data            $data    The data access layer.
-	 * @param Elementor_MCP_Element_Factory $factory The element factory.
+	 * @param EMCP_Tools_Data            $data    The data access layer.
+	 * @param EMCP_Tools_Element_Factory $factory The element factory.
 	 */
-	public function __construct( Elementor_MCP_Data $data, Elementor_MCP_Element_Factory $factory ) {
+	public function __construct( EMCP_Tools_Data $data, EMCP_Tools_Element_Factory $factory ) {
 		$this->data    = $data;
 		$this->factory = $factory;
 	}
@@ -105,12 +105,12 @@ class Elementor_MCP_Layout_Abilities {
 	// -------------------------------------------------------------------------
 
 	private function register_add_container(): void {
-		elementor_mcp_register_ability(
+		emcp_tools_register_ability(
 			'elementor-mcp/add-container',
 			array(
-				'label'               => __( 'Add Container', 'elementor-mcp' ),
-				'description'         => __( 'Adds a container to a page. Supports both flex (default) and grid layouts via container_type. Omit parent_id for top-level, or provide a parent container ID for nesting. Flex tips: Use flex_direction=row for side-by-side children, flex_wrap=wrap for wrapping, flex_justify_content for main-axis alignment (e.g. space-between, center), flex_align_items for cross-axis alignment. (The shorthand justify_content / align_items are also accepted and remapped to flex_justify_content / flex_align_items.) Grid tips: Set container_type=grid with grid_columns_grid, grid_rows_grid, grid_gaps. Background: set background_background=classic and background_color=#hex. Border: set border_border=solid, border_width, border_color. Also supports min_height, overflow, html_tag, padding, margin, position, z_index, animation.', 'elementor-mcp' ),
-				'category'            => 'elementor-mcp',
+				'label'               => __( 'Add Container', 'emcp-tools' ),
+				'description'         => __( 'Adds a container to a page. Supports both flex (default) and grid layouts via container_type. Omit parent_id for top-level, or provide a parent container ID for nesting. Flex tips: Use flex_direction=row for side-by-side children, flex_wrap=wrap for wrapping, flex_justify_content for main-axis alignment (e.g. space-between, center), flex_align_items for cross-axis alignment. (The shorthand justify_content / align_items are also accepted and remapped to flex_justify_content / flex_align_items.) Grid tips: Set container_type=grid with grid_columns_grid, grid_rows_grid, grid_gaps. Background: set background_background=classic and background_color=#hex. Border: set border_border=solid, border_width, border_color. Also supports min_height, overflow, html_tag, padding, margin, position, z_index, animation.', 'emcp-tools' ),
+				'category'            => 'emcp-tools',
 				'execute_callback'    => array( $this, 'execute_add_container' ),
 				'permission_callback' => array( $this, 'check_edit_permission' ),
 				'input_schema'        => array(
@@ -118,19 +118,19 @@ class Elementor_MCP_Layout_Abilities {
 					'properties' => array(
 						'post_id'   => array(
 							'type'        => 'integer',
-							'description' => __( 'The post/page ID.', 'elementor-mcp' ),
+							'description' => __( 'The post/page ID.', 'emcp-tools' ),
 						),
 						'parent_id' => array(
 							'type'        => 'string',
-							'description' => __( 'Parent container ID for nesting. Omit for top-level.', 'elementor-mcp' ),
+							'description' => __( 'Parent container ID for nesting. Omit for top-level.', 'emcp-tools' ),
 						),
 						'position'  => array(
 							'type'        => 'integer',
-							'description' => __( 'Insert position. -1 = append (default).', 'elementor-mcp' ),
+							'description' => __( 'Insert position. -1 = append (default).', 'emcp-tools' ),
 						),
 						'settings'  => array(
 							'type'        => 'object',
-							'description' => __( 'Container settings: flex_direction, flex_wrap, flex_justify_content, flex_align_items, gap, content_width, padding, margin, background, border, etc. (Unprefixed justify_content / align_items / align_content are accepted and remapped to the flex_-prefixed keys.)', 'elementor-mcp' ),
+							'description' => __( 'Container settings: flex_direction, flex_wrap, flex_justify_content, flex_align_items, gap, content_width, padding, margin, background, border, etc. (Unprefixed justify_content / align_items / align_content are accepted and remapped to the flex_-prefixed keys.)', 'emcp-tools' ),
 						),
 					),
 					'required'   => array( 'post_id' ),
@@ -169,7 +169,7 @@ class Elementor_MCP_Layout_Abilities {
 		$settings  = $input['settings'] ?? array();
 
 		if ( ! $post_id ) {
-			return new \WP_Error( 'missing_post_id', __( 'The post_id parameter is required.', 'elementor-mcp' ) );
+			return new \WP_Error( 'missing_post_id', __( 'The post_id parameter is required.', 'emcp-tools' ) );
 		}
 
 		$page_data = $this->data->get_page_data( $post_id );
@@ -191,7 +191,7 @@ class Elementor_MCP_Layout_Abilities {
 				'parent_not_found',
 				sprintf(
 					/* translators: %s: parent element ID */
-					__( 'Parent element "%s" not found.', 'elementor-mcp' ),
+					__( 'Parent element "%s" not found.', 'emcp-tools' ),
 					$parent_id
 				)
 			);
@@ -214,12 +214,12 @@ class Elementor_MCP_Layout_Abilities {
 	// -------------------------------------------------------------------------
 
 	private function register_update_container(): void {
-		elementor_mcp_register_ability(
+		emcp_tools_register_ability(
 			'elementor-mcp/update-container',
 			array(
-				'label'               => __( 'Update Container', 'elementor-mcp' ),
-				'description'         => __( 'Updates settings on an existing container. Settings are merged (partial update). Supports all container controls: flex_direction, flex_justify_content, flex_align_items, flex_wrap, flex_align_content, gap, content_width, min_height, overflow, html_tag, container_type, grid controls, background (set background_background=classic first), border (set border_border=solid first), border_radius, box_shadow, padding, margin, position, z_index, animation, shape dividers, etc. (The unprefixed justify_content / align_items / align_content are accepted and remapped to the flex_-prefixed keys.)', 'elementor-mcp' ),
-				'category'            => 'elementor-mcp',
+				'label'               => __( 'Update Container', 'emcp-tools' ),
+				'description'         => __( 'Updates settings on an existing container. Settings are merged (partial update). Supports all container controls: flex_direction, flex_justify_content, flex_align_items, flex_wrap, flex_align_content, gap, content_width, min_height, overflow, html_tag, container_type, grid controls, background (set background_background=classic first), border (set border_border=solid first), border_radius, box_shadow, padding, margin, position, z_index, animation, shape dividers, etc. (The unprefixed justify_content / align_items / align_content are accepted and remapped to the flex_-prefixed keys.)', 'emcp-tools' ),
+				'category'            => 'emcp-tools',
 				'execute_callback'    => array( $this, 'execute_update_container' ),
 				'permission_callback' => array( $this, 'check_edit_permission' ),
 				'input_schema'        => array(
@@ -227,15 +227,15 @@ class Elementor_MCP_Layout_Abilities {
 					'properties' => array(
 						'post_id'    => array(
 							'type'        => 'integer',
-							'description' => __( 'The post/page ID.', 'elementor-mcp' ),
+							'description' => __( 'The post/page ID.', 'emcp-tools' ),
 						),
 						'element_id' => array(
 							'type'        => 'string',
-							'description' => __( 'The container element ID.', 'elementor-mcp' ),
+							'description' => __( 'The container element ID.', 'emcp-tools' ),
 						),
 						'settings'   => array(
 							'type'        => 'object',
-							'description' => __( 'Partial settings to merge into the container.', 'elementor-mcp' ),
+							'description' => __( 'Partial settings to merge into the container.', 'emcp-tools' ),
 						),
 					),
 					'required'   => array( 'post_id', 'element_id', 'settings' ),
@@ -272,7 +272,7 @@ class Elementor_MCP_Layout_Abilities {
 		$settings   = $input['settings'] ?? array();
 
 		if ( ! $post_id || empty( $element_id ) || empty( $settings ) ) {
-			return new \WP_Error( 'missing_params', __( 'post_id, element_id, and settings are required.', 'elementor-mcp' ) );
+			return new \WP_Error( 'missing_params', __( 'post_id, element_id, and settings are required.', 'emcp-tools' ) );
 		}
 
 		$page_data = $this->data->get_page_data( $post_id );
@@ -284,17 +284,17 @@ class Elementor_MCP_Layout_Abilities {
 		$element = $this->data->find_element_by_id( $page_data, $element_id );
 
 		if ( null === $element ) {
-			return new \WP_Error( 'element_not_found', __( 'Element not found.', 'elementor-mcp' ) );
+			return new \WP_Error( 'element_not_found', __( 'Element not found.', 'emcp-tools' ) );
 		}
 
 		if ( 'container' !== ( $element['elType'] ?? '' ) ) {
-			return new \WP_Error( 'not_container', __( 'Element is not a container. Use update-widget for widgets.', 'elementor-mcp' ) );
+			return new \WP_Error( 'not_container', __( 'Element is not a container. Use update-widget for widgets.', 'emcp-tools' ) );
 		}
 
 		$updated = $this->data->update_element_settings( $page_data, $element_id, $settings );
 
 		if ( ! $updated ) {
-			return new \WP_Error( 'update_failed', __( 'Failed to update container settings.', 'elementor-mcp' ) );
+			return new \WP_Error( 'update_failed', __( 'Failed to update container settings.', 'emcp-tools' ) );
 		}
 
 		$result = $this->data->save_page_data( $post_id, $page_data );
@@ -311,12 +311,12 @@ class Elementor_MCP_Layout_Abilities {
 	// -------------------------------------------------------------------------
 
 	private function register_update_element(): void {
-		elementor_mcp_register_ability(
+		emcp_tools_register_ability(
 			'elementor-mcp/update-element',
 			array(
-				'label'               => __( 'Update Element', 'elementor-mcp' ),
-				'description'         => __( 'Updates settings on any element (container or widget). Settings are merged (partial update). Works for all element types — no need to know if the target is a container or widget.', 'elementor-mcp' ),
-				'category'            => 'elementor-mcp',
+				'label'               => __( 'Update Element', 'emcp-tools' ),
+				'description'         => __( 'Updates settings on any element (container or widget). Settings are merged (partial update). Works for all element types — no need to know if the target is a container or widget.', 'emcp-tools' ),
+				'category'            => 'emcp-tools',
 				'execute_callback'    => array( $this, 'execute_update_element' ),
 				'permission_callback' => array( $this, 'check_edit_permission' ),
 				'input_schema'        => array(
@@ -324,15 +324,15 @@ class Elementor_MCP_Layout_Abilities {
 					'properties' => array(
 						'post_id'    => array(
 							'type'        => 'integer',
-							'description' => __( 'The post/page ID.', 'elementor-mcp' ),
+							'description' => __( 'The post/page ID.', 'emcp-tools' ),
 						),
 						'element_id' => array(
 							'type'        => 'string',
-							'description' => __( 'The element ID (container or widget).', 'elementor-mcp' ),
+							'description' => __( 'The element ID (container or widget).', 'emcp-tools' ),
 						),
 						'settings'   => array(
 							'type'        => 'object',
-							'description' => __( 'Partial settings to merge into the element.', 'elementor-mcp' ),
+							'description' => __( 'Partial settings to merge into the element.', 'emcp-tools' ),
 						),
 					),
 					'required'   => array( 'post_id', 'element_id', 'settings' ),
@@ -363,7 +363,7 @@ class Elementor_MCP_Layout_Abilities {
 		$settings   = $input['settings'] ?? array();
 
 		if ( ! $post_id || empty( $element_id ) || empty( $settings ) ) {
-			return new \WP_Error( 'missing_params', __( 'post_id, element_id, and settings are required.', 'elementor-mcp' ) );
+			return new \WP_Error( 'missing_params', __( 'post_id, element_id, and settings are required.', 'emcp-tools' ) );
 		}
 
 		$page_data = $this->data->get_page_data( $post_id );
@@ -375,13 +375,13 @@ class Elementor_MCP_Layout_Abilities {
 		$element = $this->data->find_element_by_id( $page_data, $element_id );
 
 		if ( null === $element ) {
-			return new \WP_Error( 'element_not_found', __( 'Element not found.', 'elementor-mcp' ) );
+			return new \WP_Error( 'element_not_found', __( 'Element not found.', 'emcp-tools' ) );
 		}
 
 		$updated = $this->data->update_element_settings( $page_data, $element_id, $settings );
 
 		if ( ! $updated ) {
-			return new \WP_Error( 'update_failed', __( 'Failed to update element settings.', 'elementor-mcp' ) );
+			return new \WP_Error( 'update_failed', __( 'Failed to update element settings.', 'emcp-tools' ) );
 		}
 
 		$result = $this->data->save_page_data( $post_id, $page_data );
@@ -402,12 +402,12 @@ class Elementor_MCP_Layout_Abilities {
 	// -------------------------------------------------------------------------
 
 	private function register_batch_update(): void {
-		elementor_mcp_register_ability(
+		emcp_tools_register_ability(
 			'elementor-mcp/batch-update',
 			array(
-				'label'               => __( 'Batch Update Elements', 'elementor-mcp' ),
-				'description'         => __( 'Updates multiple elements in a single save operation. Each operation specifies an element_id and settings to merge. Much more efficient than calling update-element multiple times.', 'elementor-mcp' ),
-				'category'            => 'elementor-mcp',
+				'label'               => __( 'Batch Update Elements', 'emcp-tools' ),
+				'description'         => __( 'Updates multiple elements in a single save operation. Each operation specifies an element_id and settings to merge. Much more efficient than calling update-element multiple times.', 'emcp-tools' ),
+				'category'            => 'emcp-tools',
 				'execute_callback'    => array( $this, 'execute_batch_update' ),
 				'permission_callback' => array( $this, 'check_edit_permission' ),
 				'input_schema'        => array(
@@ -415,16 +415,16 @@ class Elementor_MCP_Layout_Abilities {
 					'properties' => array(
 						'post_id'    => array(
 							'type'        => 'integer',
-							'description' => __( 'The post/page ID.', 'elementor-mcp' ),
+							'description' => __( 'The post/page ID.', 'emcp-tools' ),
 						),
 						'operations' => array(
 							'type'        => 'array',
-							'description' => __( 'Array of update operations.', 'elementor-mcp' ),
+							'description' => __( 'Array of update operations.', 'emcp-tools' ),
 							'items'       => array(
 								'type'       => 'object',
 								'properties' => array(
-									'element_id' => array( 'type' => 'string', 'description' => __( 'Element ID to update.', 'elementor-mcp' ) ),
-									'settings'   => array( 'type' => 'object', 'description' => __( 'Settings to merge.', 'elementor-mcp' ) ),
+									'element_id' => array( 'type' => 'string', 'description' => __( 'Element ID to update.', 'emcp-tools' ) ),
+									'settings'   => array( 'type' => 'object', 'description' => __( 'Settings to merge.', 'emcp-tools' ) ),
 								),
 								'required'   => array( 'element_id', 'settings' ),
 							),
@@ -457,7 +457,7 @@ class Elementor_MCP_Layout_Abilities {
 		$operations = $input['operations'] ?? array();
 
 		if ( ! $post_id || empty( $operations ) ) {
-			return new \WP_Error( 'missing_params', __( 'post_id and operations are required.', 'elementor-mcp' ) );
+			return new \WP_Error( 'missing_params', __( 'post_id and operations are required.', 'emcp-tools' ) );
 		}
 
 		$page_data = $this->data->get_page_data( $post_id );
@@ -512,12 +512,12 @@ class Elementor_MCP_Layout_Abilities {
 	// -------------------------------------------------------------------------
 
 	private function register_reorder_elements(): void {
-		elementor_mcp_register_ability(
+		emcp_tools_register_ability(
 			'elementor-mcp/reorder-elements',
 			array(
-				'label'               => __( 'Reorder Elements', 'elementor-mcp' ),
-				'description'         => __( 'Reorders the children of a container by providing an ordered array of element IDs. All IDs must be direct children of the specified container.', 'elementor-mcp' ),
-				'category'            => 'elementor-mcp',
+				'label'               => __( 'Reorder Elements', 'emcp-tools' ),
+				'description'         => __( 'Reorders the children of a container by providing an ordered array of element IDs. All IDs must be direct children of the specified container.', 'emcp-tools' ),
+				'category'            => 'emcp-tools',
 				'execute_callback'    => array( $this, 'execute_reorder_elements' ),
 				'permission_callback' => array( $this, 'check_edit_permission' ),
 				'input_schema'        => array(
@@ -525,16 +525,16 @@ class Elementor_MCP_Layout_Abilities {
 					'properties' => array(
 						'post_id'      => array(
 							'type'        => 'integer',
-							'description' => __( 'The post/page ID.', 'elementor-mcp' ),
+							'description' => __( 'The post/page ID.', 'emcp-tools' ),
 						),
 						'container_id' => array(
 							'type'        => 'string',
-							'description' => __( 'The parent container element ID.', 'elementor-mcp' ),
+							'description' => __( 'The parent container element ID.', 'emcp-tools' ),
 						),
 						'element_ids'  => array(
 							'type'        => 'array',
 							'items'       => array( 'type' => 'string' ),
-							'description' => __( 'Ordered array of child element IDs in the desired order.', 'elementor-mcp' ),
+							'description' => __( 'Ordered array of child element IDs in the desired order.', 'emcp-tools' ),
 						),
 					),
 					'required'   => array( 'post_id', 'container_id', 'element_ids' ),
@@ -563,7 +563,7 @@ class Elementor_MCP_Layout_Abilities {
 		$element_ids  = $input['element_ids'] ?? array();
 
 		if ( ! $post_id || empty( $container_id ) || empty( $element_ids ) ) {
-			return new \WP_Error( 'missing_params', __( 'post_id, container_id, and element_ids are required.', 'elementor-mcp' ) );
+			return new \WP_Error( 'missing_params', __( 'post_id, container_id, and element_ids are required.', 'emcp-tools' ) );
 		}
 
 		$page_data = $this->data->get_page_data( $post_id );
@@ -575,11 +575,11 @@ class Elementor_MCP_Layout_Abilities {
 		$container = $this->data->find_element_by_id( $page_data, $container_id );
 
 		if ( null === $container ) {
-			return new \WP_Error( 'element_not_found', __( 'Container not found.', 'elementor-mcp' ) );
+			return new \WP_Error( 'element_not_found', __( 'Container not found.', 'emcp-tools' ) );
 		}
 
 		if ( 'container' !== ( $container['elType'] ?? '' ) ) {
-			return new \WP_Error( 'not_container', __( 'Element is not a container.', 'elementor-mcp' ) );
+			return new \WP_Error( 'not_container', __( 'Element is not a container.', 'emcp-tools' ) );
 		}
 
 		$children = $container['elements'] ?? array();
@@ -595,7 +595,7 @@ class Elementor_MCP_Layout_Abilities {
 			if ( ! isset( $children_by_id[ $eid ] ) ) {
 				return new \WP_Error(
 					'invalid_element_id',
-					sprintf( __( 'Element "%s" is not a direct child of the container.', 'elementor-mcp' ), $eid )
+					sprintf( __( 'Element "%s" is not a direct child of the container.', 'emcp-tools' ), $eid )
 				);
 			}
 		}
@@ -616,7 +616,7 @@ class Elementor_MCP_Layout_Abilities {
 		$applied = $this->reorder_children( $page_data, $container_id, $reordered );
 
 		if ( ! $applied ) {
-			return new \WP_Error( 'reorder_failed', __( 'Failed to reorder elements.', 'elementor-mcp' ) );
+			return new \WP_Error( 'reorder_failed', __( 'Failed to reorder elements.', 'emcp-tools' ) );
 		}
 
 		$result = $this->data->save_page_data( $post_id, $page_data );
@@ -658,12 +658,12 @@ class Elementor_MCP_Layout_Abilities {
 	// -------------------------------------------------------------------------
 
 	private function register_move_element(): void {
-		elementor_mcp_register_ability(
+		emcp_tools_register_ability(
 			'elementor-mcp/move-element',
 			array(
-				'label'               => __( 'Move Element', 'elementor-mcp' ),
-				'description'         => __( 'Moves an element to a new parent container and/or position within the page tree.', 'elementor-mcp' ),
-				'category'            => 'elementor-mcp',
+				'label'               => __( 'Move Element', 'emcp-tools' ),
+				'description'         => __( 'Moves an element to a new parent container and/or position within the page tree.', 'emcp-tools' ),
+				'category'            => 'emcp-tools',
 				'execute_callback'    => array( $this, 'execute_move_element' ),
 				'permission_callback' => array( $this, 'check_edit_permission' ),
 				'input_schema'        => array(
@@ -671,19 +671,19 @@ class Elementor_MCP_Layout_Abilities {
 					'properties' => array(
 						'post_id'          => array(
 							'type'        => 'integer',
-							'description' => __( 'The post/page ID.', 'elementor-mcp' ),
+							'description' => __( 'The post/page ID.', 'emcp-tools' ),
 						),
 						'element_id'       => array(
 							'type'        => 'string',
-							'description' => __( 'The element ID to move.', 'elementor-mcp' ),
+							'description' => __( 'The element ID to move.', 'emcp-tools' ),
 						),
 						'target_parent_id' => array(
 							'type'        => 'string',
-							'description' => __( 'Target parent container ID. Empty string for top-level.', 'elementor-mcp' ),
+							'description' => __( 'Target parent container ID. Empty string for top-level.', 'emcp-tools' ),
 						),
 						'position'         => array(
 							'type'        => 'integer',
-							'description' => __( 'Position within target parent. -1 = append.', 'elementor-mcp' ),
+							'description' => __( 'Position within target parent. -1 = append.', 'emcp-tools' ),
 						),
 					),
 					'required'   => array( 'post_id', 'element_id', 'target_parent_id', 'position' ),
@@ -721,7 +721,7 @@ class Elementor_MCP_Layout_Abilities {
 		$position         = intval( $input['position'] ?? -1 );
 
 		if ( ! $post_id || empty( $element_id ) ) {
-			return new \WP_Error( 'missing_params', __( 'post_id and element_id are required.', 'elementor-mcp' ) );
+			return new \WP_Error( 'missing_params', __( 'post_id and element_id are required.', 'emcp-tools' ) );
 		}
 
 		$page_data = $this->data->get_page_data( $post_id );
@@ -734,21 +734,21 @@ class Elementor_MCP_Layout_Abilities {
 		$element = $this->data->find_element_by_id( $page_data, $element_id );
 
 		if ( null === $element ) {
-			return new \WP_Error( 'element_not_found', __( 'Element not found.', 'elementor-mcp' ) );
+			return new \WP_Error( 'element_not_found', __( 'Element not found.', 'emcp-tools' ) );
 		}
 
 		// Remove from current position.
 		$removed = $this->data->remove_element( $page_data, $element_id );
 
 		if ( ! $removed ) {
-			return new \WP_Error( 'remove_failed', __( 'Failed to remove element from current position.', 'elementor-mcp' ) );
+			return new \WP_Error( 'remove_failed', __( 'Failed to remove element from current position.', 'emcp-tools' ) );
 		}
 
 		// Insert at new position.
 		$inserted = $this->data->insert_element( $page_data, $target_parent_id, $element, $position );
 
 		if ( ! $inserted ) {
-			return new \WP_Error( 'insert_failed', __( 'Failed to insert element at target position.', 'elementor-mcp' ) );
+			return new \WP_Error( 'insert_failed', __( 'Failed to insert element at target position.', 'emcp-tools' ) );
 		}
 
 		$result = $this->data->save_page_data( $post_id, $page_data );
@@ -765,12 +765,12 @@ class Elementor_MCP_Layout_Abilities {
 	// -------------------------------------------------------------------------
 
 	private function register_remove_element(): void {
-		elementor_mcp_register_ability(
+		emcp_tools_register_ability(
 			'elementor-mcp/remove-element',
 			array(
-				'label'               => __( 'Remove Element', 'elementor-mcp' ),
-				'description'         => __( 'Removes an element and all its children from a page.', 'elementor-mcp' ),
-				'category'            => 'elementor-mcp',
+				'label'               => __( 'Remove Element', 'emcp-tools' ),
+				'description'         => __( 'Removes an element and all its children from a page.', 'emcp-tools' ),
+				'category'            => 'emcp-tools',
 				'execute_callback'    => array( $this, 'execute_remove_element' ),
 				'permission_callback' => array( $this, 'check_edit_permission' ),
 				'input_schema'        => array(
@@ -778,11 +778,11 @@ class Elementor_MCP_Layout_Abilities {
 					'properties' => array(
 						'post_id'    => array(
 							'type'        => 'integer',
-							'description' => __( 'The post/page ID.', 'elementor-mcp' ),
+							'description' => __( 'The post/page ID.', 'emcp-tools' ),
 						),
 						'element_id' => array(
 							'type'        => 'string',
-							'description' => __( 'The element ID to remove.', 'elementor-mcp' ),
+							'description' => __( 'The element ID to remove.', 'emcp-tools' ),
 						),
 					),
 					'required'   => array( 'post_id', 'element_id' ),
@@ -818,7 +818,7 @@ class Elementor_MCP_Layout_Abilities {
 		$element_id = sanitize_text_field( $input['element_id'] ?? '' );
 
 		if ( ! $post_id || empty( $element_id ) ) {
-			return new \WP_Error( 'missing_params', __( 'post_id and element_id are required.', 'elementor-mcp' ) );
+			return new \WP_Error( 'missing_params', __( 'post_id and element_id are required.', 'emcp-tools' ) );
 		}
 
 		$page_data = $this->data->get_page_data( $post_id );
@@ -830,7 +830,7 @@ class Elementor_MCP_Layout_Abilities {
 		$removed = $this->data->remove_element( $page_data, $element_id );
 
 		if ( ! $removed ) {
-			return new \WP_Error( 'element_not_found', __( 'Element not found.', 'elementor-mcp' ) );
+			return new \WP_Error( 'element_not_found', __( 'Element not found.', 'emcp-tools' ) );
 		}
 
 		$result = $this->data->save_page_data( $post_id, $page_data );
@@ -847,12 +847,12 @@ class Elementor_MCP_Layout_Abilities {
 	// -------------------------------------------------------------------------
 
 	private function register_duplicate_element(): void {
-		elementor_mcp_register_ability(
+		emcp_tools_register_ability(
 			'elementor-mcp/duplicate-element',
 			array(
-				'label'               => __( 'Duplicate Element', 'elementor-mcp' ),
-				'description'         => __( 'Duplicates an element (including all children) with fresh IDs. The duplicate is placed immediately after the original.', 'elementor-mcp' ),
-				'category'            => 'elementor-mcp',
+				'label'               => __( 'Duplicate Element', 'emcp-tools' ),
+				'description'         => __( 'Duplicates an element (including all children) with fresh IDs. The duplicate is placed immediately after the original.', 'emcp-tools' ),
+				'category'            => 'emcp-tools',
 				'execute_callback'    => array( $this, 'execute_duplicate_element' ),
 				'permission_callback' => array( $this, 'check_edit_permission' ),
 				'input_schema'        => array(
@@ -860,11 +860,11 @@ class Elementor_MCP_Layout_Abilities {
 					'properties' => array(
 						'post_id'    => array(
 							'type'        => 'integer',
-							'description' => __( 'The post/page ID.', 'elementor-mcp' ),
+							'description' => __( 'The post/page ID.', 'emcp-tools' ),
 						),
 						'element_id' => array(
 							'type'        => 'string',
-							'description' => __( 'The element ID to duplicate.', 'elementor-mcp' ),
+							'description' => __( 'The element ID to duplicate.', 'emcp-tools' ),
 						),
 					),
 					'required'   => array( 'post_id', 'element_id' ),
@@ -900,7 +900,7 @@ class Elementor_MCP_Layout_Abilities {
 		$element_id = sanitize_text_field( $input['element_id'] ?? '' );
 
 		if ( ! $post_id || empty( $element_id ) ) {
-			return new \WP_Error( 'missing_params', __( 'post_id and element_id are required.', 'elementor-mcp' ) );
+			return new \WP_Error( 'missing_params', __( 'post_id and element_id are required.', 'emcp-tools' ) );
 		}
 
 		$page_data = $this->data->get_page_data( $post_id );
@@ -912,7 +912,7 @@ class Elementor_MCP_Layout_Abilities {
 		$element = $this->data->find_element_by_id( $page_data, $element_id );
 
 		if ( null === $element ) {
-			return new \WP_Error( 'element_not_found', __( 'Element not found.', 'elementor-mcp' ) );
+			return new \WP_Error( 'element_not_found', __( 'Element not found.', 'emcp-tools' ) );
 		}
 
 		// Deep-clone and reassign all IDs.
@@ -922,7 +922,7 @@ class Elementor_MCP_Layout_Abilities {
 		$inserted = $this->insert_after( $page_data, $element_id, $clone );
 
 		if ( ! $inserted ) {
-			return new \WP_Error( 'insert_failed', __( 'Failed to insert duplicate.', 'elementor-mcp' ) );
+			return new \WP_Error( 'insert_failed', __( 'Failed to insert duplicate.', 'emcp-tools' ) );
 		}
 
 		$result = $this->data->save_page_data( $post_id, $page_data );

@@ -7,7 +7,7 @@
  * WordPress core, so the SEO audit reports against what the site actually
  * outputs instead of hard-coupling to one plugin.
  *
- * @package Elementor_MCP
+ * @package EMCP_Tools
  * @since   1.8.0
  */
 
@@ -20,7 +20,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * @since 1.8.0
  */
-final class Elementor_MCP_Seo_Meta {
+final class EMCP_Tools_Seo_Meta {
 
 	/**
 	 * Returns the resolved SEO meta for a post.

@@ -6,22 +6,22 @@
  * check_manage_permission()  → manage_options.
  * @group capabilities
  * @group custom-code
- * @package Elementor_MCP\Tests\Capabilities
+ * @package EMCP_Tools\Tests\Capabilities
  */
-namespace Elementor_MCP\Tests\Capabilities;
+namespace EMCP_Tools\Tests\Capabilities;
 
 require_once dirname(__DIR__) . '/class-ability-test-case.php';
 
-use Elementor_MCP\Tests\Ability_Test_Case;
+use EMCP_Tools\Tests\Ability_Test_Case;
 
 class CustomCodeCapabilityTest extends Ability_Test_Case {
-    private \Elementor_MCP_Custom_Code_Abilities $ability;
+    private \EMCP_Tools_Custom_Code_Abilities $ability;
 
     protected function setUp(): void {
         parent::setUp();
-        $data    = $this->createStub(\Elementor_MCP_Data::class);
-        $factory = $this->createStub(\Elementor_MCP_Element_Factory::class);
-        $this->ability = new \Elementor_MCP_Custom_Code_Abilities($data, $factory);
+        $data    = $this->createStub(\EMCP_Tools_Data::class);
+        $factory = $this->createStub(\EMCP_Tools_Element_Factory::class);
+        $this->ability = new \EMCP_Tools_Custom_Code_Abilities($data, $factory);
         // register() populates $ability_names; wp_register_ability() is a no-op stub.
         $this->ability->register();
     }

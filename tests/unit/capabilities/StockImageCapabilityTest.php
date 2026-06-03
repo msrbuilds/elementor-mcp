@@ -6,22 +6,22 @@
  * check_combined_permission() → edit_posts AND upload_files (+ edit_post when post_id given).
  * @group capabilities
  * @group stock-image
- * @package Elementor_MCP\Tests\Capabilities
+ * @package EMCP_Tools\Tests\Capabilities
  */
-namespace Elementor_MCP\Tests\Capabilities;
+namespace EMCP_Tools\Tests\Capabilities;
 
 require_once dirname(__DIR__) . '/class-ability-test-case.php';
 
-use Elementor_MCP\Tests\Ability_Test_Case;
+use EMCP_Tools\Tests\Ability_Test_Case;
 
 class StockImageCapabilityTest extends Ability_Test_Case {
-    private \Elementor_MCP_Stock_Image_Abilities $ability;
+    private \EMCP_Tools_Stock_Image_Abilities $ability;
 
     protected function setUp(): void {
         parent::setUp();
-        $data    = $this->createStub(\Elementor_MCP_Data::class);
+        $data    = $this->createStub(\EMCP_Tools_Data::class);
         $factory = $this->make_factory();
-        $this->ability = new \Elementor_MCP_Stock_Image_Abilities($data, $factory);
+        $this->ability = new \EMCP_Tools_Stock_Image_Abilities($data, $factory);
     }
 
     // check_read_permission() — denied

@@ -4,7 +4,7 @@
  *
  * Generates 7-character hex IDs matching Elementor's internal format.
  *
- * @package Elementor_MCP
+ * @package EMCP_Tools
  * @since   1.0.0
  */
 
@@ -17,7 +17,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * @since 1.0.0
  */
-class Elementor_MCP_Id_Generator {
+class EMCP_Tools_Id_Generator {
 
 	/**
 	 * Generates a 7-character random hex string.

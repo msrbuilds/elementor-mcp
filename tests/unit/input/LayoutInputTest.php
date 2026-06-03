@@ -6,29 +6,29 @@
  *
  * @group input
  * @group layout
- * @package Elementor_MCP\Tests\Input
+ * @package EMCP_Tools\Tests\Input
  */
 
-namespace Elementor_MCP\Tests\Input;
+namespace EMCP_Tools\Tests\Input;
 
 require_once dirname( __DIR__ ) . '/class-ability-test-case.php';
 
-use Elementor_MCP\Tests\Ability_Test_Case;
+use EMCP_Tools\Tests\Ability_Test_Case;
 
 class LayoutInputTest extends Ability_Test_Case {
 
-	/** @var \Elementor_MCP_Layout_Abilities */
+	/** @var \EMCP_Tools_Layout_Abilities */
 	private $ability;
 
 	protected function setUp(): void {
 		parent::setUp();
 
-		$data = $this->createStub( \Elementor_MCP_Data::class );
+		$data = $this->createStub( \EMCP_Tools_Data::class );
 		$data->method( 'get_page_data' )
 		     ->willReturn( new \WP_Error( 'no_data', 'No page data in test stub.' ) );
 		$data->method( 'save_page_data' )->willReturn( true );
 
-		$this->ability = new \Elementor_MCP_Layout_Abilities( $data, $this->make_factory() );
+		$this->ability = new \EMCP_Tools_Layout_Abilities( $data, $this->make_factory() );
 		$this->allow_all_caps();
 	}
 

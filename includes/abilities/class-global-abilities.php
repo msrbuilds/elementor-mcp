@@ -5,7 +5,7 @@
  * Registers 2 tools for updating global colors and typography
  * in the Elementor kit (site-wide settings).
  *
- * @package Elementor_MCP
+ * @package EMCP_Tools
  * @since   1.0.0
  */
 
@@ -18,10 +18,10 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * @since 1.0.0
  */
-class Elementor_MCP_Global_Abilities {
+class EMCP_Tools_Global_Abilities {
 
 	/**
-	 * @var Elementor_MCP_Data
+	 * @var EMCP_Tools_Data
 	 */
 	private $data;
 
@@ -30,9 +30,9 @@ class Elementor_MCP_Global_Abilities {
 	 *
 	 * @since 1.0.0
 	 *
-	 * @param Elementor_MCP_Data $data The data access layer.
+	 * @param EMCP_Tools_Data $data The data access layer.
 	 */
-	public function __construct( Elementor_MCP_Data $data ) {
+	public function __construct( EMCP_Tools_Data $data ) {
 		$this->data = $data;
 	}
 
@@ -76,12 +76,12 @@ class Elementor_MCP_Global_Abilities {
 	// -------------------------------------------------------------------------
 
 	private function register_update_global_colors(): void {
-		elementor_mcp_register_ability(
+		emcp_tools_register_ability(
 			'elementor-mcp/update-global-colors',
 			array(
-				'label'               => __( 'Update Global Colors', 'elementor-mcp' ),
-				'description'         => __( 'Updates the site-wide color palette in the Elementor kit. Provide an array of color objects with id, title, and color (hex).', 'elementor-mcp' ),
-				'category'            => 'elementor-mcp',
+				'label'               => __( 'Update Global Colors', 'emcp-tools' ),
+				'description'         => __( 'Updates the site-wide color palette in the Elementor kit. Provide an array of color objects with id, title, and color (hex).', 'emcp-tools' ),
+				'category'            => 'emcp-tools',
 				'execute_callback'    => array( $this, 'execute_update_global_colors' ),
 				'permission_callback' => array( $this, 'check_manage_permission' ),
 				'input_schema'        => array(
@@ -89,21 +89,21 @@ class Elementor_MCP_Global_Abilities {
 					'properties' => array(
 						'colors' => array(
 							'type'        => 'array',
-							'description' => __( 'Array of color definitions.', 'elementor-mcp' ),
+							'description' => __( 'Array of color definitions.', 'emcp-tools' ),
 							'items'       => array(
 								'type'       => 'object',
 								'properties' => array(
 									'_id'   => array(
 										'type'        => 'string',
-										'description' => __( 'Unique color ID (e.g. "primary").', 'elementor-mcp' ),
+										'description' => __( 'Unique color ID (e.g. "primary").', 'emcp-tools' ),
 									),
 									'title' => array(
 										'type'        => 'string',
-										'description' => __( 'Human-readable title.', 'elementor-mcp' ),
+										'description' => __( 'Human-readable title.', 'emcp-tools' ),
 									),
 									'color' => array(
 										'type'        => 'string',
-										'description' => __( 'Color value in hex format (e.g. "#FF5733").', 'elementor-mcp' ),
+										'description' => __( 'Color value in hex format (e.g. "#FF5733").', 'emcp-tools' ),
 									),
 								),
 								'required' => array( '_id', 'title', 'color' ),
@@ -142,13 +142,13 @@ class Elementor_MCP_Global_Abilities {
 		$colors = $input['colors'] ?? array();
 
 		if ( empty( $colors ) || ! is_array( $colors ) ) {
-			return new \WP_Error( 'missing_colors', __( 'The colors parameter is required and must be an array.', 'elementor-mcp' ) );
+			return new \WP_Error( 'missing_colors', __( 'The colors parameter is required and must be an array.', 'emcp-tools' ) );
 		}
 
 		$kit = \Elementor\Plugin::$instance->kits_manager->get_active_kit();
 
 		if ( ! $kit || ! $kit->get_id() ) {
-			return new \WP_Error( 'kit_not_found', __( 'Active Elementor kit not found.', 'elementor-mcp' ) );
+			return new \WP_Error( 'kit_not_found', __( 'Active Elementor kit not found.', 'emcp-tools' ) );
 		}
 
 		// Get current kit settings.
@@ -193,12 +193,12 @@ class Elementor_MCP_Global_Abilities {
 	// -------------------------------------------------------------------------
 
 	private function register_update_global_typography(): void {
-		elementor_mcp_register_ability(
+		emcp_tools_register_ability(
 			'elementor-mcp/update-global-typography',
 			array(
-				'label'               => __( 'Update Global Typography', 'elementor-mcp' ),
-				'description'         => __( 'Updates the site-wide typography settings in the Elementor kit.', 'elementor-mcp' ),
-				'category'            => 'elementor-mcp',
+				'label'               => __( 'Update Global Typography', 'emcp-tools' ),
+				'description'         => __( 'Updates the site-wide typography settings in the Elementor kit.', 'emcp-tools' ),
+				'category'            => 'emcp-tools',
 				'execute_callback'    => array( $this, 'execute_update_global_typography' ),
 				'permission_callback' => array( $this, 'check_manage_permission' ),
 				'input_schema'        => array(
@@ -206,37 +206,37 @@ class Elementor_MCP_Global_Abilities {
 					'properties' => array(
 						'typography' => array(
 							'type'        => 'array',
-							'description' => __( 'Array of typography definitions.', 'elementor-mcp' ),
+							'description' => __( 'Array of typography definitions.', 'emcp-tools' ),
 							'items'       => array(
 								'type'       => 'object',
 								'properties' => array(
 									'_id'                      => array(
 										'type'        => 'string',
-										'description' => __( 'Unique typography ID (e.g. "primary").', 'elementor-mcp' ),
+										'description' => __( 'Unique typography ID (e.g. "primary").', 'emcp-tools' ),
 									),
 									'title'                    => array(
 										'type'        => 'string',
-										'description' => __( 'Human-readable title.', 'elementor-mcp' ),
+										'description' => __( 'Human-readable title.', 'emcp-tools' ),
 									),
 									'typography_font_family'   => array(
 										'type'        => 'string',
-										'description' => __( 'Font family name.', 'elementor-mcp' ),
+										'description' => __( 'Font family name.', 'emcp-tools' ),
 									),
 									'typography_font_size'     => array(
 										'type'        => 'object',
-										'description' => __( 'Font size with size and unit.', 'elementor-mcp' ),
+										'description' => __( 'Font size with size and unit.', 'emcp-tools' ),
 									),
 									'typography_font_weight'   => array(
 										'type'        => 'string',
-										'description' => __( 'Font weight (100-900, normal, bold).', 'elementor-mcp' ),
+										'description' => __( 'Font weight (100-900, normal, bold).', 'emcp-tools' ),
 									),
 									'typography_line_height'   => array(
 										'type'        => 'object',
-										'description' => __( 'Line height with size and unit.', 'elementor-mcp' ),
+										'description' => __( 'Line height with size and unit.', 'emcp-tools' ),
 									),
 									'typography_letter_spacing' => array(
 										'type'        => 'object',
-										'description' => __( 'Letter spacing with size and unit.', 'elementor-mcp' ),
+										'description' => __( 'Letter spacing with size and unit.', 'emcp-tools' ),
 									),
 								),
 								'required' => array( '_id', 'title' ),
@@ -275,13 +275,13 @@ class Elementor_MCP_Global_Abilities {
 		$typography = $input['typography'] ?? array();
 
 		if ( empty( $typography ) || ! is_array( $typography ) ) {
-			return new \WP_Error( 'missing_typography', __( 'The typography parameter is required and must be an array.', 'elementor-mcp' ) );
+			return new \WP_Error( 'missing_typography', __( 'The typography parameter is required and must be an array.', 'emcp-tools' ) );
 		}
 
 		$kit = \Elementor\Plugin::$instance->kits_manager->get_active_kit();
 
 		if ( ! $kit || ! $kit->get_id() ) {
-			return new \WP_Error( 'kit_not_found', __( 'Active Elementor kit not found.', 'elementor-mcp' ) );
+			return new \WP_Error( 'kit_not_found', __( 'Active Elementor kit not found.', 'emcp-tools' ) );
 		}
 
 		$kit_settings      = $kit->get_settings();

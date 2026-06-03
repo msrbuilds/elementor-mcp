@@ -10,7 +10,7 @@
  * deterministic and safe. The result is structurally lint-checked with
  * `token_get_all( …, TOKEN_PARSE )` before it is ever written to disk.
  *
- * @package Elementor_MCP
+ * @package EMCP_Tools
  * @since   1.9.0
  */
 
@@ -23,7 +23,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * @since 1.9.0
  */
-class Elementor_MCP_Widget_Generator {
+class EMCP_Tools_Widget_Generator {
 
 	/**
 	 * Supported control types mapped to their Controls_Manager constant + notes.
@@ -95,13 +95,13 @@ class Elementor_MCP_Widget_Generator {
 	 */
 	public static function validate_spec( $spec ) {
 		if ( ! is_array( $spec ) ) {
-			return new WP_Error( 'invalid_spec', __( 'Spec must be an object.', 'elementor-mcp' ) );
+			return new WP_Error( 'invalid_spec', __( 'Spec must be an object.', 'emcp-tools' ) );
 		}
 		if ( empty( $spec['meta']['title'] ) ) {
-			return new WP_Error( 'invalid_spec', __( 'meta.title is required.', 'elementor-mcp' ) );
+			return new WP_Error( 'invalid_spec', __( 'meta.title is required.', 'emcp-tools' ) );
 		}
 		if ( empty( $spec['sections'] ) || ! is_array( $spec['sections'] ) ) {
-			return new WP_Error( 'invalid_spec', __( 'At least one section is required.', 'elementor-mcp' ) );
+			return new WP_Error( 'invalid_spec', __( 'At least one section is required.', 'emcp-tools' ) );
 		}
 
 		$types     = self::control_types();
@@ -109,7 +109,7 @@ class Elementor_MCP_Widget_Generator {
 
 		foreach ( $spec['sections'] as $section ) {
 			if ( empty( $section['id'] ) || empty( $section['controls'] ) || ! is_array( $section['controls'] ) ) {
-				return new WP_Error( 'invalid_spec', __( 'Each section needs an id and a non-empty controls array.', 'elementor-mcp' ) );
+				return new WP_Error( 'invalid_spec', __( 'Each section needs an id and a non-empty controls array.', 'emcp-tools' ) );
 			}
 			foreach ( $section['controls'] as $control ) {
 				$err = self::validate_control( $control, $types, $seen_names );
@@ -120,7 +120,7 @@ class Elementor_MCP_Widget_Generator {
 		}
 
 		if ( ! isset( $spec['html_template'] ) || ! is_string( $spec['html_template'] ) || '' === trim( $spec['html_template'] ) ) {
-			return new WP_Error( 'invalid_spec', __( 'html_template is required.', 'elementor-mcp' ) );
+			return new WP_Error( 'invalid_spec', __( 'html_template is required.', 'emcp-tools' ) );
 		}
 
 		return true;
@@ -138,44 +138,44 @@ class Elementor_MCP_Widget_Generator {
 	 */
 	private static function validate_control( $control, array $types, array &$seen_names ) {
 		if ( ! is_array( $control ) || empty( $control['name'] ) || empty( $control['type'] ) ) {
-			return new WP_Error( 'invalid_spec', __( 'Each control needs a name and a type.', 'elementor-mcp' ) );
+			return new WP_Error( 'invalid_spec', __( 'Each control needs a name and a type.', 'emcp-tools' ) );
 		}
 		$name = sanitize_key( $control['name'] );
 		if ( '' === $name ) {
-			return new WP_Error( 'invalid_spec', __( 'Control names must be lowercase letters, numbers, and underscores.', 'elementor-mcp' ) );
+			return new WP_Error( 'invalid_spec', __( 'Control names must be lowercase letters, numbers, and underscores.', 'emcp-tools' ) );
 		}
 		if ( isset( $seen_names[ $name ] ) ) {
 			/* translators: %s: control name */
-			return new WP_Error( 'invalid_spec', sprintf( __( 'Duplicate control name: %s.', 'elementor-mcp' ), $name ) );
+			return new WP_Error( 'invalid_spec', sprintf( __( 'Duplicate control name: %s.', 'emcp-tools' ), $name ) );
 		}
 		$seen_names[ $name ] = true;
 
 		if ( ! isset( $types[ $control['type'] ] ) ) {
 			/* translators: %s: control type */
-			return new WP_Error( 'invalid_spec', sprintf( __( 'Unsupported control type: %s.', 'elementor-mcp' ), $control['type'] ) );
+			return new WP_Error( 'invalid_spec', sprintf( __( 'Unsupported control type: %s.', 'emcp-tools' ), $control['type'] ) );
 		}
 
 		if ( in_array( $control['type'], array( 'select', 'select2', 'choose', 'visual_choice' ), true ) && empty( $control['options'] ) ) {
 			/* translators: %s: control name */
-			return new WP_Error( 'invalid_spec', sprintf( __( 'Control "%s" needs an options array.', 'elementor-mcp' ), $name ) );
+			return new WP_Error( 'invalid_spec', sprintf( __( 'Control "%s" needs an options array.', 'emcp-tools' ), $name ) );
 		}
 
 		// Group controls (typography, border, background, …) style a CSS selector.
 		if ( ! empty( $types[ $control['type'] ]['group_class'] ) && empty( $control['selector'] ) ) {
 			/* translators: %s: control name */
-			return new WP_Error( 'invalid_spec', sprintf( __( 'Group control "%s" needs a "selector" (a class to style, e.g. ".my-title").', 'elementor-mcp' ), $name ) );
+			return new WP_Error( 'invalid_spec', sprintf( __( 'Group control "%s" needs a "selector" (a class to style, e.g. ".my-title").', 'emcp-tools' ), $name ) );
 		}
 
 		if ( 'repeater' === $control['type'] ) {
 			if ( empty( $control['fields'] ) || ! is_array( $control['fields'] ) ) {
 				/* translators: %s: control name */
-				return new WP_Error( 'invalid_spec', sprintf( __( 'Repeater "%s" needs a fields array.', 'elementor-mcp' ), $name ) );
+				return new WP_Error( 'invalid_spec', sprintf( __( 'Repeater "%s" needs a fields array.', 'emcp-tools' ), $name ) );
 			}
 			$field_names = array();
 			foreach ( $control['fields'] as $field ) {
 				// Repeater fields cannot themselves be repeaters.
 				if ( is_array( $field ) && 'repeater' === ( $field['type'] ?? '' ) ) {
-					return new WP_Error( 'invalid_spec', __( 'Repeater fields cannot be repeaters.', 'elementor-mcp' ) );
+					return new WP_Error( 'invalid_spec', __( 'Repeater fields cannot be repeaters.', 'emcp-tools' ) );
 				}
 				$err = self::validate_control( $field, $types, $field_names );
 				if ( is_wp_error( $err ) ) {
@@ -252,7 +252,7 @@ class Elementor_MCP_Widget_Generator {
 		try {
 			token_get_all( $src, TOKEN_PARSE );
 		} catch ( \ParseError $e ) {
-			return new WP_Error( 'generate_parse_error', __( 'The generated widget code failed a syntax check.', 'elementor-mcp' ), array( 'detail' => $e->getMessage() ) );
+			return new WP_Error( 'generate_parse_error', __( 'The generated widget code failed a syntax check.', 'emcp-tools' ), array( 'detail' => $e->getMessage() ) );
 		}
 
 		return $src;

@@ -10,25 +10,25 @@
  *
  * @group input
  * @group global
- * @package Elementor_MCP\Tests\Input
+ * @package EMCP_Tools\Tests\Input
  */
 
-namespace Elementor_MCP\Tests\Input;
+namespace EMCP_Tools\Tests\Input;
 
 require_once dirname( __DIR__ ) . '/class-ability-test-case.php';
 
-use Elementor_MCP\Tests\Ability_Test_Case;
+use EMCP_Tools\Tests\Ability_Test_Case;
 
 class GlobalInputTest extends Ability_Test_Case {
 
-	/** @var \Elementor_MCP_Global_Abilities */
+	/** @var \EMCP_Tools_Global_Abilities */
 	private $ability;
 
 	protected function setUp(): void {
 		parent::setUp();
 		// Global abilities access Plugin::$instance->kits_manager (stubbed in bootstrap).
-		$data          = $this->createStub( \Elementor_MCP_Data::class );
-		$this->ability = new \Elementor_MCP_Global_Abilities( $data );
+		$data          = $this->createStub( \EMCP_Tools_Data::class );
+		$this->ability = new \EMCP_Tools_Global_Abilities( $data );
 		$this->allow_all_caps();
 	}
 

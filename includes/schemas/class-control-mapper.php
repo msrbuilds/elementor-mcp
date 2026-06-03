@@ -2,7 +2,7 @@
 /**
  * Maps Elementor control types to JSON Schema definitions.
  *
- * @package Elementor_MCP
+ * @package EMCP_Tools
  * @since   1.0.0
  */
 
@@ -15,7 +15,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * @since 1.0.0
  */
-class Elementor_MCP_Control_Mapper {
+class EMCP_Tools_Control_Mapper {
 
 	/**
 	 * Control types that are structural/UI-only and should be skipped.
@@ -127,7 +127,7 @@ class Elementor_MCP_Control_Mapper {
 				return array(
 					'type'        => 'string',
 					'enum'        => array( 'yes' ),
-					'description' => __( 'Toggle switch. Use "yes" to enable, omit or send empty string to disable.', 'elementor-mcp' ),
+					'description' => __( 'Toggle switch. Use "yes" to enable, omit or send empty string to disable.', 'emcp-tools' ),
 				);
 
 			case 'color':
@@ -241,7 +241,7 @@ class Elementor_MCP_Control_Mapper {
 				return array(
 					'type'        => 'string',
 					'enum'        => array( 'yes' ),
-					'description' => __( 'Popover toggle. Use "yes" to enable, omit or send empty string to disable.', 'elementor-mcp' ),
+					'description' => __( 'Popover toggle. Use "yes" to enable, omit or send empty string to disable.', 'emcp-tools' ),
 				);
 
 			case 'gaps':

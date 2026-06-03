@@ -15,14 +15,14 @@
  *
  * @group regression
  * @group issue-32
- * @package Elementor_MCP\Tests\Regression
+ * @package EMCP_Tools\Tests\Regression
  */
 
-namespace Elementor_MCP\Tests\Regression;
+namespace EMCP_Tools\Tests\Regression;
 
 require_once dirname( __DIR__ ) . '/class-ability-test-case.php';
 
-use Elementor_MCP\Tests\Ability_Test_Case;
+use EMCP_Tools\Tests\Ability_Test_Case;
 
 class ContainerKeyAliasRegressionTest extends Ability_Test_Case {
 
@@ -32,7 +32,7 @@ class ContainerKeyAliasRegressionTest extends Ability_Test_Case {
 
 	/** @test */
 	public function test_normalize_remaps_unprefixed_flex_keys(): void {
-		$out = \Elementor_MCP_Element_Factory::normalize_container_settings( [
+		$out = \EMCP_Tools_Element_Factory::normalize_container_settings( [
 			'justify_content' => 'space-between',
 			'align_items'     => 'center',
 			'align_content'   => 'flex-start',
@@ -48,7 +48,7 @@ class ContainerKeyAliasRegressionTest extends Ability_Test_Case {
 
 	/** @test */
 	public function test_normalize_preserves_already_prefixed_keys(): void {
-		$out = \Elementor_MCP_Element_Factory::normalize_container_settings( [
+		$out = \EMCP_Tools_Element_Factory::normalize_container_settings( [
 			'flex_justify_content' => 'space-between',
 			'flex_align_items'     => 'center',
 		] );
@@ -59,7 +59,7 @@ class ContainerKeyAliasRegressionTest extends Ability_Test_Case {
 
 	/** @test */
 	public function test_normalize_prefers_prefixed_when_both_are_set(): void {
-		$out = \Elementor_MCP_Element_Factory::normalize_container_settings( [
+		$out = \EMCP_Tools_Element_Factory::normalize_container_settings( [
 			'justify_content'      => 'flex-start',
 			'flex_justify_content' => 'space-between',
 		] );
@@ -70,7 +70,7 @@ class ContainerKeyAliasRegressionTest extends Ability_Test_Case {
 
 	/** @test */
 	public function test_normalize_passes_unrelated_keys_through(): void {
-		$out = \Elementor_MCP_Element_Factory::normalize_container_settings( [
+		$out = \EMCP_Tools_Element_Factory::normalize_container_settings( [
 			'flex_direction' => 'row',
 			'flex_wrap'      => 'nowrap',
 			'gap'            => [ 'size' => 20, 'unit' => 'px' ],
@@ -131,7 +131,7 @@ class ContainerKeyAliasRegressionTest extends Ability_Test_Case {
 
 	/** @test */
 	public function test_update_element_settings_remaps_for_containers(): void {
-		$data = new \Elementor_MCP_Data();
+		$data = new \EMCP_Tools_Data();
 
 		$tree = [
 			[
@@ -158,7 +158,7 @@ class ContainerKeyAliasRegressionTest extends Ability_Test_Case {
 	public function test_update_element_settings_does_not_remap_for_widgets(): void {
 		// Widgets like the Pro nav-menu legitimately use `align_items` as a
 		// widget-level setting — the container key alias must not affect them.
-		$data = new \Elementor_MCP_Data();
+		$data = new \EMCP_Tools_Data();
 
 		$tree = [
 			[

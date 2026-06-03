@@ -14,25 +14,25 @@
  *
  * @group input
  * @group page
- * @package Elementor_MCP\Tests\Input
+ * @package EMCP_Tools\Tests\Input
  */
 
-namespace Elementor_MCP\Tests\Input;
+namespace EMCP_Tools\Tests\Input;
 
 require_once dirname( __DIR__ ) . '/class-ability-test-case.php';
 
-use Elementor_MCP\Tests\Ability_Test_Case;
+use EMCP_Tools\Tests\Ability_Test_Case;
 
 class PageInputTest extends Ability_Test_Case {
 
-	/** @var \Elementor_MCP_Page_Abilities */
+	/** @var \EMCP_Tools_Page_Abilities */
 	private $ability;
 
 	protected function setUp(): void {
 		parent::setUp();
 
 		// Stub data so Document::get() returns WP_Error (simulates invalid post_id).
-		$data = $this->createStub( \Elementor_MCP_Data::class );
+		$data = $this->createStub( \EMCP_Tools_Data::class );
 		$data->method( 'get_document' )
 		     ->willReturn( new \WP_Error( 'document_not_found', 'No document.' ) );
 		$data->method( 'save_page_data' )->willReturn( true );
@@ -41,7 +41,7 @@ class PageInputTest extends Ability_Test_Case {
 		     ->willReturn( new \WP_Error( 'no_data', 'No data.' ) );
 
 		$factory       = $this->make_factory();
-		$this->ability = new \Elementor_MCP_Page_Abilities( $data, $factory );
+		$this->ability = new \EMCP_Tools_Page_Abilities( $data, $factory );
 
 		// Grant full caps so permission checks don't interfere with input tests.
 		$this->allow_all_caps();

@@ -1,6 +1,6 @@
 <?php
 /**
- * T5 Regression tests — data integrity in Elementor_MCP_Data.
+ * T5 Regression tests — data integrity in EMCP_Tools_Data.
  *
  * Covers ADVERSARIAL-2 / B-02 from the Step 2 security audit:
  *
@@ -15,14 +15,14 @@
  *
  * @group regression
  * @group data-integrity
- * @package Elementor_MCP\Tests\Regression
+ * @package EMCP_Tools\Tests\Regression
  */
 
-namespace Elementor_MCP\Tests\Regression;
+namespace EMCP_Tools\Tests\Regression;
 
 require_once dirname( __DIR__ ) . '/class-ability-test-case.php';
 
-use Elementor_MCP\Tests\Ability_Test_Case;
+use EMCP_Tools\Tests\Ability_Test_Case;
 
 class DataIntegrityRegressionTest extends Ability_Test_Case {
 
@@ -31,10 +31,10 @@ class DataIntegrityRegressionTest extends Ability_Test_Case {
 	// -------------------------------------------------------------------------
 
 	/**
-	 * Build a concrete Elementor_MCP_Data instance whose get_document() returns
+	 * Build a concrete EMCP_Tools_Data instance whose get_document() returns
 	 * a document stub that returns the given value from save().
 	 */
-	private function make_data_with_document_save_returning( $save_return_value ): \Elementor_MCP_Data {
+	private function make_data_with_document_save_returning( $save_return_value ): \EMCP_Tools_Data {
 		$document_stub = new class( $save_return_value ) {
 			private $ret;
 
@@ -47,7 +47,7 @@ class DataIntegrityRegressionTest extends Ability_Test_Case {
 			}
 		};
 
-		return new class( $document_stub ) extends \Elementor_MCP_Data {
+		return new class( $document_stub ) extends \EMCP_Tools_Data {
 			private $doc;
 
 			public function __construct( $doc ) {
@@ -139,7 +139,7 @@ class DataIntegrityRegressionTest extends Ability_Test_Case {
 			}
 		};
 
-		$data = new class( $document_stub ) extends \Elementor_MCP_Data {
+		$data = new class( $document_stub ) extends \EMCP_Tools_Data {
 			private $doc;
 
 			public function __construct( $doc ) {

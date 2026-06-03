@@ -29,16 +29,16 @@
  *   F-018 BEFORE fix → WP_Query args lack no_found_rows.
  *   F-018 AFTER fix  → no_found_rows: true present in both queries.
  *
- * @package Elementor_MCP\Tests\Security
+ * @package EMCP_Tools\Tests\Security
  * @since   1.0.0
  */
 
-namespace Elementor_MCP\Tests\Security;
+namespace EMCP_Tools\Tests\Security;
 
 use PHPUnit\Framework\TestCase;
 
 /**
- * @covers \Elementor_MCP_Query_Abilities
+ * @covers \EMCP_Tools_Query_Abilities
  */
 class F017F018QueryAbilitiesTest extends TestCase {
 

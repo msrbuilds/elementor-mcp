@@ -5,10 +5,10 @@
  *
  * The skills/ folder ships only in the premium build (.emcp-pro marker
  * file present); the free zip excludes it. Even on a premium install the
- * download is also gated by emcp_pro_fs()->can_use_premium_code() so a
+ * download is also gated by emcp_tools_fs()->can_use_premium_code() so a
  * leaked premium zip on a non-licensed site can't serve the skill.
  *
- * @package Elementor_MCP
+ * @package EMCP_Tools
  * @since   1.7.1
  */
 
@@ -16,7 +16,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class Elementor_MCP_Pro_Skills {
+class EMCP_Tools_Pro_Skills {
 
 	/**
 	 * Relative path (inside the plugin directory) to the skill source folder.
@@ -32,7 +32,7 @@ class Elementor_MCP_Pro_Skills {
 	/**
 	 * Action name used by admin-post.php — single source of truth.
 	 */
-	const ACTION = 'elementor_mcp_download_skills';
+	const ACTION = 'emcp_tools_download_skills';
 
 	public function init(): void {
 		// admin-post.php handles both logged-in and logged-out cases. Skills
@@ -46,10 +46,10 @@ class Elementor_MCP_Pro_Skills {
 	 *   2. The skills folder is actually present (premium build).
 	 */
 	public static function user_has_access(): bool {
-		if ( ! function_exists( 'emcp_pro_fs' ) ) {
+		if ( ! function_exists( 'emcp_tools_fs' ) ) {
 			return false;
 		}
-		if ( ! emcp_pro_fs()->can_use_premium_code() ) {
+		if ( ! emcp_tools_fs()->can_use_premium_code() ) {
 			return false;
 		}
 		return self::skills_dir_exists();
@@ -69,7 +69,7 @@ class Elementor_MCP_Pro_Skills {
 	 * Returns the absolute path to the skill source folder.
 	 */
 	private static function source_path(): string {
-		return ELEMENTOR_MCP_DIR . self::SOURCE_RELATIVE;
+		return EMCP_TOOLS_DIR . self::SOURCE_RELATIVE;
 	}
 
 	/**
@@ -94,28 +94,28 @@ class Elementor_MCP_Pro_Skills {
 			! isset( $_GET['_emcp_nonce'] )
 			|| ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_emcp_nonce'] ) ), self::ACTION )
 		) {
-			wp_die( esc_html__( 'Invalid request.', 'elementor-mcp' ), '', array( 'response' => 403 ) );
+			wp_die( esc_html__( 'Invalid request.', 'emcp-tools' ), '', array( 'response' => 403 ) );
 		}
 		if ( ! current_user_can( 'edit_posts' ) ) {
-			wp_die( esc_html__( 'You do not have permission to download this.', 'elementor-mcp' ), '', array( 'response' => 403 ) );
+			wp_die( esc_html__( 'You do not have permission to download this.', 'emcp-tools' ), '', array( 'response' => 403 ) );
 		}
 		if ( ! self::user_has_access() ) {
-			wp_die( esc_html__( 'A valid EMCP Tools Pro license is required to download the skills bundle.', 'elementor-mcp' ), '', array( 'response' => 403 ) );
+			wp_die( esc_html__( 'A valid EMCP Tools Pro license is required to download the skills bundle.', 'emcp-tools' ), '', array( 'response' => 403 ) );
 		}
 		if ( ! class_exists( 'ZipArchive' ) ) {
-			wp_die( esc_html__( 'The ZipArchive PHP extension is required to build the skill bundle. Please contact your host to enable it.', 'elementor-mcp' ), '', array( 'response' => 500 ) );
+			wp_die( esc_html__( 'The ZipArchive PHP extension is required to build the skill bundle. Please contact your host to enable it.', 'emcp-tools' ), '', array( 'response' => 500 ) );
 		}
 
 		$source = self::source_path();
 		$tmp    = wp_tempnam( self::DOWNLOAD_FILENAME );
 		if ( ! $tmp ) {
-			wp_die( esc_html__( 'Could not create a temporary file for the skill bundle.', 'elementor-mcp' ), '', array( 'response' => 500 ) );
+			wp_die( esc_html__( 'Could not create a temporary file for the skill bundle.', 'emcp-tools' ), '', array( 'response' => 500 ) );
 		}
 
 		$zip = new ZipArchive();
 		if ( true !== $zip->open( $tmp, ZipArchive::OVERWRITE | ZipArchive::CREATE ) ) {
 			@unlink( $tmp ); // phpcs:ignore WordPress.PHP.NoSilencedErrors
-			wp_die( esc_html__( 'Could not open the temporary zip archive for writing.', 'elementor-mcp' ), '', array( 'response' => 500 ) );
+			wp_die( esc_html__( 'Could not open the temporary zip archive for writing.', 'emcp-tools' ), '', array( 'response' => 500 ) );
 		}
 
 		// Top-level folder name inside the zip is `emcp-skills/` so users get

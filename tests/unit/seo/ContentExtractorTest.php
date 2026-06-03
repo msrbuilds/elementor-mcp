@@ -1,18 +1,18 @@
 <?php
 /**
- * Unit tests for Elementor_MCP_Content_Extractor.
+ * Unit tests for EMCP_Tools_Content_Extractor.
  *
  * @group seo
  * @group a11y
- * @package Elementor_MCP\Tests\Seo
+ * @package EMCP_Tools\Tests\Seo
  */
 
-namespace Elementor_MCP\Tests\Seo;
+namespace EMCP_Tools\Tests\Seo;
 
 require_once dirname( __DIR__ ) . '/class-ability-test-case.php';
 
-use Elementor_MCP\Tests\Ability_Test_Case;
-use Elementor_MCP_Content_Extractor;
+use EMCP_Tools\Tests\Ability_Test_Case;
+use EMCP_Tools_Content_Extractor;
 
 class ContentExtractorTest extends Ability_Test_Case {
 
@@ -105,7 +105,7 @@ class ContentExtractorTest extends Ability_Test_Case {
 	}
 
 	public function test_headings_levels_and_text(): void {
-		$r = Elementor_MCP_Content_Extractor::extract( $this->fixture_tree(), 'example.com' );
+		$r = EMCP_Tools_Content_Extractor::extract( $this->fixture_tree(), 'example.com' );
 
 		$by_text = array();
 		foreach ( $r['headings'] as $h ) {
@@ -120,13 +120,13 @@ class ContentExtractorTest extends Ability_Test_Case {
 	}
 
 	public function test_eyebrow_div_becomes_text_block(): void {
-		$r     = Elementor_MCP_Content_Extractor::extract( $this->fixture_tree() );
+		$r     = EMCP_Tools_Content_Extractor::extract( $this->fixture_tree() );
 		$texts = array_column( $r['text_blocks'], 'text' );
 		$this->assertContains( 'EYEBROW', $texts );
 	}
 
 	public function test_images_and_alt_resolution(): void {
-		$r = Elementor_MCP_Content_Extractor::extract( $this->fixture_tree() );
+		$r = EMCP_Tools_Content_Extractor::extract( $this->fixture_tree() );
 
 		$by_id = array();
 		foreach ( $r['images'] as $img ) {
@@ -144,7 +144,7 @@ class ContentExtractorTest extends Ability_Test_Case {
 	}
 
 	public function test_links_internal_vs_external(): void {
-		$r = Elementor_MCP_Content_Extractor::extract( $this->fixture_tree(), 'example.com' );
+		$r = EMCP_Tools_Content_Extractor::extract( $this->fixture_tree(), 'example.com' );
 
 		$by_url = array();
 		foreach ( $r['links'] as $l ) {
@@ -157,7 +157,7 @@ class ContentExtractorTest extends Ability_Test_Case {
 	}
 
 	public function test_form_fields(): void {
-		$r = Elementor_MCP_Content_Extractor::extract( $this->fixture_tree() );
+		$r = EMCP_Tools_Content_Extractor::extract( $this->fixture_tree() );
 		$this->assertCount( 2, $r['form_fields'] );
 		$labels = array_column( $r['form_fields'], 'label' );
 		$this->assertContains( 'Email', $labels );
@@ -165,12 +165,12 @@ class ContentExtractorTest extends Ability_Test_Case {
 	}
 
 	public function test_word_count_positive(): void {
-		$r = Elementor_MCP_Content_Extractor::extract( $this->fixture_tree() );
+		$r = EMCP_Tools_Content_Extractor::extract( $this->fixture_tree() );
 		$this->assertGreaterThan( 5, $r['word_count'] );
 	}
 
 	public function test_text_style_context_resolves_ancestor_background(): void {
-		$r = Elementor_MCP_Content_Extractor::extract( $this->fixture_tree() );
+		$r = EMCP_Tools_Content_Extractor::extract( $this->fixture_tree() );
 
 		$ctx = null;
 		foreach ( $r['text_style_contexts'] as $c ) {
@@ -186,7 +186,7 @@ class ContentExtractorTest extends Ability_Test_Case {
 	}
 
 	public function test_empty_tree_is_safe(): void {
-		$r = Elementor_MCP_Content_Extractor::extract( array() );
+		$r = EMCP_Tools_Content_Extractor::extract( array() );
 		$this->assertSame( 0, $r['word_count'] );
 		$this->assertSame( array(), $r['headings'] );
 		$this->assertSame( array(), $r['images'] );

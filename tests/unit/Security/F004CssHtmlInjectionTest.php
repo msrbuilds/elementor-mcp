@@ -31,16 +31,16 @@
  *   $css = preg_replace('/[<>]/', '', $css);
  * Valid CSS never contains angle brackets, so stripping them is safe.
  *
- * @package Elementor_MCP\Tests\Security
+ * @package EMCP_Tools\Tests\Security
  * @since   1.0.0
  */
 
-namespace Elementor_MCP\Tests\Security;
+namespace EMCP_Tools\Tests\Security;
 
 use PHPUnit\Framework\TestCase;
 
 /**
- * @covers \Elementor_MCP_Custom_Code_Abilities::execute_add_custom_css
+ * @covers \EMCP_Tools_Custom_Code_Abilities::execute_add_custom_css
  */
 class F004CssHtmlInjectionTest extends TestCase {
 

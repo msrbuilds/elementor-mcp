@@ -41,17 +41,17 @@
  * RFC1918 (10/8, 172.16/12, 192.168/16), loopback (127/8), link-local
  * (169.254/16), and the file:// scheme.
  *
- * @package Elementor_MCP\Tests\Security
+ * @package EMCP_Tools\Tests\Security
  * @since   1.0.0
  */
 
-namespace Elementor_MCP\Tests\Security;
+namespace EMCP_Tools\Tests\Security;
 
 use PHPUnit\Framework\TestCase;
 
 /**
- * @covers \Elementor_MCP_Stock_Image_Abilities::execute_sideload_image
- * @covers \Elementor_MCP_SVG_Icon_Abilities::upload_from_url
+ * @covers \EMCP_Tools_Stock_Image_Abilities::execute_sideload_image
+ * @covers \EMCP_Tools_SVG_Icon_Abilities::upload_from_url
  */
 class F001SsrfUrlTest extends TestCase {
 
@@ -217,8 +217,8 @@ class F001SsrfUrlTest extends TestCase {
 		$GLOBALS['_wp_http_calls'] = [];
 
 		// Instantiate only if available (requires bootstrap autoloader).
-		if ( ! class_exists( 'Elementor_MCP_Stock_Image_Abilities' ) ) {
-			$this->markTestSkipped( 'Elementor_MCP_Stock_Image_Abilities not loadable in this environment.' );
+		if ( ! class_exists( 'EMCP_Tools_Stock_Image_Abilities' ) ) {
+			$this->markTestSkipped( 'EMCP_Tools_Stock_Image_Abilities not loadable in this environment.' );
 		}
 
 		// We cannot fully instantiate the class without more Elementor stubs,

@@ -42,17 +42,17 @@
  *   str_starts_with($h, $n)  → 0 === strpos($h, $n)
  *   str_ends_with($h, $n)    → $n === substr($h, -strlen($n))
  *
- * @package Elementor_MCP\Tests\Security
+ * @package EMCP_Tools\Tests\Security
  * @since   1.0.0
  */
 
-namespace Elementor_MCP\Tests\Security;
+namespace EMCP_Tools\Tests\Security;
 
 use PHPUnit\Framework\TestCase;
 
 /**
  * @covers elementor-mcp.php
- * @covers \Elementor_MCP_Settings_Validator
+ * @covers \EMCP_Tools_Settings_Validator
  */
 class F006PhpVersionCompatTest extends TestCase {
 
