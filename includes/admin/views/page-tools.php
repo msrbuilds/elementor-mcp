@@ -18,6 +18,17 @@ $emcp_tools_disabled      = get_option( EMCP_Tools_Admin::OPTION_DISABLED_TOOLS,
 $emcp_tools_enabled_count = $this->get_enabled_tool_count();
 $emcp_tools_total_count   = $this->get_total_tool_count();
 $emcp_tools_low_mode      = '1' === (string) get_option( EMCP_Tools_Admin::OPTION_LOW_TOOL_MODE, '0' );
+
+// Human-readable labels for badge slugs. "pro" means the EMCP Tools Pro
+// license; "elementor-pro" means the tool needs Elementor Pro (a different
+// product) — kept visually distinct so the two aren't confused.
+$emcp_tools_badge_labels = array(
+	'pro'           => __( 'Pro', 'emcp-tools' ),
+	'elementor-pro' => __( 'Elementor Pro', 'emcp-tools' ),
+	'read-only'     => __( 'read-only', 'emcp-tools' ),
+	'free'          => __( 'Free', 'emcp-tools' ),
+	'destructive'   => __( 'destructive', 'emcp-tools' ),
+);
 ?>
 
 <form method="post" action="options.php" id="elementor-mcp-tools-form">
@@ -67,33 +78,45 @@ $emcp_tools_low_mode      = '1' === (string) get_option( EMCP_Tools_Admin::OPTIO
 
 	<?php foreach ( $emcp_tools_all_tools as $emcp_tools_category_id => $emcp_tools_category ) : ?>
 		<div class="elementor-mcp-category" data-category="<?php echo esc_attr( $emcp_tools_category_id ); ?>">
-			<h2 class="elementor-mcp-category-header">
-				<?php echo esc_html( $emcp_tools_category['label'] ); ?>
-				<span class="elementor-mcp-category-count">
-					<?php
-					$emcp_tools_cat_total   = count( $emcp_tools_category['tools'] );
-					$emcp_tools_cat_enabled = 0;
-					foreach ( $emcp_tools_category['tools'] as $emcp_tools_slug => $emcp_tools_tool ) {
-						if ( ! in_array( $emcp_tools_slug, $emcp_tools_disabled, true ) ) {
-							$emcp_tools_cat_enabled++;
-						}
-					}
-					printf(
-						/* translators: %1$d: enabled, %2$d: total */
-						esc_html__( '%1$d / %2$d', 'emcp-tools' ),
-						(int) $emcp_tools_cat_enabled,
-						(int) $emcp_tools_cat_total
-					);
-					?>
+			<?php
+			$emcp_tools_cat_total   = count( $emcp_tools_category['tools'] );
+			$emcp_tools_cat_enabled = 0;
+			foreach ( $emcp_tools_category['tools'] as $emcp_tools_slug => $emcp_tools_tool ) {
+				if ( ! in_array( $emcp_tools_slug, $emcp_tools_disabled, true ) ) {
+					$emcp_tools_cat_enabled++;
+				}
+			}
+			$emcp_tools_grid_id = 'emcp-cat-' . $emcp_tools_category_id;
+			?>
+			<div class="elementor-mcp-category-header">
+				<button
+					type="button"
+					class="elementor-mcp-category-toggle"
+					aria-expanded="true"
+					aria-controls="<?php echo esc_attr( $emcp_tools_grid_id ); ?>"
+				>
+					<span class="elementor-mcp-category-chevron" aria-hidden="true">
+						<svg viewBox="0 0 20 20" width="14" height="14"><path d="M6 8l4 4 4-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+					</span>
+					<span class="elementor-mcp-category-title"><?php echo esc_html( $emcp_tools_category['label'] ); ?></span>
+					<span class="elementor-mcp-category-count">
+						<?php
+						printf(
+							/* translators: %1$d: enabled, %2$d: total */
+							esc_html__( '%1$d / %2$d', 'emcp-tools' ),
+							(int) $emcp_tools_cat_enabled,
+							(int) $emcp_tools_cat_total
+						);
+						?>
+					</span>
+				</button>
+				<span class="elementor-mcp-cat-toggle-group" role="group" aria-label="<?php esc_attr_e( 'Toggle all tools in this section', 'emcp-tools' ); ?>">
+					<button type="button" class="elementor-mcp-cat-btn elementor-mcp-cat-enable-all"><?php esc_html_e( 'All', 'emcp-tools' ); ?></button>
+					<button type="button" class="elementor-mcp-cat-btn elementor-mcp-cat-disable-all"><?php esc_html_e( 'None', 'emcp-tools' ); ?></button>
 				</span>
-				<span class="elementor-mcp-category-actions">
-					<button type="button" class="button-link elementor-mcp-cat-enable-all"><?php esc_html_e( 'All', 'emcp-tools' ); ?></button>
-					<span class="elementor-mcp-separator">&middot;</span>
-					<button type="button" class="button-link elementor-mcp-cat-disable-all"><?php esc_html_e( 'None', 'emcp-tools' ); ?></button>
-				</span>
-			</h2>
+			</div>
 
-			<div class="elementor-mcp-tools-grid">
+			<div class="elementor-mcp-tools-grid" id="<?php echo esc_attr( $emcp_tools_grid_id ); ?>">
 				<?php foreach ( $emcp_tools_category['tools'] as $emcp_tools_slug => $emcp_tools_tool ) : ?>
 					<?php $emcp_tools_is_enabled = ! in_array( $emcp_tools_slug, $emcp_tools_disabled, true ); ?>
 					<label class="elementor-mcp-tool-card <?php echo esc_attr( $emcp_tools_is_enabled ? 'is-enabled' : 'is-disabled' ); ?>">
@@ -111,7 +134,7 @@ $emcp_tools_low_mode      = '1' === (string) get_option( EMCP_Tools_Admin::OPTIO
 								<?php echo esc_html( $emcp_tools_tool['label'] ); ?>
 								<?php foreach ( $emcp_tools_tool['badges'] as $emcp_tools_badge ) : ?>
 									<span class="elementor-mcp-badge elementor-mcp-badge--<?php echo esc_attr( $emcp_tools_badge ); ?>">
-										<?php echo esc_html( $emcp_tools_badge ); ?>
+										<?php echo esc_html( $emcp_tools_badge_labels[ $emcp_tools_badge ] ?? $emcp_tools_badge ); ?>
 									</span>
 								<?php endforeach; ?>
 							</span>

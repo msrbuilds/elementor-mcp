@@ -2,6 +2,15 @@
 
 All notable changes to MCP Tools for Elementor are documented in this file.
 
+## [2.0.2]
+
+- Fixed: **Tool toggles & Low-tools mode wouldn't save.** After the 2.0 rename, the legacy-settings migration ran on *every* page load and copied the old `elementor_mcp_*` options (which linger in the database) over your current settings — so any change you saved on the **Tools** screen, including Low-tools mode, was silently reset on the next load. The migration now only seeds a new setting from the old one when it has **never** been set, so it can never overwrite your live choices.
+- Fixed: **"Enable All" / "Disable All" also flipped Low-tools mode.** The bulk buttons selected every checkbox in the form, including the separate Low-tools-mode toggle — so "Enable All" silently turned Low-tools mode on, which then masked your individual toggles. They're now scoped to the tool checkboxes only.
+- Fixed: **First-ever save on the Tools screen could invert.** The disabled-tools sanitizer is now idempotent (it reads the submitted checkboxes directly), so WordPress re-running it while creating the option for the first time can no longer flip the result.
+- New: **`list-media` tool** ([#25](https://github.com/msrbuilds/elementor-mcp/issues/25)). Lets an AI agent discover and search images already in the **WordPress Media Library** — the site's own uploads — filling the gap where Openverse can only find generic stock. Backed by a direct `WP_Query` (no HTTP round-trip); the optional `search` matches the title, **alt text**, caption, and description, with `mime_type` / pagination / sort filters. Returns attachment IDs and URLs ready to hand to `add-image` / `add-widget`. Read-only (`edit_posts`); not part of the Low-tools essentials set.
+- Improved: **Tools screen UI.** Section headers are now **collapsible** (click to show/hide a category; the state is remembered per section), and each category's **All / None** controls are now a clear segmented button instead of plain text links.
+- Improved: **"Elementor Pro" vs "Pro" badges.** Tools that need **Elementor Pro** (widget shortcuts, theme builder, popups, dynamic tags, Pro custom code) now carry a distinct **"Elementor Pro"** badge, so they're no longer confused with the purple **"Pro"** badge reserved for **EMCP Tools Pro** features (SEO/Accessibility, Widget Builder). The "Pro Widget Shortcuts" section is renamed **"Elementor Pro Widgets"**.
+
 ## [2.0.1]
 
 - Fixed: **Pro license activation.** The premium build now correctly reports itself as the premium version (it reads the bundled `.emcp-pro` marker), so Freemius shows the **license-activation** flow instead of the free connect/opt-in screen. Previously `is_premium` was hardcoded off, so the Pro zip behaved like the free version — if a customer skipped opt-in (or didn't click the confirmation email), no "Activate License" link or Account page appeared. Also corrected `has_paid_plans`/`has_premium_version` to reflect that the plugin has a paid tier.

@@ -225,7 +225,7 @@ class EMCP_Tools_Admin {
 		if ( $applied < 1 ) {
 			foreach ( $this->get_all_tools() as $category ) {
 				foreach ( $category['tools'] as $slug => $tool ) {
-					if ( in_array( 'pro', $tool['badges'], true ) ) {
+					if ( in_array( 'pro', $tool['badges'], true ) || in_array( 'elementor-pro', $tool['badges'], true ) ) {
 						$add[] = $slug;
 					}
 				}
@@ -358,19 +358,38 @@ class EMCP_Tools_Admin {
 	 * @return string[] Sanitized array of disabled tool slugs.
 	 */
 	public function sanitize_disabled_tools( $input ): array {
-		$enabled_tools = array();
-
-		if ( is_array( $input ) ) {
-			$enabled_tools = array_map( 'sanitize_text_field', $input );
-		}
-
-		// Get all known tool slugs.
 		$all_tools = $this->get_all_tool_slugs();
 
-		// Disabled = all tools minus the ones that were checked.
-		$disabled = array_values( array_diff( $all_tools, $enabled_tools ) );
+		// Only when the Tools settings form is being submitted do we INVERT the
+		// posted "enabled" checkboxes into a disabled list. We read the enabled
+		// set straight from $_POST (not from $input) so this callback is
+		// IDEMPOTENT: WordPress re-runs sanitize_option a second time via
+		// add_option() the first time the option is created, and inverting
+		// $input twice would zero the result (all -> none). It also keeps
+		// programmatic update_option() calls (e.g. the default-disabled seeder)
+		// from being inverted at all.
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- options.php verifies the settings nonce before sanitization runs.
+		$is_settings_form = isset( $_POST['option_page'] )
+			&& self::SETTINGS_GROUP === sanitize_text_field( wp_unslash( $_POST['option_page'] ) );
 
-		return $disabled;
+		if ( $is_settings_form ) {
+			$enabled = array();
+			// phpcs:ignore WordPress.Security.NonceVerification.Missing
+			if ( isset( $_POST[ self::OPTION_DISABLED_TOOLS ] ) && is_array( $_POST[ self::OPTION_DISABLED_TOOLS ] ) ) {
+				// phpcs:ignore WordPress.Security.NonceVerification.Missing
+				$enabled = array_map( 'sanitize_text_field', wp_unslash( $_POST[ self::OPTION_DISABLED_TOOLS ] ) );
+			}
+			// Disabled = all tools minus the ones that were checked (enabled).
+			return array_values( array_diff( $all_tools, $enabled ) );
+		}
+
+		// Any other context: $input is already the final disabled list (e.g. the
+		// default-disabled seeder). Clean against the known slugs and return —
+		// this is idempotent, so a second sanitize pass leaves it unchanged.
+		if ( ! is_array( $input ) ) {
+			return array();
+		}
+		return array_values( array_intersect( $all_tools, array_map( 'sanitize_text_field', $input ) ) );
 	}
 
 	/**
@@ -569,7 +588,7 @@ class EMCP_Tools_Admin {
 		$pro_count = 0;
 		foreach ( $this->get_all_tools() as $category ) {
 			foreach ( $category['tools'] as $tool ) {
-				if ( in_array( 'pro', $tool['badges'], true ) ) {
+				if ( in_array( 'pro', $tool['badges'], true ) || in_array( 'elementor-pro', $tool['badges'], true ) ) {
 					$pro_count++;
 				}
 			}
@@ -1025,142 +1044,142 @@ class EMCP_Tools_Admin {
 				),
 			),
 			'widget_pro'       => array(
-				'label' => __( 'Pro Widget Shortcuts', 'emcp-tools' ),
+				'label' => __( 'Elementor Pro Widgets', 'emcp-tools' ),
 				'tools' => array(
 					'elementor-mcp/add-form'              => array(
 						'label'       => __( 'Add Form', 'emcp-tools' ),
 						'description' => __( 'Adds a form widget with configurable fields.', 'emcp-tools' ),
-						'badges'      => array( 'pro' ),
+						'badges'      => array( 'elementor-pro' ),
 					),
 					'elementor-mcp/add-posts-grid'        => array(
 						'label'       => __( 'Add Posts Grid', 'emcp-tools' ),
 						'description' => __( 'Adds a posts grid/listing widget.', 'emcp-tools' ),
-						'badges'      => array( 'pro' ),
+						'badges'      => array( 'elementor-pro' ),
 					),
 					'elementor-mcp/add-countdown'         => array(
 						'label'       => __( 'Add Countdown', 'emcp-tools' ),
 						'description' => __( 'Adds a countdown timer widget.', 'emcp-tools' ),
-						'badges'      => array( 'pro' ),
+						'badges'      => array( 'elementor-pro' ),
 					),
 					'elementor-mcp/add-price-table'       => array(
 						'label'       => __( 'Add Price Table', 'emcp-tools' ),
 						'description' => __( 'Adds a pricing table widget.', 'emcp-tools' ),
-						'badges'      => array( 'pro' ),
+						'badges'      => array( 'elementor-pro' ),
 					),
 					'elementor-mcp/add-flip-box'          => array(
 						'label'       => __( 'Add Flip Box', 'emcp-tools' ),
 						'description' => __( 'Adds a flip box widget with front/back sides.', 'emcp-tools' ),
-						'badges'      => array( 'pro' ),
+						'badges'      => array( 'elementor-pro' ),
 					),
 					'elementor-mcp/add-animated-headline'    => array(
 						'label'       => __( 'Add Animated Headline', 'emcp-tools' ),
 						'description' => __( 'Adds an animated headline widget.', 'emcp-tools' ),
-						'badges'      => array( 'pro' ),
+						'badges'      => array( 'elementor-pro' ),
 					),
 					'elementor-mcp/add-call-to-action'       => array(
 						'label'       => __( 'Add Call to Action', 'emcp-tools' ),
 						'description' => __( 'Adds a call-to-action widget with title, description, and button.', 'emcp-tools' ),
-						'badges'      => array( 'pro' ),
+						'badges'      => array( 'elementor-pro' ),
 					),
 					'elementor-mcp/add-slides'               => array(
 						'label'       => __( 'Add Slides', 'emcp-tools' ),
 						'description' => __( 'Adds a full-width slides/slider widget.', 'emcp-tools' ),
-						'badges'      => array( 'pro' ),
+						'badges'      => array( 'elementor-pro' ),
 					),
 					'elementor-mcp/add-testimonial-carousel'  => array(
 						'label'       => __( 'Add Testimonial Carousel', 'emcp-tools' ),
 						'description' => __( 'Adds a testimonial carousel/slider widget.', 'emcp-tools' ),
-						'badges'      => array( 'pro' ),
+						'badges'      => array( 'elementor-pro' ),
 					),
 					'elementor-mcp/add-price-list'           => array(
 						'label'       => __( 'Add Price List', 'emcp-tools' ),
 						'description' => __( 'Adds a price list widget for menus and services.', 'emcp-tools' ),
-						'badges'      => array( 'pro' ),
+						'badges'      => array( 'elementor-pro' ),
 					),
 					'elementor-mcp/add-gallery'              => array(
 						'label'       => __( 'Add Gallery', 'emcp-tools' ),
 						'description' => __( 'Adds an advanced gallery widget with grid/masonry layout.', 'emcp-tools' ),
-						'badges'      => array( 'pro' ),
+						'badges'      => array( 'elementor-pro' ),
 					),
 					'elementor-mcp/add-share-buttons'        => array(
 						'label'       => __( 'Add Share Buttons', 'emcp-tools' ),
 						'description' => __( 'Adds social share buttons widget.', 'emcp-tools' ),
-						'badges'      => array( 'pro' ),
+						'badges'      => array( 'elementor-pro' ),
 					),
 					'elementor-mcp/add-table-of-contents'    => array(
 						'label'       => __( 'Add Table of Contents', 'emcp-tools' ),
 						'description' => __( 'Adds an auto-generated table of contents widget.', 'emcp-tools' ),
-						'badges'      => array( 'pro' ),
+						'badges'      => array( 'elementor-pro' ),
 					),
 					'elementor-mcp/add-blockquote'           => array(
 						'label'       => __( 'Add Blockquote', 'emcp-tools' ),
 						'description' => __( 'Adds a styled blockquote widget.', 'emcp-tools' ),
-						'badges'      => array( 'pro' ),
+						'badges'      => array( 'elementor-pro' ),
 					),
 					'elementor-mcp/add-lottie'               => array(
 						'label'       => __( 'Add Lottie Animation', 'emcp-tools' ),
 						'description' => __( 'Adds a Lottie animation widget.', 'emcp-tools' ),
-						'badges'      => array( 'pro' ),
+						'badges'      => array( 'elementor-pro' ),
 					),
 					'elementor-mcp/add-hotspot'              => array(
 						'label'       => __( 'Add Hotspot', 'emcp-tools' ),
 						'description' => __( 'Adds an image hotspot widget with interactive points.', 'emcp-tools' ),
-						'badges'      => array( 'pro' ),
+						'badges'      => array( 'elementor-pro' ),
 					),
 					'elementor-mcp/add-nav-menu'             => array(
 						'label'       => __( 'Add Nav Menu', 'emcp-tools' ),
 						'description' => __( 'Adds a navigation menu widget from registered WordPress menus.', 'emcp-tools' ),
-						'badges'      => array( 'pro' ),
+						'badges'      => array( 'elementor-pro' ),
 					),
 					'elementor-mcp/add-loop-grid'            => array(
 						'label'       => __( 'Add Loop Grid', 'emcp-tools' ),
 						'description' => __( 'Adds a loop grid widget for dynamic post/CPT listings.', 'emcp-tools' ),
-						'badges'      => array( 'pro' ),
+						'badges'      => array( 'elementor-pro' ),
 					),
 					'elementor-mcp/add-loop-carousel'        => array(
 						'label'       => __( 'Add Loop Carousel', 'emcp-tools' ),
 						'description' => __( 'Adds a loop carousel widget for dynamic post/CPT carousels.', 'emcp-tools' ),
-						'badges'      => array( 'pro' ),
+						'badges'      => array( 'elementor-pro' ),
 					),
 					'elementor-mcp/add-media-carousel'       => array(
 						'label'       => __( 'Add Media Carousel', 'emcp-tools' ),
 						'description' => __( 'Adds a media carousel widget for images and videos.', 'emcp-tools' ),
-						'badges'      => array( 'pro' ),
+						'badges'      => array( 'elementor-pro' ),
 					),
 					'elementor-mcp/add-nested-tabs'          => array(
 						'label'       => __( 'Add Nested Tabs', 'emcp-tools' ),
 						'description' => __( 'Adds nested tabs widget where each tab is a container.', 'emcp-tools' ),
-						'badges'      => array( 'pro' ),
+						'badges'      => array( 'elementor-pro' ),
 					),
 					'elementor-mcp/add-nested-accordion'     => array(
 						'label'       => __( 'Add Nested Accordion', 'emcp-tools' ),
 						'description' => __( 'Adds nested accordion widget where each item is a container.', 'emcp-tools' ),
-						'badges'      => array( 'pro' ),
+						'badges'      => array( 'elementor-pro' ),
 					),
 					'elementor-mcp/add-code-highlight'       => array(
 						'label'       => __( 'Add Code Highlight', 'emcp-tools' ),
 						'description' => __( 'Adds a syntax-highlighted code block widget.', 'emcp-tools' ),
-						'badges'      => array( 'pro' ),
+						'badges'      => array( 'elementor-pro' ),
 					),
 					'elementor-mcp/add-reviews'              => array(
 						'label'       => __( 'Add Reviews', 'emcp-tools' ),
 						'description' => __( 'Adds a reviews/testimonials carousel widget.', 'emcp-tools' ),
-						'badges'      => array( 'pro' ),
+						'badges'      => array( 'elementor-pro' ),
 					),
 					'elementor-mcp/add-off-canvas'           => array(
 						'label'       => __( 'Add Off-Canvas', 'emcp-tools' ),
 						'description' => __( 'Adds an off-canvas panel widget.', 'emcp-tools' ),
-						'badges'      => array( 'pro' ),
+						'badges'      => array( 'elementor-pro' ),
 					),
 					'elementor-mcp/add-progress-tracker'     => array(
 						'label'       => __( 'Add Progress Tracker', 'emcp-tools' ),
 						'description' => __( 'Adds a scroll progress tracker widget.', 'emcp-tools' ),
-						'badges'      => array( 'pro' ),
+						'badges'      => array( 'elementor-pro' ),
 					),
 					'elementor-mcp/add-search'               => array(
 						'label'       => __( 'Add Search', 'emcp-tools' ),
 						'description' => __( 'Adds a search widget with live results support.', 'emcp-tools' ),
-						'badges'      => array( 'pro' ),
+						'badges'      => array( 'elementor-pro' ),
 					),
 				),
 			),
@@ -1180,32 +1199,32 @@ class EMCP_Tools_Admin {
 					'elementor-mcp/create-theme-template' => array(
 						'label'       => __( 'Create Theme Template', 'emcp-tools' ),
 						'description' => __( 'Creates a theme builder template (header, footer, single, archive, etc).', 'emcp-tools' ),
-						'badges'      => array( 'pro' ),
+						'badges'      => array( 'elementor-pro' ),
 					),
 					'elementor-mcp/set-template-conditions' => array(
 						'label'       => __( 'Set Template Conditions', 'emcp-tools' ),
 						'description' => __( 'Sets display conditions on a theme builder template.', 'emcp-tools' ),
-						'badges'      => array( 'pro' ),
+						'badges'      => array( 'elementor-pro' ),
 					),
 					'elementor-mcp/list-dynamic-tags'    => array(
 						'label'       => __( 'List Dynamic Tags', 'emcp-tools' ),
 						'description' => __( 'Lists all available dynamic tags and their categories.', 'emcp-tools' ),
-						'badges'      => array( 'pro', 'read-only' ),
+						'badges'      => array( 'elementor-pro', 'read-only' ),
 					),
 					'elementor-mcp/set-dynamic-tag'      => array(
 						'label'       => __( 'Set Dynamic Tag', 'emcp-tools' ),
 						'description' => __( 'Sets a dynamic tag on a specific element setting.', 'emcp-tools' ),
-						'badges'      => array( 'pro' ),
+						'badges'      => array( 'elementor-pro' ),
 					),
 					'elementor-mcp/create-popup'         => array(
 						'label'       => __( 'Create Popup', 'emcp-tools' ),
 						'description' => __( 'Creates an Elementor popup template.', 'emcp-tools' ),
-						'badges'      => array( 'pro' ),
+						'badges'      => array( 'elementor-pro' ),
 					),
 					'elementor-mcp/set-popup-settings'   => array(
 						'label'       => __( 'Set Popup Settings', 'emcp-tools' ),
 						'description' => __( 'Sets triggers, conditions, and timing on a popup template.', 'emcp-tools' ),
-						'badges'      => array( 'pro' ),
+						'badges'      => array( 'elementor-pro' ),
 					),
 				),
 			),
@@ -1235,8 +1254,13 @@ class EMCP_Tools_Admin {
 				),
 			),
 			'stock_images'     => array(
-				'label' => __( 'Stock Images', 'emcp-tools' ),
+				'label' => __( 'Stock & Media Images', 'emcp-tools' ),
 				'tools' => array(
+					'elementor-mcp/list-media'       => array(
+						'label'       => __( 'List Media', 'emcp-tools' ),
+						'description' => __( 'Lists and searches images already in the WordPress Media Library (the site\'s own uploads).', 'emcp-tools' ),
+						'badges'      => array( 'read-only' ),
+					),
 					'elementor-mcp/search-images'    => array(
 						'label'       => __( 'Search Images', 'emcp-tools' ),
 						'description' => __( 'Searches Openverse for Creative Commons licensed images.', 'emcp-tools' ),
@@ -1270,7 +1294,7 @@ class EMCP_Tools_Admin {
 					'elementor-mcp/add-custom-css'     => array(
 						'label'       => __( 'Add Custom CSS', 'emcp-tools' ),
 						'description' => __( 'Adds custom CSS to a specific element or the entire page.', 'emcp-tools' ),
-						'badges'      => array( 'pro' ),
+						'badges'      => array( 'elementor-pro' ),
 					),
 					'elementor-mcp/add-custom-js'      => array(
 						'label'       => __( 'Add Custom JavaScript', 'emcp-tools' ),
@@ -1280,12 +1304,12 @@ class EMCP_Tools_Admin {
 					'elementor-mcp/add-code-snippet'   => array(
 						'label'       => __( 'Add Code Snippet', 'emcp-tools' ),
 						'description' => __( 'Creates a site-wide Custom Code snippet for head/body injection.', 'emcp-tools' ),
-						'badges'      => array( 'pro' ),
+						'badges'      => array( 'elementor-pro' ),
 					),
 					'elementor-mcp/list-code-snippets' => array(
 						'label'       => __( 'List Code Snippets', 'emcp-tools' ),
 						'description' => __( 'Lists all existing Custom Code snippets.', 'emcp-tools' ),
-						'badges'      => array( 'pro', 'read-only' ),
+						'badges'      => array( 'elementor-pro', 'read-only' ),
 					),
 				),
 			),

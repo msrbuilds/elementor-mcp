@@ -124,6 +124,11 @@ class EMCP_Tools_Ability_Registrar {
 		$stock_images->register();
 		$this->ability_names = array_merge( $this->ability_names, $stock_images->get_ability_names() );
 
+		// Media Library query ability (list/search the site's own uploads).
+		$media_library = new EMCP_Tools_Media_Library_Abilities( $this->data );
+		$media_library->register();
+		$this->ability_names = array_merge( $this->ability_names, $media_library->get_ability_names() );
+
 		// SVG icon abilities (upload SVG for use as Elementor icons).
 		$svg_icons = new EMCP_Tools_Svg_Icon_Abilities( $this->data, $this->factory );
 		$svg_icons->register();

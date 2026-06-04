@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-MCP Tools for Elementor Plugin — a WordPress plugin that extends the official WordPress MCP Adapter to expose Elementor data, widgets, structures, and methods as MCP (Model Context Protocol) tools. This enables AI tools (Claude, Cursor, etc.) to create and manipulate Elementor page designs programmatically via up to 118 MCP tools (scales with environment).
+MCP Tools for Elementor Plugin — a WordPress plugin that extends the official WordPress MCP Adapter to expose Elementor data, widgets, structures, and methods as MCP (Model Context Protocol) tools. This enables AI tools (Claude, Cursor, etc.) to create and manipulate Elementor page designs programmatically via up to 119 MCP tools (scales with environment).
 
 ## Companion projects (sibling folders, edit from here)
 
@@ -18,11 +18,11 @@ When editing premium-prompts behavior, the plugin code (`includes/admin/class-pr
 **Current status: v1.6.0 — All phases implemented (P0/P1/P2) plus Elementor 4.0 atomic elements, top-level admin menu, and Low-tools mode.** Foundation layer, query tools, page CRUD, layout, widget, template, global, composite tools, stock images, SVG icons, custom code tools, 13 atomic element tools for Elementor 4.0+, and a curated essentials filter for clients with strict tool caps (Antigravity, Gemini API).
 
 **Tool counts by configuration:**
-- Free Elementor only: **61**
-- Free Elementor + Elementor 4.0+ atomic: **74**
-- With Elementor Pro: **100**
-- With Elementor Pro + Elementor 4.0+: **113**
-- With Elementor Pro + WooCommerce + Elementor 4.0+: **118**
+- Free Elementor only: **62**
+- Free Elementor + Elementor 4.0+ atomic: **75**
+- With Elementor Pro: **101**
+- With Elementor Pro + Elementor 4.0+: **114**
+- With Elementor Pro + WooCommerce + Elementor 4.0+: **119**
 - Low-tools mode (any config): capped at **51** (46 without Elementor 4.0+)
 - Pro (EMCP license): **+7** SEO & Accessibility tools — registered but **disabled-by-default**, so they don't change the active surface until a user enables them on the Tools tab.
 
@@ -145,7 +145,7 @@ The MCP Adapter converts ability names like `elementor-mcp/list-widgets` to tool
 | Code snippets (create) | `manage_options` + `unfiltered_html` |
 | Code snippets (list) | `manage_options` |
 
-## All Implemented Tools (up to 118 — see counts above)
+## All Implemented Tools (up to 119 — see counts above)
 
 ### P0 — Query/Discovery (7 read-only)
 
@@ -248,6 +248,12 @@ The MCP Adapter converts ability names like `elementor-mcp/list-widgets` to tool
 | Ability Name | Purpose |
 |---|---|
 | `elementor-mcp/build-page` | Create complete page from declarative structure in one call |
+
+### Media Library (1 tool)
+
+| Ability Name | Purpose |
+|---|---|
+| `elementor-mcp/list-media` | List/search images already in the WordPress Media Library (the site's own uploads). Optional `search` matches title, alt text, caption, and description; `mime_type` / pagination / sort filters. Read-only WP_Query, no HTTP. ([#25](https://github.com/msrbuilds/elementor-mcp/issues/25)) |
 
 ### Stock Images (3 tools)
 

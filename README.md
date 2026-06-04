@@ -5,7 +5,7 @@
 [![PHP](https://img.shields.io/badge/PHP-%3E%3D8.0-8892BF.svg)](https://php.net)
 [![WordPress](https://img.shields.io/badge/WordPress-%3E%3D6.9-21759B.svg)](https://wordpress.org)
 [![Elementor](https://img.shields.io/badge/Elementor-%3E%3D3.20-92003B.svg)](https://elementor.com)
-[![MCP Tools](https://img.shields.io/badge/MCP_Tools-up%20to%20118-orange.svg)](#available-tools)
+[![MCP Tools](https://img.shields.io/badge/MCP_Tools-up%20to%20119-orange.svg)](#available-tools)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 [![GitHub Issues](https://img.shields.io/github/issues/msrbuilds/elementor-mcp)](https://github.com/msrbuilds/elementor-mcp/issues)
 [![GitHub Stars](https://img.shields.io/github/stars/msrbuilds/elementor-mcp?style=social)](https://github.com/msrbuilds/elementor-mcp)
@@ -22,12 +22,12 @@ A WordPress plugin that extends the [WordPress MCP Adapter](https://github.com/W
 
 ## Features
 
-- **Up to 118 MCP Tools** covering the full Elementor page-building workflow. Counts scale with your environment:
-  - 61 tools — free Elementor only
-  - 74 tools — free Elementor + Elementor 4.0 atomic elements
-  - 100 tools — with Elementor Pro
-  - 113 tools — with Elementor Pro + Elementor 4.0
-  - 118 tools — with Elementor Pro + WooCommerce + Elementor 4.0
+- **Up to 119 MCP Tools** covering the full Elementor page-building workflow. Counts scale with your environment:
+  - 62 tools — free Elementor only
+  - 75 tools — free Elementor + Elementor 4.0 atomic elements
+  - 101 tools — with Elementor Pro
+  - 114 tools — with Elementor Pro + Elementor 4.0
+  - 119 tools — with Elementor Pro + WooCommerce + Elementor 4.0
 - **Query & Discovery** — List widgets, inspect page structures, read element settings, browse templates, view global design tokens
 - **Page Management** — Create pages, update settings, clear content, import/export templates
 - **Layout Tools** — Add flexbox containers, move/remove/duplicate elements, update containers, find elements, batch update, reorder children, get container schema

@@ -21,9 +21,15 @@
 		var enableAll = form.querySelector( '.elementor-mcp-enable-all' );
 		var disableAll = form.querySelector( '.elementor-mcp-disable-all' );
 
+		// Scope bulk actions to the per-tool checkboxes only — NOT the separate
+		// low-tools-mode toggle, which also lives in this form. (A bare
+		// form.querySelectorAll('input[type="checkbox"]') would flip low-tools
+		// mode too, silently overriding every individual toggle.)
+		var toolCheckboxSelector = '.elementor-mcp-tool-card input[type="checkbox"]';
+
 		if ( enableAll ) {
 			enableAll.addEventListener( 'click', function () {
-				form.querySelectorAll( 'input[type="checkbox"]' ).forEach( function ( cb ) {
+				form.querySelectorAll( toolCheckboxSelector ).forEach( function ( cb ) {
 					cb.checked = true;
 				} );
 				updateCards( form );
@@ -32,14 +38,17 @@
 
 		if ( disableAll ) {
 			disableAll.addEventListener( 'click', function () {
-				form.querySelectorAll( 'input[type="checkbox"]' ).forEach( function ( cb ) {
+				form.querySelectorAll( toolCheckboxSelector ).forEach( function ( cb ) {
 					cb.checked = false;
 				} );
 				updateCards( form );
 			} );
 		}
 
-		// Per-category enable/disable.
+		// Per-category enable/disable + collapsible section headers.
+		// (cat scopes to .elementor-mcp-category, which never contains the
+		// low-tools-mode toggle, so the bulk selects below are safe.)
+		var COLLAPSE_KEY = 'emcpToolsCollapsed:';
 		form.querySelectorAll( '.elementor-mcp-category' ).forEach( function ( cat ) {
 			var catEnableAll = cat.querySelector( '.elementor-mcp-cat-enable-all' );
 			var catDisableAll = cat.querySelector( '.elementor-mcp-cat-disable-all' );
@@ -59,6 +68,27 @@
 						cb.checked = false;
 					} );
 					updateCards( form );
+				} );
+			}
+
+			// Collapse/expand the section, persisting state per category.
+			var toggle = cat.querySelector( '.elementor-mcp-category-toggle' );
+			if ( toggle ) {
+				var key = COLLAPSE_KEY + ( cat.getAttribute( 'data-category' ) || '' );
+				var stored = null;
+				try {
+					stored = window.localStorage.getItem( key );
+				} catch ( e ) {}
+				if ( '1' === stored ) {
+					cat.classList.add( 'is-collapsed' );
+					toggle.setAttribute( 'aria-expanded', 'false' );
+				}
+				toggle.addEventListener( 'click', function () {
+					var collapsed = cat.classList.toggle( 'is-collapsed' );
+					toggle.setAttribute( 'aria-expanded', collapsed ? 'false' : 'true' );
+					try {
+						window.localStorage.setItem( key, collapsed ? '1' : '0' );
+					} catch ( e ) {}
 				} );
 			}
 		} );

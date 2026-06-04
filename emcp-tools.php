@@ -3,7 +3,7 @@
  * Plugin Name:       EMCP Tools
  * Plugin URI:        https://github.com/msrbuilds/elementor-mcp
  * Description:       Extends the WordPress MCP Adapter to expose Elementor data, widgets, and page design tools as MCP tools for AI agents.
- * Version:           2.0.1
+ * Version:           2.0.2
  * Requires at least: 6.9
  * Tested up to:      6.9
  * Requires PHP:      8.0
@@ -66,6 +66,14 @@ function emcp_tools_migrate_legacy_data() {
 	);
 	$sentinel = '__emcp_tools_missing__';
 	foreach ( $option_map as $old => $new ) {
+		// CRITICAL: only seed the new key from the legacy one when the new key
+		// has NEVER been set. The legacy elementor_mcp_* options linger in the
+		// DB after the rename, and unconditionally copying them on every boot
+		// would clobber the user's current settings (tool toggles, Low-tools
+		// mode) right after they save — making every save appear to do nothing.
+		if ( $sentinel !== get_option( $new, $sentinel ) ) {
+			continue;
+		}
 		$value = get_option( $old, $sentinel );
 		if ( $sentinel !== $value ) {
 			update_option( $new, $value );
@@ -116,7 +124,7 @@ if ( emcp_tools_legacy_plugin_active() ) {
 }
 
 // Plugin constants.
-define( 'EMCP_TOOLS_VERSION', '2.0.1' );
+define( 'EMCP_TOOLS_VERSION', '2.0.2' );
 define( 'EMCP_TOOLS_DIR', plugin_dir_path( __FILE__ ) );
 define( 'EMCP_TOOLS_URL', plugin_dir_url( __FILE__ ) );
 define( 'EMCP_TOOLS_BASENAME', plugin_basename( __FILE__ ) );
@@ -671,6 +679,7 @@ function emcp_tools_init(): void {
 	require_once EMCP_TOOLS_DIR . 'includes/abilities/class-composite-abilities.php';
 	require_once EMCP_TOOLS_DIR . 'includes/class-openverse-client.php';
 	require_once EMCP_TOOLS_DIR . 'includes/abilities/class-stock-image-abilities.php';
+	require_once EMCP_TOOLS_DIR . 'includes/abilities/class-media-library-abilities.php';
 	require_once EMCP_TOOLS_DIR . 'includes/abilities/class-svg-icon-abilities.php';
 	require_once EMCP_TOOLS_DIR . 'includes/abilities/class-custom-code-abilities.php';
 	// Brand Kits (Pro). The writer + backup store + fetcher + abilities load

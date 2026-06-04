@@ -332,17 +332,59 @@
 	display: flex;
 	align-items: center;
 	gap: 10px;
-	padding: 0 0 12px;
 	border-bottom: 1px solid var(--mcp-gray-200);
+	margin: 0;
+}
+
+/* The collapse/expand trigger: chevron + title + count, fills the row. */
+.elementor-mcp-category-toggle {
+	flex: 1 1 auto;
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	min-width: 0;
+	margin: 0;
+	padding: 8px 8px 12px 6px;
+	background: none;
+	border: 0;
+	border-radius: 6px 6px 0 0;
 	font-size: 14px;
 	font-weight: 600;
 	color: var(--mcp-gray-800);
-	margin-top: 0;
-	margin-bottom: 0;
+	text-align: left;
+	cursor: pointer;
+	transition: background var(--mcp-transition);
+}
+
+.elementor-mcp-category-toggle:hover {
+	background: var(--mcp-gray-50);
+}
+
+.elementor-mcp-category-toggle:focus-visible {
+	outline: 2px solid var(--mcp-primary);
+	outline-offset: -2px;
+}
+
+.elementor-mcp-category-chevron {
+	display: inline-flex;
+	flex-shrink: 0;
+	color: var(--mcp-gray-400);
+	transition: transform var(--mcp-transition);
+}
+
+.elementor-mcp-category.is-collapsed .elementor-mcp-category-chevron {
+	transform: rotate(-90deg);
+}
+
+.elementor-mcp-category-title {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
 }
 
 .elementor-mcp-category-count {
-	color: var(--mcp-gray-400);
+	flex-shrink: 0;
+	color: var(--mcp-gray-500);
 	font-weight: 500;
 	font-size: 12px;
 	background: var(--mcp-gray-100);
@@ -350,30 +392,52 @@
 	border-radius: 10px;
 }
 
-.elementor-mcp-category-actions {
-	margin-left: auto;
-	font-size: 12px;
-	font-weight: 500;
-	display: flex;
-	align-items: center;
-	gap: 4px;
+/* Collapsed: hide the tool grid. */
+.elementor-mcp-category.is-collapsed .elementor-mcp-tools-grid {
+	display: none;
 }
 
-.elementor-mcp-category-actions .button-link {
-	color: var(--mcp-primary);
-	text-decoration: none;
-	padding: 2px 6px;
-	border-radius: 4px;
-	transition: background var(--mcp-transition);
+/* Segmented All / None control. */
+.elementor-mcp-cat-toggle-group {
+	display: inline-flex;
+	flex-shrink: 0;
+	background: var(--mcp-white);
+	border: 1px solid var(--mcp-gray-200);
+	border-radius: 8px;
+	overflow: hidden;
 }
 
-.elementor-mcp-category-actions .button-link:hover {
-	background: var(--mcp-primary-light);
-}
-
-.elementor-mcp-separator {
-	color: var(--mcp-gray-300);
+.elementor-mcp-cat-btn {
+	appearance: none;
 	margin: 0;
+	border: 0;
+	background: none;
+	padding: 5px 14px;
+	font-size: 12px;
+	font-weight: 600;
+	line-height: 1.6;
+	color: var(--mcp-gray-600);
+	cursor: pointer;
+	transition: background var(--mcp-transition), color var(--mcp-transition);
+}
+
+.elementor-mcp-cat-btn + .elementor-mcp-cat-btn {
+	border-left: 1px solid var(--mcp-gray-200);
+}
+
+.elementor-mcp-cat-enable-all:hover {
+	background: var(--mcp-primary-light);
+	color: var(--mcp-primary);
+}
+
+.elementor-mcp-cat-disable-all:hover {
+	background: var(--mcp-gray-100);
+	color: var(--mcp-gray-800);
+}
+
+.elementor-mcp-cat-btn:focus-visible {
+	outline: 2px solid var(--mcp-primary);
+	outline-offset: -2px;
 }
 
 /* =========================================================================
@@ -549,6 +613,17 @@
 .elementor-mcp-badge--pro {
 	background: var(--mcp-pro-light);
 	color: var(--mcp-pro);
+}
+
+/* "Elementor Pro" — distinct from the EMCP "PRO" badge. Marks tools that need
+   Elementor Pro (widget shortcuts, theme builder, popups, Pro custom code),
+   not the EMCP Tools Pro license. Pink reads as Elementor; lowercase keeps it
+   readable as a dependency note rather than a plan badge. */
+.elementor-mcp-badge--elementor-pro {
+	background: #fce7f3;
+	color: #be185d;
+	text-transform: none;
+	letter-spacing: 0;
 }
 
 .elementor-mcp-badge--free {
@@ -1893,13 +1968,8 @@
 		grid-template-columns: 1fr;
 	}
 
-	.elementor-mcp-category-header {
-		flex-wrap: wrap;
-	}
-
-	.elementor-mcp-category-actions {
-		margin-left: 0;
-		width: 100%;
+	.elementor-mcp-category-toggle {
+		min-width: 0;
 	}
 
 	.elementor-mcp-status-grid {

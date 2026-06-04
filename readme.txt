@@ -3,7 +3,7 @@ Contributors: mianshahzadraza
 Tags: elementor, mcp, ai, page-builder, automation
 Requires at least: 6.9
 Tested up to: 7.0
-Stable tag: 2.0.1
+Stable tag: 2.0.2
 Requires PHP: 8.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -12,9 +12,9 @@ Extends the WordPress MCP Adapter to expose Elementor data, widgets, and page de
 
 == Description ==
 
-MCP Tools for Elementor bridges the gap between AI tools and Elementor page design. It extends the official WordPress MCP Adapter to expose up to 118 MCP (Model Context Protocol) tools that let AI agents like Claude, Cursor, and other MCP-compatible clients create and manipulate Elementor page designs programmatically.
+MCP Tools for Elementor bridges the gap between AI tools and Elementor page design. It extends the official WordPress MCP Adapter to expose up to 119 MCP (Model Context Protocol) tools that let AI agents like Claude, Cursor, and other MCP-compatible clients create and manipulate Elementor page designs programmatically.
 
-Tool counts scale with your environment: 61 tools on a free Elementor install, 100 with Elementor Pro, 105 with Pro + WooCommerce, and 13 additional atomic tools when Elementor 4.0+ is active (74 / 113 / 118 respectively).
+Tool counts scale with your environment: 62 tools on a free Elementor install, 101 with Elementor Pro, 106 with Pro + WooCommerce, and 13 additional atomic tools when Elementor 4.0+ is active (75 / 114 / 119 respectively).
 
 **Key Features:**
 
@@ -27,7 +27,7 @@ Tool counts scale with your environment: 61 tools on a free Elementor install, 1
 * **Template Tools** — Save pages or elements as reusable templates, apply templates to pages, theme builder, popups, dynamic tags (Pro).
 * **Global Settings** — Update site-wide color palettes and typography presets.
 * **Composite Tools** — Build a complete page from a declarative JSON structure in a single call.
-* **Stock Images** — Search Openverse for Creative Commons images, sideload into Media Library, add to pages.
+* **Stock & Media Images** — Search Openverse for Creative Commons images, sideload into the Media Library, add to pages — plus `list-media` to discover and search the site's own existing uploads (by title, alt text, caption, and description).
 * **SVG Icons** — Upload SVG icons from URL or raw markup for use with Elementor icon widgets.
 * **Custom Code** — Add custom CSS (element/page level), inject JavaScript, create site-wide code snippets for head/body injection.
 * **AI Widget Builder (Pro)** — Let an AI agent design custom Elementor widgets from a structured spec (no hand-written PHP). The plugin compiles the spec into a sandboxed widget that appears in the Elementor panel — 35 control types, optional CSS/JS, with a runtime safety net so a bad widget can never break the editor.
@@ -155,6 +155,14 @@ The plugin enforces WordPress capability checks on every tool. Read operations r
 2. Connection configuration page with copy-paste configs.
 
 == Changelog ==
+
+= 2.0.2 =
+* Fixed: Tool toggles & Low-tools mode wouldn't save. After the 2.0 rename, the legacy-settings migration ran on every page load and copied the old elementor_mcp_* options (still in the database) over your current settings — so anything you saved on the Tools screen, including Low-tools mode, was silently reset on the next load. The migration now only seeds a new setting when it has never been set, so it can't overwrite your live choices.
+* Fixed: "Enable All" / "Disable All" also flipped Low-tools mode. The bulk buttons are now scoped to the tool checkboxes only, leaving the separate Low-tools-mode toggle alone.
+* Fixed: First-ever save on the Tools screen could invert (the disabled-tools sanitizer is now idempotent).
+* New: list-media tool (#25). Lets an AI agent discover and search images already in the WordPress Media Library — the site's own uploads — where Openverse only finds generic stock. Backed by a direct WP_Query; optional search matches the title, alt text, caption, and description, with mime-type, pagination, and sort filters. Read-only; not part of the Low-tools essentials.
+* Improved: Tools screen UI — section headers are now collapsible (state remembered per section) and the per-section All / None controls are a segmented button instead of text links.
+* Improved: "Elementor Pro" vs "Pro" badges. Tools that need Elementor Pro (widget shortcuts, theme builder, popups, dynamic tags, Pro custom code) now show a distinct "Elementor Pro" badge, so they aren't confused with the "Pro" badge reserved for EMCP Tools Pro features. The "Pro Widget Shortcuts" section is renamed "Elementor Pro Widgets".
 
 = 2.0.1 =
 * Fixed: Pro license activation. The premium build now correctly identifies as premium (it reads the bundled .emcp-pro marker), so Freemius shows the license-activation screen instead of the free opt-in. Previously the Pro zip behaved like the free version — if you skipped opt-in or didn't click the confirmation email, no "Activate License" link appeared.
