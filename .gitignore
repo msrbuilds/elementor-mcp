@@ -32,4 +32,4 @@ skills/*
 docs/*
 
 #Cross-session field reports (local working artifacts; codified canonically in code/PRs)
-FIELD-BUGREPORT-*.md
+FIELD-*REPORT-*.md
