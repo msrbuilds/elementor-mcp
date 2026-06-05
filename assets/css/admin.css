@@ -2614,3 +2614,20 @@
 	margin: 4px 0 12px;
 	white-space: pre;
 }
+
+/* Low-tools mode: pause/grey the per-tool grid + bulk selects (Save stays active). */
+#elementor-mcp-tools-form.is-low-mode .elementor-mcp-category,
+#elementor-mcp-tools-form.is-low-mode .elementor-mcp-enable-all,
+#elementor-mcp-tools-form.is-low-mode .elementor-mcp-disable-all {
+	opacity: .55;
+	pointer-events: none;
+}
+.elementor-mcp-lowmode-banner {
+	margin: 0 0 14px;
+	padding: 10px 14px;
+	background: #eef0ff;
+	border: 1px solid #c9cdf5;
+	border-left: 3px solid #5145e5;
+	border-radius: 6px;
+}
+.elementor-mcp-lowmode-banner p { margin: 0; font-size: 13px; color: #2b2f44; }

@@ -15,9 +15,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 /** @var EMCP_Tools_Admin $this */
 $emcp_tools_all_tools     = $this->get_all_tools();
 $emcp_tools_disabled      = get_option( EMCP_Tools_Admin::OPTION_DISABLED_TOOLS, array() );
+$emcp_tools_disabled      = is_array( $emcp_tools_disabled ) ? $emcp_tools_disabled : array();
 $emcp_tools_enabled_count = $this->get_enabled_tool_count();
 $emcp_tools_total_count   = $this->get_total_tool_count();
 $emcp_tools_low_mode      = '1' === (string) get_option( EMCP_Tools_Admin::OPTION_LOW_TOOL_MODE, '0' );
+$emcp_tools_essentials    = EMCP_Tools_Plugin::get_essential_tool_slugs();
 
 // Human-readable labels for badge slugs. "pro" means the EMCP Tools Pro
 // license; "elementor-pro" means the tool needs Elementor Pro (a different
@@ -31,7 +33,7 @@ $emcp_tools_badge_labels = array(
 );
 ?>
 
-<form method="post" action="options.php" id="elementor-mcp-tools-form">
+<form method="post" action="options.php" id="elementor-mcp-tools-form" class="<?php echo $emcp_tools_low_mode ? 'is-low-mode' : ''; ?>">
 	<?php settings_fields( EMCP_Tools_Admin::SETTINGS_GROUP ); ?>
 
 	<div class="elementor-mcp-low-mode-card">
@@ -70,6 +72,20 @@ $emcp_tools_badge_labels = array(
 		?>
 	</p>
 
+	<?php if ( $emcp_tools_low_mode ) : ?>
+		<div class="elementor-mcp-lowmode-banner">
+			<p>
+				<?php
+				printf(
+					/* translators: %d: number of essential tools active in low-tools mode */
+					esc_html__( 'Low-tools mode is active — only the %d essential tools (highlighted below) are exposed to your AI client. Your individual toggles are paused and resume when you turn low-tools mode off above.', 'emcp-tools' ),
+					(int) $emcp_tools_enabled_count
+				);
+				?>
+			</p>
+		</div>
+	<?php endif; ?>
+
 	<div class="elementor-mcp-bulk-actions">
 		<button type="button" class="button elementor-mcp-enable-all"><?php esc_html_e( 'Enable All', 'emcp-tools' ); ?></button>
 		<button type="button" class="button elementor-mcp-disable-all"><?php esc_html_e( 'Disable All', 'emcp-tools' ); ?></button>
@@ -82,7 +98,10 @@ $emcp_tools_badge_labels = array(
 			$emcp_tools_cat_total   = count( $emcp_tools_category['tools'] );
 			$emcp_tools_cat_enabled = 0;
 			foreach ( $emcp_tools_category['tools'] as $emcp_tools_slug => $emcp_tools_tool ) {
-				if ( ! in_array( $emcp_tools_slug, $emcp_tools_disabled, true ) ) {
+				$emcp_tools_eff = $emcp_tools_low_mode
+					? in_array( $emcp_tools_slug, $emcp_tools_essentials, true )
+					: ! in_array( $emcp_tools_slug, $emcp_tools_disabled, true );
+				if ( $emcp_tools_eff ) {
 					$emcp_tools_cat_enabled++;
 				}
 			}
@@ -118,13 +137,23 @@ $emcp_tools_badge_labels = array(
 
 			<div class="elementor-mcp-tools-grid" id="<?php echo esc_attr( $emcp_tools_grid_id ); ?>">
 				<?php foreach ( $emcp_tools_category['tools'] as $emcp_tools_slug => $emcp_tools_tool ) : ?>
-					<?php $emcp_tools_is_enabled = ! in_array( $emcp_tools_slug, $emcp_tools_disabled, true ); ?>
+					<?php
+					// In low-tools mode the grid is paused: show the effective state
+					// (essentials on, the rest off) and disable the inputs so they
+					// don't submit — the stored toggles are preserved server-side.
+					$emcp_tools_is_enabled = $emcp_tools_low_mode
+						? in_array( $emcp_tools_slug, $emcp_tools_essentials, true )
+						: ! in_array( $emcp_tools_slug, $emcp_tools_disabled, true );
+					?>
 					<label class="elementor-mcp-tool-card <?php echo esc_attr( $emcp_tools_is_enabled ? 'is-enabled' : 'is-disabled' ); ?>">
 						<input
 							type="checkbox"
 							name="<?php echo esc_attr( EMCP_Tools_Admin::OPTION_DISABLED_TOOLS ); ?>[]"
 							value="<?php echo esc_attr( $emcp_tools_slug ); ?>"
+							data-essential="<?php echo in_array( $emcp_tools_slug, $emcp_tools_essentials, true ) ? '1' : '0'; ?>"
+							data-stored-enabled="<?php echo in_array( $emcp_tools_slug, $emcp_tools_disabled, true ) ? '0' : '1'; ?>"
 							<?php checked( $emcp_tools_is_enabled ); ?>
+							<?php disabled( $emcp_tools_low_mode ); ?>
 						/>
 						<span class="elementor-mcp-toggle" aria-hidden="true">
 							<span class="elementor-mcp-toggle-track"></span>

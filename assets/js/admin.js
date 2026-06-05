@@ -99,6 +99,62 @@
 				updateCards( form );
 			}
 		} );
+
+		// Low-tools mode — live preview without a save round-trip: pause/grey the
+		// grid and show the effective (essentials-only) state, then restore the
+		// stored toggles when switched back off. The stored + essential state of
+		// each tool is carried in data-* attributes rendered server-side.
+		var lowToggle = form.querySelector( 'input[type="checkbox"][value="1"][name$="low_tool_mode"]' );
+		if ( lowToggle ) {
+			lowToggle.addEventListener( 'change', function () {
+				var on = lowToggle.checked;
+				form.classList.toggle( 'is-low-mode', on );
+				form.querySelectorAll( toolCheckboxSelector ).forEach( function ( cb ) {
+					if ( on ) {
+						cb.checked = ( '1' === cb.dataset.essential );
+						cb.disabled = true;
+					} else {
+						cb.checked = ( '1' === cb.dataset.storedEnabled );
+						cb.disabled = false;
+					}
+				} );
+				updateCards( form );
+				updateToolCounts( form );
+			} );
+		}
+	}
+
+	/**
+	 * Recompute the summary + per-category counts from the live checkbox state.
+	 *
+	 * @param {HTMLElement} form The tools form.
+	 */
+	function updateToolCounts( form ) {
+		var enabled = 0;
+		form.querySelectorAll( '.elementor-mcp-tool-card input[type="checkbox"]' ).forEach( function ( cb ) {
+			if ( cb.checked ) {
+				enabled++;
+			}
+		} );
+		var strong = form.querySelector( '.elementor-mcp-tools-summary strong' );
+		if ( strong ) {
+			// Replace just the leading "enabled" number, keeping the localized
+			// "N of M" wording intact.
+			strong.textContent = strong.textContent.replace( /^\s*\d+/, enabled );
+		}
+		form.querySelectorAll( '.elementor-mcp-category' ).forEach( function ( cat ) {
+			var cbs = cat.querySelectorAll( 'input[type="checkbox"]' );
+			var ce = 0;
+			cbs.forEach( function ( cb ) {
+				if ( cb.checked ) {
+					ce++;
+				}
+			} );
+			var el = cat.querySelector( '.elementor-mcp-category-count' );
+			if ( el ) {
+				el.textContent = ce + ' / ' + cbs.length;
+			}
+		} );
 	}
 
 	/**

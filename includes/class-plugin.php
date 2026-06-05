@@ -137,18 +137,17 @@ class EMCP_Tools_Plugin {
 	 * @return string[] Ability names with disabled tools removed.
 	 */
 	public function filter_disabled_tools( array $names ): array {
-		$disabled = get_option( 'emcp_tools_disabled_tools', array() );
-		if ( ! is_array( $disabled ) ) {
-			$disabled = array();
-		}
-
-		// Low-tools mode: drop everything outside the curated essentials list
-		// so clients with a tight tool cap (e.g. Antigravity) stay under it.
+		// Low-tools mode is an OVERRIDE preset, not an addition: expose exactly
+		// the curated essentials (intersected with what's actually registered),
+		// regardless of the per-tool toggles. The toggles stay stored and resume
+		// the moment low-tools mode is turned off — which is why turning it on
+		// always yields the essentials even if every tool was previously disabled.
 		if ( '1' === (string) get_option( 'emcp_tools_low_tool_mode', '0' ) ) {
-			$disabled = array_merge( $disabled, array_diff( $names, self::get_essential_tool_slugs() ) );
+			return array_values( array_intersect( $names, self::get_essential_tool_slugs() ) );
 		}
 
-		if ( empty( $disabled ) ) {
+		$disabled = get_option( 'emcp_tools_disabled_tools', array() );
+		if ( ! is_array( $disabled ) || empty( $disabled ) ) {
 			return $names;
 		}
 

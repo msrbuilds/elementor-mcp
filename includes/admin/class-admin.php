@@ -415,6 +415,16 @@ class EMCP_Tools_Admin {
 			&& self::SETTINGS_GROUP === sanitize_text_field( wp_unslash( $_POST['option_page'] ) );
 
 		if ( $is_settings_form ) {
+			// When low-tools mode is saved ON, the per-tool grid is paused and
+			// rendered disabled, so its checkboxes don't post. Preserve the user's
+			// stored toggles rather than recomputing them to "all disabled" — the
+			// toggles resume when low-tools mode is turned off again.
+			// phpcs:ignore WordPress.Security.NonceVerification.Missing
+			if ( isset( $_POST[ self::OPTION_LOW_TOOL_MODE ] ) && '1' === (string) wp_unslash( $_POST[ self::OPTION_LOW_TOOL_MODE ] ) ) {
+				$existing = get_option( self::OPTION_DISABLED_TOOLS, array() );
+				return is_array( $existing ) ? array_values( array_intersect( $all_tools, $existing ) ) : array();
+			}
+
 			$enabled = array();
 			// phpcs:ignore WordPress.Security.NonceVerification.Missing
 			if ( isset( $_POST[ self::OPTION_DISABLED_TOOLS ] ) && is_array( $_POST[ self::OPTION_DISABLED_TOOLS ] ) ) {
@@ -819,6 +829,19 @@ class EMCP_Tools_Admin {
 		?>
 		<div class="wrap elementor-mcp-admin">
 			<h1><?php esc_html_e( 'MCP Tools for Elementor', 'emcp-tools' ); ?></h1>
+
+			<?php
+			// Success notice after a Settings API save (options.php redirects back
+			// with settings-updated=true). Shown for any EMCP settings tab.
+			// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- options.php verifies the settings nonce before redirecting.
+			if ( isset( $_GET['settings-updated'] ) && 'true' === sanitize_text_field( wp_unslash( $_GET['settings-updated'] ) ) ) :
+				?>
+				<div class="notice notice-success is-dismissible">
+					<p><strong><?php esc_html_e( 'Settings saved.', 'emcp-tools' ); ?></strong></p>
+				</div>
+				<?php
+			endif;
+			?>
 
 			<!-- Header -->
 			<div class="elementor-mcp-header">
@@ -1787,14 +1810,17 @@ class EMCP_Tools_Admin {
 	 * @return int Number of enabled tools.
 	 */
 	public function get_enabled_tool_count(): int {
-		$all      = $this->get_all_tool_slugs();
+		$all = $this->get_all_tool_slugs();
+
+		// Low-tools mode overrides the per-tool toggles (see filter_disabled_tools):
+		// exactly the essentials are active.
+		if ( '1' === (string) get_option( self::OPTION_LOW_TOOL_MODE, '0' ) ) {
+			return count( array_intersect( $all, EMCP_Tools_Plugin::get_essential_tool_slugs() ) );
+		}
+
 		$disabled = get_option( self::OPTION_DISABLED_TOOLS, array() );
 		if ( ! is_array( $disabled ) ) {
 			$disabled = array();
-		}
-
-		if ( '1' === (string) get_option( self::OPTION_LOW_TOOL_MODE, '0' ) ) {
-			$disabled = array_merge( $disabled, array_diff( $all, EMCP_Tools_Plugin::get_essential_tool_slugs() ) );
 		}
 
 		return count( array_diff( $all, $disabled ) );
