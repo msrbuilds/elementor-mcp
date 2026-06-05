@@ -88,6 +88,7 @@ class EMCP_Tools_Admin {
 			$this->submenus = array(
 				self::PAGE_SLUG                 => __( 'Tools', 'emcp-tools' ),
 				self::PAGE_SLUG . '-connection' => __( 'Connection', 'emcp-tools' ),
+				self::PAGE_SLUG . '-ai-chat'    => __( 'AI Chat', 'emcp-tools' ),
 				self::PAGE_SLUG . '-prompts'    => __( 'Prompts', 'emcp-tools' ),
 				self::PAGE_SLUG . '-templates'  => __( 'Templates', 'emcp-tools' ),
 				self::PAGE_SLUG . '-brand-kits' => __( 'Brand Kits', 'emcp-tools' ),
@@ -111,6 +112,8 @@ class EMCP_Tools_Admin {
 		switch ( $page ) {
 			case self::PAGE_SLUG . '-connection':
 				return 'connection';
+			case self::PAGE_SLUG . '-ai-chat':
+				return 'ai-chat';
 			case self::PAGE_SLUG . '-prompts':
 				return 'prompts';
 			case self::PAGE_SLUG . '-templates':
@@ -920,6 +923,8 @@ class EMCP_Tools_Admin {
 				<?php
 				if ( 'connection' === $active_tab ) {
 					include EMCP_TOOLS_DIR . 'includes/admin/views/page-connection.php';
+				} elseif ( 'ai-chat' === $active_tab ) {
+					include EMCP_TOOLS_DIR . 'includes/admin/views/page-ai-chat.php';
 				} elseif ( 'prompts' === $active_tab ) {
 					include EMCP_TOOLS_DIR . 'includes/admin/views/page-prompts.php';
 				} elseif ( 'templates' === $active_tab ) {

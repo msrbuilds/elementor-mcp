@@ -1,0 +1,140 @@
+/**
+ * EMCP Tools — AI Chat. Flat, indigo accent (matches the brand icon). No gradients.
+ */
+
+.emcp-ai-wrap { --emcp-ai-accent: #5145e5; --emcp-ai-bg: #f6f7fb; --emcp-ai-border: #e2e4ec; --emcp-ai-text: #1d2233; --emcp-ai-muted: #6b7280; max-width: 1100px; margin: 16px 20px 0 0; }
+
+/* Upsell */
+.emcp-ai-upsell { text-align: center; background: #fff; border: 1px solid var(--emcp-ai-border); border-radius: 10px; padding: 48px 32px; }
+.emcp-ai-upsell-icon { width: 56px; height: 56px; margin: 0 auto 16px; color: var(--emcp-ai-accent); }
+.emcp-ai-upsell-icon svg { width: 100%; height: 100%; fill: currentColor; }
+.emcp-ai-upsell h2 { font-size: 22px; margin: 0 0 10px; }
+.emcp-ai-upsell p { max-width: 620px; margin: 0 auto 22px; color: var(--emcp-ai-muted); font-size: 14px; line-height: 1.6; }
+
+/* Chat shell — fills the viewport below the admin header */
+.emcp-ai-chat { display: flex; flex-direction: column; height: calc(100vh - 200px); min-height: 460px; background: #fff; border: 1px solid var(--emcp-ai-border); border-radius: 10px; overflow: hidden; }
+/* `hidden` must win over the display:flex view rules below. */
+.emcp-ai-chat [hidden] { display: none !important; }
+.emcp-ai-loading { display: flex; align-items: center; justify-content: center; flex: 1; }
+
+/* Key entry */
+.emcp-ai-keyentry { display: flex; align-items: center; justify-content: center; flex: 1; padding: 24px; }
+.emcp-ai-keyentry-inner { max-width: 480px; width: 100%; }
+.emcp-ai-keyentry-inner h2 { margin: 0 0 6px; }
+.emcp-ai-keyrow { display: flex; gap: 8px; margin: 14px 0 6px; }
+.emcp-ai-keyrow input { flex: 1; font-family: ui-monospace, Menlo, Consolas, monospace; }
+.emcp-ai-keyentry-status { font-size: 13px; margin: 6px 0; }
+.emcp-ai-keyentry-status.is-error { color: #b32d2e; }
+.emcp-ai-keyentry-status.is-ok { color: #157347; }
+
+/* Chat view fills the shell as a flex column */
+.emcp-ai-main { display: flex; flex-direction: column; flex: 1; min-height: 0; }
+
+/* Top bar */
+.emcp-ai-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 14px; border-bottom: 1px solid var(--emcp-ai-border); background: var(--emcp-ai-bg); }
+.emcp-ai-model { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: var(--emcp-ai-muted); }
+.emcp-ai-model select { min-width: 200px; }
+.emcp-ai-bar-actions { display: flex; gap: 14px; }
+
+/* Settings drawer */
+.emcp-ai-settings { padding: 12px 14px; border-bottom: 1px solid var(--emcp-ai-border); background: #fbfbfe; display: flex; flex-direction: column; gap: 10px; }
+.emcp-ai-settings-row { display: flex; align-items: center; gap: 10px; font-size: 13px; }
+.emcp-ai-settings-row label, .emcp-ai-settings-row > span:first-child { min-width: 220px; color: var(--emcp-ai-muted); }
+.emcp-ai-settings-row input[type="number"] { width: 90px; }
+
+/* Messages */
+.emcp-ai-messages { flex: 1; overflow-y: auto; padding: 18px; display: flex; flex-direction: column; gap: 14px; }
+.emcp-ai-msg { display: flex; gap: 10px; max-width: 92%; }
+.emcp-ai-msg-avatar { flex: 0 0 28px; width: 28px; height: 28px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: #fff; }
+.emcp-ai-msg--user { align-self: flex-end; flex-direction: row-reverse; }
+.emcp-ai-msg--user .emcp-ai-msg-avatar { background: #374151; }
+.emcp-ai-msg--assistant .emcp-ai-msg-avatar { background: var(--emcp-ai-accent); }
+.emcp-ai-msg-body { background: var(--emcp-ai-bg); border: 1px solid var(--emcp-ai-border); border-radius: 10px; padding: 10px 13px; font-size: 14px; line-height: 1.6; color: var(--emcp-ai-text); }
+.emcp-ai-msg--user .emcp-ai-msg-body { background: var(--emcp-ai-accent); border-color: var(--emcp-ai-accent); color: #fff; }
+.emcp-ai-msg-body p { margin: 0 0 8px; }
+.emcp-ai-msg-body p:last-child { margin-bottom: 0; }
+.emcp-ai-msg-body pre { background: #1e1e1e; color: #e6e6e6; padding: 10px 12px; border-radius: 6px; overflow-x: auto; font-size: 12px; }
+.emcp-ai-msg-body code { background: rgba(0,0,0,.06); padding: 1px 5px; border-radius: 4px; font-size: 12.5px; }
+.emcp-ai-msg--user .emcp-ai-msg-body code { background: rgba(255,255,255,.2); }
+.emcp-ai-msg-body ul, .emcp-ai-msg-body ol { margin: 0 0 8px; padding-left: 20px; }
+
+/* Tool call bubbles */
+.emcp-ai-tool { margin-top: 8px; border: 1px solid var(--emcp-ai-border); border-radius: 8px; background: #fff; font-size: 13px; overflow: hidden; }
+.emcp-ai-tool-head { display: flex; align-items: center; gap: 8px; padding: 8px 11px; cursor: pointer; }
+.emcp-ai-tool-name { font-family: ui-monospace, Menlo, Consolas, monospace; font-weight: 600; }
+.emcp-ai-tool-state { margin-left: auto; font-size: 12px; }
+.emcp-ai-tool--pending .emcp-ai-tool-state { color: var(--emcp-ai-muted); }
+.emcp-ai-tool--ok { border-color: #b7e4c7; }
+.emcp-ai-tool--ok .emcp-ai-tool-state { color: #157347; }
+.emcp-ai-tool--err { border-color: #f1c0c0; }
+.emcp-ai-tool--err .emcp-ai-tool-state { color: #b32d2e; }
+.emcp-ai-tool--wait { border-color: #e8d59a; background: #fdf8e7; }
+.emcp-ai-tool-body { padding: 0 11px 10px; display: none; }
+.emcp-ai-tool.is-open .emcp-ai-tool-body { display: block; }
+.emcp-ai-tool-body pre { background: #1e1e1e; color: #e6e6e6; padding: 8px 10px; border-radius: 6px; overflow-x: auto; font-size: 11.5px; margin: 6px 0 0; }
+.emcp-ai-approve { display: flex; gap: 8px; padding: 0 11px 11px; }
+
+.emcp-ai-spin { display: inline-block; width: 13px; height: 13px; border: 2px solid var(--emcp-ai-border); border-top-color: var(--emcp-ai-accent); border-radius: 50%; animation: emcp-ai-spin .7s linear infinite; }
+@keyframes emcp-ai-spin { to { transform: rotate(360deg); } }
+
+/* Usage footer */
+.emcp-ai-usage { font-size: 11.5px; color: var(--emcp-ai-muted); margin-top: 6px; }
+
+/* Composer */
+.emcp-ai-composer { display: flex; gap: 8px; align-items: flex-end; padding: 12px 14px; border-top: 1px solid var(--emcp-ai-border); }
+.emcp-ai-composer textarea { flex: 1; resize: none; max-height: 160px; line-height: 1.5; font-size: 14px; }
+.emcp-ai-disclaimer { padding: 0 14px 10px; margin: 0; font-size: 11.5px; }
+
+/* CTA link inside a result */
+.emcp-ai-cta { display: inline-block; margin-top: 4px; font-weight: 600; }
+
+/* Connect view + provider rows (multi-provider) */
+.emcp-ai-connect { display: flex; align-items: flex-start; justify-content: center; flex: 1; overflow-y: auto; padding: 28px 24px; }
+.emcp-ai-connect-inner { max-width: 620px; width: 100%; }
+.emcp-ai-connect-inner h2 { margin: 0 0 6px; }
+.emcp-ai-settings-h { margin: 6px 0 2px; font-size: 13px; }
+.emcp-ai-providers { display: flex; flex-direction: column; gap: 10px; margin-top: 14px; }
+.emcp-ai-provider-row { border: 1px solid var(--emcp-ai-border); border-radius: 8px; padding: 12px 14px; background: #fff; }
+.emcp-ai-provider-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 8px; }
+.emcp-ai-provider-head strong { font-size: 14px; }
+.emcp-ai-provider-status { font-size: 12px; color: var(--emcp-ai-muted); }
+.emcp-ai-provider-status.is-on { color: #157347; font-weight: 600; }
+.emcp-ai-provider-body { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.emcp-ai-provider-key { flex: 1 1 240px; font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 12px; }
+.emcp-ai-provider-getkey { font-size: 12px; }
+.emcp-ai-provider-msg { font-size: 12px; flex-basis: 100%; }
+.emcp-ai-provider-msg.is-error { color: #b32d2e; }
+
+/* ── Dedicated settings screen ── */
+.emcp-ai-settings-screen { flex: 1; overflow-y: auto; padding: 22px 24px; }
+.emcp-ai-settings-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.emcp-ai-settings-head h2 { margin: 0; }
+.emcp-ai-default-model { display: flex; align-items: center; gap: 8px; flex-basis: 100%; font-size: 13px; color: var(--emcp-ai-muted); margin-top: 6px; }
+
+/* ── Chat layout: sidebar + conversation ── */
+.emcp-ai-layout { display: flex; flex: 1; min-height: 0; }
+.emcp-ai-sidebar { flex: 0 0 220px; border-right: 1px solid var(--emcp-ai-border); background: var(--emcp-ai-bg); display: flex; flex-direction: column; min-height: 0; }
+.emcp-ai-newbtn { margin: 10px; }
+.emcp-ai-convos { flex: 1; overflow-y: auto; padding: 0 8px 8px; }
+.emcp-ai-convo { display: flex; align-items: center; border-radius: 6px; }
+.emcp-ai-convo:hover { background: #eceeffa8; }
+.emcp-ai-convo.is-active { background: #e7e6fb; }
+.emcp-ai-convo-title { flex: 1; text-align: left; background: none; border: 0; padding: 7px 8px; font-size: 12.5px; color: var(--emcp-ai-text); cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.emcp-ai-convo-del { background: none; border: 0; color: var(--emcp-ai-muted); cursor: pointer; font-size: 15px; line-height: 1; padding: 2px 8px; visibility: hidden; }
+.emcp-ai-convo:hover .emcp-ai-convo-del { visibility: visible; }
+.emcp-ai-conv { display: flex; flex-direction: column; flex: 1; min-width: 0; }
+.emcp-ai-pick { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: var(--emcp-ai-muted); }
+.emcp-ai-pick--model { flex: 0 1 320px; }
+
+/* ── Searchable combobox ── */
+.emcp-ai-combo { position: relative; }
+.emcp-ai-combo-display { min-width: 200px; max-width: 320px; text-align: left; background: #fff; border: 1px solid #8c8f94; border-radius: 4px; padding: 4px 26px 4px 8px; font-size: 13px; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.6; }
+.emcp-ai-combo-display::after { content: '▾'; position: absolute; right: 8px; color: var(--emcp-ai-muted); }
+.emcp-ai-combo-panel { position: absolute; z-index: 60; top: calc(100% + 2px); left: 0; min-width: 300px; max-width: 420px; background: #fff; border: 1px solid var(--emcp-ai-border); border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,.14); max-height: 360px; display: flex; flex-direction: column; }
+.emcp-ai-combo-search { margin: 8px; }
+.emcp-ai-combo-list { overflow-y: auto; padding-bottom: 6px; }
+.emcp-ai-combo-group { font-size: 10.5px; text-transform: uppercase; letter-spacing: .04em; color: var(--emcp-ai-accent); font-weight: 700; padding: 8px 12px 3px; }
+.emcp-ai-combo-item { padding: 6px 12px; cursor: pointer; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.emcp-ai-combo-item:hover { background: var(--emcp-ai-bg); }
+.emcp-ai-combo-item.is-sel { font-weight: 600; color: var(--emcp-ai-accent); }
+.emcp-ai-combo-empty { padding: 10px 12px; color: var(--emcp-ai-muted); font-size: 13px; }

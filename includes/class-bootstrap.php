@@ -123,6 +123,13 @@ class EMCP_Tools_Bootstrap {
 		require_once EMCP_TOOLS_DIR . 'includes/abilities/class-global-classes-abilities.php';
 		// Background library refresh.
 		require_once EMCP_TOOLS_DIR . 'includes/class-library-refresher.php';
+		// AI Chat (Pro) — key storage + Anthropic model fetch + REST controller.
+		// Loaded unconditionally; the REST routes self-gate on Pro + manage_options.
+		require_once EMCP_TOOLS_DIR . 'includes/ai-chat/class-key-crypto.php';
+		require_once EMCP_TOOLS_DIR . 'includes/ai-chat/class-ai-providers.php';
+		require_once EMCP_TOOLS_DIR . 'includes/ai-chat/class-ai-chat-provider.php';
+		require_once EMCP_TOOLS_DIR . 'includes/ai-chat/class-ai-chat-store.php';
+		require_once EMCP_TOOLS_DIR . 'includes/ai-chat/class-ai-chat-controller.php';
 
 		require_once EMCP_TOOLS_DIR . 'includes/abilities/class-ability-registrar.php';
 		require_once EMCP_TOOLS_DIR . 'includes/class-plugin.php';
@@ -144,6 +151,11 @@ class EMCP_Tools_Bootstrap {
 		// unconditionally (cron runs in a non-admin context) so an expired 24h
 		// cache self-heals without the user clicking "Sync Library".
 		EMCP_Tools_Library_Refresher::register();
+		// AI Chat (Pro): REST routes + weekly model-list refresh cron + saved-
+		// conversation CPT.
+		( new EMCP_Tools_AI_Chat_Controller() )->register_hooks();
+		add_action( EMCP_Tools_AI_Chat_Provider::REFRESH_HOOK, array( 'EMCP_Tools_AI_Chat_Provider', 'cron_refresh' ) );
+		add_action( 'init', array( 'EMCP_Tools_AI_Chat_Store', 'register_post_type' ) );
 	}
 
 	/**
@@ -153,6 +165,11 @@ class EMCP_Tools_Bootstrap {
 	 */
 	private static function load_admin(): void {
 		require_once EMCP_TOOLS_DIR . 'includes/admin/class-admin.php';
+
+		// AI Chat page assets (the submenu/tab is registered by EMCP_Tools_Admin;
+		// this only enqueues ai-chat.js/css + config on that screen).
+		require_once EMCP_TOOLS_DIR . 'includes/ai-chat/class-ai-chat-page.php';
+		( new EMCP_Tools_AI_Chat_Page() )->init();
 
 		if ( ! function_exists( 'emcp_tools_fs' ) ) {
 			return;

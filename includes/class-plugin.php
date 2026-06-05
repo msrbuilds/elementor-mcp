@@ -296,6 +296,25 @@ class EMCP_Tools_Plugin {
 	}
 
 	/**
+	 * Returns the active (post-filter) ability names — the exact set exposed to
+	 * the MCP server, with user-disabled tools, Low-tools mode, and
+	 * Pro-disabled-by-default already removed. Used by the AI Chat
+	 * /execute-ability and /abilities endpoints so the chat can never run a tool
+	 * the admin disabled. Triggers the lazy Abilities API init if it hasn't run.
+	 *
+	 * @since 2.2.0
+	 *
+	 * @return string[]
+	 */
+	public function get_active_ability_names(): array {
+		if ( empty( $this->ability_names ) && function_exists( 'wp_get_ability' ) ) {
+			// Any known ability triggers wp_abilities_api_init → register_abilities().
+			wp_get_ability( 'elementor-mcp/list-pages' );
+		}
+		return is_array( $this->ability_names ) ? $this->ability_names : array();
+	}
+
+	/**
 	 * Registers the MCP server with the MCP Adapter.
 	 *
 	 * Called during `mcp_adapter_init`.
