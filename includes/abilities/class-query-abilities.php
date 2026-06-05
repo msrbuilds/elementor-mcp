@@ -904,6 +904,8 @@ class EMCP_Tools_Query_Abilities {
 			'post_type'      => ! empty( $post_type ) ? $post_type : array( 'page', 'post' ),
 			'post_status'    => ! empty( $status ) ? $status : 'any',
 			'posts_per_page' => 100,
+			// No pagination total needed — skip the SQL_CALC_FOUND_ROWS query (F-018).
+			'no_found_rows'  => true,
 			'meta_query'     => array(
 				array(
 					'key'   => '_elementor_edit_mode',
@@ -997,6 +999,8 @@ class EMCP_Tools_Query_Abilities {
 			'post_type'      => 'elementor_library',
 			'post_status'    => 'publish',
 			'posts_per_page' => 100,
+			// No pagination total needed — skip the SQL_CALC_FOUND_ROWS query (F-018).
+			'no_found_rows'  => true,
 			'orderby'        => 'date',
 			'order'          => 'DESC',
 		);

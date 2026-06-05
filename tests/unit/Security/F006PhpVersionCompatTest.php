@@ -3,7 +3,7 @@
  * Unit tests for F-006: PHP 8.0+ functions used under PHP 7.4 minimum.
  *
  * Finding:   F-006 (High)
- * Files:     elementor-mcp.php (plugin header, Requires PHP: 7.4)
+ * Files:     emcp-tools.php (plugin header, Requires PHP: 7.4)
  *            includes/abilities/class-query-abilities.php:788
  *            includes/validators/class-settings-validator.php:206, 216
  * Pattern:   PAT-PHP-VERSION-DRIFT
@@ -36,7 +36,7 @@
  *     test FAILS (mismatch between declared and actual minimum).
  *
  * Fix option A (preferred): bump `Requires PHP: 7.4` → `Requires PHP: 8.0`
- *   in the plugin header (elementor-mcp.php).
+ *   in the plugin header (emcp-tools.php).
  * Fix option B (backcompat): replace each call with the PHP 7.4 equivalent:
  *   str_contains($h, $n)     → false !== strpos($h, $n)
  *   str_starts_with($h, $n)  → 0 === strpos($h, $n)
@@ -51,7 +51,7 @@ namespace EMCP_Tools\Tests\Security;
 use PHPUnit\Framework\TestCase;
 
 /**
- * @covers elementor-mcp.php
+ * @covers emcp-tools.php
  * @covers \EMCP_Tools_Settings_Validator
  */
 class F006PhpVersionCompatTest extends TestCase {
@@ -72,9 +72,9 @@ class F006PhpVersionCompatTest extends TestCase {
 	 * @group f-006
 	 */
 	public function test_plugin_header_declares_php_80_or_higher(): void {
-		$plugin_file = dirname( __DIR__, 3 ) . '/elementor-mcp.php';
+		$plugin_file = dirname( __DIR__, 3 ) . '/emcp-tools.php';
 
-		$this->assertFileExists( $plugin_file, 'elementor-mcp.php must exist at the plugin root.' );
+		$this->assertFileExists( $plugin_file, 'emcp-tools.php must exist at the plugin root.' );
 
 		$header = file_get_contents( $plugin_file, false, null, 0, 8192 );
 
@@ -85,7 +85,7 @@ class F006PhpVersionCompatTest extends TestCase {
 			'F-006: Plugin header must declare Requires PHP: 8.0 or higher because the ' .
 			'codebase uses str_contains(), str_starts_with(), str_ends_with() which are ' .
 			'PHP 8.0+ only. Fix: change "Requires PHP: 7.4" to "Requires PHP: 8.0" in ' .
-			'elementor-mcp.php.'
+			'emcp-tools.php.'
 		);
 	}
 
@@ -109,7 +109,7 @@ class F006PhpVersionCompatTest extends TestCase {
 			function_exists( 'str_contains' ),
 			'F-006: str_contains() is used in class-query-abilities.php:788 and is not ' .
 			'available on PHP < 8.0. Running tests on PHP ' . PHP_VERSION . '. ' .
-			'Fix: bump Requires PHP to 8.0 in elementor-mcp.php.'
+			'Fix: bump Requires PHP to 8.0 in emcp-tools.php.'
 		);
 	}
 
@@ -165,7 +165,7 @@ class F006PhpVersionCompatTest extends TestCase {
 	 */
 	public function test_settings_validator_does_not_use_php80_functions_under_74_minimum(): void {
 		$validator_file = dirname( __DIR__, 3 ) . '/includes/validators/class-settings-validator.php';
-		$plugin_file    = dirname( __DIR__, 3 ) . '/elementor-mcp.php';
+		$plugin_file    = dirname( __DIR__, 3 ) . '/emcp-tools.php';
 
 		$this->assertFileExists( $validator_file );
 		$this->assertFileExists( $plugin_file );
@@ -204,7 +204,7 @@ class F006PhpVersionCompatTest extends TestCase {
 	 */
 	public function test_query_abilities_does_not_use_php80_functions_under_74_minimum(): void {
 		$query_file  = dirname( __DIR__, 3 ) . '/includes/abilities/class-query-abilities.php';
-		$plugin_file = dirname( __DIR__, 3 ) . '/elementor-mcp.php';
+		$plugin_file = dirname( __DIR__, 3 ) . '/emcp-tools.php';
 
 		if ( ! file_exists( $query_file ) ) {
 			$this->markTestSkipped( 'class-query-abilities.php not found.' );

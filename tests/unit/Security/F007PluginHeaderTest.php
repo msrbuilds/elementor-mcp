@@ -3,7 +3,7 @@
  * Unit tests for F-007: WordPress minimum version wrong in plugin header.
  *
  * Finding:   F-007 (High)
- * File:      elementor-mcp.php (plugin header)
+ * File:      emcp-tools.php (plugin header)
  *
  * Vulnerability description
  * -------------------------
@@ -20,7 +20,7 @@
  *   AFTER  the fix → all tests PASS.
  *
  * Fix: change `Requires at least: 6.7` → `Requires at least: 6.9`
- * in the plugin header block of elementor-mcp.php.
+ * in the plugin header block of emcp-tools.php.
  *
  * @package EMCP_Tools\Tests\Security
  * @since   1.0.0
@@ -31,7 +31,7 @@ namespace EMCP_Tools\Tests\Security;
 use PHPUnit\Framework\TestCase;
 
 /**
- * @covers elementor-mcp.php
+ * @covers emcp-tools.php
  */
 class F007PluginHeaderTest extends TestCase {
 
@@ -43,7 +43,7 @@ class F007PluginHeaderTest extends TestCase {
 
 	protected function setUp(): void {
 		parent::setUp();
-		$this->plugin_file   = dirname( __DIR__, 3 ) . '/elementor-mcp.php';
+		$this->plugin_file   = dirname( __DIR__, 3 ) . '/emcp-tools.php';
 		$this->plugin_header = file_get_contents( $this->plugin_file, false, null, 0, 8192 );
 	}
 
@@ -66,7 +66,7 @@ class F007PluginHeaderTest extends TestCase {
 	 * @group f-007
 	 */
 	public function test_plugin_header_declares_wp_69_or_higher(): void {
-		$this->assertFileExists( $this->plugin_file, 'elementor-mcp.php must exist at the plugin root.' );
+		$this->assertFileExists( $this->plugin_file, 'emcp-tools.php must exist at the plugin root.' );
 
 		// Match "Requires at least: X.Y" and assert X >= 6, Y >= 9 (or X > 6).
 		$matched = preg_match(
@@ -86,7 +86,7 @@ class F007PluginHeaderTest extends TestCase {
 			$at_least_69,
 			sprintf(
 				'F-007: Plugin header declares "Requires at least: %d.%d" but wp_register_ability() ' .
-				'requires WP 6.9+. Fix: change to "Requires at least: 6.9" in elementor-mcp.php. ' .
+				'requires WP 6.9+. Fix: change to "Requires at least: 6.9" in emcp-tools.php. ' .
 				'On WP 6.7/6.8 without the Abilities API compat plugin, all MCP tools silently fail.',
 				$major,
 				$minor
