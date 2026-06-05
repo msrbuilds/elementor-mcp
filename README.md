@@ -1,9 +1,7 @@
-<table align="center" border="0">
-  <tr>
-    <td valign="middle"><img src="assets/img/icon-sm.png" height="48" alt="EMCP Tools logo"></td>
-    <td valign="middle"><h1>MCP Tools for Elementor</h1></td>
-  </tr>
-</table>
+<h1 align="center">
+  <img src="assets/img/icon-sm.png" width="72" alt="EMCP Tools logo"><br>
+  MCP Tools for Elementor
+</h1>
 
 <div align="center">
 
