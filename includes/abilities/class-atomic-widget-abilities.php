@@ -363,7 +363,11 @@ class EMCP_Tools_Atomic_Widget_Abilities {
 			'e-paragraph',
 			function ( $input ) {
 				$settings = array();
-				$settings['text'] = EMCP_Tools_Atomic_Props::html( sanitize_text_field( $input['content'] ?? 'Paragraph text' ) );
+				// The e-paragraph widget's content prop is named `paragraph`
+				// (Html_V3), not `text` — see Elementor atomic-paragraph.php
+				// define_props_schema() / render ($settings['paragraph']). Writing
+				// `text` silently dropped the content (issue #56).
+				$settings['paragraph'] = EMCP_Tools_Atomic_Props::html( sanitize_text_field( $input['content'] ?? 'Paragraph text' ) );
 
 				if ( ! empty( $input['link'] ) ) {
 					$settings['link'] = EMCP_Tools_Atomic_Props::link( esc_url_raw( $input['link'] ) );
@@ -500,7 +504,9 @@ class EMCP_Tools_Atomic_Widget_Abilities {
 			'e-youtube',
 			function ( $input ) {
 				$settings = array();
-				$settings['url'] = EMCP_Tools_Atomic_Props::url( esc_url_raw( $input['video_url'] ?? '' ) );
+				// e-youtube's video prop is `source` (a String prop), not `url`
+				// (issue #56 class).
+				$settings['source'] = EMCP_Tools_Atomic_Props::string( esc_url_raw( $input['video_url'] ?? '' ) );
 
 				if ( ! empty( $input['css_id'] ) ) {
 					$settings['_cssid'] = EMCP_Tools_Atomic_Props::string( sanitize_text_field( $input['css_id'] ) );

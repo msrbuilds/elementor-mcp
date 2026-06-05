@@ -141,19 +141,41 @@ class EMCP_Tools_Global_Classes_Abilities {
 		}
 
 		$classes = array();
-		foreach ( $items as $id => $item ) {
-			$item = (array) $item;
-			$id   = isset( $item['id'] ) ? (string) $item['id'] : (string) $id;
+		foreach ( $items as $key => $item ) {
+			// Resolve each class defensively: one malformed entry must not abort
+			// the whole enumeration. Before this guard, a single unexpected class
+			// structure made the no-args (resolve-all) call fail entirely while
+			// explicit class_ids — which skip the bad entry — still worked (#57).
+			try {
+				$item = (array) $item;
+				$id   = isset( $item['id'] ) ? (string) $item['id'] : (string) $key;
 
-			if ( ! empty( $filter ) && ! in_array( $id, $filter, true ) ) {
-				continue;
+				if ( ! empty( $filter ) && ! in_array( $id, $filter, true ) ) {
+					continue;
+				}
+
+				$classes[] = array(
+					'id'    => $id,
+					'label' => isset( $item['label'] ) ? (string) $item['label'] : '',
+					'css'   => $this->flatten_variants( $item['variants'] ?? array() ),
+				);
+			} catch ( \Throwable $e ) {
+				$id = is_string( $key ) || is_int( $key ) ? (string) $key : '';
+				if ( ! empty( $filter ) && ! in_array( $id, $filter, true ) ) {
+					continue;
+				}
+				if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+					// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
+					error_log( '[EMCP Tools] list-global-classes: could not fully resolve class "' . $id . '": ' . $e->getMessage() );
+				}
+				// Still surface the class id so enumeration/discovery is complete.
+				$classes[] = array(
+					'id'    => $id,
+					'label' => '',
+					'css'   => array(),
+					'error' => 'could not resolve styles for this class',
+				);
 			}
-
-			$classes[] = array(
-				'id'    => $id,
-				'label' => isset( $item['label'] ) ? (string) $item['label'] : '',
-				'css'   => $this->flatten_variants( $item['variants'] ?? array() ),
-			);
 		}
 
 		return array(
@@ -184,9 +206,15 @@ class EMCP_Tools_Global_Classes_Abilities {
 			$props = (array) ( $variant['props'] ?? array() );
 			$flat  = array();
 			foreach ( $props as $prop_name => $prop_value ) {
-				$flat[ (string) $prop_name ] = class_exists( 'EMCP_Tools_Atomic_Props' )
-					? EMCP_Tools_Atomic_Props::unwrap( $prop_value )
-					: $prop_value;
+				// Per-prop guard: an unexpected single prop value must not lose the
+				// rest of the class's resolved CSS.
+				try {
+					$flat[ (string) $prop_name ] = class_exists( 'EMCP_Tools_Atomic_Props' )
+						? EMCP_Tools_Atomic_Props::unwrap( $prop_value )
+						: $prop_value;
+				} catch ( \Throwable $e ) {
+					$flat[ (string) $prop_name ] = $prop_value;
+				}
 			}
 			$out[ $key ] = $flat;
 		}

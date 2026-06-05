@@ -40,7 +40,7 @@ class EMCP_Tools_Schema_Generator {
 			);
 		}
 
-		$controls   = $widget->get_controls();
+		$controls   = $this->get_full_controls( $widget );
 		$properties = array();
 
 		if ( is_array( $controls ) ) {
@@ -67,6 +67,46 @@ class EMCP_Tools_Schema_Generator {
 			),
 			'properties'  => $properties,
 		);
+	}
+
+	/**
+	 * Returns a widget's COMPLETE control set, including the style controls
+	 * (typography, colours, alignment, shadows…) that Elementor's "Optimized
+	 * Control Loading" strips from get_controls() outside the editor.
+	 *
+	 * Elementor stores those controls separately and only merges them back when
+	 * Performance::is_use_style_controls() is true — the same supported toggle
+	 * its own CSS generator (core/files/css/base.php) uses. Without this, the
+	 * schema is incomplete in non-editor contexts (notably the WP-CLI/stdio MCP
+	 * bridge and any non-REST execution), so agents can't discover styling
+	 * controls and settings validation can't recognise them.
+	 *
+	 * @since 2.2.0
+	 *
+	 * @param object $widget The Elementor widget instance.
+	 * @return array The full controls array.
+	 */
+	private function get_full_controls( $widget ): array {
+		$perf = '\Elementor\Core\Frontend\Performance';
+
+		// Older Elementor without the Performance toggle: nothing to do.
+		if ( ! class_exists( $perf ) || ! method_exists( $perf, 'set_use_style_controls' ) ) {
+			$controls = $widget->get_controls();
+			return is_array( $controls ) ? $controls : array();
+		}
+
+		$previous = method_exists( $perf, 'is_use_style_controls' ) ? $perf::is_use_style_controls() : false;
+		$perf::set_use_style_controls( true );
+
+		try {
+			$controls = $widget->get_controls();
+		} finally {
+			// Always restore so we don't change CSS generation / rendering for
+			// the rest of the request.
+			$perf::set_use_style_controls( $previous );
+		}
+
+		return is_array( $controls ) ? $controls : array();
 	}
 
 	/**
