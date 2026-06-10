@@ -231,6 +231,16 @@ namespace {
 		}
 	}
 
+	if ( ! function_exists( 'elementor_mcp_register_ability' ) ) {
+		// The ability groups register through this shim (real implementation in
+		// elementor-mcp.php, which sanitizes schemas then calls wp_register_ability).
+		// Unit tests only need it to exist so register() methods don't fatal;
+		// forward to the wp_register_ability stub.
+		function elementor_mcp_register_ability( string $name, array $args ): void {
+			wp_register_ability( $name, $args );
+		}
+	}
+
 	if ( ! function_exists( 'current_user_can' ) ) {
 		/**
 		 * Configurable current_user_can stub.

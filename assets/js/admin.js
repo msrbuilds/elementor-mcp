@@ -238,11 +238,13 @@
 				proxyConfigsDiv.style.display = '';
 			}
 
-			// Use the absolute filesystem path from the server.
+			// The proxy filename only — the user supplies its full local path (or
+			// uses the npx config below). We never receive the server path (F-020).
 			var fullProxyPath = proxyPath;
 
-			// Determine a sensible log file path based on OS.
-			var isWindows = fullProxyPath.indexOf( '\\' ) !== -1 || fullProxyPath.match( /^[A-Z]:/i );
+			// Determine a sensible debug-log path from the admin's browser OS (the
+			// proxy value is just a filename now, so we can't infer OS from it).
+			var isWindows = /win/i.test( navigator.platform || navigator.userAgent || '' );
 			var logFilePath = isWindows ? 'C:\\tmp\\elementor-mcp-debug.log' : '/tmp/elementor-mcp-debug.log';
 
 			// Claude Code proxy config (.mcp.json) — uses type: stdio with Node.js proxy.

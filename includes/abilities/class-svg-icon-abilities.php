@@ -450,8 +450,11 @@ class Elementor_MCP_Svg_Icon_Abilities {
 			);
 		}
 
-		// Remove event handlers (on*="...").
-		$content = preg_replace( '/\s+on\w+\s*=\s*(["\']).*?\1/i', '', $content );
+		// Remove event handlers (on*="..."). The /s (DOTALL) flag is required so
+		// the quoted value also matches across line boundaries — without it a
+		// handler whose value contains a newline (e.g. onclick="alert(1)\n")
+		// slips through the regex (F-008).
+		$content = preg_replace( '/\s+on\w+\s*=\s*(["\']).*?\1/is', '', $content );
 
 		// Remove javascript: URLs.
 		$content = preg_replace( '/javascript\s*:/i', '', $content );

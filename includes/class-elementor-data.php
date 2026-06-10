@@ -201,9 +201,26 @@ class Elementor_MCP_Data {
 		}
 
 		// Attempt native Elementor save (handles CSS regen, cache busting).
-		$result = $document->save( array( 'elements' => $data ) );
+		// Elementor 4.0 atomic widgets THROW on invalid settings instead of
+		// returning false, so catch it and return a clean error rather than
+		// letting it fatal the whole request. The fallback meta-write below runs
+		// ONLY for the no-exception falsy case (false OR null — valid data,
+		// non-browser context), so invalid data is never written raw. Document::save()
+		// can return null (not just false) in CLI/REST, hence `! $result`. (F-005, #36)
+		try {
+			$result = $document->save( array( 'elements' => $data ) );
+		} catch ( \Throwable $e ) {
+			return new \WP_Error(
+				'save_rejected',
+				sprintf(
+					/* translators: %s: error message from Elementor */
+					__( 'Elementor rejected the element data: %s', 'elementor-mcp' ),
+					$e->getMessage()
+				)
+			);
+		}
 
-		if ( false === $result ) {
+		if ( ! $result ) {
 			// Fallback: direct meta write for non-browser contexts (CLI, REST proxy).
 			$json = wp_json_encode( $data );
 
@@ -257,7 +274,7 @@ class Elementor_MCP_Data {
 
 		$result = $document->save( array( 'settings' => $settings ) );
 
-		if ( false === $result ) {
+		if ( ! $result ) {
 			// Fallback: merge settings into existing page settings meta.
 			$existing = get_post_meta( $post_id, '_elementor_page_settings', true );
 			if ( ! is_array( $existing ) ) {

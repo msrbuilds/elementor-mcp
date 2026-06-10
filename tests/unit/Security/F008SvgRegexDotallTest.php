@@ -52,12 +52,12 @@ class F008SvgRegexDotallTest extends TestCase {
 	// -------------------------------------------------------------------------
 
 	/**
-	 * Applies the current event-handler regex from line 454 (no /s flag).
-	 *
-	 * Source: includes/abilities/class-svg-icon-abilities.php:454
+	 * Mirrors the deployed event-handler regex in sanitize_svg_content(), which
+	 * now includes the /s (DOTALL) flag so multiline quoted values are removed
+	 * (F-008 fix). Kept in sync with includes/abilities/class-svg-icon-abilities.php.
 	 */
 	private function apply_current_event_handler_strip( string $content ): string {
-		return preg_replace( '/\s+on\w+\s*=\s*(["\']).*?\1/i', '', $content );
+		return preg_replace( '/\s+on\w+\s*=\s*(["\']).*?\1/is', '', $content );
 	}
 
 	/**

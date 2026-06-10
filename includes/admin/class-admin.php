@@ -415,7 +415,11 @@ class Elementor_MCP_Admin {
 				'copied'      => __( 'Copied!', 'elementor-mcp' ),
 				'mcpEndpoint' => rest_url( 'mcp/elementor-mcp-server' ),
 				'siteUrl'     => site_url(),
-				'proxyPath'   => ELEMENTOR_MCP_DIR . 'bin' . DIRECTORY_SEPARATOR . 'mcp-proxy.mjs',
+				// Only the filename — never the absolute server path. The proxy runs
+				// on the CLIENT machine, so the server path is both useless to the
+				// user and a needless path disclosure (F-020). The UI points users at
+				// the npx runner or their own local copy of the proxy.
+				'proxyPath'   => 'mcp-proxy.mjs',
 				'ajaxUrl'       => admin_url( 'admin-ajax.php' ),
 				'createPwNonce' => wp_create_nonce( 'elementor_mcp_create_app_password' ),
 				'generating'    => __( 'Generating…', 'elementor-mcp' ),
@@ -734,11 +738,47 @@ class Elementor_MCP_Admin {
 	/**
 	 * Get all tools grouped by category for the UI.
 	 *
+	 * Returns the curated catalog (see get_tool_catalog()) and, under WP_DEBUG,
+	 * cross-checks it against the live ability registry so the hand-maintained
+	 * catalog can't silently drift from the actually-registered tools (F-019).
+	 *
 	 * @since 1.0.0
 	 *
 	 * @return array<string, array{label: string, tools: array<string, array{label: string, description: string, badges: string[]}>}> Grouped tools.
 	 */
 	public function get_all_tools(): array {
+		$catalog = $this->get_tool_catalog();
+
+		// F-019 drift guard: the catalog carries admin-UI metadata (labels,
+		// descriptions, badges) the bare ability registry doesn't have, so it
+		// stays curated rather than derived. To stop it drifting, cross-check
+		// each catalog slug against the live registry and log any that isn't a
+		// registered ability (a renamed/removed tool, or env-gated).
+		if ( defined( 'WP_DEBUG' ) && WP_DEBUG && function_exists( 'wp_get_ability' ) ) {
+			foreach ( $catalog as $emcp_group ) {
+				foreach ( array_keys( $emcp_group['tools'] ?? array() ) as $emcp_slug ) {
+					if ( ! wp_get_ability( $emcp_slug ) ) {
+						// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
+						error_log( '[EMCP Tools] get_all_tools: catalog tool "' . $emcp_slug . '" is not in the ability registry (drift or environment-gated).' );
+					}
+				}
+			}
+		}
+
+		return $catalog;
+	}
+
+	/**
+	 * The curated admin tool catalog: every tool grouped by category with its
+	 * label, description, and badges for the Tools admin screen. This is the
+	 * source of the admin-UI metadata; get_all_tools() keeps it honest against
+	 * the ability registry.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @return array<string, array{label: string, tools: array<string, array{label: string, description: string, badges: string[]}>}> Grouped tools.
+	 */
+	private function get_tool_catalog(): array {
 		$tools = array(
 			'query'            => array(
 				'label' => __( 'Query & Discovery', 'elementor-mcp' ),

@@ -2,6 +2,17 @@
 
 All notable changes to MCP Tools for Elementor are documented in this file.
 
+## 1.9.1 — 2026-06-11
+
+Security hardening (ported from upstream msrbuilds/elementor-mcp 4bcefc5):
+
+- F-004: add-custom-css neutralises the `</style>` breakout (bypass-proof loop strip; valid CSS preserved).
+- F-008: SVG sanitiser matches `on*=` event handlers across line breaks (multiline bypass closed).
+- F-020: admin no longer localises the absolute server path to page JS (filename only).
+- Null-save: save-page-data/settings persist meta even when Elementor's document save() returns null.
+- Query perf: list-pages WP_Query uses no_found_rows.
+- Test suite updated to the fork's actual file layout (elementor-mcp.php; uninstall.php removed in 1.6.1).
+
 ## [1.9.0]
 
 - New: **AI Widget Builder (Pro).** Eight MCP tools let an AI agent design and register custom Elementor widgets from a structured spec — **no hand-written PHP**. A plugin-owned generator compiles the spec + an HTML template (`{{control}}`, `{{#if}}`, `{{#each}}`) into a `Widget_Base` class, escaping every value by control type, and writes it to an isolated sandbox under `uploads/emcp-widgets/` that never touches core, theme, or other plugin files. 35 supported control types — including group controls (typography, border, box-shadow, background), repeaters, responsive controls, and conditions — plus optional per-widget CSS/JS. New widgets auto-activate and appear under a **"Custom (EMCP)"** category in the Elementor panel. A runtime safety net (validation on create/update + a shutdown-handler isolation guard) demotes any malformed widget to draft instead of breaking the editor. Tools: `list-control-types`, `validate-widget-spec`, `create-custom-widget`, `update-custom-widget`, `get-custom-widget`, `list-custom-widgets`, `set-widget-status`, `delete-custom-widget`. Off-by-default; managed on the new **Widget Builder** admin tab. Ships with a `widget-builder` Agent Skill so connected agents know the spec format.

@@ -3,7 +3,7 @@ Contributors: mianshahzadraza
 Tags: elementor, mcp, ai, page-builder, automation
 Requires at least: 6.9
 Tested up to: 6.9
-Stable tag: 1.9.0
+Stable tag: 1.9.1
 Requires PHP: 8.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -155,6 +155,14 @@ The plugin enforces WordPress capability checks on every tool. Read operations r
 2. Connection configuration page with copy-paste configs.
 
 == Changelog ==
+
+= 1.9.1 =
+Security hardening (ported from upstream msrbuilds/elementor-mcp 4bcefc5):
+* Fixed: F-004 — add-custom-css neutralises the </style> breakout (bypass-proof loop strip; valid CSS preserved).
+* Fixed: F-008 — SVG sanitiser matches on*= event handlers across line breaks (multiline bypass closed).
+* Fixed: F-020 — admin no longer localises the absolute server path to page JS (proxy filename only).
+* Fixed: page-save data/settings persist meta even when Elementor's document save() returns null.
+* Performance: list-pages WP_Query uses no_found_rows.
 
 = 1.9.0 =
 * New: AI Widget Builder (Pro) — 8 MCP tools let an agent design custom Elementor widgets from a structured spec (no hand-written PHP). The plugin compiles the spec + an HTML template into a sandboxed Widget_Base class under uploads/emcp-widgets/, escaping every value by control type. 35 control types incl. group controls (typography/border/box-shadow/background), repeaters, responsive, and conditions, plus optional per-widget CSS/JS. New widgets auto-activate under a "Custom (EMCP)" category; a runtime safety net keeps a bad widget from breaking the editor. Off-by-default; managed on the new Widget Builder tab.

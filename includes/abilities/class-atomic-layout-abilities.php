@@ -164,6 +164,8 @@ class Elementor_MCP_Atomic_Layout_Abilities {
 		if ( ! empty( $parent_id ) ) {
 			$ok = $this->data->insert_element( $page_data, $parent_id, $element, $position );
 			if ( ! $ok ) {
+				// F-027a: surface tool failures server-side so they're not silent.
+				error_log( "Elementor MCP: parent element '{$parent_id}' not found in page {$post_id}." );
 				return new \WP_Error( 'not_found', "Parent element '{$parent_id}' not found in page {$post_id}." );
 			}
 		} else {

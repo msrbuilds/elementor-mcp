@@ -209,6 +209,20 @@ class Elementor_MCP_Custom_Code_Abilities {
 		$css = preg_replace( '/<\?(=|php)(.+?)\?>/is', '', $css );
 		$css = preg_replace( '/<script[^>]*>.*?<\/script>/is', '', $css );
 
+		// Neutralize </style>. This CSS is emitted inside a <style> block, which
+		// the HTML parser treats as raw text — the ONLY way to break out into
+		// live HTML (an XSS vector, e.g. </style><img onerror=...>) is the literal
+		// </style> end tag; a bare "<", ">" or even "<img>" is inert without it.
+		// We loop so that removing one match can't reconstruct another (e.g.
+		// "</sty</stylele>" -> "</style>"). This is bypass-proof and, crucially,
+		// preserves ALL valid CSS — child/sibling combinators (> ~ +), media
+		// range queries (< >), and content strings. (F-004)
+		$previous = null;
+		while ( $previous !== $css ) {
+			$previous = $css;
+			$css      = preg_replace( '#</\s*style#i', '', $css );
+		}
+
 		if ( ! empty( $element_id ) ) {
 			// Element-level custom CSS.
 			$page_data = $this->data->get_page_data( $post_id );
