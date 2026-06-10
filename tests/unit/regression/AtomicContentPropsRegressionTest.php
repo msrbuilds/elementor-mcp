@@ -61,6 +61,18 @@ class AtomicContentPropsRegressionTest extends TestCase {
 		$this->assertSame( 'Click', $el['settings']['text']['value'] );
 	}
 
+	public function test_youtube_uses_source_key_not_url(): void {
+		// #56: the e-youtube video prop is `source` (a String prop), not `url`.
+		// add-atomic-youtube previously wrote `url` → core ignored it → no video.
+		$el = $this->factory()->create_atomic_widget( 'e-youtube', array(
+			'source' => \Elementor_MCP_Atomic_Props::string( 'https://youtu.be/abc123' ),
+		) );
+		$this->assertArrayHasKey( 'source', $el['settings'], 'core e-youtube key is `source`' );
+		$this->assertArrayNotHasKey( 'url', $el['settings'], '`url` is the wrong key → no video' );
+		$this->assertSame( 'string', $el['settings']['source']['$$type'], 'e-youtube source is a String_Prop_Type' );
+		$this->assertSame( 'https://youtu.be/abc123', $el['settings']['source']['value'] );
+	}
+
 	public function test_svg_uses_image_src_with_single_url_key(): void {
 		$svg = array(
 			'$$type' => 'image-src',

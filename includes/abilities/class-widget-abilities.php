@@ -458,6 +458,18 @@ class Elementor_MCP_Widget_Abilities {
 
 		$all_required = array_unique( array_merge( array( 'post_id', 'parent_id' ), $required ) );
 
+		// Token optimization (Curated Slim): publish only the core params
+		// (content + primary layout + colours) in the schema. Deep style-group
+		// controls (typography, shadows, borders, spacing, CSS filters) are
+		// dropped from the published schema but STILL work at execution —
+		// execute_convenience_tool passes through ANY input key — and stay fully
+		// discoverable via get-widget-schema. This roughly halves the per-tool
+		// token footprint without removing any capability.
+		$schema_props = self::slim_convenience_props( $extra_props, $required, 5 );
+		if ( count( $schema_props ) < count( $extra_props ) ) {
+			$description .= ' ' . __( 'All other settings pass through; get-widget-schema for the full list.', 'elementor-mcp' );
+		}
+
 		elementor_mcp_register_ability(
 			$full_name,
 			array(
@@ -470,7 +482,7 @@ class Elementor_MCP_Widget_Abilities {
 				'permission_callback' => array( $this, 'check_edit_permission' ),
 				'input_schema'        => array(
 					'type'       => 'object',
-					'properties' => array_merge( $base_props, $extra_props ),
+					'properties' => array_merge( $base_props, $schema_props ),
 					'required'   => $all_required,
 				),
 				'output_schema'       => array(
@@ -489,6 +501,60 @@ class Elementor_MCP_Widget_Abilities {
 				),
 			)
 		);
+	}
+
+	/**
+	 * Curated Slim: drop deep style-group controls from a convenience tool's
+	 * published input schema.
+	 *
+	 * Keeps content, primary layout, and colour params; removes typography,
+	 * shadow, stroke, border, spacing, and CSS-filter group controls (the
+	 * token-heavy long tail). Dropped params still apply at execution via the
+	 * pass-through in execute_convenience_tool, and the full set stays available
+	 * from get-widget-schema. Required params are always kept.
+	 *
+	 * @since 2.2.0
+	 *
+	 * @param array $props Full extra_props for the tool.
+	 * @param array $keep  Param names to keep regardless (the tool's required list).
+	 * @param int   $max   Cap on the number of published params (0 = no cap). The
+	 *                     first $max in content-first order are kept; required
+	 *                     params are always kept even beyond the cap.
+	 * @return array Slimmed properties (insertion order preserved).
+	 */
+	private static function slim_convenience_props( array $props, array $keep = array(), int $max = 0 ): array {
+		$advanced = array( 'typography', 'box_shadow', 'text_shadow', 'text_stroke', 'css_filters', 'border', 'padding', 'margin' );
+		$out      = array();
+		foreach ( $props as $key => $def ) {
+			if ( in_array( $key, $keep, true ) ) {
+				$out[ $key ] = $def;
+				continue;
+			}
+			$is_advanced = false;
+			foreach ( $advanced as $needle ) {
+				if ( false !== strpos( (string) $key, $needle ) ) {
+					$is_advanced = true;
+					break;
+				}
+			}
+			if ( ! $is_advanced ) {
+				$out[ $key ] = $def;
+			}
+		}
+
+		// Cap the published param count: keep the first $max (content/primary
+		// params come first in each definition) plus any required param.
+		if ( $max > 0 && count( $out ) > $max ) {
+			$capped = array();
+			foreach ( $out as $key => $def ) {
+				if ( count( $capped ) < $max || in_array( $key, $keep, true ) ) {
+					$capped[ $key ] = $def;
+				}
+			}
+			$out = $capped;
+		}
+
+		return $out;
 	}
 
 	/**

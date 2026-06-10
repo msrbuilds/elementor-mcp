@@ -414,6 +414,10 @@ class Elementor_MCP_Atomic_Widget_Abilities {
 			'e-paragraph',
 			function ( $input ) {
 				$settings = array();
+				// The e-paragraph widget's content prop is named `paragraph`
+				// (Html_V3), not `text` — writing `text` silently dropped the
+				// content (issue #56). The fork already writes `paragraph` via
+				// its 4.x content_prop helper.
 				$settings['paragraph'] = self::content_prop( sanitize_text_field( $input['content'] ?? 'Paragraph text' ) );
 
 				if ( ! empty( $input['link'] ) ) {
@@ -555,7 +559,9 @@ class Elementor_MCP_Atomic_Widget_Abilities {
 			'e-youtube',
 			function ( $input ) {
 				$settings = array();
-				$settings['url'] = Elementor_MCP_Atomic_Props::url( esc_url_raw( $input['video_url'] ?? '' ) );
+				// e-youtube's video prop is `source` (a String prop), not `url`
+				// (issue #56 class).
+				$settings['source'] = Elementor_MCP_Atomic_Props::string( esc_url_raw( $input['video_url'] ?? '' ) );
 
 				if ( ! empty( $input['css_id'] ) ) {
 					$settings['_cssid'] = Elementor_MCP_Atomic_Props::string( sanitize_text_field( $input['css_id'] ) );

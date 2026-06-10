@@ -139,6 +139,14 @@ class Elementor_MCP_Ability_Registrar {
 		$media_library->register();
 		$this->ability_names = array_merge( $this->ability_names, $media_library->get_ability_names() );
 
+		// Global Classes (Class Manager) abilities (Elementor 4.0+). Self-guards
+		// on the Global Classes repository: register()/get_ability_names() are
+		// no-ops when it's absent, so list-global-classes never enters the MCP
+		// surface on pre-4.0 sites.
+		$global_classes = new Elementor_MCP_Global_Classes_Abilities( $this->data );
+		$global_classes->register();
+		$this->ability_names = array_merge( $this->ability_names, $global_classes->get_ability_names() );
+
 		// Atomic widget abilities (Elementor 4.0+). Self-guards on version check.
 		$atomic_widgets = new Elementor_MCP_Atomic_Widget_Abilities( $this->data, $this->factory );
 		$atomic_widgets->register();

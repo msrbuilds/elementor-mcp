@@ -2,6 +2,13 @@
 
 All notable changes to MCP Tools for Elementor are documented in this file.
 
+## 1.10.0 — 2026-06-11
+
+- New: `list-global-classes` — reads Elementor's Class Manager (Global Classes), mapping opaque `g-<hash>` IDs to their human names and the CSS each defines per breakpoint/state. Read-only, Elementor 4.0+. Ported from upstream msrbuilds/elementor-mcp (#55, with the #57 defensive-resolve fix).
+- Fixed (#56): `add-atomic-youtube` now writes the `e-youtube` `source` prop (was `url` → silently dropped, no video). `add-atomic-paragraph` already wrote the correct `paragraph` prop in this fork's 4.x work, so no change was needed there.
+- Improved: `get-widget-schema` returns the complete control set (style controls — typography/colour/shadow — included) via the full-controls path (`Performance::set_use_style_controls`); settings validation is now non-fatal — unrecognised keys pass through to Elementor (the real authority) instead of aborting the insert.
+- Improved: leaner convenience-widget schemas — core params published, the rest pass through and stay discoverable via `get-widget-schema`.
+
 ## 1.9.1 — 2026-06-11
 
 Security hardening (ported from upstream msrbuilds/elementor-mcp 4bcefc5):

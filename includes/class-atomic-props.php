@@ -206,7 +206,7 @@ class Elementor_MCP_Atomic_Props {
 					return is_array( $value ) ? $value : array();
 
 				case 'image':
-					if ( is_array( $value ) && isset( $value['src'] ) ) {
+					if ( is_array( $value ) && isset( $value['src'] ) && is_array( $value['src'] ) ) {
 						return array(
 							'id'  => self::unwrap( $value['src']['id'] ?? 0 ),
 							'url' => self::unwrap( $value['src']['url'] ?? '' ),

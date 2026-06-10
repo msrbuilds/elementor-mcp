@@ -125,52 +125,61 @@ class Elementor_MCP_Settings_Validator {
 	);
 
 	/**
-	 * Validates settings for a widget type.
+	 * Validates settings for a widget type (non-fatal / advisory).
+	 *
+	 * IMPORTANT: this never hard-rejects a setting. Elementor's headless
+	 * `get_widget_types($t)->get_controls()` — the source our schema is built
+	 * from — systematically OMITS group controls (typography) and tabbed style
+	 * controls (e.g. `title_color`) for every widget in a REST/CLI context, even
+	 * though they are real controls registered in the widget's `register_controls()`
+	 * (confirmed in Elementor core, e.g. heading.php's `title_color` + `typography`).
+	 * Treating that incomplete list as an allow-list previously rejected valid
+	 * styling and aborted the whole insert.
+	 *
+	 * Elementor itself is the real authority: it applies the controls it knows on
+	 * render and ignores genuinely-unknown keys. So we pass settings through and
+	 * only LOG keys we can't account for (diagnostics), never block.
 	 *
 	 * @since 1.0.0
+	 * @since 2.2.0 Non-fatal: returns true for unrecognised keys (logs them under WP_DEBUG)
+	 *              instead of returning a WP_Error.
 	 *
 	 * @param string $widget_type The widget type name.
 	 * @param array  $settings    The settings to validate.
-	 * @return true|\WP_Error True if valid, WP_Error on failure.
+	 * @return true Always true; the method is advisory only.
 	 */
 	public function validate( string $widget_type, array $settings ) {
 		$schema = $this->schema_generator->generate( $widget_type );
 
+		// Can't introspect controls (unknown widget, Elementor unavailable, etc.):
+		// don't block — Elementor is the authority at save/render time.
 		if ( is_wp_error( $schema ) ) {
-			return $schema;
+			return true;
 		}
 
 		$valid_keys = array_keys( $schema['properties'] ?? array() );
+		$unknown    = array();
 
 		foreach ( array_keys( $settings ) as $key ) {
-			// Direct match against widget schema.
-			if ( in_array( $key, $valid_keys, true ) ) {
+			if ( in_array( $key, $valid_keys, true )
+				|| in_array( $key, self::$common_advanced_keys, true )
+				|| $this->is_responsive_variant( $key, $valid_keys )
+				|| $this->is_group_control_subkey( $key, $valid_keys )
+			) {
 				continue;
 			}
+			$unknown[] = $key;
+		}
 
-			// Common advanced controls valid for all widgets.
-			if ( in_array( $key, self::$common_advanced_keys, true ) ) {
-				continue;
-			}
-
-			// Check responsive variant: strip suffix and test base key.
-			if ( $this->is_responsive_variant( $key, $valid_keys ) ) {
-				continue;
-			}
-
-			// Group control sub-keys: if 'text_stroke_text_stroke' is valid,
-			// allow 'text_stroke_stroke_width', 'text_stroke_stroke_color', etc.
-			if ( $this->is_group_control_subkey( $key, $valid_keys ) ) {
-				continue;
-			}
-
-			return new \WP_Error(
-				'invalid_setting',
+		// Unknown keys are very often real controls the headless schema can't see
+		// (typography, colours). Pass them through; log for diagnostics only.
+		if ( ! empty( $unknown ) && defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+			error_log(
 				sprintf(
-					/* translators: 1: setting key, 2: widget type */
-					__( 'Setting "%1$s" is not a valid control for widget type "%2$s".', 'elementor-mcp' ),
-					$key,
-					$widget_type
+					'[Elementor MCP] Passing through %1$d unrecognised setting(s) for widget "%2$s" (absent from the headless control schema): %3$s',
+					count( $unknown ),
+					$widget_type,
+					implode( ', ', $unknown )
 				)
 			);
 		}

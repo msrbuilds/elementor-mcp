@@ -3,7 +3,7 @@
  * Plugin Name:       MCP Tools for Elementor
  * Plugin URI:        https://github.com/msrbuilds/elementor-mcpelementor-mcp
  * Description:       Extends the WordPress MCP Adapter to expose Elementor data, widgets, and page design tools as MCP tools for AI agents.
- * Version:           1.9.1
+ * Version:           1.10.0
  * Requires at least: 6.9
  * Tested up to:      6.9
  * Requires PHP:      8.0
@@ -20,7 +20,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Plugin constants.
-define( 'ELEMENTOR_MCP_VERSION', '1.9.1' );
+define( 'ELEMENTOR_MCP_VERSION', '1.10.0' );
 define( 'ELEMENTOR_MCP_DIR', plugin_dir_path( __FILE__ ) );
 define( 'ELEMENTOR_MCP_URL', plugin_dir_url( __FILE__ ) );
 define( 'ELEMENTOR_MCP_BASENAME', plugin_basename( __FILE__ ) );
@@ -562,6 +562,7 @@ function elementor_mcp_init(): void {
 	require_once ELEMENTOR_MCP_DIR . 'includes/abilities/class-svg-icon-abilities.php';
 	require_once ELEMENTOR_MCP_DIR . 'includes/abilities/class-custom-code-abilities.php';
 	require_once ELEMENTOR_MCP_DIR . 'includes/abilities/class-media-library-abilities.php';
+	require_once ELEMENTOR_MCP_DIR . 'includes/abilities/class-global-classes-abilities.php';
 	// Brand Kits (Pro). The writer + backup store + fetcher + abilities load
 	// unconditionally (no admin dependency) so the MCP REST/CLI/proxy surface
 	// can reach them; every write method is independently Pro-gated.

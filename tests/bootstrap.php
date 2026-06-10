@@ -625,6 +625,7 @@ namespace {
 			// Ability classes — all groups
 			'Elementor_MCP_Custom_Code_Abilities'  => 'includes/abilities/class-custom-code-abilities.php',
 			'Elementor_MCP_Media_Library_Abilities' => 'includes/abilities/class-media-library-abilities.php',
+			'Elementor_MCP_Global_Classes_Abilities' => 'includes/abilities/class-global-classes-abilities.php',
 			'Elementor_MCP_Stock_Image_Abilities'  => 'includes/abilities/class-stock-image-abilities.php',
 			'Elementor_MCP_Composite_Abilities'    => 'includes/abilities/class-composite-abilities.php',
 			'Elementor_MCP_Page_Abilities'         => 'includes/abilities/class-page-abilities.php',
