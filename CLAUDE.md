@@ -17,15 +17,15 @@ When editing premium-prompts behavior, the plugin code (`includes/admin/class-pr
 
 **Current status: v3.1.0 — All phases implemented (P0/P1/P2) plus Elementor 4.0 atomic elements, top-level admin menu, the v3.0.0 catalog-backed widget consolidation, and the v3.1.0 WordPress Content tools (the first step beyond Elementor).** Foundation layer, query tools, page CRUD, layout, the 5 catalog-backed widget tools, template, global, composite tools, stock images, SVG icons, custom code tools, 13 atomic element tools for Elementor 4.0+, 8 general-WordPress content tools, and a curated essentials filter (Low-tools mode, now largely obsolete after the consolidation).
 
-**Tool counts by configuration (v3.1.0 — the v3.0.0 base was measured against a live `tools/list` via WP-CLI; the v3.1.0 numbers add the 8 Content tools + 3 surfaced `core/*` abilities = +11, all enabled-by-default, and are ESTIMATES to be confirmed against a fresh live `tools/list` in Task 8):**
+**Tool counts by configuration (v3.1.0 — measured against a live `tools/list` via WP-CLI; v3.1.0 adds the 8 Content tools + 3 surfaced `core/*` abilities = +11, all enabled-by-default):**
 - Free Elementor only: **~55** (44 base + 11)
 - Free Elementor + Elementor 4.0+ atomic: **~69** (58 base + 11)
 - With Elementor Pro: **~81** (70 base + 11)
-- With Elementor Pro + Elementor 4.0+: **~95** (84 base + 11)
-- With Pro + WooCommerce + Elementor 4.0+: **~95** — WooCommerce widgets are reached through `add-pro-widget` (catalog tier `woo`), so they add **no** new tools.
+- With Elementor Pro + Elementor 4.0+: **95** (84 base + 11) — **measured live** (Pro + Elementor 4.1), confirming the +11 delta
+- With Pro + WooCommerce + Elementor 4.0+: **95** — WooCommerce widgets are reached through `add-pro-widget` (catalog tier `woo`), so they add **no** new tools.
 - Low-tools mode (any config): still available but largely obsolete — the consolidation already keeps the surface well under common client caps.
 
-> ⚠️ The v3.1.0 counts above are **estimates** (base + 11). The 8 Content tools and 3 `core/*` read abilities are all enabled-by-default, so they add to every configuration. **Task 8 will measure a fresh live `tools/list` and reconcile these numbers** across CLAUDE.md / README / readme.txt.
+> The Pro + Elementor 4.x config was measured live at **95 tools** (84 v3.0.0 base + 8 Content + 3 `core/*`), confirming the +11 delta. The other rows apply the same measured +11 to their v3.0.0 base. Of the registered total, ~21 still ship disabled-by-default (SEO/A11y, Widget Builder, PHP Snippets); the Content tools and `core/*` abilities are all enabled by default.
 
 > **These are REGISTERED counts.** Three groups ship **disabled-by-default** — SEO & Accessibility (**7**, Pro), Widget Builder (**8**, Pro), and PHP Snippets / Sandbox (**6**, free) = **21** tools registered-but-off. So the typical **active** surface is ~21 smaller until a user enables them on the Tools tab (e.g. Pro + Elementor 4.0+ ≈ **63** active by default).
 >
