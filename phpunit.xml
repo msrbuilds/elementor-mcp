@@ -32,6 +32,9 @@
         <testsuite name="Settings">
             <directory>tests/unit/settings</directory>
         </testsuite>
+        <testsuite name="Packages">
+            <directory>tests/unit/packages</directory>
+        </testsuite>
     </testsuites>
 
     <source>

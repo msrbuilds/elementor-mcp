@@ -161,7 +161,7 @@ class EMCP_Tools_Admin {
 	 *
 	 * @since 1.8.0
 	 */
-	const DEFAULTS_VERSION = 5;
+	const DEFAULTS_VERSION = 6;
 
 	/**
 	 * SEO/A11y Pro MCP tool slugs that ship disabled-by-default (v2 defaults).
@@ -222,6 +222,29 @@ class EMCP_Tools_Admin {
 	}
 
 	/**
+	 * The 9 Plugins & Themes mutation tool slugs. Powerful (install/delete/
+	 * activate), so they ship disabled-by-default; reads stay enabled. The admin
+	 * opts in on the Tools tab.
+	 *
+	 * @since 3.0.0
+	 *
+	 * @return string[]
+	 */
+	public static function package_write_tool_slugs(): array {
+		return array(
+			'emcp-tools/install-plugin',
+			'emcp-tools/activate-plugin',
+			'emcp-tools/deactivate-plugin',
+			'emcp-tools/update-plugin',
+			'emcp-tools/delete-plugin',
+			'emcp-tools/install-theme',
+			'emcp-tools/switch-theme',
+			'emcp-tools/update-theme',
+			'emcp-tools/delete-theme',
+		);
+	}
+
+	/**
 	 * Seeds default disabled-tools on install/upgrade so new Pro tool batches
 	 * ship off-by-default (keeping sites under client tool caps), then records
 	 * the applied version. Each version step adds ONLY its newly-introduced
@@ -276,6 +299,12 @@ class EMCP_Tools_Admin {
 		// (it only registers when Elementor Pro is active anyway).
 		if ( $applied < 5 ) {
 			$existing = array_values( array_diff( $existing, self::removed_widget_tool_slugs() ) );
+		}
+
+		// v6 — Plugins & Themes mutation tools ship disabled-by-default
+		// (powerful: install/activate/deactivate/update/delete). Reads stay on.
+		if ( $applied < 6 ) {
+			$add = array_merge( $add, self::package_write_tool_slugs() );
 		}
 
 		$merged = array_values( array_unique( array_merge( $existing, $add ) ) );
@@ -1154,6 +1183,76 @@ class EMCP_Tools_Admin {
 						'label'       => __( 'Update Settings', 'emcp-tools' ),
 						'description' => __( 'Updates curated site settings; auto-flushes rewrite rules on permalink changes.', 'emcp-tools' ),
 						'badges'      => array(),
+					),
+				),
+			),
+			'wp_packages'      => array(
+				'label' => __( 'Plugins & Themes', 'emcp-tools' ),
+				'tools' => array(
+					'emcp-tools/list-plugins'      => array(
+						'label'       => __( 'List Plugins', 'emcp-tools' ),
+						'description' => __( 'Lists installed plugins, status, versions, and updates.', 'emcp-tools' ),
+						'badges'      => array( 'read-only' ),
+					),
+					'emcp-tools/search-plugins'    => array(
+						'label'       => __( 'Search Plugins', 'emcp-tools' ),
+						'description' => __( 'Searches the wordpress.org plugin directory.', 'emcp-tools' ),
+						'badges'      => array( 'read-only' ),
+					),
+					'emcp-tools/install-plugin'    => array(
+						'label'       => __( 'Install Plugin', 'emcp-tools' ),
+						'description' => __( 'Installs a plugin from wordpress.org by slug.', 'emcp-tools' ),
+						'badges'      => array(),
+					),
+					'emcp-tools/activate-plugin'   => array(
+						'label'       => __( 'Activate Plugin', 'emcp-tools' ),
+						'description' => __( 'Activates an installed plugin.', 'emcp-tools' ),
+						'badges'      => array(),
+					),
+					'emcp-tools/deactivate-plugin' => array(
+						'label'       => __( 'Deactivate Plugin', 'emcp-tools' ),
+						'description' => __( 'Deactivates a plugin (never EMCP Tools or Elementor).', 'emcp-tools' ),
+						'badges'      => array(),
+					),
+					'emcp-tools/update-plugin'     => array(
+						'label'       => __( 'Update Plugin', 'emcp-tools' ),
+						'description' => __( 'Updates a plugin to the latest wordpress.org version.', 'emcp-tools' ),
+						'badges'      => array(),
+					),
+					'emcp-tools/delete-plugin'     => array(
+						'label'       => __( 'Delete Plugin', 'emcp-tools' ),
+						'description' => __( 'Permanently deletes an inactive plugin.', 'emcp-tools' ),
+						'badges'      => array( 'destructive' ),
+					),
+					'emcp-tools/list-themes'       => array(
+						'label'       => __( 'List Themes', 'emcp-tools' ),
+						'description' => __( 'Lists installed themes, active status, and updates.', 'emcp-tools' ),
+						'badges'      => array( 'read-only' ),
+					),
+					'emcp-tools/search-themes'     => array(
+						'label'       => __( 'Search Themes', 'emcp-tools' ),
+						'description' => __( 'Searches the wordpress.org theme directory.', 'emcp-tools' ),
+						'badges'      => array( 'read-only' ),
+					),
+					'emcp-tools/install-theme'     => array(
+						'label'       => __( 'Install Theme', 'emcp-tools' ),
+						'description' => __( 'Installs a theme from wordpress.org by slug.', 'emcp-tools' ),
+						'badges'      => array(),
+					),
+					'emcp-tools/switch-theme'      => array(
+						'label'       => __( 'Switch Theme', 'emcp-tools' ),
+						'description' => __( 'Activates an installed theme.', 'emcp-tools' ),
+						'badges'      => array(),
+					),
+					'emcp-tools/update-theme'      => array(
+						'label'       => __( 'Update Theme', 'emcp-tools' ),
+						'description' => __( 'Updates a theme to the latest wordpress.org version.', 'emcp-tools' ),
+						'badges'      => array(),
+					),
+					'emcp-tools/delete-theme'      => array(
+						'label'       => __( 'Delete Theme', 'emcp-tools' ),
+						'description' => __( 'Permanently deletes an inactive theme.', 'emcp-tools' ),
+						'badges'      => array( 'destructive' ),
 					),
 				),
 			),
