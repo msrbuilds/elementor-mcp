@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-MCP Tools for Elementor Plugin — a WordPress plugin that extends the official WordPress MCP Adapter to expose Elementor data, widgets, structures, and methods as MCP (Model Context Protocol) tools. This enables AI tools (Claude, Cursor, etc.) to create and manipulate Elementor page designs programmatically via up to ~58 MCP tools (scales with environment). As of v3.0.0 the 62 per-widget convenience tools were folded into a catalog-backed model (5 widget tools), so the active surface is far smaller while every widget remains reachable.
+MCP Tools for Elementor Plugin — a WordPress plugin that extends the official WordPress MCP Adapter to expose Elementor data, widgets, structures, and methods as MCP (Model Context Protocol) tools. This enables AI tools (Claude, Cursor, etc.) to create and manipulate Elementor page designs programmatically via up to ~70 MCP tools (scales with environment). As of v3.0.0 the 62 per-widget convenience tools were folded into a catalog-backed model (5 widget tools), so the active surface is far smaller while every widget remains reachable. As of **v3.1.0** the toolset takes its first step beyond Elementor: 8 general-WordPress **Content tools** (create/read/update/list/delete posts of any type, plus taxonomy and post-type discovery) built on WP core, never touching `_elementor_data`.
 
 ## Companion projects (sibling folders, edit from here)
 
@@ -15,15 +15,17 @@ MCP Tools for Elementor Plugin — a WordPress plugin that extends the official 
 
 When editing premium-prompts behavior, the plugin code (`includes/admin/class-pro-prompts.php`) and the website's API endpoint (`website/src/pages/api/emcp/prompts.json.ts` per the PLAN) must stay in sync via the contract in `docs/PREMIUM_PROMPTS_API.md`.
 
-**Current status: v3.0.0 — All phases implemented (P0/P1/P2) plus Elementor 4.0 atomic elements, top-level admin menu, and the v3.0.0 catalog-backed widget consolidation.** Foundation layer, query tools, page CRUD, layout, the 5 catalog-backed widget tools, template, global, composite tools, stock images, SVG icons, custom code tools, 13 atomic element tools for Elementor 4.0+, and a curated essentials filter (Low-tools mode, now largely obsolete after the consolidation).
+**Current status: v3.1.0 — All phases implemented (P0/P1/P2) plus Elementor 4.0 atomic elements, top-level admin menu, the v3.0.0 catalog-backed widget consolidation, and the v3.1.0 WordPress Content tools (the first step beyond Elementor).** Foundation layer, query tools, page CRUD, layout, the 5 catalog-backed widget tools, template, global, composite tools, stock images, SVG icons, custom code tools, 13 atomic element tools for Elementor 4.0+, 8 general-WordPress content tools, and a curated essentials filter (Low-tools mode, now largely obsolete after the consolidation).
 
-**Tool counts by configuration (v3.0.0 — measured against a live `tools/list` via WP-CLI):**
-- Free Elementor only: **44**
-- Free Elementor + Elementor 4.0+ atomic: **58** (+14 atomic tools)
-- With Elementor Pro: **70** (+26 Pro-gated tools)
-- With Elementor Pro + Elementor 4.0+: **84**
-- With Pro + WooCommerce + Elementor 4.0+: **84** — WooCommerce widgets are now reached through `add-pro-widget` (catalog tier `woo`), so they add **no** new tools.
+**Tool counts by configuration (v3.1.0 — measured against a live `tools/list` via WP-CLI; v3.1.0 adds the 8 Content tools + 3 surfaced `core/*` abilities = +11, all enabled-by-default):**
+- Free Elementor only: **~55** (44 base + 11)
+- Free Elementor + Elementor 4.0+ atomic: **~69** (58 base + 11)
+- With Elementor Pro: **~81** (70 base + 11)
+- With Elementor Pro + Elementor 4.0+: **95** (84 base + 11) — **measured live** (Pro + Elementor 4.1), confirming the +11 delta
+- With Pro + WooCommerce + Elementor 4.0+: **95** — WooCommerce widgets are reached through `add-pro-widget` (catalog tier `woo`), so they add **no** new tools.
 - Low-tools mode (any config): still available but largely obsolete — the consolidation already keeps the surface well under common client caps.
+
+> The Pro + Elementor 4.x config was measured live at **95 tools** (84 v3.0.0 base + 8 Content + 3 `core/*`), confirming the +11 delta. The other rows apply the same measured +11 to their v3.0.0 base. Of the registered total, ~21 still ship disabled-by-default (SEO/A11y, Widget Builder, PHP Snippets); the Content tools and `core/*` abilities are all enabled by default.
 
 > **These are REGISTERED counts.** Three groups ship **disabled-by-default** — SEO & Accessibility (**7**, Pro), Widget Builder (**8**, Pro), and PHP Snippets / Sandbox (**6**, free) = **21** tools registered-but-off. So the typical **active** surface is ~21 smaller until a user enables them on the Tools tab (e.g. Pro + Elementor 4.0+ ≈ **63** active by default).
 >
@@ -73,7 +75,8 @@ emcp-tools/
 │   │   ├── class-global-abilities.php         # P2: 2 global tools (update-global-colors, update-global-typography)
 │   │   ├── class-composite-abilities.php      # P2: 1 composite tool (build-page)
 │   │   ├── class-stock-image-abilities.php    # 3 stock image tools (search-images, sideload-image, add-stock-image)
-│   │   └── class-custom-code-abilities.php   # 4 custom code tools (add-custom-css, add-custom-js, add-code-snippet, list-code-snippets)
+│   │   ├── class-custom-code-abilities.php   # 4 custom code tools (add-custom-css, add-custom-js, add-code-snippet, list-code-snippets)
+│   │   └── class-content-abilities.php       # v3.1.0: 8 WordPress Content tools (list-post-types, list-taxonomies, create/get/update/list/delete-post, set-post-terms) — WP core only, never touches _elementor_data
 │   ├── admin/
 │   │   ├── class-admin.php                    # Admin top-level menu (EMCP Tools) with 4 native submenu pages (Tools, Connection, Prompts, Changelog), stats bar, header, Low-tools mode + Pro-disabled-by-default defaults
 │   │   └── views/
@@ -162,6 +165,23 @@ The MCP Adapter converts ability names like `emcp-tools/list-widgets` to tool na
 | `emcp-tools/list-pages` | All Elementor-enabled pages/posts |
 | `emcp-tools/list-templates` | Saved Elementor templates from the template library |
 | `emcp-tools/get-global-settings` | Active kit/global settings (colors, typography, spacing) |
+
+### WordPress Content (beyond Elementor) — v3.1.0 (8 tools + 3 surfaced core abilities)
+
+The plugin's first step beyond Elementor: general WordPress content management over MCP. Built entirely on WP core functions (`wp_insert_post`, `wp_update_post`, `get_post`, `WP_Query`, `wp_set_object_terms`, etc.) — these tools **never touch `_elementor_data`**. Every returned post carries an `is_elementor` flag so an agent knows to switch to the Elementor tools for builder pages. Capability-gated and **enabled by default**. Featured image + custom-field meta are parameters of create/update (not separate tools). `delete-post` trashes by default (pass `force` to permanently delete).
+
+| Ability Name | Purpose |
+|---|---|
+| `emcp-tools/list-post-types` | Discovery: list registered public post types (read-only) |
+| `emcp-tools/list-taxonomies` | Discovery: list registered taxonomies and their object types (read-only) |
+| `emcp-tools/create-post` | Create a post/page/CPT — title, content (classic HTML or block markup), status, slug, author, terms, custom fields, featured image |
+| `emcp-tools/get-post` | Read a single post by ID (read-only; includes `is_elementor` flag) |
+| `emcp-tools/update-post` | Update an existing post's fields, terms, custom fields, and featured image |
+| `emcp-tools/list-posts` | List/query posts of any type with filters (read-only) |
+| `emcp-tools/delete-post` | Delete a post — trashes by default; `force:true` permanently deletes (destructive) |
+| `emcp-tools/set-post-terms` | Assign taxonomy terms to a post |
+
+Additionally, WordPress core's three read-only context abilities — `core/get-site-info`, `core/get-user-info`, `core/get-environment-info` — are now **surfaced on the EMCP server** so agents can read site/user/environment context without a separate connection.
 
 ### P1 — Page CRUD (5 tools)
 

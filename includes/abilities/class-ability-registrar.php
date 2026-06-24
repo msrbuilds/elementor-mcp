@@ -129,6 +129,12 @@ class EMCP_Tools_Ability_Registrar {
 		$media_library->register();
 		$this->ability_names = array_merge( $this->ability_names, $media_library->get_ability_names() );
 
+		// WordPress Content abilities (posts/pages/CPT CRUD + taxonomy + meta).
+		// Unconditional — pure WordPress, always available.
+		$content = new EMCP_Tools_Content_Abilities();
+		$content->register();
+		$this->ability_names = array_merge( $this->ability_names, $content->get_ability_names() );
+
 		// SVG icon abilities (upload SVG for use as Elementor icons).
 		$svg_icons = new EMCP_Tools_Svg_Icon_Abilities( $this->data, $this->factory );
 		$svg_icons->register();

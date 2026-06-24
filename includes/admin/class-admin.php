@@ -1097,6 +1097,51 @@ class EMCP_Tools_Admin {
 					),
 				),
 			),
+			'wp_content'       => array(
+				'label' => __( 'WordPress Content', 'emcp-tools' ),
+				'tools' => array(
+					'emcp-tools/list-post-types' => array(
+						'label'       => __( 'List Post Types', 'emcp-tools' ),
+						'description' => __( 'Lists registered post types (posts, pages, CPTs).', 'emcp-tools' ),
+						'badges'      => array( 'read-only' ),
+					),
+					'emcp-tools/list-taxonomies' => array(
+						'label'       => __( 'List Taxonomies', 'emcp-tools' ),
+						'description' => __( 'Lists taxonomies and optionally their terms.', 'emcp-tools' ),
+						'badges'      => array( 'read-only' ),
+					),
+					'emcp-tools/create-post'     => array(
+						'label'       => __( 'Create Post', 'emcp-tools' ),
+						'description' => __( 'Creates a post/page/CPT with content, terms, meta, featured image.', 'emcp-tools' ),
+						'badges'      => array(),
+					),
+					'emcp-tools/get-post'        => array(
+						'label'       => __( 'Get Post', 'emcp-tools' ),
+						'description' => __( 'Returns a post\'s content, terms, meta, and featured image.', 'emcp-tools' ),
+						'badges'      => array( 'read-only' ),
+					),
+					'emcp-tools/update-post'     => array(
+						'label'       => __( 'Update Post', 'emcp-tools' ),
+						'description' => __( 'Partial update of a post/page/CPT.', 'emcp-tools' ),
+						'badges'      => array(),
+					),
+					'emcp-tools/list-posts'      => array(
+						'label'       => __( 'List Posts', 'emcp-tools' ),
+						'description' => __( 'Lists/searches posts, pages, or any CPT (compact).', 'emcp-tools' ),
+						'badges'      => array( 'read-only' ),
+					),
+					'emcp-tools/delete-post'     => array(
+						'label'       => __( 'Delete Post', 'emcp-tools' ),
+						'description' => __( 'Trashes (or force-deletes) a post.', 'emcp-tools' ),
+						'badges'      => array( 'destructive' ),
+					),
+					'emcp-tools/set-post-terms'  => array(
+						'label'       => __( 'Set Post Terms', 'emcp-tools' ),
+						'description' => __( 'Assigns category/tag/custom terms to a post.', 'emcp-tools' ),
+						'badges'      => array(),
+					),
+				),
+			),
 			'page'             => array(
 				'label' => __( 'Page Management', 'emcp-tools' ),
 				'tools' => array(

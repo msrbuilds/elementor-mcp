@@ -234,6 +234,16 @@ class EMCP_Tools_Plugin {
 			'emcp-tools/update-atomic-widget',
 			'emcp-tools/add-flexbox',
 			'emcp-tools/add-div-block',
+
+			// WordPress content (8) — general post/page/CPT management.
+			'emcp-tools/list-post-types',
+			'emcp-tools/list-taxonomies',
+			'emcp-tools/create-post',
+			'emcp-tools/get-post',
+			'emcp-tools/update-post',
+			'emcp-tools/list-posts',
+			'emcp-tools/delete-post',
+			'emcp-tools/set-post-terms',
 		);
 	}
 
@@ -306,6 +316,15 @@ class EMCP_Tools_Plugin {
 			return;
 		}
 
+		// Also expose WordPress core's read-only context abilities (site/user/
+		// environment info) on our server — registered by core, free to surface.
+		$tools = $this->ability_names;
+		foreach ( array( 'core/get-site-info', 'core/get-user-info', 'core/get-environment-info' ) as $emcp_core_ability ) {
+			if ( function_exists( 'wp_get_ability' ) && wp_get_ability( $emcp_core_ability ) && ! in_array( $emcp_core_ability, $tools, true ) ) {
+				$tools[] = $emcp_core_ability;
+			}
+		}
+
 		$mcp_adapter->create_server(
 			'emcp-tools-server',                                   // server_id
 			'mcp',                                                    // route_namespace
@@ -316,7 +335,7 @@ class EMCP_Tools_Plugin {
 			array( \WP\MCP\Transport\HttpTransport::class ),          // transports
 			null,                                                     // error_handler (use default)
 			null,                                                     // observability_handler
-			$this->ability_names,                                     // tools
+			$tools,                                                   // tools
 			array(),                                                  // resources
 			array(),                                                  // prompts
 			null                                                      // transport_permission_callback
