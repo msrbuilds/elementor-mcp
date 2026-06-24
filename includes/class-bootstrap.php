@@ -90,6 +90,9 @@ class EMCP_Tools_Bootstrap {
 		require_once EMCP_TOOLS_DIR . 'includes/abilities/class-media-library-abilities.php';
 		require_once EMCP_TOOLS_DIR . 'includes/abilities/class-content-abilities.php';
 		require_once EMCP_TOOLS_DIR . 'includes/abilities/class-settings-abilities.php';
+		require_once EMCP_TOOLS_DIR . 'includes/class-package-guard.php';
+		require_once EMCP_TOOLS_DIR . 'includes/abilities/class-plugin-abilities.php';
+		require_once EMCP_TOOLS_DIR . 'includes/abilities/class-theme-abilities.php';
 		require_once EMCP_TOOLS_DIR . 'includes/abilities/class-svg-icon-abilities.php';
 		require_once EMCP_TOOLS_DIR . 'includes/abilities/class-custom-code-abilities.php';
 		// Brand Kits (Pro). The writer + backup store + fetcher + abilities load

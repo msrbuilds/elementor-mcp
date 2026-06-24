@@ -141,6 +141,16 @@ class EMCP_Tools_Ability_Registrar {
 		$settings->register();
 		$this->ability_names = array_merge( $this->ability_names, $settings->get_ability_names() );
 
+		// WordPress Plugins & Themes abilities (discover/install/update/
+		// activate/delete). Unconditional — pure WordPress, always available.
+		$plugins = new EMCP_Tools_Plugin_Abilities();
+		$plugins->register();
+		$this->ability_names = array_merge( $this->ability_names, $plugins->get_ability_names() );
+
+		$themes = new EMCP_Tools_Theme_Abilities();
+		$themes->register();
+		$this->ability_names = array_merge( $this->ability_names, $themes->get_ability_names() );
+
 		// SVG icon abilities (upload SVG for use as Elementor icons).
 		$svg_icons = new EMCP_Tools_Svg_Icon_Abilities( $this->data, $this->factory );
 		$svg_icons->register();
