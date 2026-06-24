@@ -47,15 +47,15 @@ class QueryCapabilityTest extends Ability_Test_Case {
     public function test_ability_names_contains_all_nine_query_tools(): void {
         $names = $this->ability->get_ability_names();
         $expected = [
-            'elementor-mcp/list-widgets',
-            'elementor-mcp/get-widget-schema',
-            'elementor-mcp/get-container-schema',
-            'elementor-mcp/get-page-structure',
-            'elementor-mcp/get-element-settings',
-            'elementor-mcp/find-element',
-            'elementor-mcp/list-pages',
-            'elementor-mcp/list-templates',
-            'elementor-mcp/get-global-settings',
+            'emcp-tools/list-widgets',
+            'emcp-tools/get-widget-schema',
+            'emcp-tools/get-container-schema',
+            'emcp-tools/get-page-structure',
+            'emcp-tools/get-element-settings',
+            'emcp-tools/find-element',
+            'emcp-tools/list-pages',
+            'emcp-tools/list-templates',
+            'emcp-tools/get-global-settings',
         ];
         foreach ($expected as $tool) {
             $this->assertContains($tool, $names, "Missing query tool: $tool");

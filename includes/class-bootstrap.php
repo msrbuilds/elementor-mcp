@@ -72,6 +72,8 @@ class EMCP_Tools_Bootstrap {
 		require_once EMCP_TOOLS_DIR . 'includes/schemas/class-schema-generator.php';
 		require_once EMCP_TOOLS_DIR . 'includes/validators/class-element-validator.php';
 		require_once EMCP_TOOLS_DIR . 'includes/validators/class-settings-validator.php';
+		// Widget catalog — source of truth for the 5 catalog-backed widget tools.
+		require_once EMCP_TOOLS_DIR . 'includes/widgets/class-widget-catalog.php';
 		// SEO / A11y toolkit shared helpers (used by the Pro audit abilities).
 		require_once EMCP_TOOLS_DIR . 'includes/class-color-contrast.php';
 		require_once EMCP_TOOLS_DIR . 'includes/class-content-extractor.php';
@@ -185,6 +187,31 @@ class EMCP_Tools_Bootstrap {
 	 * @return bool True if all dependencies are met.
 	 */
 	private static function check_dependencies(): bool {
+		// PHP 8.2+ is required. Elementor 4.0+ uses 8.1+ features that silently
+		// fail on older PHP (writes no-op, _elementor_data never persists).
+		// WordPress only enforces Requires PHP at activation, not on every load —
+		// so we re-check here to surface a clear admin notice if the host
+		// downgraded PHP after the plugin was already installed.
+		if ( version_compare( PHP_VERSION, '8.2', '<' ) ) {
+			add_action(
+				'admin_notices',
+				function () {
+					if ( ! current_user_can( 'manage_options' ) ) {
+						return;
+					}
+					printf(
+						'<div class="notice notice-error"><p>%s</p></div>',
+						sprintf(
+							/* translators: %s: current PHP version */
+							esc_html__( 'EMCP Tools requires PHP 8.2 or higher. Your server is running PHP %s — please upgrade PHP to avoid silent Elementor write failures.', 'emcp-tools' ),
+							esc_html( PHP_VERSION )
+						)
+					);
+				}
+			);
+			return false;
+		}
+
 		$missing = array();
 
 		// Elementor must be active.

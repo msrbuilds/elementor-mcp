@@ -52,11 +52,11 @@ class EMCP_Tools_Page_Abilities {
 	 */
 	public function get_ability_names(): array {
 		return array(
-			'elementor-mcp/create-page',
-			'elementor-mcp/update-page-settings',
-			'elementor-mcp/delete-page-content',
-			'elementor-mcp/import-template',
-			'elementor-mcp/export-page',
+			'emcp-tools/create-page',
+			'emcp-tools/update-page-settings',
+			'emcp-tools/delete-page-content',
+			'emcp-tools/import-template',
+			'emcp-tools/export-page',
 		);
 	}
 
@@ -137,7 +137,7 @@ class EMCP_Tools_Page_Abilities {
 
 	private function register_create_page(): void {
 		emcp_tools_register_ability(
-			'elementor-mcp/create-page',
+			'emcp-tools/create-page',
 			array(
 				'label'               => __( 'Create Elementor Page', 'emcp-tools' ),
 				'description'         => __( 'Creates a new WordPress page with Elementor enabled. Optionally provide initial element content.', 'emcp-tools' ),
@@ -262,7 +262,7 @@ class EMCP_Tools_Page_Abilities {
 
 	private function register_update_page_settings(): void {
 		emcp_tools_register_ability(
-			'elementor-mcp/update-page-settings',
+			'emcp-tools/update-page-settings',
 			array(
 				'label'               => __( 'Update Page Settings', 'emcp-tools' ),
 				'description'         => __( 'Updates page-level Elementor settings such as background, padding, custom CSS, and layout options.', 'emcp-tools' ),
@@ -328,7 +328,7 @@ class EMCP_Tools_Page_Abilities {
 
 	private function register_delete_page_content(): void {
 		emcp_tools_register_ability(
-			'elementor-mcp/delete-page-content',
+			'emcp-tools/delete-page-content',
 			array(
 				'label'               => __( 'Delete Page Content', 'emcp-tools' ),
 				'description'         => __( 'Clears all Elementor content from a page, resetting it to blank while keeping the page itself.', 'emcp-tools' ),
@@ -385,7 +385,7 @@ class EMCP_Tools_Page_Abilities {
 
 	private function register_import_template(): void {
 		emcp_tools_register_ability(
-			'elementor-mcp/import-template',
+			'emcp-tools/import-template',
 			array(
 				'label'               => __( 'Import Template', 'emcp-tools' ),
 				'description'         => __( 'Imports a JSON template structure into a page at an optional position.', 'emcp-tools' ),
@@ -480,7 +480,7 @@ class EMCP_Tools_Page_Abilities {
 
 	private function register_export_page(): void {
 		emcp_tools_register_ability(
-			'elementor-mcp/export-page',
+			'emcp-tools/export-page',
 			array(
 				'label'               => __( 'Export Page', 'emcp-tools' ),
 				'description'         => __( 'Exports a page\'s full Elementor data as a JSON structure that can be imported elsewhere.', 'emcp-tools' ),

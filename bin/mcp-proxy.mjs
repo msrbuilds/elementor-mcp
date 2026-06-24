@@ -37,7 +37,7 @@ const WP_USERNAME = process.env.WP_USERNAME || '';
 const WP_APP_PASSWORD = process.env.WP_APP_PASSWORD || '';
 const MCP_LOG_FILE = process.env.MCP_LOG_FILE || '';
 const MCP_PROTOCOL_VERSION = process.env.MCP_PROTOCOL_VERSION || '';
-const MCP_REST_PATH = '/mcp/elementor-mcp-server';
+const MCP_REST_PATH = '/mcp/emcp-tools-server';
 
 if (!WP_URL) {
   logStderr('ERROR: WP_URL environment variable is required.');

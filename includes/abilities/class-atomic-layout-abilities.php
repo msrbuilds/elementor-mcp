@@ -80,7 +80,7 @@ class EMCP_Tools_Atomic_Layout_Abilities {
 	// =========================================================================
 
 	private function register_add_flexbox(): void {
-		$name                  = 'elementor-mcp/add-flexbox';
+		$name                  = 'emcp-tools/add-flexbox';
 		$this->ability_names[] = $name;
 
 		emcp_tools_register_ability(
@@ -191,7 +191,7 @@ class EMCP_Tools_Atomic_Layout_Abilities {
 	// =========================================================================
 
 	private function register_add_div_block(): void {
-		$name                  = 'elementor-mcp/add-div-block';
+		$name                  = 'emcp-tools/add-div-block';
 		$this->ability_names[] = $name;
 
 		emcp_tools_register_ability(
@@ -293,14 +293,14 @@ class EMCP_Tools_Atomic_Layout_Abilities {
 	// =========================================================================
 
 	private function register_detect_elementor_version(): void {
-		$name                  = 'elementor-mcp/detect-elementor-version';
+		$name                  = 'emcp-tools/detect-elementor-version';
 		$this->ability_names[] = $name;
 
 		emcp_tools_register_ability(
 			$name,
 			array(
 				'label'               => __( 'Detect Elementor Version', 'emcp-tools' ),
-				'description'         => __( 'Returns the Elementor version and whether atomic elements (v4.0+) are supported. Call this first to decide whether to use legacy tools (add-heading, add-container) or atomic tools (add-atomic-heading, add-flexbox).', 'emcp-tools' ),
+				'description'         => __( 'Returns the Elementor version and whether atomic elements (v4.0+) are supported. Call this first to decide whether to use legacy tools (add-free-widget, add-container) or atomic tools (add-atomic-heading, add-flexbox).', 'emcp-tools' ),
 				'category'            => 'emcp-tools',
 				'execute_callback'    => function () {
 					$core_version = defined( 'ELEMENTOR_VERSION' ) ? ELEMENTOR_VERSION : 'unknown';

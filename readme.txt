@@ -3,8 +3,8 @@ Contributors: mianshahzadraza
 Tags: elementor, mcp, ai, page-builder, automation
 Requires at least: 6.9
 Tested up to: 7.0
-Stable tag: 2.2.0
-Requires PHP: 8.0
+Stable tag: 3.0.0
+Requires PHP: 8.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -12,16 +12,16 @@ Extends the WordPress MCP Adapter to expose Elementor data, widgets, and page de
 
 == Description ==
 
-MCP Tools for Elementor bridges the gap between AI tools and Elementor page design. It extends the official WordPress MCP Adapter to expose up to 119 MCP (Model Context Protocol) tools that let AI agents like Claude, Cursor, and other MCP-compatible clients create and manipulate Elementor page designs programmatically.
+MCP Tools for Elementor bridges the gap between AI tools and Elementor page design. It extends the official WordPress MCP Adapter to expose a focused set of MCP (Model Context Protocol) tools that let AI agents like Claude, Cursor, and other MCP-compatible clients create and manipulate Elementor page designs programmatically.
 
-Tool counts scale with your environment: 62 tools on a free Elementor install, 101 with Elementor Pro, 106 with Pro + WooCommerce, and 13 additional atomic tools when Elementor 4.0+ is active (75 / 114 / 119 respectively).
+As of v3.0.0 the 62 per-widget tools were folded into a catalog-backed model, so the active tool surface is much smaller while every widget stays reachable. Tool counts scale with your environment: around 44 tools on a free Elementor install, ~70 with Elementor Pro, and ~84 with Pro + Elementor 4.0+ atomic elements (WooCommerce adds no new tools — its widgets are reached through add-pro-widget). About 21 of these ship disabled-by-default (SEO & Accessibility, Widget Builder, PHP Snippets), so the typical active surface is smaller.
 
 **Key Features:**
 
 * **Query & Discovery** — List widgets, inspect page structures, read element settings, browse templates, and view global design tokens.
 * **Page Management** — Create pages, update page settings, clear content, import/export templates.
 * **Layout Tools** — Add flexbox containers, move/remove/duplicate elements, batch updates, reorder children.
-* **Widget Tools** — Universal add/update for any widget, plus 27 free convenience shortcuts, 30 conditional Pro widget tools, and 5 WooCommerce widget tools.
+* **Widget Tools** — A catalog-backed model: list-widgets (filter by tier/category/search) -> get-widget-schema (curated params, batch, or full raw schema) -> add-free-widget / add-pro-widget (with Pro) -> update-widget. The 62 widgets' curated params live in a built-in catalog (27 free / 30 Pro / 5 WooCommerce), so every widget and parameter stays reachable while the per-turn tool-list cost drops ~10x.
 * **Pro Widget Support** — Conditional tools for Elementor Pro widgets (form, posts grid, countdown, price table, flip box, animated headline, call to action, slides, testimonial carousel, price list, gallery, share buttons, table of contents, blockquote, Lottie, hotspot, loop grid/carousel, nested tabs/accordion, portfolio, author box, login, code highlight, reviews, off-canvas, progress tracker, search, and more) that only register when Pro is active.
 * **Atomic Elements (Elementor 4.0+)** — 13 dedicated tools for Elementor's new atomic system: flexbox, div-block, heading, paragraph, button, image, svg, youtube, video, divider, plus universal `add-atomic-widget` / `update-atomic-widget` and `detect-elementor-version`.
 * **Template Tools** — Save pages or elements as reusable templates, apply templates to pages, theme builder, popups, dynamic tags (Pro).
@@ -32,7 +32,7 @@ Tool counts scale with your environment: 62 tools on a free Elementor install, 1
 * **Custom Code** — Add custom CSS (element/page level), inject JavaScript, create site-wide code snippets for head/body injection.
 * **AI Widget Builder (Pro)** — Let an AI agent design custom Elementor widgets from a structured spec (no hand-written PHP). The plugin compiles the spec into a sandboxed widget that appears in the Elementor panel — 35 control types, optional CSS/JS, with a runtime safety net so a bad widget can never break the editor.
 * **Brand Kits** — One-click color + typography kits that re-skin your whole site. 10 kits are free to apply (with backup + restore); 50+ with Pro.
-* **Low-tools Mode** — One-click toggle that trims the active tool list to a curated 50-or-so essentials so MCP clients with strict tool caps (Antigravity, Gemini API, etc.) stay under their limits.
+* **Low-tools Mode** — One-click toggle that trims the active tool list to a curated essentials set for MCP clients with strict tool caps (Antigravity, Gemini API, etc.). After the v3.0.0 widget consolidation the active count already fits most caps, so this is rarely needed now.
 * **Sample Prompts** — Ready-to-use landing page blueprints with one-click copy from the admin dashboard.
 * **Admin Dashboard** — Dedicated top-level menu with Tools, Connection, Prompts, Templates, Brand Kits, Skills, Widget Builder, and Changelog tabs. Toggle individual tools on/off, view connection configs for all supported MCP clients, and get help via the built-in Get Support link.
 
@@ -63,9 +63,9 @@ Add to your MCP client configuration:
 `
 {
   "mcpServers": {
-    "elementor-mcp": {
+    "emcp-tools": {
       "command": "wp",
-      "args": ["mcp-adapter", "serve", "--server=elementor-mcp-server", "--user=admin", "--path=/path/to/wordpress"]
+      "args": ["mcp-adapter", "serve", "--server=emcp-tools-server", "--user=admin", "--path=/path/to/wordpress"]
     }
   }
 }
@@ -77,7 +77,7 @@ Add to `~/.codex/config.toml` or `.codex/config.toml`:
 
 `
 [mcp_servers.elementor-mcp]
-url = "https://your-site.com/wp-json/mcp/elementor-mcp-server"
+url = "https://your-site.com/wp-json/mcp/emcp-tools-server"
 
 [mcp_servers.elementor-mcp.http_headers]
 "Authorization" = "Basic BASE64_ENCODED_CREDENTIALS"
@@ -90,12 +90,12 @@ For local development, use `mcp-remote` to bridge your AI client to the WordPres
 `
 {
   "mcpServers": {
-    "elementor-mcp": {
+    "emcp-tools": {
       "command": "npx",
       "args": [
         "-y",
         "mcp-remote",
-        "http://localhost:10003/wp-json/mcp/elementor-mcp-server",
+        "http://localhost:10003/wp-json/mcp/emcp-tools-server",
         "--header",
         "Authorization: Basic BASE64_ENCODED_CREDENTIALS"
       ]
@@ -114,7 +114,7 @@ Replace `localhost:10003` with your local WordPress address and `BASE64_ENCODED_
 `
 {
   "mcpServers": {
-    "elementor-mcp": {
+    "emcp-tools": {
       "command": "node",
       "args": ["bin/mcp-proxy.mjs"],
       "env": {
@@ -135,7 +135,7 @@ MCP (Model Context Protocol) is an open standard that allows AI tools to interac
 
 = Does this plugin work without Elementor Pro? =
 
-Yes. Core widget tools work with free Elementor. Pro widget shortcuts (form, posts grid, countdown, price table, flip box, animated headline) only register when Elementor Pro is active.
+Yes. The free/core widgets are added via `add-free-widget` and work with free Elementor. The `add-pro-widget` tool (which covers Elementor Pro and WooCommerce widgets) only registers when Elementor Pro is active.
 
 = Can I disable specific tools? =
 
@@ -155,6 +155,12 @@ The plugin enforces WordPress capability checks on every tool. Read operations r
 2. Connection configuration page with copy-paste configs.
 
 == Changelog ==
+
+= 3.0.0 =
+* Changed (BREAKING): Widget tools consolidated. The 62 per-widget convenience tools (add-heading, add-button, add-form, ...) and the universal add-widget are removed, replaced by 5 catalog-backed tools: list-widgets (now with tier/category/search filters), get-widget-schema (curated params by default, types[] batch, full:true escape hatch), add-free-widget, add-pro-widget, and update-widget. No capability is lost — every widget and every curated parameter is still reachable via discover -> inspect -> act. AI scripts that hardcoded an old tool name must switch to add-free-widget / add-pro-widget with a widget_type.
+* Changed: Per-turn widget tool-list context cut ~10x (~18-20k -> ~2k tokens), freeing the model's context window and removing the need for Low-tools mode on most clients.
+* Migration: Old per-widget disabled-tool toggles are cleared automatically (defaults seeder v5). Existing pages and templates are unaffected — this changes the tools, not _elementor_data.
+* Added: A curated widget catalog (62 widgets — 27 free / 30 Pro / 5 WooCommerce) that powers the new tools.
 
 = 2.2.0 =
 * Performance: Leaner widget tool schemas. Each per-widget convenience tool now publishes a focused set of core parameters instead of a fully-enumerated schema, cutting the MCP tools/list payload (re-sent on every request) by roughly a third with no loss of capability — every other setting still passes through to Elementor and stays discoverable via get-widget-schema.
@@ -197,8 +203,8 @@ The plugin enforces WordPress capability checks on every tool. Read operations r
 
 = 2.0.0 =
 * ⚠️ PRO USERS — ACTION NEEDED: Because the plugin folder/slug changed (elementor-mcp -> emcp-tools), the new install is a separate plugin to WordPress, so your Pro license does NOT carry over automatically. After deleting the old plugin and activating "EMCP Tools", you will likely need to re-activate your license and complete the Freemius opt-in/connection again. Your license stays valid — this only re-links it to the renamed plugin. Free users have nothing extra to do.
-* Changed: The plugin was renamed from "elementor-mcp" to "emcp-tools" as it grows beyond Elementor. The folder, main file, text domain, and all internal PHP identifiers were rebranded. In the Plugins list it now shows as "EMCP Tools" (the old one stays "MCP Tools for Elementor", so it's clear which to remove). Your AI clients keep working unchanged — the MCP tool names and server (elementor-mcp/..., elementor-mcp-server) are intentionally unchanged, so no connection config or skill needs editing.
-* New: Safe automatic migration. If the old "elementor-mcp" plugin is still active, EMCP Tools pauses and shows a notice to deactivate and delete it; your settings and banner dismissals are carried over to the new keys (captured before the old plugin's uninstall can wipe them).
+* Changed: The plugin was renamed from "emcp-tools" to "emcp-tools" as it grows beyond Elementor. The folder, main file, text domain, and all internal PHP identifiers were rebranded. In the Plugins list it now shows as "EMCP Tools" (the old one stays "MCP Tools for Elementor", so it's clear which to remove). Your AI clients keep working unchanged — the MCP tool names and server (emcp-tools/..., emcp-tools-server) are intentionally unchanged, so no connection config or skill needs editing.
+* New: Safe automatic migration. If the old "emcp-tools" plugin is still active, EMCP Tools pauses and shows a notice to deactivate and delete it; your settings and banner dismissals are carried over to the new keys (captured before the old plugin's uninstall can wipe them).
 * Note: Install emcp-tools as a new plugin, then remove the old elementor-mcp one when prompted. All PHP symbols are uniquely re-prefixed so the two coexist during the switch without fatal errors.
 
 = 1.9.0 =

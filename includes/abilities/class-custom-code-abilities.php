@@ -152,10 +152,10 @@ class EMCP_Tools_Custom_Code_Abilities {
 	 * @since 1.3.0
 	 */
 	private function register_add_custom_css(): void {
-		$this->ability_names[] = 'elementor-mcp/add-custom-css';
+		$this->ability_names[] = 'emcp-tools/add-custom-css';
 
 		emcp_tools_register_ability(
-			'elementor-mcp/add-custom-css',
+			'emcp-tools/add-custom-css',
 			array(
 				'label'               => __( 'Add Custom CSS', 'emcp-tools' ),
 				'description'         => __( 'Adds custom CSS to a specific element or to the entire page. Requires Elementor Pro. For element-level CSS, use the keyword "selector" as a placeholder for the element\'s CSS wrapper (e.g. "selector .heading { color: red; }" or "selector:hover { transform: scale(1.05); }"). For page-level CSS, omit element_id. Appends to existing CSS by default; set replace=true to overwrite.', 'emcp-tools' ),
@@ -316,10 +316,10 @@ class EMCP_Tools_Custom_Code_Abilities {
 	 * @since 1.3.0
 	 */
 	private function register_add_custom_js(): void {
-		$this->ability_names[] = 'elementor-mcp/add-custom-js';
+		$this->ability_names[] = 'emcp-tools/add-custom-js';
 
 		emcp_tools_register_ability(
-			'elementor-mcp/add-custom-js',
+			'emcp-tools/add-custom-js',
 			array(
 				'label'               => __( 'Add Custom JavaScript', 'emcp-tools' ),
 				'description'         => __( 'Adds a custom JavaScript snippet to a page by inserting an HTML widget containing a <script> tag. Works with free Elementor (no Pro required). The JS code is automatically wrapped in <script> tags — do NOT include them yourself. Use wrap_dom_ready=true to wrap in a DOMContentLoaded listener. For site-wide JS, use add-code-snippet instead (requires Pro).', 'emcp-tools' ),
@@ -443,10 +443,10 @@ class EMCP_Tools_Custom_Code_Abilities {
 	 * @since 1.3.0
 	 */
 	private function register_add_code_snippet(): void {
-		$this->ability_names[] = 'elementor-mcp/add-code-snippet';
+		$this->ability_names[] = 'emcp-tools/add-code-snippet';
 
 		emcp_tools_register_ability(
-			'elementor-mcp/add-code-snippet',
+			'emcp-tools/add-code-snippet',
 			array(
 				'label'               => __( 'Add Code Snippet', 'emcp-tools' ),
 				'description'         => __( 'Creates a site-wide Custom Code snippet using Elementor Pro. Injects CSS or JavaScript into the <head>, after <body> open, or before </body> close on ALL pages. Use this for analytics scripts, site-wide CSS overrides, meta tags, or tracking pixels. Requires Elementor Pro and manage_options capability.', 'emcp-tools' ),
@@ -593,10 +593,10 @@ class EMCP_Tools_Custom_Code_Abilities {
 	 * @since 1.3.0
 	 */
 	private function register_list_code_snippets(): void {
-		$this->ability_names[] = 'elementor-mcp/list-code-snippets';
+		$this->ability_names[] = 'emcp-tools/list-code-snippets';
 
 		emcp_tools_register_ability(
-			'elementor-mcp/list-code-snippets',
+			'emcp-tools/list-code-snippets',
 			array(
 				'label'               => __( 'List Code Snippets', 'emcp-tools' ),
 				'description'         => __( 'Lists all existing Elementor Pro Custom Code snippets with their titles, locations, priorities, and statuses. Requires Elementor Pro.', 'emcp-tools' ),

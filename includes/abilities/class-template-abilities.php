@@ -51,17 +51,17 @@ class EMCP_Tools_Template_Abilities {
 	 */
 	public function get_ability_names(): array {
 		$names = array(
-			'elementor-mcp/save-as-template',
-			'elementor-mcp/apply-template',
+			'emcp-tools/save-as-template',
+			'emcp-tools/apply-template',
 		);
 
 		if ( defined( 'ELEMENTOR_PRO_VERSION' ) ) {
-			$names[] = 'elementor-mcp/create-theme-template';
-			$names[] = 'elementor-mcp/set-template-conditions';
-			$names[] = 'elementor-mcp/list-dynamic-tags';
-			$names[] = 'elementor-mcp/set-dynamic-tag';
-			$names[] = 'elementor-mcp/create-popup';
-			$names[] = 'elementor-mcp/set-popup-settings';
+			$names[] = 'emcp-tools/create-theme-template';
+			$names[] = 'emcp-tools/set-template-conditions';
+			$names[] = 'emcp-tools/list-dynamic-tags';
+			$names[] = 'emcp-tools/set-dynamic-tag';
+			$names[] = 'emcp-tools/create-popup';
+			$names[] = 'emcp-tools/set-popup-settings';
 		}
 
 		return $names;
@@ -113,7 +113,7 @@ class EMCP_Tools_Template_Abilities {
 
 	private function register_save_as_template(): void {
 		emcp_tools_register_ability(
-			'elementor-mcp/save-as-template',
+			'emcp-tools/save-as-template',
 			array(
 				'label'               => __( 'Save As Template', 'emcp-tools' ),
 				'description'         => __( 'Saves a page or a specific element as a reusable Elementor template.', 'emcp-tools' ),
@@ -237,7 +237,7 @@ class EMCP_Tools_Template_Abilities {
 
 	private function register_apply_template(): void {
 		emcp_tools_register_ability(
-			'elementor-mcp/apply-template',
+			'emcp-tools/apply-template',
 			array(
 				'label'               => __( 'Apply Template', 'emcp-tools' ),
 				'description'         => __( 'Applies a saved Elementor template to a page at a given position, inserting its elements with fresh IDs.', 'emcp-tools' ),
@@ -368,7 +368,7 @@ class EMCP_Tools_Template_Abilities {
 
 	private function register_create_theme_template(): void {
 		emcp_tools_register_ability(
-			'elementor-mcp/create-theme-template',
+			'emcp-tools/create-theme-template',
 			array(
 				'label'               => __( 'Create Theme Template', 'emcp-tools' ),
 				'description'         => __( 'Creates a new Elementor Pro theme builder template (header, footer, single, archive, 404, etc.).', 'emcp-tools' ),
@@ -446,7 +446,7 @@ class EMCP_Tools_Template_Abilities {
 
 	private function register_set_template_conditions(): void {
 		emcp_tools_register_ability(
-			'elementor-mcp/set-template-conditions',
+			'emcp-tools/set-template-conditions',
 			array(
 				'label'               => __( 'Set Template Conditions', 'emcp-tools' ),
 				'description'         => __( 'Sets display conditions for a theme builder template (e.g., Entire Site, specific pages, post types).', 'emcp-tools' ),
@@ -562,7 +562,7 @@ class EMCP_Tools_Template_Abilities {
 
 	private function register_list_dynamic_tags(): void {
 		emcp_tools_register_ability(
-			'elementor-mcp/list-dynamic-tags',
+			'emcp-tools/list-dynamic-tags',
 			array(
 				'label'               => __( 'List Dynamic Tags', 'emcp-tools' ),
 				'description'         => __( 'Lists all available Elementor Pro dynamic tags with their names, groups, and categories.', 'emcp-tools' ),
@@ -632,7 +632,7 @@ class EMCP_Tools_Template_Abilities {
 
 	private function register_set_dynamic_tag(): void {
 		emcp_tools_register_ability(
-			'elementor-mcp/set-dynamic-tag',
+			'emcp-tools/set-dynamic-tag',
 			array(
 				'label'               => __( 'Set Dynamic Tag', 'emcp-tools' ),
 				'description'         => __( 'Sets a dynamic tag on a specific setting of an element. This makes the setting value dynamic (e.g., title becomes post title).', 'emcp-tools' ),
@@ -727,7 +727,7 @@ class EMCP_Tools_Template_Abilities {
 
 	private function register_create_popup(): void {
 		emcp_tools_register_ability(
-			'elementor-mcp/create-popup',
+			'emcp-tools/create-popup',
 			array(
 				'label'               => __( 'Create Popup', 'emcp-tools' ),
 				'description'         => __( 'Creates a new Elementor Pro popup template.', 'emcp-tools' ),
@@ -796,7 +796,7 @@ class EMCP_Tools_Template_Abilities {
 
 	private function register_set_popup_settings(): void {
 		emcp_tools_register_ability(
-			'elementor-mcp/set-popup-settings',
+			'emcp-tools/set-popup-settings',
 			array(
 				'label'               => __( 'Set Popup Settings', 'emcp-tools' ),
 				'description'         => __( 'Configures popup triggers, timing, and display conditions for an Elementor Pro popup.', 'emcp-tools' ),

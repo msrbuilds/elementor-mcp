@@ -56,15 +56,15 @@ class EMCP_Tools_Query_Abilities {
 	 */
 	public function get_ability_names(): array {
 		return array(
-			'elementor-mcp/list-widgets',
-			'elementor-mcp/get-widget-schema',
-			'elementor-mcp/get-container-schema',
-			'elementor-mcp/get-page-structure',
-			'elementor-mcp/get-element-settings',
-			'elementor-mcp/find-element',
-			'elementor-mcp/list-pages',
-			'elementor-mcp/list-templates',
-			'elementor-mcp/get-global-settings',
+			'emcp-tools/list-widgets',
+			'emcp-tools/get-widget-schema',
+			'emcp-tools/get-container-schema',
+			'emcp-tools/get-page-structure',
+			'emcp-tools/get-element-settings',
+			'emcp-tools/find-element',
+			'emcp-tools/list-pages',
+			'emcp-tools/list-templates',
+			'emcp-tools/get-global-settings',
 		);
 	}
 
@@ -105,19 +105,28 @@ class EMCP_Tools_Query_Abilities {
 	 */
 	private function register_list_widgets(): void {
 		emcp_tools_register_ability(
-			'elementor-mcp/list-widgets',
+			'emcp-tools/list-widgets',
 			array(
 				'label'               => __( 'List Elementor Widgets', 'emcp-tools' ),
-				'description'         => __( 'Returns all registered Elementor widget types with their names, titles, icons, categories, and keywords. Optionally filter by widget category.', 'emcp-tools' ),
+				'description'         => __( 'Lists Elementor widgets from the curated catalog as a compact index (type, title, tier, one-line use-case, param names). Filter by tier (free/pro/woo), category, or search by intent. Step 1 of discover → get-widget-schema → add-free-widget/add-pro-widget.', 'emcp-tools' ),
 				'category'            => 'emcp-tools',
 				'execute_callback'    => array( $this, 'execute_list_widgets' ),
 				'permission_callback' => array( $this, 'check_read_permission' ),
 				'input_schema'        => array(
 					'type'       => 'object',
 					'properties' => array(
+						'tier'     => array(
+							'type'        => 'string',
+							'enum'        => array( 'all', 'free', 'pro', 'woo' ),
+							'description' => __( 'Filter by tier. Default: all.', 'emcp-tools' ),
+						),
 						'category' => array(
 							'type'        => 'string',
-							'description' => __( 'Filter widgets by category slug.', 'emcp-tools' ),
+							'description' => __( 'Filter by widget category.', 'emcp-tools' ),
+						),
+						'search'   => array(
+							'type'        => 'string',
+							'description' => __( 'Match by intent across title, use-case, and keywords (e.g. "pricing table").', 'emcp-tools' ),
 						),
 					),
 				),
@@ -129,17 +138,16 @@ class EMCP_Tools_Query_Abilities {
 							'items' => array(
 								'type'       => 'object',
 								'properties' => array(
-									'name'       => array( 'type' => 'string' ),
-									'title'      => array( 'type' => 'string' ),
-									'icon'       => array( 'type' => 'string' ),
-									'categories' => array(
+									'type'        => array( 'type' => 'string' ),
+									'title'       => array( 'type' => 'string' ),
+									'tier'        => array( 'type' => 'string' ),
+									'category'    => array( 'type' => 'string' ),
+									'use_case'    => array( 'type' => 'string' ),
+									'param_names' => array(
 										'type'  => 'array',
 										'items' => array( 'type' => 'string' ),
 									),
-									'keywords'   => array(
-										'type'  => 'array',
-										'items' => array( 'type' => 'string' ),
-									),
+									'requires'    => array( 'type' => array( 'string', 'null' ) ),
 								),
 							),
 						),
@@ -160,33 +168,47 @@ class EMCP_Tools_Query_Abilities {
 	/**
 	 * Executes the list-widgets ability.
 	 *
+	 * Catalog-backed: returns a compact index built from the curated widget
+	 * catalog (no dependency on a live Elementor widget registry). Each row
+	 * carries type, title, tier, category, a one-line use-case, and the widget's
+	 * param names. Supports `tier` (all|free|pro|woo), `category`, and `search`
+	 * (intent match across title/use-case/keywords) filters.
+	 *
 	 * @since 1.0.0
 	 *
 	 * @param array|null $input The input parameters.
-	 * @return array The widgets list.
+	 * @return array The compact widgets index.
 	 */
 	public function execute_list_widgets( $input = null ): array {
-		$category = $input['category'] ?? '';
-		$widgets  = $this->data->get_registered_widgets();
-		$result   = array();
+		$tier     = isset( $input['tier'] ) ? sanitize_key( $input['tier'] ) : 'all';
+		$category = isset( $input['category'] ) ? sanitize_text_field( $input['category'] ) : '';
+		$search   = isset( $input['search'] ) ? sanitize_text_field( $input['search'] ) : '';
 
-		foreach ( $widgets as $name => $widget ) {
-			$widget_categories = $widget->get_categories();
+		$catalog = '' !== $search
+			? EMCP_Tools_Widget_Catalog::search( $search )
+			: EMCP_Tools_Widget_Catalog::get();
 
-			if ( ! empty( $category ) && ! in_array( $category, $widget_categories, true ) ) {
+		$rows = array();
+		foreach ( $catalog as $type => $entry ) {
+			$entry_tier = $entry['tier'] ?? 'free';
+			if ( 'all' !== $tier && $entry_tier !== $tier ) {
 				continue;
 			}
-
-			$result[] = array(
-				'name'       => $widget->get_name(),
-				'title'      => $widget->get_title(),
-				'icon'       => $widget->get_icon(),
-				'categories' => $widget_categories,
-				'keywords'   => $widget->get_keywords(),
+			if ( '' !== $category && ( $entry['category'] ?? '' ) !== $category ) {
+				continue;
+			}
+			$rows[] = array(
+				'type'        => $type,
+				'title'       => $entry['title'] ?? $type,
+				'tier'        => $entry_tier,
+				'category'    => $entry['category'] ?? '',
+				'use_case'    => $entry['use_case'] ?? '',
+				'param_names' => array_keys( $entry['params'] ?? array() ),
+				'requires'    => $entry['requires'] ?? null,
 			);
 		}
 
-		return array( 'widgets' => $result );
+		return array( 'widgets' => $rows );
 	}
 
 	/**
@@ -196,10 +218,10 @@ class EMCP_Tools_Query_Abilities {
 	 */
 	private function register_get_widget_schema(): void {
 		emcp_tools_register_ability(
-			'elementor-mcp/get-widget-schema',
+			'emcp-tools/get-widget-schema',
 			array(
 				'label'               => __( 'Get Widget Schema', 'emcp-tools' ),
-				'description'         => __( 'Returns the full JSON Schema for a widget type\'s settings, describing all available controls and their types. Use this to discover what settings a widget accepts before creating or updating it.', 'emcp-tools' ),
+				'description'         => __( 'Returns curated parameters (params, required, defaults) for a widget type by default. Pass types[] for a batch lookup ({widgets:[...]}), or full:true for the raw auto-generated control schema.', 'emcp-tools' ),
 				'category'            => 'emcp-tools',
 				'execute_callback'    => array( $this, 'execute_get_widget_schema' ),
 				'permission_callback' => array( $this, 'check_read_permission' ),
@@ -208,17 +230,30 @@ class EMCP_Tools_Query_Abilities {
 					'properties' => array(
 						'widget_type' => array(
 							'type'        => 'string',
-							'description' => __( 'The widget type name, e.g. "heading", "button", "image".', 'emcp-tools' ),
+							'description' => __( 'A single widget type, e.g. "heading".', 'emcp-tools' ),
+						),
+						'types'       => array(
+							'type'        => 'array',
+							'items'       => array( 'type' => 'string' ),
+							'description' => __( 'Batch: several widget types in one call. Returns {widgets:[...]}.', 'emcp-tools' ),
+						),
+						'full'        => array(
+							'type'        => 'boolean',
+							'description' => __( 'Return the full auto-generated control schema instead of the curated params. Default: false.', 'emcp-tools' ),
 						),
 					),
-					'required'   => array( 'widget_type' ),
 				),
 				'output_schema'       => array(
 					'type'       => 'object',
 					'properties' => array(
 						'widget_type' => array( 'type' => 'string' ),
-						'title'       => array( 'type' => 'string' ),
+						'tier'        => array( 'type' => 'string' ),
+						'use_case'    => array( 'type' => 'string' ),
+						'params'      => array( 'type' => 'object' ),
+						'required'    => array( 'type' => 'array', 'items' => array( 'type' => 'string' ) ),
+						'defaults'    => array( 'type' => 'object' ),
 						'schema'      => array( 'type' => 'object' ),
+						'widgets'     => array( 'type' => 'array', 'items' => array( 'type' => 'object' ) ),
 					),
 				),
 				'meta'                => array(
@@ -236,41 +271,72 @@ class EMCP_Tools_Query_Abilities {
 	/**
 	 * Executes the get-widget-schema ability.
 	 *
+	 * By default returns curated catalog data (params, required, defaults) for the
+	 * requested widget(s) — no live Elementor dependency. Pass `types[]` to batch
+	 * several widgets in one call ({widgets:[...]}). Pass `full:true` for the raw
+	 * auto-generated control schema, which needs a live widget.
+	 *
 	 * @since 1.0.0
 	 *
 	 * @param array $input The input parameters.
-	 * @return array|\WP_Error The widget schema or WP_Error.
+	 * @return array|\WP_Error The widget schema(s) or WP_Error.
 	 */
 	public function execute_get_widget_schema( $input ) {
-		$widget_type = $input['widget_type'] ?? '';
+		$full  = ! empty( $input['full'] );
+		$types = array();
 
-		if ( empty( $widget_type ) ) {
-			return new \WP_Error( 'missing_widget_type', __( 'The widget_type parameter is required.', 'emcp-tools' ) );
+		if ( ! empty( $input['types'] ) && is_array( $input['types'] ) ) {
+			$types = array_map( 'sanitize_text_field', $input['types'] );
+		} elseif ( ! empty( $input['widget_type'] ) ) {
+			$types = array( sanitize_text_field( $input['widget_type'] ) );
 		}
 
-		$widget = \Elementor\Plugin::$instance->widgets_manager->get_widget_types( $widget_type );
-		if ( ! $widget ) {
-			return new \WP_Error(
-				'widget_not_found',
-				sprintf(
-					/* translators: %s: widget type name */
-					__( 'Widget type "%s" not found.', 'emcp-tools' ),
-					$widget_type
-				)
+		if ( empty( $types ) ) {
+			return new \WP_Error( 'missing_widget_type', __( 'Provide widget_type or types[].', 'emcp-tools' ) );
+		}
+
+		$build = function ( $type ) use ( $full ) {
+			$entry = EMCP_Tools_Widget_Catalog::get_widget( $type );
+
+			if ( $full ) {
+				// Escape hatch: full auto-generated control schema (needs a live widget).
+				$schema = $this->schema_generator->generate( $type );
+				return array(
+					'widget_type' => $type,
+					'tier'        => EMCP_Tools_Widget_Catalog::tier_of( $type ),
+					'use_case'    => $entry['use_case'] ?? '',
+					'schema'      => is_wp_error( $schema ) ? array() : $schema,
+				);
+			}
+
+			if ( null === $entry ) {
+				return array(
+					'widget_type' => $type,
+					'error'       => __( 'Not in the curated catalog. Retry with full:true for the raw control schema.', 'emcp-tools' ),
+				);
+			}
+
+			return array(
+				'widget_type' => $type,
+				'tier'        => $entry['tier'] ?? 'free',
+				'use_case'    => $entry['use_case'] ?? '',
+				'params'      => $entry['params'] ?? array(),
+				'required'    => $entry['required'] ?? array(),
+				'defaults'    => $entry['defaults'] ?? array(),
 			);
+		};
+
+		// Batch shape when `types[]` was provided (even if it held one entry).
+		$is_batch = ! empty( $input['types'] ) && is_array( $input['types'] );
+		if ( $is_batch ) {
+			$widgets = array();
+			foreach ( $types as $t ) {
+				$widgets[] = $build( $t );
+			}
+			return array( 'widgets' => $widgets );
 		}
 
-		$schema = $this->schema_generator->generate( $widget_type );
-
-		if ( is_wp_error( $schema ) ) {
-			return $schema;
-		}
-
-		return array(
-			'widget_type' => $widget_type,
-			'title'       => $widget->get_title(),
-			'schema'      => $schema,
-		);
+		return $build( $types[0] );
 	}
 
 	// -------------------------------------------------------------------------
@@ -279,7 +345,7 @@ class EMCP_Tools_Query_Abilities {
 
 	private function register_get_container_schema(): void {
 		emcp_tools_register_ability(
-			'elementor-mcp/get-container-schema',
+			'emcp-tools/get-container-schema',
 			array(
 				'label'               => __( 'Get Container Schema', 'emcp-tools' ),
 				'description'         => __( 'Returns JSON Schema for all container controls (flex + grid), including flex_direction, justify_content, align_items, flex_wrap, gap, content_width, min_height, container_type, grid controls, background, border, padding, and more.', 'emcp-tools' ),
@@ -403,7 +469,7 @@ class EMCP_Tools_Query_Abilities {
 	 */
 	private function register_get_page_structure(): void {
 		emcp_tools_register_ability(
-			'elementor-mcp/get-page-structure',
+			'emcp-tools/get-page-structure',
 			array(
 				'label'               => __( 'Get Page Structure', 'emcp-tools' ),
 				'description'         => __( 'Returns the element tree for an Elementor page, showing all containers, widgets, and their nesting structure. Each element includes its ID, type, widget type (for widgets), and child elements.', 'emcp-tools' ),
@@ -563,7 +629,7 @@ class EMCP_Tools_Query_Abilities {
 	 */
 	private function register_get_element_settings(): void {
 		emcp_tools_register_ability(
-			'elementor-mcp/get-element-settings',
+			'emcp-tools/get-element-settings',
 			array(
 				'label'               => __( 'Get Element Settings', 'emcp-tools' ),
 				'description'         => __( 'Returns the current settings for a specific element on a page. Provide the post ID and element ID to retrieve all control values for that element.', 'emcp-tools' ),
@@ -658,7 +724,7 @@ class EMCP_Tools_Query_Abilities {
 
 	private function register_find_element(): void {
 		emcp_tools_register_ability(
-			'elementor-mcp/find-element',
+			'emcp-tools/find-element',
 			array(
 				'label'               => __( 'Find Element', 'emcp-tools' ),
 				'description'         => __( 'Searches elements on a page by type, widget type, or settings content. Returns matching element IDs, types, and a settings preview.', 'emcp-tools' ),
@@ -838,7 +904,7 @@ class EMCP_Tools_Query_Abilities {
 	 */
 	private function register_list_pages(): void {
 		emcp_tools_register_ability(
-			'elementor-mcp/list-pages',
+			'emcp-tools/list-pages',
 			array(
 				'label'               => __( 'List Elementor Pages', 'emcp-tools' ),
 				'description'         => __( 'Returns all WordPress pages and posts that are built with Elementor. Optionally filter by post type and status.', 'emcp-tools' ),
@@ -939,7 +1005,7 @@ class EMCP_Tools_Query_Abilities {
 	 */
 	private function register_list_templates(): void {
 		emcp_tools_register_ability(
-			'elementor-mcp/list-templates',
+			'emcp-tools/list-templates',
 			array(
 				'label'               => __( 'List Elementor Templates', 'emcp-tools' ),
 				'description'         => __( 'Returns all saved Elementor templates from the template library. Optionally filter by template type (page, section, container).', 'emcp-tools' ),
@@ -1036,7 +1102,7 @@ class EMCP_Tools_Query_Abilities {
 	 */
 	private function register_get_global_settings(): void {
 		emcp_tools_register_ability(
-			'elementor-mcp/get-global-settings',
+			'emcp-tools/get-global-settings',
 			array(
 				'label'               => __( 'Get Global Settings', 'emcp-tools' ),
 				'description'         => __( 'Returns the active Elementor kit/global settings including colors, typography, spacing, and breakpoints. These are the site-wide design tokens used across all pages.', 'emcp-tools' ),

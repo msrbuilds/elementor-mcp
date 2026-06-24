@@ -59,7 +59,7 @@ class EMCP_Tools_Composite_Abilities {
 	 */
 	public function get_ability_names(): array {
 		return array(
-			'elementor-mcp/build-page',
+			'emcp-tools/build-page',
 		);
 	}
 
@@ -89,7 +89,7 @@ class EMCP_Tools_Composite_Abilities {
 
 	private function register_build_page(): void {
 		emcp_tools_register_ability(
-			'elementor-mcp/build-page',
+			'emcp-tools/build-page',
 			array(
 				'label'               => __( 'Build Page', 'emcp-tools' ),
 				'description'         => __( 'Creates a complete Elementor page from a declarative structure in a single call. Supports nested containers and any widget types. IMPORTANT LAYOUT RULES: (1) For side-by-side columns, use a parent container with flex_direction=row — children are auto-set to content_width=full with equal percentage widths (e.g. 2 children = 50%, 3 = 33.33%). (2) NEVER set flex_wrap or _flex_size in settings — these cause layout overflow. The tool handles layout automatically. (3) Background colors: set background_background=classic and background_color=#hex on containers. (4) Background images: set background_background=classic, background_image={url,id}, background_size=cover. (5) Background overlay: background_overlay_background=classic, background_overlay_color=#hex, background_overlay_opacity={size:0.7,unit:px}. (6) Text alignment: text_align on text/heading widgets. (7) Use search-images and sideload-image tools to get real images before building.', 'emcp-tools' ),

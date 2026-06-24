@@ -46,7 +46,7 @@ class SvgIconCapabilityTest extends Ability_Test_Case {
     /** @test @group t0 */
     public function test_ability_names_contains_upload_svg_icon_and_count_is_one(): void {
         $names = $this->ability->get_ability_names();
-        $this->assertContains('elementor-mcp/upload-svg-icon', $names, 'Missing tool: upload-svg-icon');
+        $this->assertContains('emcp-tools/upload-svg-icon', $names, 'Missing tool: upload-svg-icon');
         $this->assertCount(1, $names, 'SVG icon class must register exactly 1 tool.');
     }
 }

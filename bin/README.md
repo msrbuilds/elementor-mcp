@@ -13,7 +13,7 @@ Add to `claude_desktop_config.json`:
 ```json
 {
   "mcpServers": {
-    "elementor-mcp": {
+    "emcp-tools": {
       "command": "npx",
       "args": ["-y", "@msrbuilds/emcp-proxy@latest"],
       "env": {

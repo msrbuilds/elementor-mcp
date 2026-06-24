@@ -91,5 +91,45 @@ class EMCP_Tools_Migration {
 			}
 			update_option( 'emcp_tools_legacy_meta_migrated', 1 );
 		}
+
+		self::migrate_ability_slug_namespace();
+	}
+
+	/**
+	 * One-time remap of the stored disabled-tools slugs from the old MCP ability
+	 * namespace (`elementor-mcp/…`) to the new one (`emcp-tools/…`), introduced in
+	 * v3.0.0 alongside the broader move beyond Elementor.
+	 *
+	 * The `emcp_tools_disabled_tools` option stores ability NAMES, which changed
+	 * prefix in 3.0.0. Without this remap the runtime filter (`array_diff` of the
+	 * registered names against the stored disabled list) would stop matching, so
+	 * every previously-disabled tool — including the Pro tools that ship
+	 * disabled-by-default — would silently switch back on. Gated by a marker so it
+	 * runs exactly once; idempotent thereafter.
+	 *
+	 * @since 3.0.0
+	 */
+	private static function migrate_ability_slug_namespace(): void {
+		if ( get_option( 'emcp_tools_slug_namespace_migrated' ) ) {
+			return;
+		}
+
+		$disabled = get_option( 'emcp_tools_disabled_tools', array() );
+		if ( is_array( $disabled ) && ! empty( $disabled ) ) {
+			$remapped = array();
+			foreach ( $disabled as $slug ) {
+				$slug = (string) $slug;
+				if ( 0 === strpos( $slug, 'elementor-mcp/' ) ) {
+					$slug = 'emcp-tools/' . substr( $slug, strlen( 'elementor-mcp/' ) );
+				}
+				$remapped[] = $slug;
+			}
+			$remapped = array_values( array_unique( $remapped ) );
+			if ( $remapped !== $disabled ) {
+				update_option( 'emcp_tools_disabled_tools', $remapped );
+			}
+		}
+
+		update_option( 'emcp_tools_slug_namespace_migrated', 1 );
 	}
 }

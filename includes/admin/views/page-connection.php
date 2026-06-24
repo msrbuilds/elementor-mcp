@@ -13,7 +13,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /** @var EMCP_Tools_Admin $this */
-$emcp_tools_endpoint      = rest_url( 'mcp/elementor-mcp-server' );
+$emcp_tools_endpoint      = rest_url( 'mcp/emcp-tools-server' );
 $emcp_tools_enabled_count = $this->get_enabled_tool_count();
 $emcp_tools_total_count   = $this->get_total_tool_count();
 $emcp_tools_has_adapter   = class_exists( '\WP\MCP\Core\McpAdapter' );

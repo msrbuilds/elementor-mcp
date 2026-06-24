@@ -93,7 +93,7 @@ class F019F020AdminTest extends TestCase {
 			$has_full_path_in_localize,
 			'F-020: wp_localize_script must not include EMCP_TOOLS_DIR in the proxy path ' .
 			'localized to JavaScript. Doing so exposes the full server filesystem path ' .
-			'(e.g. /var/www/html/wp-content/plugins/elementor-mcp/bin/mcp-proxy.mjs) to the browser. ' .
+			'(e.g. /var/www/html/wp-content/plugins/emcp-tools/bin/mcp-proxy.mjs) to the browser. ' .
 			'Fix: localize only the filename ("mcp-proxy.mjs") and construct the full path server-side.'
 		);
 	}

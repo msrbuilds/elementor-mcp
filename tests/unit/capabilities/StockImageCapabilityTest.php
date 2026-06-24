@@ -109,9 +109,9 @@ class StockImageCapabilityTest extends Ability_Test_Case {
     public function test_ability_names_count_is_three(): void {
         $names = $this->ability->get_ability_names();
         $expected = [
-            'elementor-mcp/search-images',
-            'elementor-mcp/sideload-image',
-            'elementor-mcp/add-stock-image',
+            'emcp-tools/search-images',
+            'emcp-tools/sideload-image',
+            'emcp-tools/add-stock-image',
         ];
         foreach ($expected as $tool) {
             $this->assertContains($tool, $names, "Missing stock image tool: $tool");

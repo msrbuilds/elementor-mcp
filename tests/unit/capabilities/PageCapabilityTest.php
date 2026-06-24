@@ -107,11 +107,11 @@ class PageCapabilityTest extends Ability_Test_Case {
     public function test_ability_names_contains_all_five_page_tools(): void {
         $names = $this->ability->get_ability_names();
         $expected = [
-            'elementor-mcp/create-page',
-            'elementor-mcp/update-page-settings',
-            'elementor-mcp/delete-page-content',
-            'elementor-mcp/import-template',
-            'elementor-mcp/export-page',
+            'emcp-tools/create-page',
+            'emcp-tools/update-page-settings',
+            'emcp-tools/delete-page-content',
+            'emcp-tools/import-template',
+            'emcp-tools/export-page',
         ];
         foreach ($expected as $tool) {
             $this->assertContains($tool, $names, "Missing page tool: $tool");

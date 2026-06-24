@@ -1,12 +1,12 @@
 {
   "mcpServers": {
-    "elementor-mcp-local": {
+    "emcp-tools-local": {
       "type": "stdio",
       "command": "C:/wp-cli/wp.bat",
       "args": [
         "mcp-adapter",
         "serve",
-        "--server=elementor-mcp-server",
+        "--server=emcp-tools-server",
         "--user=admin",
         "--path=${WP_PATH}"
       ],
@@ -14,9 +14,9 @@
         "WP_PATH": "C:/laragon/www/msrplugins"
       }
     },
-    "elementor-mcp-remote": {
+    "emcp-tools-remote": {
       "type": "http",
-      "serverUrl": "https://educated-emma-2bmze.zipwp.top/wp-json/mcp/elementor-mcp-server",
+      "serverUrl": "https://educated-emma-2bmze.zipwp.top/wp-json/mcp/emcp-tools-server",
       "headers": {
         "Authorization": "Basic dDJlcXk4ZGUzbThzOlh0SmIgN0NXOSBBQVBDIGJZQVcgSDVtUSAzRDJP"
       }

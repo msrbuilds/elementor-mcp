@@ -29,16 +29,16 @@ A WordPress plugin that extends the [WordPress MCP Adapter](https://github.com/W
 
 ## Features
 
-- **Up to 119 MCP Tools** covering the full Elementor page-building workflow. Counts scale with your environment:
-  - 62 tools — free Elementor only
-  - 76 tools — free Elementor + Elementor 4.0 atomic elements
-  - 101 tools — with Elementor Pro
-  - 115 tools — with Elementor Pro + Elementor 4.0
-  - 120 tools — with Elementor Pro + WooCommerce + Elementor 4.0
+- **A focused MCP toolset** covering the full Elementor page-building workflow. As of v3.0.0 the 62 per-widget tools were folded into a catalog-backed model, so the active surface is much smaller — every widget is still reachable via discover → inspect → act. Counts scale with your environment:
+  - ~44 tools — free Elementor only
+  - ~58 tools — free Elementor + Elementor 4.0 atomic elements
+  - ~70 tools — with Elementor Pro
+  - ~84 tools — with Elementor Pro + Elementor 4.0 (and + WooCommerce, which adds no new tools)
+  - ~21 of these (SEO & Accessibility, Widget Builder, PHP Snippets) ship **disabled-by-default**, so the typical active surface is smaller
 - **Query & Discovery** — List widgets, inspect page structures, read element settings, browse templates, view global design tokens
 - **Page Management** — Create pages, update settings, clear content, import/export templates
 - **Layout Tools** — Add flexbox containers, move/remove/duplicate elements, update containers, find elements, batch update, reorder children, get container schema
-- **Widget Tools** — Universal add/update for any widget, plus 27 free convenience shortcuts, 30 conditional Pro widget tools, and 5 WooCommerce widget tools
+- **Widget Tools** — A catalog-backed model: `list-widgets` (filter by tier/category/search) → `get-widget-schema` (curated params, batch, or full raw schema) → `add-free-widget` / `add-pro-widget` (with Pro) → `update-widget`. The 62 widgets' curated params live in a built-in catalog (27 free / 30 Pro / 5 WooCommerce), so every widget and parameter stays reachable while the per-turn tool-list cost drops ~10×
 - **Pro Widget Support** — Conditional tools for nav menu, loop grid, loop carousel, media carousel, nested tabs, nested accordion, portfolio, author box, login, code highlight, reviews, off-canvas, progress tracker, search, and more (only register when Elementor Pro is active)
 - **Atomic Elements (Elementor 4.0+)** — 13 dedicated tools for Elementor's atomic system: flexbox, div-block, heading, paragraph, button, image, svg, youtube, video, divider, plus universal `add-atomic-widget` / `update-atomic-widget` and `detect-elementor-version`
 - **Theme Builder** — Create theme templates (header/footer/single/archive), set display conditions (Pro)
@@ -52,7 +52,7 @@ A WordPress plugin that extends the [WordPress MCP Adapter](https://github.com/W
 - **Stock Images** — Search Openverse for Creative Commons images, sideload into Media Library, add to pages
 - **SVG Icons** — Upload SVG icons from URL or raw markup for use with Elementor icon widgets
 - **Custom Code** — Add custom CSS (element/page level), inject JavaScript, create site-wide code snippets for head/body injection
-- **Low-tools Mode** — One-click toggle that filters the active tool list to a curated essentials set (~50 tools) so MCP clients with strict tool caps (Antigravity, Gemini API, etc.) stay under their limits
+- **Low-tools Mode** — One-click toggle that filters the active tool list to a curated essentials set, for MCP clients with strict tool caps (Antigravity, Gemini API, etc.). After the v3.0.0 widget consolidation the active count already fits most caps, so this is rarely needed now
 - **Admin Dashboard** — Dedicated top-level **EMCP Tools** menu with Tools / Connection / Prompts / Templates / Brand Kits / Skills / Widget Builder / Changelog tabs. Toggle individual tools on/off, view connection configs for all supported MCP clients, and reach the **Get Support** portal from any tab
 
 ## Requirements
@@ -82,7 +82,7 @@ Connect to your WordPress site from any AI client using HTTP. No proxy or Node.j
 
 1. Create an Application Password at **Users > Profile > Application Passwords**.
 2. Base64-encode your credentials: `echo -n "username:app-password" | base64`
-3. Your MCP endpoint is: `https://your-site.com/wp-json/mcp/elementor-mcp-server`
+3. Your MCP endpoint is: `https://your-site.com/wp-json/mcp/emcp-tools-server`
 
 > **Tip:** The plugin's **EMCP Tools > Connection** admin screen can generate all configs automatically — just enter your username and Application Password.
 
@@ -93,9 +93,9 @@ Add as `.mcp.json` in your project root:
 ```json
 {
     "mcpServers": {
-        "elementor-mcp": {
+        "emcp-tools": {
             "type": "http",
-            "url": "https://your-site.com/wp-json/mcp/elementor-mcp-server",
+            "url": "https://your-site.com/wp-json/mcp/emcp-tools-server",
             "headers": {
                 "Authorization": "Basic BASE64_ENCODED_CREDENTIALS"
             }
@@ -111,9 +111,9 @@ Add to `claude_desktop_config.json` (`%APPDATA%\Claude\` on Windows, `~/Library/
 ```json
 {
     "mcpServers": {
-        "elementor-mcp": {
+        "emcp-tools": {
             "type": "http",
-            "url": "https://your-site.com/wp-json/mcp/elementor-mcp-server",
+            "url": "https://your-site.com/wp-json/mcp/emcp-tools-server",
             "headers": {
                 "Authorization": "Basic BASE64_ENCODED_CREDENTIALS"
             }
@@ -129,8 +129,8 @@ Add to `.cursor/mcp.json` in your project root, or `~/.cursor/mcp.json` for glob
 ```json
 {
     "mcpServers": {
-        "elementor-mcp": {
-            "url": "https://your-site.com/wp-json/mcp/elementor-mcp-server",
+        "emcp-tools": {
+            "url": "https://your-site.com/wp-json/mcp/emcp-tools-server",
             "headers": {
                 "Authorization": "Basic BASE64_ENCODED_CREDENTIALS"
             }
@@ -146,8 +146,8 @@ Add to `~/.codeium/windsurf/mcp_config.json`:
 ```json
 {
     "mcpServers": {
-        "elementor-mcp": {
-            "serverUrl": "https://your-site.com/wp-json/mcp/elementor-mcp-server",
+        "emcp-tools": {
+            "serverUrl": "https://your-site.com/wp-json/mcp/emcp-tools-server",
             "headers": {
                 "Authorization": "Basic BASE64_ENCODED_CREDENTIALS"
             }
@@ -163,8 +163,8 @@ Add to `~/.gemini/antigravity/mcp_config.json`:
 ```json
 {
     "mcpServers": {
-        "elementor-mcp": {
-            "serverUrl": "https://your-site.com/wp-json/mcp/elementor-mcp-server",
+        "emcp-tools": {
+            "serverUrl": "https://your-site.com/wp-json/mcp/emcp-tools-server",
             "headers": {
                 "Authorization": "Basic BASE64_ENCODED_CREDENTIALS"
             }
@@ -180,12 +180,12 @@ For local development with WP-CLI available, you can use the stdio transport (no
 ```json
 {
     "mcpServers": {
-        "elementor-mcp": {
+        "emcp-tools": {
             "type": "stdio",
             "command": "wp",
             "args": [
                 "mcp-adapter", "serve",
-                "--server=elementor-mcp-server",
+                "--server=emcp-tools-server",
                 "--user=admin",
                 "--path=/path/to/wordpress"
             ]
@@ -203,7 +203,7 @@ For remote WordPress sites, environments without WP-CLI, or when your AI client 
 ```json
 {
     "mcpServers": {
-        "elementor-mcp": {
+        "emcp-tools": {
             "type": "stdio",
             "command": "npx",
             "args": ["-y", "@msrbuilds/emcp-proxy@latest"],
@@ -235,7 +235,7 @@ Extract `bin/mcp-proxy.mjs` from the plugin ZIP, save it anywhere on the machine
 
 ```bash
 npx @modelcontextprotocol/inspector wp mcp-adapter serve \
-  --server=elementor-mcp-server --user=admin --path=/path/to/wordpress
+  --server=emcp-tools-server --user=admin --path=/path/to/wordpress
 ```
 
 ## Available Tools
@@ -277,74 +277,17 @@ npx @modelcontextprotocol/inspector wp mcp-adapter serve \
 | `batch-update` | Apply multiple element updates in a single call |
 | `reorder-elements` | Reorder child elements within a container |
 
-### Widgets (2 universal + 27 free + 30 Pro + 5 WooCommerce)
+### Widgets — catalog-backed (5 tools)
+
+As of v3.0.0 the 62 per-widget tools (`add-heading`, `add-button`, `add-form`, the `add-wc-*` set, …) and the universal `add-widget` were replaced by a catalog-backed model. The 62 widgets' curated params now live in a built-in catalog (27 free / 30 Pro / 5 WooCommerce) instead of as individual tools — every widget and parameter is still reachable through **discover → inspect → act**, and any valid Elementor control passes straight through.
 
 | Tool | Description |
 |---|---|
-| `add-widget` | Universal: add any widget type to a container |
-| `update-widget` | Universal: update settings on an existing widget |
-| `add-heading` | Convenience: heading widget |
-| `add-text-editor` | Convenience: rich text editor widget |
-| `add-image` | Convenience: image widget |
-| `add-button` | Convenience: button widget |
-| `add-video` | Convenience: video widget |
-| `add-icon` | Convenience: icon widget |
-| `add-spacer` | Convenience: spacer widget |
-| `add-divider` | Convenience: divider widget |
-| `add-icon-box` | Convenience: icon box widget |
-| `add-accordion` | Convenience: collapsible accordion widget |
-| `add-alert` | Convenience: alert/notice widget |
-| `add-counter` | Convenience: animated counter widget |
-| `add-google-maps` | Convenience: embedded Google Maps widget |
-| `add-icon-list` | Convenience: icon list for features/checklists |
-| `add-image-box` | Convenience: image box (image + title + description) |
-| `add-image-carousel` | Convenience: rotating image carousel |
-| `add-progress` | Convenience: animated progress bar |
-| `add-social-icons` | Convenience: social media icon links |
-| `add-star-rating` | Convenience: star rating display |
-| `add-tabs` | Convenience: tabbed content widget |
-| `add-testimonial` | Convenience: testimonial with quote and author |
-| `add-toggle` | Convenience: toggle/expandable content |
-| `add-html` | Convenience: custom HTML code widget |
-| `add-menu-anchor` | Convenience: invisible anchor for one-page navigation |
-| `add-shortcode` | Convenience: embed WordPress shortcodes |
-| `add-rating` | Convenience: customizable rating widget |
-| `add-text-path` | Convenience: curved/circular text on a path |
-| `add-form` | Pro: form widget |
-| `add-posts-grid` | Pro: posts grid widget |
-| `add-countdown` | Pro: countdown timer widget |
-| `add-price-table` | Pro: price table widget |
-| `add-flip-box` | Pro: flip box widget |
-| `add-animated-headline` | Pro: animated headline widget |
-| `add-call-to-action` | Pro: call-to-action widget |
-| `add-slides` | Pro: full-width slides/slider |
-| `add-testimonial-carousel` | Pro: testimonial carousel/slider |
-| `add-price-list` | Pro: price list for menus/services |
-| `add-gallery` | Pro: advanced gallery (grid/masonry/justified) |
-| `add-share-buttons` | Pro: social share buttons |
-| `add-table-of-contents` | Pro: auto-generated table of contents |
-| `add-blockquote` | Pro: styled blockquote widget |
-| `add-lottie` | Pro: Lottie animation widget |
-| `add-hotspot` | Pro: image hotspot widget |
-| `add-nav-menu` | Pro: WordPress navigation menu |
-| `add-loop-grid` | Pro: dynamic post/CPT loop grid |
-| `add-loop-carousel` | Pro: dynamic post/CPT loop carousel |
-| `add-media-carousel` | Pro: media carousel for images/videos |
-| `add-nested-tabs` | Pro: nested tabs with container content |
-| `add-nested-accordion` | Pro: nested accordion with container content |
-| `add-portfolio` | Pro: portfolio grid widget |
-| `add-author-box` | Pro: post author box widget |
-| `add-login` | Pro: login form widget |
-| `add-code-highlight` | Pro: syntax-highlighted code block widget |
-| `add-reviews` | Pro: reviews/testimonials carousel widget |
-| `add-off-canvas` | Pro: off-canvas panel widget |
-| `add-progress-tracker` | Pro: scroll progress tracker widget |
-| `add-search` | Pro: search widget with live results support |
-| `add-wc-products` | Pro + WC: WooCommerce products grid |
-| `add-wc-add-to-cart` | Pro + WC: add-to-cart button |
-| `add-wc-cart` | Pro + WC: cart page widget |
-| `add-wc-checkout` | Pro + WC: checkout page widget |
-| `add-wc-menu-cart` | Pro + WC: menu cart icon widget |
+| `list-widgets` | Compact catalog index of widgets; filter by `tier` / `category` / `search` |
+| `get-widget-schema` | Curated params for a widget (or `types[]` batch); `full:true` for the raw control schema |
+| `add-free-widget` | Add any free/core widget by type |
+| `add-pro-widget` | Add an Elementor Pro / WooCommerce widget by type (only when Elementor Pro is active) |
+| `update-widget` | Update settings on an existing widget |
 
 ### Atomic Elements — Elementor 4.0+ (13 tools)
 
@@ -449,7 +392,7 @@ Let an AI agent author server-side PHP behind a hard human-approval gate. The AI
 |---|---|
 | `list-global-classes` | Resolve Class Manager `g-` IDs to their names and the CSS each defines, per breakpoint/state (read-only) |
 
-> All tool names are prefixed with `elementor-mcp/` in the MCP namespace (e.g., `elementor-mcp/list-widgets`). The MCP Adapter converts these to `elementor-mcp-list-widgets` for transport.
+> All tool names are prefixed with `emcp-tools/` in the MCP namespace (e.g., `emcp-tools/list-widgets`). The MCP Adapter converts these to `emcp-tools-list-widgets` for transport.
 
 ## Permission Model
 
@@ -477,7 +420,7 @@ If the MCP server connects but no tools appear in Claude Code, Cursor, or other 
 1. **Verify tools are registered.** Test the endpoint directly with curl to confirm the server returns tools:
    ```bash
    curl -s -u admin:YOUR_APP_PASSWORD \
-     https://your-site.com/wp-json/mcp/elementor-mcp-server \
+     https://your-site.com/wp-json/mcp/emcp-tools-server \
      -H "Content-Type: application/json" \
      -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"test","version":"1.0"}}}'
    ```
@@ -493,7 +436,7 @@ If the MCP server connects but no tools appear in Claude Code, Cursor, or other 
 3. **Enable debug logging.** Add the `MCP_LOG_FILE` environment variable to your proxy config to capture the full request/response flow:
    ```json
    "env": {
-       "MCP_LOG_FILE": "/tmp/elementor-mcp-debug.log"
+       "MCP_LOG_FILE": "/tmp/emcp-tools-debug.log"
    }
    ```
    The log will show the protocol version, session IDs, tools count, and response bodies.

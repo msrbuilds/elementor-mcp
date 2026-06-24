@@ -2,7 +2,8 @@
 /**
  * T3 Input boundary tests — widget abilities.
  *
- * Tests that add-widget and update-widget return WP_Error for missing/invalid inputs.
+ * Tests that the catalog insert engine (add-free-widget / add-pro-widget, via
+ * execute_add_widget) and update-widget return WP_Error for missing/invalid inputs.
  *
  * @group input
  * @group widget
