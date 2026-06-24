@@ -2,6 +2,11 @@
 
 All notable changes to MCP Tools for Elementor are documented in this file.
 
+## [3.1.0]
+
+- Added: **WordPress Content tools — the first step beyond Elementor.** Eight new MCP tools to manage general WordPress content from an AI agent: `list-post-types`, `list-taxonomies`, `create-post`, `get-post`, `update-post`, `list-posts`, `delete-post`, and `set-post-terms`. Create and edit posts, pages, and any custom post type — title, content (classic HTML or block markup), status, slug, author, taxonomy terms, custom fields, and featured image — without touching Elementor data (a `is_elementor` flag steers you to the Elementor tools for builder pages). Capability-gated and enabled by default; `delete-post` trashes by default (pass `force` to permanently delete).
+- Added: WordPress core's read-only context abilities (`core/get-site-info`, `core/get-user-info`, `core/get-environment-info`) are now surfaced on the EMCP server too.
+
 ## [3.0.0]
 
 - Changed (BREAKING): **MCP namespace + server route renamed `elementor-mcp` → `emcp-tools`.** As the toolset grows beyond Elementor, every tool is now under the `emcp-tools/` ability namespace (MCP tool names become `emcp-tools-<tool>`, e.g. `emcp-tools-list-widgets`), and the server route moved from `/wp-json/mcp/elementor-mcp-server` to `/wp-json/mcp/emcp-tools-server` (WP-CLI `--server=emcp-tools-server`). **Every existing AI-client connection (Claude Desktop/Code, Cursor, WP-CLI, the proxy) must be reconnected with the new route** — regenerate configs from the EMCP Tools → Connection tab. Your stored per-tool enable/disable toggles migrate automatically to the new slugs, so Pro tools stay disabled-by-default as before.

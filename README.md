@@ -29,12 +29,13 @@ A WordPress plugin that extends the [WordPress MCP Adapter](https://github.com/W
 
 ## Features
 
-- **A focused MCP toolset** covering the full Elementor page-building workflow. As of v3.0.0 the 62 per-widget tools were folded into a catalog-backed model, so the active surface is much smaller — every widget is still reachable via discover → inspect → act. Counts scale with your environment:
-  - ~44 tools — free Elementor only
-  - ~58 tools — free Elementor + Elementor 4.0 atomic elements
-  - ~70 tools — with Elementor Pro
-  - ~84 tools — with Elementor Pro + Elementor 4.0 (and + WooCommerce, which adds no new tools)
+- **A focused MCP toolset** covering the full Elementor page-building workflow — and, as of v3.1.0, growing beyond Elementor into general WordPress content management. As of v3.0.0 the 62 per-widget tools were folded into a catalog-backed model, so the active surface is much smaller — every widget is still reachable via discover → inspect → act. Counts scale with your environment (the v3.1.0 numbers below add the 8 WordPress Content tools + 3 surfaced core abilities, all enabled by default — estimates pending a fresh live count):
+  - ~55 tools — free Elementor only
+  - ~69 tools — free Elementor + Elementor 4.0 atomic elements
+  - ~81 tools — with Elementor Pro
+  - ~95 tools — with Elementor Pro + Elementor 4.0 (and + WooCommerce, which adds no new tools)
   - ~21 of these (SEO & Accessibility, Widget Builder, PHP Snippets) ship **disabled-by-default**, so the typical active surface is smaller
+- **WordPress Content (beyond Elementor)** — Create and manage posts, pages, and any custom post type — content, status, taxonomy terms, custom fields, and featured images — via MCP, without touching Elementor data. Built on WP core; every post carries an `is_elementor` flag that steers agents to the Elementor tools for builder pages
 - **Query & Discovery** — List widgets, inspect page structures, read element settings, browse templates, view global design tokens
 - **Page Management** — Create pages, update settings, clear content, import/export templates
 - **Layout Tools** — Add flexbox containers, move/remove/duplicate elements, update containers, find elements, batch update, reorder children, get container schema
@@ -251,6 +252,23 @@ npx @modelcontextprotocol/inspector wp mcp-adapter serve \
 | `list-pages` | All Elementor-enabled pages/posts |
 | `list-templates` | Saved Elementor templates from the template library |
 | `get-global-settings` | Active kit/global settings (colors, typography, spacing) |
+
+### WordPress Content — beyond Elementor (8 tools, v3.1.0)
+
+General WordPress content management over MCP — built on WordPress core, these tools **never touch Elementor data**. Every returned post carries an `is_elementor` flag so an agent knows to switch to the Elementor tools for builder pages. Enabled by default; capability-gated. Featured image and custom-field meta are parameters of create/update.
+
+| Tool | Description |
+|---|---|
+| `list-post-types` | List registered public post types (read-only) |
+| `list-taxonomies` | List registered taxonomies and their object types (read-only) |
+| `create-post` | Create a post/page/CPT — title, content (HTML or block markup), status, slug, author, terms, custom fields, featured image |
+| `get-post` | Read a single post by ID (read-only; includes `is_elementor` flag) |
+| `update-post` | Update an existing post's fields, terms, custom fields, featured image |
+| `list-posts` | List/query posts of any type with filters (read-only) |
+| `delete-post` | Delete a post — trashes by default; `force:true` permanently deletes |
+| `set-post-terms` | Assign taxonomy terms to a post |
+
+> WordPress core's read-only context abilities (`core/get-site-info`, `core/get-user-info`, `core/get-environment-info`) are also surfaced on the EMCP server.
 
 ### Page Management (5 tools)
 
