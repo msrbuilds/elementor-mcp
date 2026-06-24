@@ -55,6 +55,8 @@ class EMCP_Tools_Content_Abilities {
 		$this->register_list_taxonomies();
 		$this->register_create_post();
 		$this->register_get_post();
+		$this->register_update_post();
+		$this->register_delete_post();
 	}
 
 	// ---------------------------------------------------------------------
@@ -588,5 +590,181 @@ class EMCP_Tools_Content_Abilities {
 			'featured_image' => $featured,
 			'is_elementor'   => 'builder' === get_post_meta( $post_id, '_elementor_edit_mode', true ),
 		);
+	}
+
+	// ---------------------------------------------------------------------
+	// update-post
+	// ---------------------------------------------------------------------
+
+	private function register_update_post(): void {
+		$this->ability_names[] = 'emcp-tools/update-post';
+		emcp_tools_register_ability(
+			'emcp-tools/update-post',
+			array(
+				'label'               => __( 'Update Post', 'emcp-tools' ),
+				'description'         => __( 'Partial update of a post/page/CPT. Only the fields you pass change. terms_mode controls replace/append; meta upserts the given keys; featured_image:null clears it. Does not touch Elementor data — use the Elementor tools for builder pages.', 'emcp-tools' ),
+				'category'            => 'emcp-tools',
+				'execute_callback'    => array( $this, 'execute_update_post' ),
+				'permission_callback' => array( $this, 'check_edit_permission' ),
+				'input_schema'        => array(
+					'type'       => 'object',
+					'properties' => array(
+						'post_id'        => array( 'type' => 'integer', 'description' => __( 'The post ID.', 'emcp-tools' ) ),
+						'title'          => array( 'type' => 'string' ),
+						'content'        => array( 'type' => 'string', 'description' => __( 'post_content — classic HTML or block markup.', 'emcp-tools' ) ),
+						'excerpt'        => array( 'type' => 'string' ),
+						'status'         => array( 'type' => 'string', 'enum' => array( 'draft', 'publish', 'pending', 'private', 'future' ) ),
+						'slug'           => array( 'type' => 'string' ),
+						'author'         => array( 'type' => 'integer' ),
+						'date'           => array( 'type' => 'string' ),
+						'parent'         => array( 'type' => 'integer' ),
+						'menu_order'     => array( 'type' => 'integer' ),
+						'comment_status' => array( 'type' => 'string', 'enum' => array( 'open', 'closed' ) ),
+						'terms'          => array( 'type' => 'object' ),
+						'terms_mode'     => array( 'type' => 'string', 'enum' => array( 'replace', 'append' ), 'description' => __( 'Default: replace.', 'emcp-tools' ) ),
+						'meta'           => array( 'type' => 'object' ),
+						'featured_image' => array( 'type' => array( 'object', 'null' ) ),
+					),
+					'required'   => array( 'post_id' ),
+				),
+				'output_schema'       => array( 'type' => 'object', 'properties' => array(
+					'post_id' => array( 'type' => 'integer' ), 'status' => array( 'type' => 'string' ),
+					'permalink' => array( 'type' => 'string' ),
+					'warnings' => array( 'type' => 'array', 'items' => array( 'type' => 'string' ) ),
+				) ),
+				'meta'                => array(
+					'annotations'  => array( 'readonly' => false, 'destructive' => false, 'idempotent' => false ),
+					'show_in_rest' => true,
+				),
+			)
+		);
+	}
+
+	/**
+	 * @param array $input
+	 * @return array|\WP_Error
+	 */
+	public function execute_update_post( $input ) {
+		$post_id = absint( $input['post_id'] ?? 0 );
+		if ( ! $post_id ) {
+			return new \WP_Error( 'missing_post_id', __( 'post_id is required.', 'emcp-tools' ) );
+		}
+		$post = get_post( $post_id );
+		if ( ! $post ) {
+			return new \WP_Error( 'post_not_found', __( 'Post not found.', 'emcp-tools' ) );
+		}
+		if ( ! $this->is_writable_post_type( (string) $post->post_type ) ) {
+			return new \WP_Error( 'invalid_post_type', __( 'That post type is not writable here.', 'emcp-tools' ) );
+		}
+
+		if ( isset( $input['meta'] ) && is_array( $input['meta'] ) ) {
+			$guard = $this->reject_protected_meta( $input['meta'] );
+			if ( is_wp_error( $guard ) ) {
+				return $guard;
+			}
+		}
+
+		$postarr = array( 'ID' => $post_id );
+		if ( array_key_exists( 'title', $input ) )          { $postarr['post_title'] = sanitize_text_field( (string) $input['title'] ); }
+		if ( array_key_exists( 'content', $input ) )        { $postarr['post_content'] = (string) $input['content']; }
+		if ( array_key_exists( 'excerpt', $input ) )        { $postarr['post_excerpt'] = (string) $input['excerpt']; }
+		if ( ! empty( $input['slug'] ) )                    { $postarr['post_name'] = sanitize_title( $input['slug'] ); }
+		if ( isset( $input['parent'] ) )                    { $postarr['post_parent'] = absint( $input['parent'] ); }
+		if ( isset( $input['menu_order'] ) )                { $postarr['menu_order'] = (int) $input['menu_order']; }
+		if ( ! empty( $input['date'] ) )                    { $postarr['post_date'] = sanitize_text_field( $input['date'] ); }
+		if ( ! empty( $input['comment_status'] ) )          { $postarr['comment_status'] = ( 'open' === $input['comment_status'] ) ? 'open' : 'closed'; }
+
+		if ( ! empty( $input['status'] ) ) {
+			$status = sanitize_key( $input['status'] );
+			if ( ! in_array( $status, $this->valid_statuses(), true ) ) {
+				return new \WP_Error( 'invalid_status', __( 'Invalid status.', 'emcp-tools' ) );
+			}
+			if ( 'publish' === $status && ! current_user_can( 'publish_posts' ) ) {
+				return new \WP_Error( 'cannot_publish', __( 'You do not have permission to publish.', 'emcp-tools' ) );
+			}
+			$postarr['post_status'] = $status;
+		}
+		if ( ! empty( $input['author'] ) ) {
+			$author = absint( $input['author'] );
+			if ( (int) $author !== get_current_user_id() && ! current_user_can( 'edit_others_posts' ) ) {
+				return new \WP_Error( 'cannot_set_author', __( 'You cannot assign another author.', 'emcp-tools' ) );
+			}
+			$postarr['post_author'] = $author;
+		}
+
+		$res = wp_update_post( wp_slash( $postarr ), true );
+		if ( is_wp_error( $res ) ) {
+			return $res;
+		}
+
+		$warnings = array();
+		$append   = isset( $input['terms_mode'] ) && 'append' === $input['terms_mode'];
+		$this->apply_write_extras( $post_id, $input, $warnings, $append );
+
+		$result = array(
+			'post_id'   => $post_id,
+			'status'    => (string) ( $postarr['post_status'] ?? $post->post_status ),
+			'permalink' => (string) get_permalink( $post_id ),
+		);
+		if ( $warnings ) {
+			$result['warnings'] = $warnings;
+		}
+		return $result;
+	}
+
+	// ---------------------------------------------------------------------
+	// delete-post
+	// ---------------------------------------------------------------------
+
+	private function register_delete_post(): void {
+		$this->ability_names[] = 'emcp-tools/delete-post';
+		emcp_tools_register_ability(
+			'emcp-tools/delete-post',
+			array(
+				'label'               => __( 'Delete Post', 'emcp-tools' ),
+				'description'         => __( 'Deletes a post/page/CPT. By default it is moved to Trash (recoverable); pass force:true to permanently delete. Destructive.', 'emcp-tools' ),
+				'category'            => 'emcp-tools',
+				'execute_callback'    => array( $this, 'execute_delete_post' ),
+				'permission_callback' => array( $this, 'check_delete_permission' ),
+				'input_schema'        => array(
+					'type'       => 'object',
+					'properties' => array(
+						'post_id' => array( 'type' => 'integer', 'description' => __( 'The post ID.', 'emcp-tools' ) ),
+						'force'   => array( 'type' => 'boolean', 'description' => __( 'Permanently delete instead of trashing. Default: false.', 'emcp-tools' ) ),
+					),
+					'required'   => array( 'post_id' ),
+				),
+				'output_schema'       => array( 'type' => 'object', 'properties' => array(
+					'success' => array( 'type' => 'boolean' ), 'post_id' => array( 'type' => 'integer' ),
+					'deleted' => array( 'type' => 'string' ),
+				) ),
+				'meta'                => array(
+					'annotations'  => array( 'readonly' => false, 'destructive' => true, 'idempotent' => false ),
+					'show_in_rest' => true,
+				),
+			)
+		);
+	}
+
+	/**
+	 * @param array $input
+	 * @return array|\WP_Error
+	 */
+	public function execute_delete_post( $input ) {
+		$post_id = absint( $input['post_id'] ?? 0 );
+		if ( ! $post_id ) {
+			return new \WP_Error( 'missing_post_id', __( 'post_id is required.', 'emcp-tools' ) );
+		}
+		$post = get_post( $post_id );
+		if ( ! $post ) {
+			return new \WP_Error( 'post_not_found', __( 'Post not found.', 'emcp-tools' ) );
+		}
+		$force = ! empty( $input['force'] );
+		if ( $force ) {
+			$res = wp_delete_post( $post_id, true );
+			return array( 'success' => (bool) $res, 'post_id' => $post_id, 'deleted' => 'deleted' );
+		}
+		$res = wp_trash_post( $post_id );
+		return array( 'success' => (bool) $res, 'post_id' => $post_id, 'deleted' => 'trashed' );
 	}
 }

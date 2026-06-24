@@ -121,4 +121,44 @@ class ContentToolsTest extends Ability_Test_Case {
 		$out = $this->ability->execute_get_post( array( 'post_id' => 99999 ) );
 		$this->assertWPError( $out, 'post_not_found' );
 	}
+
+	/** @test */
+	public function test_update_post_merges_and_clears_featured_image(): void {
+		$GLOBALS['_wp_posts'][600] = (object) array( 'ID' => 600, 'post_type' => 'post', 'post_status' => 'draft', 'post_author' => 1, 'post_title' => 'old' );
+		$out = $this->ability->execute_update_post( array( 'post_id' => 600, 'title' => 'new', 'featured_image' => null ) );
+		$this->assertNotWPError( $out );
+		$this->assertSame( 600, $out['post_id'] );
+		$cleared = array_filter( $GLOBALS['_wp_thumbnail_calls'], fn( $c ) => 0 === $c['thumb'] );
+		$this->assertNotEmpty( $cleared, 'featured_image:null should clear the thumbnail' );
+	}
+
+	/** @test */
+	public function test_update_post_rejects_protected_meta(): void {
+		$GLOBALS['_wp_posts'][601] = (object) array( 'ID' => 601, 'post_type' => 'post', 'post_status' => 'draft', 'post_author' => 1 );
+		$out = $this->ability->execute_update_post( array( 'post_id' => 601, 'meta' => array( '_edit_lock' => '1' ) ) );
+		$this->assertWPError( $out, 'protected_meta' );
+	}
+
+	/** @test */
+	public function test_update_post_not_found(): void {
+		$out = $this->ability->execute_update_post( array( 'post_id' => 99999, 'title' => 'x' ) );
+		$this->assertWPError( $out, 'post_not_found' );
+	}
+
+	/** @test */
+	public function test_delete_post_trashes_by_default(): void {
+		$GLOBALS['_wp_posts'][700] = (object) array( 'ID' => 700, 'post_type' => 'post', 'post_status' => 'publish', 'post_author' => 1 );
+		$out = $this->ability->execute_delete_post( array( 'post_id' => 700 ) );
+		$this->assertNotWPError( $out );
+		$this->assertSame( 'trashed', $out['deleted'] );
+		$this->assertContains( 700, $GLOBALS['_wp_trashed_posts'] );
+	}
+
+	/** @test */
+	public function test_delete_post_force(): void {
+		$GLOBALS['_wp_posts'][701] = (object) array( 'ID' => 701, 'post_type' => 'post', 'post_status' => 'publish', 'post_author' => 1 );
+		$out = $this->ability->execute_delete_post( array( 'post_id' => 701, 'force' => true ) );
+		$this->assertSame( 'deleted', $out['deleted'] );
+		$this->assertContains( 701, $GLOBALS['_wp_deleted_posts'] );
+	}
 }
