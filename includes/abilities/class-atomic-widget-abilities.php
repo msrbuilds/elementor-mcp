@@ -92,7 +92,7 @@ class EMCP_Tools_Atomic_Widget_Abilities {
 	// =========================================================================
 
 	private function register_add_atomic_widget(): void {
-		$name                  = 'elementor-mcp/add-atomic-widget';
+		$name                  = 'emcp-tools/add-atomic-widget';
 		$this->ability_names[] = $name;
 
 		emcp_tools_register_ability(
@@ -164,7 +164,7 @@ class EMCP_Tools_Atomic_Widget_Abilities {
 	}
 
 	private function register_update_atomic_widget(): void {
-		$name                  = 'elementor-mcp/update-atomic-widget';
+		$name                  = 'emcp-tools/update-atomic-widget';
 		$this->ability_names[] = $name;
 
 		emcp_tools_register_ability(
@@ -249,7 +249,7 @@ class EMCP_Tools_Atomic_Widget_Abilities {
 		string $widget_type,
 		callable $settings_fn
 	): void {
-		$full_name             = 'elementor-mcp/' . $name;
+		$full_name             = 'emcp-tools/' . $name;
 		$this->ability_names[] = $full_name;
 
 		$base_props = array(

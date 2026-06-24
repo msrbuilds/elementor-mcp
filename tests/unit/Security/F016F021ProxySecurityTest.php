@@ -102,7 +102,7 @@ class F016F021ProxySecurityTest extends TestCase {
 	public function test_current_proxy_includes_body_in_error_response(): void {
 		$debug_body = "Fatal error: Call to undefined function\n" .
 			"Stack trace:\n" .
-			"#0 /var/www/html/wp-content/plugins/elementor-mcp/includes/class-plugin.php(42)\n" .
+			"#0 /var/www/html/wp-content/plugins/emcp-tools/includes/class-plugin.php(42)\n" .
 			"DB Error: SELECT * FROM wp_options WHERE option_name = 'siteurl'";
 
 		$response = $this->build_error_response_current( $debug_body, 500, 1 );

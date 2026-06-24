@@ -56,15 +56,15 @@ class EMCP_Tools_Query_Abilities {
 	 */
 	public function get_ability_names(): array {
 		return array(
-			'elementor-mcp/list-widgets',
-			'elementor-mcp/get-widget-schema',
-			'elementor-mcp/get-container-schema',
-			'elementor-mcp/get-page-structure',
-			'elementor-mcp/get-element-settings',
-			'elementor-mcp/find-element',
-			'elementor-mcp/list-pages',
-			'elementor-mcp/list-templates',
-			'elementor-mcp/get-global-settings',
+			'emcp-tools/list-widgets',
+			'emcp-tools/get-widget-schema',
+			'emcp-tools/get-container-schema',
+			'emcp-tools/get-page-structure',
+			'emcp-tools/get-element-settings',
+			'emcp-tools/find-element',
+			'emcp-tools/list-pages',
+			'emcp-tools/list-templates',
+			'emcp-tools/get-global-settings',
 		);
 	}
 
@@ -105,7 +105,7 @@ class EMCP_Tools_Query_Abilities {
 	 */
 	private function register_list_widgets(): void {
 		emcp_tools_register_ability(
-			'elementor-mcp/list-widgets',
+			'emcp-tools/list-widgets',
 			array(
 				'label'               => __( 'List Elementor Widgets', 'emcp-tools' ),
 				'description'         => __( 'Lists Elementor widgets from the curated catalog as a compact index (type, title, tier, one-line use-case, param names). Filter by tier (free/pro/woo), category, or search by intent. Step 1 of discover → get-widget-schema → add-free-widget/add-pro-widget.', 'emcp-tools' ),
@@ -218,7 +218,7 @@ class EMCP_Tools_Query_Abilities {
 	 */
 	private function register_get_widget_schema(): void {
 		emcp_tools_register_ability(
-			'elementor-mcp/get-widget-schema',
+			'emcp-tools/get-widget-schema',
 			array(
 				'label'               => __( 'Get Widget Schema', 'emcp-tools' ),
 				'description'         => __( 'Returns curated parameters (params, required, defaults) for a widget type by default. Pass types[] for a batch lookup ({widgets:[...]}), or full:true for the raw auto-generated control schema.', 'emcp-tools' ),
@@ -345,7 +345,7 @@ class EMCP_Tools_Query_Abilities {
 
 	private function register_get_container_schema(): void {
 		emcp_tools_register_ability(
-			'elementor-mcp/get-container-schema',
+			'emcp-tools/get-container-schema',
 			array(
 				'label'               => __( 'Get Container Schema', 'emcp-tools' ),
 				'description'         => __( 'Returns JSON Schema for all container controls (flex + grid), including flex_direction, justify_content, align_items, flex_wrap, gap, content_width, min_height, container_type, grid controls, background, border, padding, and more.', 'emcp-tools' ),
@@ -469,7 +469,7 @@ class EMCP_Tools_Query_Abilities {
 	 */
 	private function register_get_page_structure(): void {
 		emcp_tools_register_ability(
-			'elementor-mcp/get-page-structure',
+			'emcp-tools/get-page-structure',
 			array(
 				'label'               => __( 'Get Page Structure', 'emcp-tools' ),
 				'description'         => __( 'Returns the element tree for an Elementor page, showing all containers, widgets, and their nesting structure. Each element includes its ID, type, widget type (for widgets), and child elements.', 'emcp-tools' ),
@@ -629,7 +629,7 @@ class EMCP_Tools_Query_Abilities {
 	 */
 	private function register_get_element_settings(): void {
 		emcp_tools_register_ability(
-			'elementor-mcp/get-element-settings',
+			'emcp-tools/get-element-settings',
 			array(
 				'label'               => __( 'Get Element Settings', 'emcp-tools' ),
 				'description'         => __( 'Returns the current settings for a specific element on a page. Provide the post ID and element ID to retrieve all control values for that element.', 'emcp-tools' ),
@@ -724,7 +724,7 @@ class EMCP_Tools_Query_Abilities {
 
 	private function register_find_element(): void {
 		emcp_tools_register_ability(
-			'elementor-mcp/find-element',
+			'emcp-tools/find-element',
 			array(
 				'label'               => __( 'Find Element', 'emcp-tools' ),
 				'description'         => __( 'Searches elements on a page by type, widget type, or settings content. Returns matching element IDs, types, and a settings preview.', 'emcp-tools' ),
@@ -904,7 +904,7 @@ class EMCP_Tools_Query_Abilities {
 	 */
 	private function register_list_pages(): void {
 		emcp_tools_register_ability(
-			'elementor-mcp/list-pages',
+			'emcp-tools/list-pages',
 			array(
 				'label'               => __( 'List Elementor Pages', 'emcp-tools' ),
 				'description'         => __( 'Returns all WordPress pages and posts that are built with Elementor. Optionally filter by post type and status.', 'emcp-tools' ),
@@ -1005,7 +1005,7 @@ class EMCP_Tools_Query_Abilities {
 	 */
 	private function register_list_templates(): void {
 		emcp_tools_register_ability(
-			'elementor-mcp/list-templates',
+			'emcp-tools/list-templates',
 			array(
 				'label'               => __( 'List Elementor Templates', 'emcp-tools' ),
 				'description'         => __( 'Returns all saved Elementor templates from the template library. Optionally filter by template type (page, section, container).', 'emcp-tools' ),
@@ -1102,7 +1102,7 @@ class EMCP_Tools_Query_Abilities {
 	 */
 	private function register_get_global_settings(): void {
 		emcp_tools_register_ability(
-			'elementor-mcp/get-global-settings',
+			'emcp-tools/get-global-settings',
 			array(
 				'label'               => __( 'Get Global Settings', 'emcp-tools' ),
 				'description'         => __( 'Returns the active Elementor kit/global settings including colors, typography, spacing, and breakpoints. These are the site-wide design tokens used across all pages.', 'emcp-tools' ),

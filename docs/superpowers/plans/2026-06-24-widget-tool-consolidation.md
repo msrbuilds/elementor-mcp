@@ -617,14 +617,14 @@ class CatalogToolsTest extends Ability_Test_Case {
     /** @test */
     public function test_registers_the_three_catalog_tools(): void {
         $names = $this->ability->get_ability_names();
-        $this->assertContains('elementor-mcp/add-free-widget', $names);
-        $this->assertContains('elementor-mcp/update-widget', $names);
+        $this->assertContains('emcp-tools/add-free-widget', $names);
+        $this->assertContains('emcp-tools/update-widget', $names);
     }
 
     /** @test */
     public function test_does_not_register_old_convenience_tools(): void {
         $names = $this->ability->get_ability_names();
-        foreach (['elementor-mcp/add-heading', 'elementor-mcp/add-button', 'elementor-mcp/add-form'] as $gone) {
+        foreach (['emcp-tools/add-heading', 'emcp-tools/add-button', 'emcp-tools/add-form'] as $gone) {
             $this->assertNotContains($gone, $names, "$gone must be removed in v3.0.0");
         }
     }
@@ -632,7 +632,7 @@ class CatalogToolsTest extends Ability_Test_Case {
     /** @test */
     public function test_add_pro_widget_not_registered_without_pro(): void {
         $this->assertFalse(defined('ELEMENTOR_PRO_VERSION'));
-        $this->assertNotContains('elementor-mcp/add-pro-widget', $this->ability->get_ability_names());
+        $this->assertNotContains('emcp-tools/add-pro-widget', $this->ability->get_ability_names());
     }
 
     /** @test */
@@ -705,9 +705,9 @@ Add these methods to the class (e.g. right after `register()`). Keep `execute_ad
 	}
 
 	private function register_add_free_widget(): void {
-		$this->ability_names[] = 'elementor-mcp/add-free-widget';
+		$this->ability_names[] = 'emcp-tools/add-free-widget';
 		emcp_tools_register_ability(
-			'elementor-mcp/add-free-widget',
+			'emcp-tools/add-free-widget',
 			array(
 				'label'               => __( 'Add Widget', 'emcp-tools' ),
 				'description'         => __( 'Adds any free/core Elementor widget to a container. Discover types with list-widgets and their settings with get-widget-schema. Catalog defaults are merged automatically.', 'emcp-tools' ),
@@ -731,9 +731,9 @@ Add these methods to the class (e.g. right after `register()`). Keep `execute_ad
 	}
 
 	private function register_add_pro_widget(): void {
-		$this->ability_names[] = 'elementor-mcp/add-pro-widget';
+		$this->ability_names[] = 'emcp-tools/add-pro-widget';
 		emcp_tools_register_ability(
-			'elementor-mcp/add-pro-widget',
+			'emcp-tools/add-pro-widget',
 			array(
 				'label'               => __( 'Add Pro Widget', 'emcp-tools' ),
 				'description'         => __( 'Adds an Elementor Pro (or WooCommerce) widget to a container. Discover types with list-widgets (tier:pro) and settings with get-widget-schema. Only available when Elementor Pro is active.', 'emcp-tools' ),
@@ -1116,9 +1116,9 @@ Replace the Pro-gating test (lines ~52+) that checks the 62 old names. The new c
     public function test_pro_insert_tool_not_registered_without_pro(): void {
         $this->assertFalse(defined('ELEMENTOR_PRO_VERSION'));
         $names = $this->ability->get_ability_names();
-        $this->assertNotContains('elementor-mcp/add-pro-widget', $names);
-        $this->assertContains('elementor-mcp/add-free-widget', $names);
-        $this->assertContains('elementor-mcp/update-widget', $names);
+        $this->assertNotContains('emcp-tools/add-pro-widget', $names);
+        $this->assertContains('emcp-tools/add-free-widget', $names);
+        $this->assertContains('emcp-tools/update-widget', $names);
     }
 ```
 
@@ -1156,11 +1156,11 @@ In `includes/class-plugin.php`, in `get_essential_tool_slugs()` (lines ~170–24
 
 ```php
 			// Widget tools — catalog-backed (4).
-			'elementor-mcp/list-widgets',     // also in Query block above — array_intersect dedupes
-			'elementor-mcp/get-widget-schema',
-			'elementor-mcp/add-free-widget',
-			'elementor-mcp/add-pro-widget',
-			'elementor-mcp/update-widget',
+			'emcp-tools/list-widgets',     // also in Query block above — array_intersect dedupes
+			'emcp-tools/get-widget-schema',
+			'emcp-tools/add-free-widget',
+			'emcp-tools/add-pro-widget',
+			'emcp-tools/update-widget',
 ```
 
 (`list-widgets`/`get-widget-schema` already appear in the Query block — leave both; `filter_disabled_tools()` uses `array_intersect` against registered names so duplicates are harmless. To be tidy, don't re-add them and just add the three new write/insert slugs.)
@@ -1173,27 +1173,27 @@ In `includes/admin/class-admin.php`, in `get_tool_catalog()`, replace the three 
 			'widgets'          => array(
 				'label' => __( 'Widgets', 'emcp-tools' ),
 				'tools' => array(
-					'elementor-mcp/list-widgets'      => array(
+					'emcp-tools/list-widgets'      => array(
 						'label'       => __( 'List Widgets', 'emcp-tools' ),
 						'description' => __( 'Catalog-backed widget discovery with tier/category/search filters.', 'emcp-tools' ),
 						'badges'      => array( 'read-only' ),
 					),
-					'elementor-mcp/get-widget-schema' => array(
+					'emcp-tools/get-widget-schema' => array(
 						'label'       => __( 'Get Widget Schema', 'emcp-tools' ),
 						'description' => __( 'Curated params for a widget (or batch); full:true for the raw control schema.', 'emcp-tools' ),
 						'badges'      => array( 'read-only' ),
 					),
-					'elementor-mcp/add-free-widget'   => array(
+					'emcp-tools/add-free-widget'   => array(
 						'label'       => __( 'Add Widget', 'emcp-tools' ),
 						'description' => __( 'Adds any free/core Elementor widget by type.', 'emcp-tools' ),
 						'badges'      => array(),
 					),
-					'elementor-mcp/add-pro-widget'    => array(
+					'emcp-tools/add-pro-widget'    => array(
 						'label'       => __( 'Add Pro Widget', 'emcp-tools' ),
 						'description' => __( 'Adds an Elementor Pro / WooCommerce widget by type. Registers only with Elementor Pro active.', 'emcp-tools' ),
 						'badges'      => array( 'elementor-pro' ),
 					),
-					'elementor-mcp/update-widget'     => array(
+					'emcp-tools/update-widget'     => array(
 						'label'       => __( 'Update Widget', 'emcp-tools' ),
 						'description' => __( 'Updates settings on an existing widget (partial merge).', 'emcp-tools' ),
 						'badges'      => array(),
@@ -1214,7 +1214,7 @@ In `class-admin.php`, change `const DEFAULTS_VERSION = 4;` to `5`. In `maybe_app
 		// the stored option. add-pro-widget is a single tool, left ENABLED (it only
 		// registers with Elementor Pro anyway).
 		if ( $applied < 5 ) {
-			$dead_prefixes = array( 'elementor-mcp/add-' );
+			$dead_prefixes = array( 'emcp-tools/add-' );
 			$dead_exact    = self::removed_widget_tool_slugs(); // see below
 			$existing      = array_values( array_diff( $existing, $dead_exact ) );
 		}
@@ -1234,28 +1234,28 @@ Add a helper listing the 62 removed slugs (so only those are cleared, not unrela
 	 */
 	public static function removed_widget_tool_slugs(): array {
 		return array(
-			'elementor-mcp/add-widget',
-			'elementor-mcp/add-heading', 'elementor-mcp/add-text-editor', 'elementor-mcp/add-image',
-			'elementor-mcp/add-button', 'elementor-mcp/add-video', 'elementor-mcp/add-icon',
-			'elementor-mcp/add-spacer', 'elementor-mcp/add-divider', 'elementor-mcp/add-icon-box',
-			'elementor-mcp/add-accordion', 'elementor-mcp/add-alert', 'elementor-mcp/add-counter',
-			'elementor-mcp/add-google-maps', 'elementor-mcp/add-icon-list', 'elementor-mcp/add-image-box',
-			'elementor-mcp/add-image-carousel', 'elementor-mcp/add-progress', 'elementor-mcp/add-social-icons',
-			'elementor-mcp/add-star-rating', 'elementor-mcp/add-tabs', 'elementor-mcp/add-testimonial',
-			'elementor-mcp/add-toggle', 'elementor-mcp/add-html', 'elementor-mcp/add-menu-anchor',
-			'elementor-mcp/add-shortcode', 'elementor-mcp/add-rating', 'elementor-mcp/add-text-path',
-			'elementor-mcp/add-form', 'elementor-mcp/add-posts-grid', 'elementor-mcp/add-countdown',
-			'elementor-mcp/add-price-table', 'elementor-mcp/add-flip-box', 'elementor-mcp/add-animated-headline',
-			'elementor-mcp/add-call-to-action', 'elementor-mcp/add-slides', 'elementor-mcp/add-testimonial-carousel',
-			'elementor-mcp/add-price-list', 'elementor-mcp/add-gallery', 'elementor-mcp/add-share-buttons',
-			'elementor-mcp/add-table-of-contents', 'elementor-mcp/add-blockquote', 'elementor-mcp/add-lottie',
-			'elementor-mcp/add-hotspot', 'elementor-mcp/add-nav-menu', 'elementor-mcp/add-loop-grid',
-			'elementor-mcp/add-loop-carousel', 'elementor-mcp/add-media-carousel', 'elementor-mcp/add-nested-tabs',
-			'elementor-mcp/add-nested-accordion', 'elementor-mcp/add-portfolio', 'elementor-mcp/add-author-box',
-			'elementor-mcp/add-login', 'elementor-mcp/add-code-highlight', 'elementor-mcp/add-reviews',
-			'elementor-mcp/add-off-canvas', 'elementor-mcp/add-progress-tracker', 'elementor-mcp/add-search',
-			'elementor-mcp/add-wc-products', 'elementor-mcp/add-wc-add-to-cart', 'elementor-mcp/add-wc-cart',
-			'elementor-mcp/add-wc-checkout', 'elementor-mcp/add-wc-menu-cart',
+			'emcp-tools/add-widget',
+			'emcp-tools/add-heading', 'emcp-tools/add-text-editor', 'emcp-tools/add-image',
+			'emcp-tools/add-button', 'emcp-tools/add-video', 'emcp-tools/add-icon',
+			'emcp-tools/add-spacer', 'emcp-tools/add-divider', 'emcp-tools/add-icon-box',
+			'emcp-tools/add-accordion', 'emcp-tools/add-alert', 'emcp-tools/add-counter',
+			'emcp-tools/add-google-maps', 'emcp-tools/add-icon-list', 'emcp-tools/add-image-box',
+			'emcp-tools/add-image-carousel', 'emcp-tools/add-progress', 'emcp-tools/add-social-icons',
+			'emcp-tools/add-star-rating', 'emcp-tools/add-tabs', 'emcp-tools/add-testimonial',
+			'emcp-tools/add-toggle', 'emcp-tools/add-html', 'emcp-tools/add-menu-anchor',
+			'emcp-tools/add-shortcode', 'emcp-tools/add-rating', 'emcp-tools/add-text-path',
+			'emcp-tools/add-form', 'emcp-tools/add-posts-grid', 'emcp-tools/add-countdown',
+			'emcp-tools/add-price-table', 'emcp-tools/add-flip-box', 'emcp-tools/add-animated-headline',
+			'emcp-tools/add-call-to-action', 'emcp-tools/add-slides', 'emcp-tools/add-testimonial-carousel',
+			'emcp-tools/add-price-list', 'emcp-tools/add-gallery', 'emcp-tools/add-share-buttons',
+			'emcp-tools/add-table-of-contents', 'emcp-tools/add-blockquote', 'emcp-tools/add-lottie',
+			'emcp-tools/add-hotspot', 'emcp-tools/add-nav-menu', 'emcp-tools/add-loop-grid',
+			'emcp-tools/add-loop-carousel', 'emcp-tools/add-media-carousel', 'emcp-tools/add-nested-tabs',
+			'emcp-tools/add-nested-accordion', 'emcp-tools/add-portfolio', 'emcp-tools/add-author-box',
+			'emcp-tools/add-login', 'emcp-tools/add-code-highlight', 'emcp-tools/add-reviews',
+			'emcp-tools/add-off-canvas', 'emcp-tools/add-progress-tracker', 'emcp-tools/add-search',
+			'emcp-tools/add-wc-products', 'emcp-tools/add-wc-add-to-cart', 'emcp-tools/add-wc-cart',
+			'emcp-tools/add-wc-checkout', 'emcp-tools/add-wc-menu-cart',
 		);
 	}
 ```
@@ -1335,7 +1335,7 @@ Run:
 ```
 Then drive `tools/list` (the project previously used `wp mcp-adapter serve` for this):
 ```
-/c/wp-cli/wp-cli.phar mcp-adapter serve --server=elementor-mcp-server --user=admin --path=f:/laragon/www/msrplugins
+/c/wp-cli/wp-cli.phar mcp-adapter serve --server=emcp-tools-server --user=admin --path=f:/laragon/www/msrplugins
 ```
 Expected: `add-free-widget`, `update-widget`, `list-widgets`, `get-widget-schema` present; `add-pro-widget` present only if Elementor Pro active; NONE of the 62 old names present.
 

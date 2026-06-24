@@ -57,10 +57,10 @@ class EMCP_Tools_System_Kit_Abilities {
 			return array();
 		}
 		return array(
-			'elementor-mcp/list-brand-kits',
-			'elementor-mcp/apply-brand-kit',
-			'elementor-mcp/replace-system-colors',
-			'elementor-mcp/replace-system-typography',
+			'emcp-tools/list-brand-kits',
+			'emcp-tools/apply-brand-kit',
+			'emcp-tools/replace-system-colors',
+			'emcp-tools/replace-system-typography',
 		);
 	}
 
@@ -161,7 +161,7 @@ class EMCP_Tools_System_Kit_Abilities {
 
 	private function register_list_brand_kits(): void {
 		emcp_tools_register_ability(
-			'elementor-mcp/list-brand-kits',
+			'emcp-tools/list-brand-kits',
 			array(
 				'label'               => __( 'List Brand Kits', 'emcp-tools' ),
 				'description'         => __( 'Lists available premium brand kits (title, slug, description, category) from the cached library. Use apply-brand-kit to apply one.', 'emcp-tools' ),
@@ -237,7 +237,7 @@ class EMCP_Tools_System_Kit_Abilities {
 
 	private function register_apply_brand_kit(): void {
 		emcp_tools_register_ability(
-			'elementor-mcp/apply-brand-kit',
+			'emcp-tools/apply-brand-kit',
 			array(
 				'label'               => __( 'Apply Brand Kit', 'emcp-tools' ),
 				'description'         => __( 'Applies a premium brand kit by slug: replaces the active Elementor kit\'s system colors and typography site-wide. Destructive — back up first (backup defaults to true).', 'emcp-tools' ),
@@ -331,7 +331,7 @@ class EMCP_Tools_System_Kit_Abilities {
 
 	private function register_replace_system_colors(): void {
 		emcp_tools_register_ability(
-			'elementor-mcp/replace-system-colors',
+			'emcp-tools/replace-system-colors',
 			array(
 				'label'               => __( 'Replace System Colors', 'emcp-tools' ),
 				'description'         => __( 'Replaces all four Elementor system color slots (primary, secondary, text, accent) atomically. All four must be provided. Propagates site-wide via global color tokens.', 'emcp-tools' ),
@@ -391,7 +391,7 @@ class EMCP_Tools_System_Kit_Abilities {
 
 	private function register_replace_system_typography(): void {
 		emcp_tools_register_ability(
-			'elementor-mcp/replace-system-typography',
+			'emcp-tools/replace-system-typography',
 			array(
 				'label'               => __( 'Replace System Typography', 'emcp-tools' ),
 				'description'         => __( 'Replaces all four Elementor system typography slots atomically with a full per-field reset. All four must be provided. Use master-file typography shape (font_family, font_weight, font_size {size,unit}, etc.).', 'emcp-tools' ),

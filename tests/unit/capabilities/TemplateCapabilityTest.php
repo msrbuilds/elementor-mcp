@@ -50,12 +50,12 @@ class TemplateCapabilityTest extends Ability_Test_Case {
         $this->assertFalse(defined('ELEMENTOR_PRO_VERSION'), 'ELEMENTOR_PRO_VERSION must not be defined in test environment.');
         $names = $this->ability->get_ability_names();
         $pro_tools = [
-            'elementor-mcp/create-theme-template',
-            'elementor-mcp/set-template-conditions',
-            'elementor-mcp/list-dynamic-tags',
-            'elementor-mcp/set-dynamic-tag',
-            'elementor-mcp/create-popup',
-            'elementor-mcp/set-popup-settings',
+            'emcp-tools/create-theme-template',
+            'emcp-tools/set-template-conditions',
+            'emcp-tools/list-dynamic-tags',
+            'emcp-tools/set-dynamic-tag',
+            'emcp-tools/create-popup',
+            'emcp-tools/set-popup-settings',
         ];
         foreach ($pro_tools as $tool) {
             $this->assertNotContains($tool, $names, "Pro template tool should not be registered without ELEMENTOR_PRO_VERSION: $tool");
@@ -66,7 +66,7 @@ class TemplateCapabilityTest extends Ability_Test_Case {
     /** @test @group t0 */
     public function test_core_template_tools_always_registered(): void {
         $names = $this->ability->get_ability_names();
-        $this->assertContains('elementor-mcp/save-as-template', $names, 'Missing core tool: save-as-template');
-        $this->assertContains('elementor-mcp/apply-template', $names, 'Missing core tool: apply-template');
+        $this->assertContains('emcp-tools/save-as-template', $names, 'Missing core tool: save-as-template');
+        $this->assertContains('emcp-tools/apply-template', $names, 'Missing core tool: apply-template');
     }
 }

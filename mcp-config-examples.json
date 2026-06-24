@@ -6,12 +6,12 @@
     "_config_path_windows": "%APPDATA%\\Claude\\claude_desktop_config.json",
     "_config_path_macos": "~/Library/Application Support/Claude/claude_desktop_config.json",
     "mcpServers": {
-      "elementor-mcp": {
+      "emcp-tools": {
         "command": "wp",
         "args": [
           "mcp-adapter",
           "serve",
-          "--server=elementor-mcp-server",
+          "--server=emcp-tools-server",
           "--user=admin",
           "--path=/path/to/wordpress"
         ]
@@ -23,7 +23,7 @@
     "_description": "Claude Desktop — remote WordPress via npx runner (RECOMMENDED for remote/shared hosting; nothing to install or keep in sync)",
     "_note": "The proxy runs as a LOCAL subprocess on the machine with Claude Desktop. npx fetches it on demand, so there is no file path to maintain. Requires Node.js 18+ locally.",
     "mcpServers": {
-      "elementor-mcp": {
+      "emcp-tools": {
         "command": "npx",
         "args": [
           "-y",
@@ -43,7 +43,7 @@
     "_description": "Claude Desktop — remote WordPress via a LOCAL copy of the proxy file",
     "_note": "Claude Desktop launches the proxy locally, so mcp-proxy.mjs must exist on THIS machine, not on the server. Extract bin/mcp-proxy.mjs from the plugin ZIP, save it locally, and point 'args' at that local path. Re-extract after plugin updates to get proxy fixes.",
     "mcpServers": {
-      "elementor-mcp": {
+      "emcp-tools": {
         "command": "node",
         "args": [
           "C:\\local\\path\\to\\mcp-proxy.mjs"
@@ -62,7 +62,7 @@
     "_description": "Claude Code — remote WordPress via npx runner with protocol version override",
     "_note": "The npx package runs locally; no file path to maintain. Requires Node.js 18+.",
     "mcpServers": {
-      "elementor-mcp": {
+      "emcp-tools": {
         "type": "stdio",
         "command": "npx",
         "args": [
@@ -83,13 +83,13 @@
   "claude_code_mcp_json": {
     "_description": "Claude Code — place as .mcp.json in project root",
     "mcpServers": {
-      "elementor-mcp": {
+      "emcp-tools": {
         "type": "stdio",
         "command": "wp",
         "args": [
           "mcp-adapter",
           "serve",
-          "--server=elementor-mcp-server",
+          "--server=emcp-tools-server",
           "--user=admin",
           "--path=/path/to/wordpress"
         ]
@@ -100,9 +100,9 @@
   "vscode_mcp_direct_http": {
     "_description": "VS Code MCP extension — direct HTTP connection (add to VS Code settings)",
     "servers": {
-      "elementor-mcp": {
+      "emcp-tools": {
         "type": "http",
-        "url": "https://your-site.com/wp-json/mcp/elementor-mcp-server",
+        "url": "https://your-site.com/wp-json/mcp/emcp-tools-server",
         "headers": {
           "Authorization": "Basic BASE64_OF_USERNAME:APP_PASSWORD"
         }
@@ -112,7 +112,7 @@
 
   "mcp_inspector_wpcli": {
     "_description": "MCP Inspector — test and debug tools via WP-CLI",
-    "_command": "npx @modelcontextprotocol/inspector wp mcp-adapter serve --server=elementor-mcp-server --user=admin --path=/path/to/wordpress"
+    "_command": "npx @modelcontextprotocol/inspector wp mcp-adapter serve --server=emcp-tools-server --user=admin --path=/path/to/wordpress"
   },
 
   "mcp_inspector_proxy": {

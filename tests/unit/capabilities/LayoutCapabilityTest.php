@@ -60,14 +60,14 @@ class LayoutCapabilityTest extends Ability_Test_Case {
     public function test_ability_names_contains_all_eight_layout_tools(): void {
         $names = $this->ability->get_ability_names();
         $expected = [
-            'elementor-mcp/add-container',
-            'elementor-mcp/update-container',
-            'elementor-mcp/update-element',
-            'elementor-mcp/batch-update',
-            'elementor-mcp/reorder-elements',
-            'elementor-mcp/move-element',
-            'elementor-mcp/remove-element',
-            'elementor-mcp/duplicate-element',
+            'emcp-tools/add-container',
+            'emcp-tools/update-container',
+            'emcp-tools/update-element',
+            'emcp-tools/batch-update',
+            'emcp-tools/reorder-elements',
+            'emcp-tools/move-element',
+            'emcp-tools/remove-element',
+            'emcp-tools/duplicate-element',
         ];
         foreach ($expected as $tool) {
             $this->assertContains($tool, $names, "Missing layout tool: $tool");

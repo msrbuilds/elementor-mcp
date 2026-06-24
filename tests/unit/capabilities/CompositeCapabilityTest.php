@@ -52,7 +52,7 @@ class CompositeCapabilityTest extends Ability_Test_Case {
     /** @test @group t0 */
     public function test_ability_names_contains_build_page_and_count_is_one(): void {
         $names = $this->ability->get_ability_names();
-        $this->assertContains('elementor-mcp/build-page', $names, 'Missing tool: build-page');
+        $this->assertContains('emcp-tools/build-page', $names, 'Missing tool: build-page');
         $this->assertCount(1, $names, 'Composite class must register exactly 1 tool.');
     }
 }

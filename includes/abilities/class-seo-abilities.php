@@ -72,10 +72,10 @@ class EMCP_Tools_Seo_Abilities {
 			return array();
 		}
 		return array(
-			'elementor-mcp/audit-page-seo',
-			'elementor-mcp/extract-keywords-from-content',
-			'elementor-mcp/generate-meta-tags',
-			'elementor-mcp/generate-schema-markup',
+			'emcp-tools/audit-page-seo',
+			'emcp-tools/extract-keywords-from-content',
+			'emcp-tools/generate-meta-tags',
+			'emcp-tools/generate-schema-markup',
 		);
 	}
 
@@ -141,7 +141,7 @@ class EMCP_Tools_Seo_Abilities {
 
 	private function register_audit_page_seo(): void {
 		emcp_tools_register_ability(
-			'elementor-mcp/audit-page-seo',
+			'emcp-tools/audit-page-seo',
 			array(
 				'label'               => __( 'Audit Page SEO', 'emcp-tools' ),
 				'description'         => __( 'Audits on-page SEO for an Elementor page (H1, title/meta length, canonical, heading hierarchy, image alts, internal links, word count, optional target-keyword usage). Read-only; returns a scored report.', 'emcp-tools' ),
@@ -199,7 +199,7 @@ class EMCP_Tools_Seo_Abilities {
 
 	private function register_extract_keywords(): void {
 		emcp_tools_register_ability(
-			'elementor-mcp/extract-keywords-from-content',
+			'emcp-tools/extract-keywords-from-content',
 			array(
 				'label'               => __( 'Extract Keywords from Content', 'emcp-tools' ),
 				'description'         => __( 'Extracts the most frequent meaningful keywords and two-word phrases from a page\'s text (stop-word filtered). No external service. Useful for choosing a target keyword.', 'emcp-tools' ),
@@ -256,7 +256,7 @@ class EMCP_Tools_Seo_Abilities {
 
 	private function register_generate_meta_tags(): void {
 		emcp_tools_register_ability(
-			'elementor-mcp/generate-meta-tags',
+			'emcp-tools/generate-meta-tags',
 			array(
 				'label'               => __( 'Generate Meta Tags', 'emcp-tools' ),
 				'description'         => __( 'Proposes an SEO title (<=60 chars) and meta description (<=155 chars) from the page content, keyword-front-loaded when a target keyword is given. Dry-run by default; with apply:true writes them to the active SEO plugin (Yoast / Rank Math).', 'emcp-tools' ),
@@ -340,7 +340,7 @@ class EMCP_Tools_Seo_Abilities {
 
 	private function register_generate_schema_markup(): void {
 		emcp_tools_register_ability(
-			'elementor-mcp/generate-schema-markup',
+			'emcp-tools/generate-schema-markup',
 			array(
 				'label'               => __( 'Generate Schema Markup', 'emcp-tools' ),
 				'description'         => __( 'Generates JSON-LD structured data for the page (Article, LocalBusiness, FAQPage, Service, or Product). LocalBusiness requires a business object (name/address/phone). FAQPage uses a provided faqs array. Dry-run by default; with apply:true injects it into the page via a managed HTML widget (replaced in place on re-apply).', 'emcp-tools' ),

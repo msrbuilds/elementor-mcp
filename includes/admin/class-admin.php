@@ -172,13 +172,13 @@ class EMCP_Tools_Admin {
 	 */
 	public static function seo_a11y_tool_slugs(): array {
 		return array(
-			'elementor-mcp/audit-page-seo',
-			'elementor-mcp/extract-keywords-from-content',
-			'elementor-mcp/generate-meta-tags',
-			'elementor-mcp/generate-schema-markup',
-			'elementor-mcp/audit-page-a11y',
-			'elementor-mcp/fix-color-contrast',
-			'elementor-mcp/add-alt-text-from-context',
+			'emcp-tools/audit-page-seo',
+			'emcp-tools/extract-keywords-from-content',
+			'emcp-tools/generate-meta-tags',
+			'emcp-tools/generate-schema-markup',
+			'emcp-tools/audit-page-a11y',
+			'emcp-tools/fix-color-contrast',
+			'emcp-tools/add-alt-text-from-context',
 		);
 	}
 
@@ -191,14 +191,14 @@ class EMCP_Tools_Admin {
 	 */
 	public static function widget_builder_tool_slugs(): array {
 		return array(
-			'elementor-mcp/list-control-types',
-			'elementor-mcp/validate-widget-spec',
-			'elementor-mcp/create-custom-widget',
-			'elementor-mcp/update-custom-widget',
-			'elementor-mcp/get-custom-widget',
-			'elementor-mcp/list-custom-widgets',
-			'elementor-mcp/set-widget-status',
-			'elementor-mcp/delete-custom-widget',
+			'emcp-tools/list-control-types',
+			'emcp-tools/validate-widget-spec',
+			'emcp-tools/create-custom-widget',
+			'emcp-tools/update-custom-widget',
+			'emcp-tools/get-custom-widget',
+			'emcp-tools/list-custom-widgets',
+			'emcp-tools/set-widget-status',
+			'emcp-tools/delete-custom-widget',
 		);
 	}
 
@@ -212,12 +212,12 @@ class EMCP_Tools_Admin {
 	 */
 	public static function php_snippet_tool_slugs(): array {
 		return array(
-			'elementor-mcp/validate-php-snippet',
-			'elementor-mcp/create-php-snippet',
-			'elementor-mcp/update-php-snippet',
-			'elementor-mcp/get-php-snippet',
-			'elementor-mcp/list-php-snippets',
-			'elementor-mcp/delete-php-snippet',
+			'emcp-tools/validate-php-snippet',
+			'emcp-tools/create-php-snippet',
+			'emcp-tools/update-php-snippet',
+			'emcp-tools/get-php-snippet',
+			'emcp-tools/list-php-snippets',
+			'emcp-tools/delete-php-snippet',
 		);
 	}
 
@@ -294,28 +294,28 @@ class EMCP_Tools_Admin {
 	 */
 	public static function removed_widget_tool_slugs(): array {
 		return array(
-			'elementor-mcp/add-widget',
-			'elementor-mcp/add-heading', 'elementor-mcp/add-text-editor', 'elementor-mcp/add-image',
-			'elementor-mcp/add-button', 'elementor-mcp/add-video', 'elementor-mcp/add-icon',
-			'elementor-mcp/add-spacer', 'elementor-mcp/add-divider', 'elementor-mcp/add-icon-box',
-			'elementor-mcp/add-accordion', 'elementor-mcp/add-alert', 'elementor-mcp/add-counter',
-			'elementor-mcp/add-google-maps', 'elementor-mcp/add-icon-list', 'elementor-mcp/add-image-box',
-			'elementor-mcp/add-image-carousel', 'elementor-mcp/add-progress', 'elementor-mcp/add-social-icons',
-			'elementor-mcp/add-star-rating', 'elementor-mcp/add-tabs', 'elementor-mcp/add-testimonial',
-			'elementor-mcp/add-toggle', 'elementor-mcp/add-html', 'elementor-mcp/add-menu-anchor',
-			'elementor-mcp/add-shortcode', 'elementor-mcp/add-rating', 'elementor-mcp/add-text-path',
-			'elementor-mcp/add-form', 'elementor-mcp/add-posts-grid', 'elementor-mcp/add-countdown',
-			'elementor-mcp/add-price-table', 'elementor-mcp/add-flip-box', 'elementor-mcp/add-animated-headline',
-			'elementor-mcp/add-call-to-action', 'elementor-mcp/add-slides', 'elementor-mcp/add-testimonial-carousel',
-			'elementor-mcp/add-price-list', 'elementor-mcp/add-gallery', 'elementor-mcp/add-share-buttons',
-			'elementor-mcp/add-table-of-contents', 'elementor-mcp/add-blockquote', 'elementor-mcp/add-lottie',
-			'elementor-mcp/add-hotspot', 'elementor-mcp/add-nav-menu', 'elementor-mcp/add-loop-grid',
-			'elementor-mcp/add-loop-carousel', 'elementor-mcp/add-media-carousel', 'elementor-mcp/add-nested-tabs',
-			'elementor-mcp/add-nested-accordion', 'elementor-mcp/add-portfolio', 'elementor-mcp/add-author-box',
-			'elementor-mcp/add-login', 'elementor-mcp/add-code-highlight', 'elementor-mcp/add-reviews',
-			'elementor-mcp/add-off-canvas', 'elementor-mcp/add-progress-tracker', 'elementor-mcp/add-search',
-			'elementor-mcp/add-wc-products', 'elementor-mcp/add-wc-add-to-cart', 'elementor-mcp/add-wc-cart',
-			'elementor-mcp/add-wc-checkout', 'elementor-mcp/add-wc-menu-cart',
+			'emcp-tools/add-widget',
+			'emcp-tools/add-heading', 'emcp-tools/add-text-editor', 'emcp-tools/add-image',
+			'emcp-tools/add-button', 'emcp-tools/add-video', 'emcp-tools/add-icon',
+			'emcp-tools/add-spacer', 'emcp-tools/add-divider', 'emcp-tools/add-icon-box',
+			'emcp-tools/add-accordion', 'emcp-tools/add-alert', 'emcp-tools/add-counter',
+			'emcp-tools/add-google-maps', 'emcp-tools/add-icon-list', 'emcp-tools/add-image-box',
+			'emcp-tools/add-image-carousel', 'emcp-tools/add-progress', 'emcp-tools/add-social-icons',
+			'emcp-tools/add-star-rating', 'emcp-tools/add-tabs', 'emcp-tools/add-testimonial',
+			'emcp-tools/add-toggle', 'emcp-tools/add-html', 'emcp-tools/add-menu-anchor',
+			'emcp-tools/add-shortcode', 'emcp-tools/add-rating', 'emcp-tools/add-text-path',
+			'emcp-tools/add-form', 'emcp-tools/add-posts-grid', 'emcp-tools/add-countdown',
+			'emcp-tools/add-price-table', 'emcp-tools/add-flip-box', 'emcp-tools/add-animated-headline',
+			'emcp-tools/add-call-to-action', 'emcp-tools/add-slides', 'emcp-tools/add-testimonial-carousel',
+			'emcp-tools/add-price-list', 'emcp-tools/add-gallery', 'emcp-tools/add-share-buttons',
+			'emcp-tools/add-table-of-contents', 'emcp-tools/add-blockquote', 'emcp-tools/add-lottie',
+			'emcp-tools/add-hotspot', 'emcp-tools/add-nav-menu', 'emcp-tools/add-loop-grid',
+			'emcp-tools/add-loop-carousel', 'emcp-tools/add-media-carousel', 'emcp-tools/add-nested-tabs',
+			'emcp-tools/add-nested-accordion', 'emcp-tools/add-portfolio', 'emcp-tools/add-author-box',
+			'emcp-tools/add-login', 'emcp-tools/add-code-highlight', 'emcp-tools/add-reviews',
+			'emcp-tools/add-off-canvas', 'emcp-tools/add-progress-tracker', 'emcp-tools/add-search',
+			'emcp-tools/add-wc-products', 'emcp-tools/add-wc-add-to-cart', 'emcp-tools/add-wc-cart',
+			'emcp-tools/add-wc-checkout', 'emcp-tools/add-wc-menu-cart',
 		);
 	}
 
@@ -547,7 +547,7 @@ class EMCP_Tools_Admin {
 				'copied'      => __( 'Copied!', 'emcp-tools' ),
 				'copy'        => __( 'Copy', 'emcp-tools' ),
 				'download'    => __( 'Download', 'emcp-tools' ),
-				'mcpEndpoint' => rest_url( 'mcp/elementor-mcp-server' ),
+				'mcpEndpoint' => rest_url( 'mcp/emcp-tools-server' ),
 				'siteUrl'     => site_url(),
 				'restMeUrl'   => rest_url( 'wp/v2/users/me' ),
 				// Only the filename — never the absolute server path. The proxy runs
@@ -1060,37 +1060,37 @@ class EMCP_Tools_Admin {
 			'query'            => array(
 				'label' => __( 'Query & Discovery', 'emcp-tools' ),
 				'tools' => array(
-					'elementor-mcp/list-widgets'         => array(
+					'emcp-tools/list-widgets'         => array(
 						'label'       => __( 'List Widgets', 'emcp-tools' ),
 						'description' => __( 'Lists all available Elementor widget types and their names.', 'emcp-tools' ),
 						'badges'      => array( 'read-only' ),
 					),
-					'elementor-mcp/get-widget-schema'    => array(
+					'emcp-tools/get-widget-schema'    => array(
 						'label'       => __( 'Get Widget Schema', 'emcp-tools' ),
 						'description' => __( 'Returns the JSON schema for a specific widget type.', 'emcp-tools' ),
 						'badges'      => array( 'read-only' ),
 					),
-					'elementor-mcp/get-page-structure'   => array(
+					'emcp-tools/get-page-structure'   => array(
 						'label'       => __( 'Get Page Structure', 'emcp-tools' ),
 						'description' => __( 'Returns the full Elementor element tree for a page.', 'emcp-tools' ),
 						'badges'      => array( 'read-only' ),
 					),
-					'elementor-mcp/get-element-settings' => array(
+					'emcp-tools/get-element-settings' => array(
 						'label'       => __( 'Get Element Settings', 'emcp-tools' ),
 						'description' => __( 'Returns the settings of a specific element by ID.', 'emcp-tools' ),
 						'badges'      => array( 'read-only' ),
 					),
-					'elementor-mcp/list-pages'           => array(
+					'emcp-tools/list-pages'           => array(
 						'label'       => __( 'List Pages', 'emcp-tools' ),
 						'description' => __( 'Lists all pages/posts that use Elementor.', 'emcp-tools' ),
 						'badges'      => array( 'read-only' ),
 					),
-					'elementor-mcp/list-templates'       => array(
+					'emcp-tools/list-templates'       => array(
 						'label'       => __( 'List Templates', 'emcp-tools' ),
 						'description' => __( 'Lists all saved Elementor templates.', 'emcp-tools' ),
 						'badges'      => array( 'read-only' ),
 					),
-					'elementor-mcp/get-global-settings'  => array(
+					'emcp-tools/get-global-settings'  => array(
 						'label'       => __( 'Get Global Settings', 'emcp-tools' ),
 						'description' => __( 'Returns global colors, typography, and theme settings.', 'emcp-tools' ),
 						'badges'      => array( 'read-only' ),
@@ -1100,27 +1100,27 @@ class EMCP_Tools_Admin {
 			'page'             => array(
 				'label' => __( 'Page Management', 'emcp-tools' ),
 				'tools' => array(
-					'elementor-mcp/create-page'          => array(
+					'emcp-tools/create-page'          => array(
 						'label'       => __( 'Create Page', 'emcp-tools' ),
 						'description' => __( 'Creates a new WordPress page with Elementor enabled.', 'emcp-tools' ),
 						'badges'      => array(),
 					),
-					'elementor-mcp/update-page-settings' => array(
+					'emcp-tools/update-page-settings' => array(
 						'label'       => __( 'Update Page Settings', 'emcp-tools' ),
 						'description' => __( 'Updates Elementor page-level settings (layout, canvas, etc).', 'emcp-tools' ),
 						'badges'      => array(),
 					),
-					'elementor-mcp/delete-page-content'  => array(
+					'emcp-tools/delete-page-content'  => array(
 						'label'       => __( 'Delete Page Content', 'emcp-tools' ),
 						'description' => __( 'Removes all Elementor content from a page.', 'emcp-tools' ),
 						'badges'      => array( 'destructive' ),
 					),
-					'elementor-mcp/import-template'      => array(
+					'emcp-tools/import-template'      => array(
 						'label'       => __( 'Import Template', 'emcp-tools' ),
 						'description' => __( 'Imports an Elementor template JSON into a page.', 'emcp-tools' ),
 						'badges'      => array(),
 					),
-					'elementor-mcp/export-page'          => array(
+					'emcp-tools/export-page'          => array(
 						'label'       => __( 'Export Page', 'emcp-tools' ),
 						'description' => __( 'Exports a page\'s Elementor data as JSON.', 'emcp-tools' ),
 						'badges'      => array( 'read-only' ),
@@ -1130,52 +1130,52 @@ class EMCP_Tools_Admin {
 			'layout'           => array(
 				'label' => __( 'Layout & Structure', 'emcp-tools' ),
 				'tools' => array(
-					'elementor-mcp/add-container'     => array(
+					'emcp-tools/add-container'     => array(
 						'label'       => __( 'Add Container', 'emcp-tools' ),
 						'description' => __( 'Adds a new flexbox container to a page or inside another container.', 'emcp-tools' ),
 						'badges'      => array(),
 					),
-					'elementor-mcp/move-element'      => array(
+					'emcp-tools/move-element'      => array(
 						'label'       => __( 'Move Element', 'emcp-tools' ),
 						'description' => __( 'Moves an element to a new parent or position.', 'emcp-tools' ),
 						'badges'      => array(),
 					),
-					'elementor-mcp/remove-element'    => array(
+					'emcp-tools/remove-element'    => array(
 						'label'       => __( 'Remove Element', 'emcp-tools' ),
 						'description' => __( 'Removes an element and all its children from the page.', 'emcp-tools' ),
 						'badges'      => array( 'destructive' ),
 					),
-					'elementor-mcp/duplicate-element'    => array(
+					'emcp-tools/duplicate-element'    => array(
 						'label'       => __( 'Duplicate Element', 'emcp-tools' ),
 						'description' => __( 'Creates a deep copy of an element and inserts it after the original.', 'emcp-tools' ),
 						'badges'      => array(),
 					),
-					'elementor-mcp/update-container'     => array(
+					'emcp-tools/update-container'     => array(
 						'label'       => __( 'Update Container', 'emcp-tools' ),
 						'description' => __( 'Updates settings on an existing container element.', 'emcp-tools' ),
 						'badges'      => array(),
 					),
-					'elementor-mcp/get-container-schema' => array(
+					'emcp-tools/get-container-schema' => array(
 						'label'       => __( 'Get Container Schema', 'emcp-tools' ),
 						'description' => __( 'Returns the JSON schema for container settings.', 'emcp-tools' ),
 						'badges'      => array( 'read-only' ),
 					),
-					'elementor-mcp/find-element'         => array(
+					'emcp-tools/find-element'         => array(
 						'label'       => __( 'Find Element', 'emcp-tools' ),
 						'description' => __( 'Finds elements by type, settings, or CSS class within a page.', 'emcp-tools' ),
 						'badges'      => array( 'read-only' ),
 					),
-					'elementor-mcp/update-element'       => array(
+					'emcp-tools/update-element'       => array(
 						'label'       => __( 'Update Element', 'emcp-tools' ),
 						'description' => __( 'Updates settings on any element (widget or container) by ID.', 'emcp-tools' ),
 						'badges'      => array(),
 					),
-					'elementor-mcp/batch-update'         => array(
+					'emcp-tools/batch-update'         => array(
 						'label'       => __( 'Batch Update', 'emcp-tools' ),
 						'description' => __( 'Applies multiple element updates in a single call.', 'emcp-tools' ),
 						'badges'      => array(),
 					),
-					'elementor-mcp/reorder-elements'     => array(
+					'emcp-tools/reorder-elements'     => array(
 						'label'       => __( 'Reorder Elements', 'emcp-tools' ),
 						'description' => __( 'Reorders child elements within a container.', 'emcp-tools' ),
 						'badges'      => array(),
@@ -1185,17 +1185,17 @@ class EMCP_Tools_Admin {
 			'widgets'          => array(
 				'label' => __( 'Widgets', 'emcp-tools' ),
 				'tools' => array(
-					'elementor-mcp/add-free-widget' => array(
+					'emcp-tools/add-free-widget' => array(
 						'label'       => __( 'Add Widget', 'emcp-tools' ),
 						'description' => __( 'Adds any free/core Elementor widget by type (discover with list-widgets / get-widget-schema).', 'emcp-tools' ),
 						'badges'      => array(),
 					),
-					'elementor-mcp/add-pro-widget'  => array(
+					'emcp-tools/add-pro-widget'  => array(
 						'label'       => __( 'Add Pro Widget', 'emcp-tools' ),
 						'description' => __( 'Adds an Elementor Pro / WooCommerce widget by type. Registers only when Elementor Pro is active.', 'emcp-tools' ),
 						'badges'      => array( 'elementor-pro' ),
 					),
-					'elementor-mcp/update-widget'   => array(
+					'emcp-tools/update-widget'   => array(
 						'label'       => __( 'Update Widget', 'emcp-tools' ),
 						'description' => __( 'Updates settings on an existing widget (partial merge).', 'emcp-tools' ),
 						'badges'      => array(),
@@ -1205,42 +1205,42 @@ class EMCP_Tools_Admin {
 			'template'         => array(
 				'label' => __( 'Templates', 'emcp-tools' ),
 				'tools' => array(
-					'elementor-mcp/save-as-template' => array(
+					'emcp-tools/save-as-template' => array(
 						'label'       => __( 'Save as Template', 'emcp-tools' ),
 						'description' => __( 'Saves the current page content as a reusable template.', 'emcp-tools' ),
 						'badges'      => array(),
 					),
-					'elementor-mcp/apply-template'       => array(
+					'emcp-tools/apply-template'       => array(
 						'label'       => __( 'Apply Template', 'emcp-tools' ),
 						'description' => __( 'Applies a saved template to a target page.', 'emcp-tools' ),
 						'badges'      => array(),
 					),
-					'elementor-mcp/create-theme-template' => array(
+					'emcp-tools/create-theme-template' => array(
 						'label'       => __( 'Create Theme Template', 'emcp-tools' ),
 						'description' => __( 'Creates a theme builder template (header, footer, single, archive, etc).', 'emcp-tools' ),
 						'badges'      => array( 'elementor-pro' ),
 					),
-					'elementor-mcp/set-template-conditions' => array(
+					'emcp-tools/set-template-conditions' => array(
 						'label'       => __( 'Set Template Conditions', 'emcp-tools' ),
 						'description' => __( 'Sets display conditions on a theme builder template.', 'emcp-tools' ),
 						'badges'      => array( 'elementor-pro' ),
 					),
-					'elementor-mcp/list-dynamic-tags'    => array(
+					'emcp-tools/list-dynamic-tags'    => array(
 						'label'       => __( 'List Dynamic Tags', 'emcp-tools' ),
 						'description' => __( 'Lists all available dynamic tags and their categories.', 'emcp-tools' ),
 						'badges'      => array( 'elementor-pro', 'read-only' ),
 					),
-					'elementor-mcp/set-dynamic-tag'      => array(
+					'emcp-tools/set-dynamic-tag'      => array(
 						'label'       => __( 'Set Dynamic Tag', 'emcp-tools' ),
 						'description' => __( 'Sets a dynamic tag on a specific element setting.', 'emcp-tools' ),
 						'badges'      => array( 'elementor-pro' ),
 					),
-					'elementor-mcp/create-popup'         => array(
+					'emcp-tools/create-popup'         => array(
 						'label'       => __( 'Create Popup', 'emcp-tools' ),
 						'description' => __( 'Creates an Elementor popup template.', 'emcp-tools' ),
 						'badges'      => array( 'elementor-pro' ),
 					),
-					'elementor-mcp/set-popup-settings'   => array(
+					'emcp-tools/set-popup-settings'   => array(
 						'label'       => __( 'Set Popup Settings', 'emcp-tools' ),
 						'description' => __( 'Sets triggers, conditions, and timing on a popup template.', 'emcp-tools' ),
 						'badges'      => array( 'elementor-pro' ),
@@ -1250,12 +1250,12 @@ class EMCP_Tools_Admin {
 			'global'           => array(
 				'label' => __( 'Global Settings', 'emcp-tools' ),
 				'tools' => array(
-					'elementor-mcp/update-global-colors'     => array(
+					'emcp-tools/update-global-colors'     => array(
 						'label'       => __( 'Update Global Colors', 'emcp-tools' ),
 						'description' => __( 'Updates the site-wide Elementor color palette.', 'emcp-tools' ),
 						'badges'      => array(),
 					),
-					'elementor-mcp/update-global-typography' => array(
+					'emcp-tools/update-global-typography' => array(
 						'label'       => __( 'Update Global Typography', 'emcp-tools' ),
 						'description' => __( 'Updates the site-wide Elementor typography presets.', 'emcp-tools' ),
 						'badges'      => array(),
@@ -1265,7 +1265,7 @@ class EMCP_Tools_Admin {
 			'composite'        => array(
 				'label' => __( 'Composite', 'emcp-tools' ),
 				'tools' => array(
-					'elementor-mcp/build-page' => array(
+					'emcp-tools/build-page' => array(
 						'label'       => __( 'Build Page', 'emcp-tools' ),
 						'description' => __( 'Creates a complete page from a declarative structure in one call.', 'emcp-tools' ),
 						'badges'      => array(),
@@ -1275,22 +1275,22 @@ class EMCP_Tools_Admin {
 			'stock_images'     => array(
 				'label' => __( 'Stock & Media Images', 'emcp-tools' ),
 				'tools' => array(
-					'elementor-mcp/list-media'       => array(
+					'emcp-tools/list-media'       => array(
 						'label'       => __( 'List Media', 'emcp-tools' ),
 						'description' => __( 'Lists and searches images already in the WordPress Media Library (the site\'s own uploads).', 'emcp-tools' ),
 						'badges'      => array( 'read-only' ),
 					),
-					'elementor-mcp/search-images'    => array(
+					'emcp-tools/search-images'    => array(
 						'label'       => __( 'Search Images', 'emcp-tools' ),
 						'description' => __( 'Searches Openverse for Creative Commons licensed images.', 'emcp-tools' ),
 						'badges'      => array( 'read-only' ),
 					),
-					'elementor-mcp/sideload-image'   => array(
+					'emcp-tools/sideload-image'   => array(
 						'label'       => __( 'Sideload Image', 'emcp-tools' ),
 						'description' => __( 'Downloads an external image into the WordPress Media Library.', 'emcp-tools' ),
 						'badges'      => array(),
 					),
-					'elementor-mcp/add-stock-image'  => array(
+					'emcp-tools/add-stock-image'  => array(
 						'label'       => __( 'Add Stock Image', 'emcp-tools' ),
 						'description' => __( 'Searches, downloads, and adds a stock image to the page in one call.', 'emcp-tools' ),
 						'badges'      => array(),
@@ -1300,7 +1300,7 @@ class EMCP_Tools_Admin {
 			'svg_icons'        => array(
 				'label' => __( 'SVG Icons', 'emcp-tools' ),
 				'tools' => array(
-					'elementor-mcp/upload-svg-icon'  => array(
+					'emcp-tools/upload-svg-icon'  => array(
 						'label'       => __( 'Upload SVG Icon', 'emcp-tools' ),
 						'description' => __( 'Uploads an SVG icon (from URL or raw markup) for use with icon/icon-box widgets.', 'emcp-tools' ),
 						'badges'      => array(),
@@ -1310,22 +1310,22 @@ class EMCP_Tools_Admin {
 			'custom_code'      => array(
 				'label' => __( 'Custom Code', 'emcp-tools' ),
 				'tools' => array(
-					'elementor-mcp/add-custom-css'     => array(
+					'emcp-tools/add-custom-css'     => array(
 						'label'       => __( 'Add Custom CSS', 'emcp-tools' ),
 						'description' => __( 'Adds custom CSS to a specific element or the entire page.', 'emcp-tools' ),
 						'badges'      => array( 'elementor-pro' ),
 					),
-					'elementor-mcp/add-custom-js'      => array(
+					'emcp-tools/add-custom-js'      => array(
 						'label'       => __( 'Add Custom JavaScript', 'emcp-tools' ),
 						'description' => __( 'Adds a JavaScript snippet to a page via an HTML widget.', 'emcp-tools' ),
 						'badges'      => array(),
 					),
-					'elementor-mcp/add-code-snippet'   => array(
+					'emcp-tools/add-code-snippet'   => array(
 						'label'       => __( 'Add Code Snippet', 'emcp-tools' ),
 						'description' => __( 'Creates a site-wide Custom Code snippet for head/body injection.', 'emcp-tools' ),
 						'badges'      => array( 'elementor-pro' ),
 					),
-					'elementor-mcp/list-code-snippets' => array(
+					'emcp-tools/list-code-snippets' => array(
 						'label'       => __( 'List Code Snippets', 'emcp-tools' ),
 						'description' => __( 'Lists all existing Custom Code snippets.', 'emcp-tools' ),
 						'badges'      => array( 'elementor-pro', 'read-only' ),
@@ -1341,22 +1341,22 @@ class EMCP_Tools_Admin {
 			$tools['atomic_layout'] = array(
 				'label' => __( 'Atomic Layout (Elementor 4.0+)', 'emcp-tools' ),
 				'tools' => array(
-					'elementor-mcp/detect-elementor-version' => array(
+					'emcp-tools/detect-elementor-version' => array(
 						'label'       => __( 'Detect Elementor Version', 'emcp-tools' ),
 						'description' => __( 'Returns the Elementor version and whether atomic elements are supported.', 'emcp-tools' ),
 						'badges'      => array( 'read-only' ),
 					),
-					'elementor-mcp/list-global-classes'      => array(
+					'emcp-tools/list-global-classes'      => array(
 						'label'       => __( 'List Global Classes', 'emcp-tools' ),
 						'description' => __( 'Resolves Class Manager "g-" class IDs to their names and CSS properties.', 'emcp-tools' ),
 						'badges'      => array( 'read-only' ),
 					),
-					'elementor-mcp/add-flexbox'              => array(
+					'emcp-tools/add-flexbox'              => array(
 						'label'       => __( 'Add Flexbox', 'emcp-tools' ),
 						'description' => __( 'Adds an atomic flexbox container (e-flexbox).', 'emcp-tools' ),
 						'badges'      => array(),
 					),
-					'elementor-mcp/add-div-block'            => array(
+					'emcp-tools/add-div-block'            => array(
 						'label'       => __( 'Add Div Block', 'emcp-tools' ),
 						'description' => __( 'Adds an atomic div-block container (e-div-block).', 'emcp-tools' ),
 						'badges'      => array(),
@@ -1367,52 +1367,52 @@ class EMCP_Tools_Admin {
 			$tools['atomic_widgets'] = array(
 				'label' => __( 'Atomic Widgets (Elementor 4.0+)', 'emcp-tools' ),
 				'tools' => array(
-					'elementor-mcp/add-atomic-widget'    => array(
+					'emcp-tools/add-atomic-widget'    => array(
 						'label'       => __( 'Add Atomic Widget', 'emcp-tools' ),
 						'description' => __( 'Universal: adds any atomic widget by type with raw $$type settings.', 'emcp-tools' ),
 						'badges'      => array(),
 					),
-					'elementor-mcp/update-atomic-widget' => array(
+					'emcp-tools/update-atomic-widget' => array(
 						'label'       => __( 'Update Atomic Widget', 'emcp-tools' ),
 						'description' => __( 'Universal: partial-merge update on an existing atomic widget.', 'emcp-tools' ),
 						'badges'      => array(),
 					),
-					'elementor-mcp/add-atomic-heading'   => array(
+					'emcp-tools/add-atomic-heading'   => array(
 						'label'       => __( 'Add Atomic Heading', 'emcp-tools' ),
 						'description' => __( 'Adds an atomic heading element (e-heading).', 'emcp-tools' ),
 						'badges'      => array(),
 					),
-					'elementor-mcp/add-atomic-paragraph' => array(
+					'emcp-tools/add-atomic-paragraph' => array(
 						'label'       => __( 'Add Atomic Paragraph', 'emcp-tools' ),
 						'description' => __( 'Adds an atomic paragraph element (e-paragraph).', 'emcp-tools' ),
 						'badges'      => array(),
 					),
-					'elementor-mcp/add-atomic-button'    => array(
+					'emcp-tools/add-atomic-button'    => array(
 						'label'       => __( 'Add Atomic Button', 'emcp-tools' ),
 						'description' => __( 'Adds an atomic button element (e-button).', 'emcp-tools' ),
 						'badges'      => array(),
 					),
-					'elementor-mcp/add-atomic-image'     => array(
+					'emcp-tools/add-atomic-image'     => array(
 						'label'       => __( 'Add Atomic Image', 'emcp-tools' ),
 						'description' => __( 'Adds an atomic image element (e-image).', 'emcp-tools' ),
 						'badges'      => array(),
 					),
-					'elementor-mcp/add-atomic-svg'       => array(
+					'emcp-tools/add-atomic-svg'       => array(
 						'label'       => __( 'Add Atomic SVG', 'emcp-tools' ),
 						'description' => __( 'Adds an atomic SVG element (e-svg).', 'emcp-tools' ),
 						'badges'      => array(),
 					),
-					'elementor-mcp/add-atomic-youtube'   => array(
+					'emcp-tools/add-atomic-youtube'   => array(
 						'label'       => __( 'Add Atomic YouTube', 'emcp-tools' ),
 						'description' => __( 'Adds an atomic YouTube embed (e-youtube).', 'emcp-tools' ),
 						'badges'      => array(),
 					),
-					'elementor-mcp/add-atomic-video'     => array(
+					'emcp-tools/add-atomic-video'     => array(
 						'label'       => __( 'Add Atomic Video', 'emcp-tools' ),
 						'description' => __( 'Adds an atomic self-hosted video (e-self-hosted-video).', 'emcp-tools' ),
 						'badges'      => array(),
 					),
-					'elementor-mcp/add-atomic-divider'   => array(
+					'emcp-tools/add-atomic-divider'   => array(
 						'label'       => __( 'Add Atomic Divider', 'emcp-tools' ),
 						'description' => __( 'Adds an atomic divider element (e-divider).', 'emcp-tools' ),
 						'badges'      => array(),
@@ -1432,22 +1432,22 @@ class EMCP_Tools_Admin {
 			$tools['brand_kits'] = array(
 				'label' => __( 'Brand Kits', 'emcp-tools' ),
 				'tools' => array(
-					'elementor-mcp/list-brand-kits'           => array(
+					'emcp-tools/list-brand-kits'           => array(
 						'label'       => __( 'List Brand Kits', 'emcp-tools' ),
 						'description' => __( 'Lists available premium brand kits from the cached library.', 'emcp-tools' ),
 						'badges'      => array( 'read-only' ),
 					),
-					'elementor-mcp/apply-brand-kit'           => array(
+					'emcp-tools/apply-brand-kit'           => array(
 						'label'       => __( 'Apply Brand Kit', 'emcp-tools' ),
 						'description' => __( 'Applies a brand kit: replaces system colors + typography site-wide.', 'emcp-tools' ),
 						'badges'      => array( 'destructive' ),
 					),
-					'elementor-mcp/replace-system-colors'     => array(
+					'emcp-tools/replace-system-colors'     => array(
 						'label'       => __( 'Replace System Colors', 'emcp-tools' ),
 						'description' => __( 'Replaces the four Elementor system color slots atomically.', 'emcp-tools' ),
 						'badges'      => array( 'destructive' ),
 					),
-					'elementor-mcp/replace-system-typography' => array(
+					'emcp-tools/replace-system-typography' => array(
 						'label'       => __( 'Replace System Typography', 'emcp-tools' ),
 						'description' => __( 'Replaces the four Elementor system typography slots atomically.', 'emcp-tools' ),
 						'badges'      => array( 'destructive' ),
@@ -1463,32 +1463,32 @@ class EMCP_Tools_Admin {
 		$tools['php_snippets'] = array(
 			'label' => __( 'PHP Snippets (Sandbox)', 'emcp-tools' ),
 			'tools' => array(
-				'elementor-mcp/validate-php-snippet' => array(
+				'emcp-tools/validate-php-snippet' => array(
 					'label'       => __( 'Validate PHP Snippet', 'emcp-tools' ),
 					'description' => __( 'Statically checks snippet code (parse + security scan) without storing or running it.', 'emcp-tools' ),
 					'badges'      => array( 'read-only' ),
 				),
-				'elementor-mcp/create-php-snippet'   => array(
+				'emcp-tools/create-php-snippet'   => array(
 					'label'       => __( 'Create PHP Snippet', 'emcp-tools' ),
 					'description' => __( 'Creates an INACTIVE draft snippet (validated; an admin must activate it before it runs).', 'emcp-tools' ),
 					'badges'      => array(),
 				),
-				'elementor-mcp/update-php-snippet'   => array(
+				'emcp-tools/update-php-snippet'   => array(
 					'label'       => __( 'Update PHP Snippet', 'emcp-tools' ),
 					'description' => __( 'Updates a snippet\'s code/settings and re-validates.', 'emcp-tools' ),
 					'badges'      => array(),
 				),
-				'elementor-mcp/get-php-snippet'      => array(
+				'emcp-tools/get-php-snippet'      => array(
 					'label'       => __( 'Get PHP Snippet', 'emcp-tools' ),
 					'description' => __( 'Returns a snippet\'s code, status, shortcode, and validation report.', 'emcp-tools' ),
 					'badges'      => array( 'read-only' ),
 				),
-				'elementor-mcp/list-php-snippets'    => array(
+				'emcp-tools/list-php-snippets'    => array(
 					'label'       => __( 'List PHP Snippets', 'emcp-tools' ),
 					'description' => __( 'Lists PHP snippets with their status and run context.', 'emcp-tools' ),
 					'badges'      => array( 'read-only' ),
 				),
-				'elementor-mcp/delete-php-snippet'   => array(
+				'emcp-tools/delete-php-snippet'   => array(
 					'label'       => __( 'Delete PHP Snippet', 'emcp-tools' ),
 					'description' => __( 'Permanently deletes a snippet and its sandbox file.', 'emcp-tools' ),
 					'badges'      => array( 'destructive' ),
@@ -1504,37 +1504,37 @@ class EMCP_Tools_Admin {
 			$tools['seo_a11y'] = array(
 				'label' => __( 'SEO & Accessibility', 'emcp-tools' ),
 				'tools' => array(
-					'elementor-mcp/audit-page-seo'                 => array(
+					'emcp-tools/audit-page-seo'                 => array(
 						'label'       => __( 'Audit Page SEO', 'emcp-tools' ),
 						'description' => __( 'Scored on-page SEO report (H1, title/meta, canonical, alts, links, word count).', 'emcp-tools' ),
 						'badges'      => array( 'pro', 'read-only' ),
 					),
-					'elementor-mcp/extract-keywords-from-content'  => array(
+					'emcp-tools/extract-keywords-from-content'  => array(
 						'label'       => __( 'Extract Keywords', 'emcp-tools' ),
 						'description' => __( 'Frequency keyword + phrase extraction from page content.', 'emcp-tools' ),
 						'badges'      => array( 'pro', 'read-only' ),
 					),
-					'elementor-mcp/generate-meta-tags'             => array(
+					'emcp-tools/generate-meta-tags'             => array(
 						'label'       => __( 'Generate Meta Tags', 'emcp-tools' ),
 						'description' => __( 'Proposes (apply:true writes to Yoast/Rank Math) an SEO title and meta description. Dry-run by default.', 'emcp-tools' ),
 						'badges'      => array( 'pro' ),
 					),
-					'elementor-mcp/generate-schema-markup'         => array(
+					'emcp-tools/generate-schema-markup'         => array(
 						'label'       => __( 'Generate Schema Markup', 'emcp-tools' ),
 						'description' => __( 'Generates (apply:true injects) JSON-LD structured data (Article, LocalBusiness, FAQPage, etc.). Dry-run by default.', 'emcp-tools' ),
 						'badges'      => array( 'pro' ),
 					),
-					'elementor-mcp/audit-page-a11y'                => array(
+					'emcp-tools/audit-page-a11y'                => array(
 						'label'       => __( 'Audit Page Accessibility', 'emcp-tools' ),
 						'description' => __( 'WCAG-oriented report: contrast, alts, heading order, link text, form labels.', 'emcp-tools' ),
 						'badges'      => array( 'pro', 'read-only' ),
 					),
-					'elementor-mcp/fix-color-contrast'             => array(
+					'emcp-tools/fix-color-contrast'             => array(
 						'label'       => __( 'Fix Color Contrast', 'emcp-tools' ),
 						'description' => __( 'Proposes (apply:true to write) adjusted text colors so failing pairs meet WCAG AA. Dry-run by default.', 'emcp-tools' ),
 						'badges'      => array( 'pro', 'destructive' ),
 					),
-					'elementor-mcp/add-alt-text-from-context'      => array(
+					'emcp-tools/add-alt-text-from-context'      => array(
 						'label'       => __( 'Add Alt Text from Context', 'emcp-tools' ),
 						'description' => __( 'Proposes (apply:true to write) alt text for images lacking it, from filename/heading/title. Dry-run by default.', 'emcp-tools' ),
 						'badges'      => array( 'pro', 'destructive' ),
@@ -1545,42 +1545,42 @@ class EMCP_Tools_Admin {
 			$tools['widget_builder'] = array(
 				'label' => __( 'Widget Builder (Pro)', 'emcp-tools' ),
 				'tools' => array(
-					'elementor-mcp/list-control-types'   => array(
+					'emcp-tools/list-control-types'   => array(
 						'label'       => __( 'List Control Types', 'emcp-tools' ),
 						'description' => __( 'Returns the control types and template syntax for building widget specs.', 'emcp-tools' ),
 						'badges'      => array( 'pro', 'read-only' ),
 					),
-					'elementor-mcp/validate-widget-spec' => array(
+					'emcp-tools/validate-widget-spec' => array(
 						'label'       => __( 'Validate Widget Spec', 'emcp-tools' ),
 						'description' => __( 'Validates a widget spec and dry-runs the generator without saving.', 'emcp-tools' ),
 						'badges'      => array( 'pro', 'read-only' ),
 					),
-					'elementor-mcp/create-custom-widget' => array(
+					'emcp-tools/create-custom-widget' => array(
 						'label'       => __( 'Create Custom Widget', 'emcp-tools' ),
 						'description' => __( 'Generates a custom Elementor widget from a spec into an isolated sandbox and activates it.', 'emcp-tools' ),
 						'badges'      => array( 'pro' ),
 					),
-					'elementor-mcp/update-custom-widget' => array(
+					'emcp-tools/update-custom-widget' => array(
 						'label'       => __( 'Update Custom Widget', 'emcp-tools' ),
 						'description' => __( 'Replaces a custom widget\'s spec and regenerates its code.', 'emcp-tools' ),
 						'badges'      => array( 'pro' ),
 					),
-					'elementor-mcp/get-custom-widget'    => array(
+					'emcp-tools/get-custom-widget'    => array(
 						'label'       => __( 'Get Custom Widget', 'emcp-tools' ),
 						'description' => __( 'Returns a custom widget\'s spec, generated PHP, status, and last error.', 'emcp-tools' ),
 						'badges'      => array( 'pro', 'read-only' ),
 					),
-					'elementor-mcp/list-custom-widgets'  => array(
+					'emcp-tools/list-custom-widgets'  => array(
 						'label'       => __( 'List Custom Widgets', 'emcp-tools' ),
 						'description' => __( 'Lists all generated custom widgets with their status.', 'emcp-tools' ),
 						'badges'      => array( 'pro', 'read-only' ),
 					),
-					'elementor-mcp/set-widget-status'    => array(
+					'emcp-tools/set-widget-status'    => array(
 						'label'       => __( 'Set Widget Status', 'emcp-tools' ),
 						'description' => __( 'Activates or deactivates a custom widget.', 'emcp-tools' ),
 						'badges'      => array( 'pro' ),
 					),
-					'elementor-mcp/delete-custom-widget' => array(
+					'emcp-tools/delete-custom-widget' => array(
 						'label'       => __( 'Delete Custom Widget', 'emcp-tools' ),
 						'description' => __( 'Permanently deletes a custom widget and its sandbox file.', 'emcp-tools' ),
 						'badges'      => array( 'pro', 'destructive' ),

@@ -149,9 +149,9 @@ class EMCP_Tools_Widget_Abilities {
 	 * @since 3.0.0
 	 */
 	private function register_add_free_widget(): void {
-		$this->ability_names[] = 'elementor-mcp/add-free-widget';
+		$this->ability_names[] = 'emcp-tools/add-free-widget';
 		emcp_tools_register_ability(
-			'elementor-mcp/add-free-widget',
+			'emcp-tools/add-free-widget',
 			array(
 				'label'               => __( 'Add Widget', 'emcp-tools' ),
 				'description'         => __( 'Adds any free/core Elementor widget to a container. Discover types with list-widgets and their settings with get-widget-schema. Catalog defaults are merged automatically.', 'emcp-tools' ),
@@ -180,9 +180,9 @@ class EMCP_Tools_Widget_Abilities {
 	 * @since 3.0.0
 	 */
 	private function register_add_pro_widget(): void {
-		$this->ability_names[] = 'elementor-mcp/add-pro-widget';
+		$this->ability_names[] = 'emcp-tools/add-pro-widget';
 		emcp_tools_register_ability(
-			'elementor-mcp/add-pro-widget',
+			'emcp-tools/add-pro-widget',
 			array(
 				'label'               => __( 'Add Pro Widget', 'emcp-tools' ),
 				'description'         => __( 'Adds an Elementor Pro (or WooCommerce) widget to a container. Discover types with list-widgets (tier:pro) and settings with get-widget-schema. Only available when Elementor Pro is active.', 'emcp-tools' ),
@@ -339,10 +339,10 @@ class EMCP_Tools_Widget_Abilities {
 	// =========================================================================
 
 	private function register_update_widget(): void {
-		$this->ability_names[] = 'elementor-mcp/update-widget';
+		$this->ability_names[] = 'emcp-tools/update-widget';
 
 		emcp_tools_register_ability(
-			'elementor-mcp/update-widget',
+			'emcp-tools/update-widget',
 			array(
 				'label'               => __( 'Update Widget', 'emcp-tools' ),
 				'description'         => __( 'Updates settings on an existing widget. Settings are merged (partial update).', 'emcp-tools' ),

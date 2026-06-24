@@ -11,7 +11,7 @@
  * to modify the list of ability names before they are passed to create_server():
  *
  *   $names = apply_filters( 'emcp_tools_ability_names', $this->ability_names );
- *   $mcp_adapter->create_server( 'elementor-mcp-server', [ 'abilities' => $names ] );
+ *   $mcp_adapter->create_server( 'emcp-tools-server', [ 'abilities' => $names ] );
  *
  * The return value of apply_filters() is passed directly to create_server()
  * without validation.  A malicious or buggy third-party plugin could inject:
@@ -91,7 +91,7 @@ class F013AbilityRegistrarTest extends TestCase {
 	 */
 	public function test_current_code_passes_non_strings_to_create_server(): void {
 		$malicious_return = [
-			'elementor-mcp/list-widgets',  // valid
+			'emcp-tools/list-widgets',  // valid
 			42,                            // integer
 			null,                          // null
 			[ 'nested' => 'array' ],       // array
@@ -112,9 +112,9 @@ class F013AbilityRegistrarTest extends TestCase {
 	 */
 	public function test_current_code_accepts_names_with_invalid_characters(): void {
 		$injected_names = [
-			'elementor-mcp/list-widgets',  // valid
+			'emcp-tools/list-widgets',  // valid
 			'../../../wp-config/evil',     // path traversal
-			'elementor-mcp/<script>xss</script>',  // XSS attempt
+			'emcp-tools/<script>xss</script>',  // XSS attempt
 			'ELEMENTOR-MCP/LIST-WIDGETS',  // wrong case (uppercase not allowed)
 		];
 
@@ -143,7 +143,7 @@ class F013AbilityRegistrarTest extends TestCase {
 	 */
 	public function test_validator_removes_non_string_values(): void {
 		$input = [
-			'elementor-mcp/list-widgets',
+			'emcp-tools/list-widgets',
 			42,
 			null,
 			true,
@@ -153,7 +153,7 @@ class F013AbilityRegistrarTest extends TestCase {
 		$result = $this->sanitize_ability_names( $input );
 
 		$this->assertCount( 1, $result, 'Only 1 valid string should survive.' );
-		$this->assertSame( 'elementor-mcp/list-widgets', $result[0] );
+		$this->assertSame( 'emcp-tools/list-widgets', $result[0] );
 	}
 
 	/**
@@ -179,10 +179,10 @@ class F013AbilityRegistrarTest extends TestCase {
 			'uppercase letters'        => [ 'Elementor-MCP/list-widgets' ],
 			'path traversal'           => [ '../../../wp-config/evil' ],
 			'no namespace separator'   => [ 'elementormcplistwidgets' ],
-			'double separator'         => [ 'elementor-mcp//list-widgets' ],
-			'trailing slash'           => [ 'elementor-mcp/list-widgets/' ],
+			'double separator'         => [ 'emcp-tools//list-widgets' ],
+			'trailing slash'           => [ 'emcp-tools/list-widgets/' ],
 			'spaces'                   => [ 'elementor mcp/list widgets' ],
-			'special chars'            => [ 'elementor-mcp/<script>xss</script>' ],
+			'special chars'            => [ 'emcp-tools/<script>xss</script>' ],
 			'empty string'             => [ '' ],
 		];
 	}
@@ -205,11 +205,11 @@ class F013AbilityRegistrarTest extends TestCase {
 	/** @return array<string, array{string}> */
 	public static function validNameProvider(): array {
 		return [
-			'list-widgets'          => [ 'elementor-mcp/list-widgets' ],
-			'get-widget-schema'     => [ 'elementor-mcp/get-widget-schema' ],
-			'add-container'         => [ 'elementor-mcp/add-container' ],
-			'build-page'            => [ 'elementor-mcp/build-page' ],
-			'update-global-colors'  => [ 'elementor-mcp/update-global-colors' ],
+			'list-widgets'          => [ 'emcp-tools/list-widgets' ],
+			'get-widget-schema'     => [ 'emcp-tools/get-widget-schema' ],
+			'add-container'         => [ 'emcp-tools/add-container' ],
+			'build-page'            => [ 'emcp-tools/build-page' ],
+			'update-global-colors'  => [ 'emcp-tools/update-global-colors' ],
 		];
 	}
 

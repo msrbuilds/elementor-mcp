@@ -49,12 +49,12 @@ For plugin review tooling, the `.claude/skills/wp-plugin-review/scripts/setup_to
 
 ### MCP Server Registration
 
-The plugin registers a dedicated MCP server `elementor-mcp-server` at `/wp-json/mcp/elementor-mcp-server`. All abilities use the `elementor-mcp/` namespace.
+The plugin registers a dedicated MCP server `emcp-tools-server` at `/wp-json/mcp/emcp-tools-server`. All abilities use the `emcp-tools/` namespace.
 
 ### Directory Structure
 
 ```
-elementor-mcp/
+emcp-tools/
 ├── elementor-mcp.php                          # Bootstrap: plugin header, constants, dependency checks, require_once, singleton init
 ├── includes/
 │   ├── class-plugin.php                       # Singleton orchestrator — hooks into wp_abilities_api_categories_init, wp_abilities_api_init, mcp_adapter_init
@@ -102,7 +102,7 @@ The plugin integrates via three WordPress hooks (in execution order):
 2. **`wp_abilities_api_init`** → Registers all abilities via `wp_register_ability()` (ability names must match `[a-z0-9-]+/[a-z0-9-]+`)
 3. **`mcp_adapter_init`** → Creates MCP server via `$mcp_adapter->create_server()`, passing ability names as the tools array
 
-The MCP Adapter converts ability names like `elementor-mcp/list-widgets` to tool names `elementor-mcp-list-widgets` (replacing `/` with `-`).
+The MCP Adapter converts ability names like `emcp-tools/list-widgets` to tool names `emcp-tools-list-widgets` (replacing `/` with `-`).
 
 ### Core Layers
 
@@ -155,32 +155,32 @@ The MCP Adapter converts ability names like `elementor-mcp/list-widgets` to tool
 
 | Ability Name | Purpose |
 |---|---|
-| `elementor-mcp/list-widgets` | Compact catalog index of widgets; filter by `tier`/`category`/`search` (v3.0.0) |
-| `elementor-mcp/get-widget-schema` | Curated `params` for a widget by default (or `types[]` batch); `full:true` returns the raw auto-generated control schema (v3.0.0) |
-| `elementor-mcp/get-page-structure` | Element tree for a page (containers, widgets, nesting) |
-| `elementor-mcp/get-element-settings` | Current settings for a specific element on a page |
-| `elementor-mcp/list-pages` | All Elementor-enabled pages/posts |
-| `elementor-mcp/list-templates` | Saved Elementor templates from the template library |
-| `elementor-mcp/get-global-settings` | Active kit/global settings (colors, typography, spacing) |
+| `emcp-tools/list-widgets` | Compact catalog index of widgets; filter by `tier`/`category`/`search` (v3.0.0) |
+| `emcp-tools/get-widget-schema` | Curated `params` for a widget by default (or `types[]` batch); `full:true` returns the raw auto-generated control schema (v3.0.0) |
+| `emcp-tools/get-page-structure` | Element tree for a page (containers, widgets, nesting) |
+| `emcp-tools/get-element-settings` | Current settings for a specific element on a page |
+| `emcp-tools/list-pages` | All Elementor-enabled pages/posts |
+| `emcp-tools/list-templates` | Saved Elementor templates from the template library |
+| `emcp-tools/get-global-settings` | Active kit/global settings (colors, typography, spacing) |
 
 ### P1 — Page CRUD (5 tools)
 
 | Ability Name | Purpose |
 |---|---|
-| `elementor-mcp/create-page` | Create a new WP page/post with Elementor enabled |
-| `elementor-mcp/update-page-settings` | Update page-level Elementor settings (background, padding, etc.) |
-| `elementor-mcp/delete-page-content` | Clear all Elementor content from a page (destructive) |
-| `elementor-mcp/import-template` | Import JSON template structure into a page |
-| `elementor-mcp/export-page` | Export page's full Elementor data as JSON |
+| `emcp-tools/create-page` | Create a new WP page/post with Elementor enabled |
+| `emcp-tools/update-page-settings` | Update page-level Elementor settings (background, padding, etc.) |
+| `emcp-tools/delete-page-content` | Clear all Elementor content from a page (destructive) |
+| `emcp-tools/import-template` | Import JSON template structure into a page |
+| `emcp-tools/export-page` | Export page's full Elementor data as JSON |
 
 ### P1 — Layout (4 tools)
 
 | Ability Name | Purpose |
 |---|---|
-| `elementor-mcp/add-container` | Add a flexbox container (top-level or nested) |
-| `elementor-mcp/move-element` | Move an element to a new parent/position |
-| `elementor-mcp/remove-element` | Remove an element and all children (destructive) |
-| `elementor-mcp/duplicate-element` | Duplicate element with fresh IDs |
+| `emcp-tools/add-container` | Add a flexbox container (top-level or nested) |
+| `emcp-tools/move-element` | Move an element to a new parent/position |
+| `emcp-tools/remove-element` | Remove an element and all children (destructive) |
+| `emcp-tools/duplicate-element` | Duplicate element with fresh IDs |
 
 ### Widgets — catalog-backed (5 tools, v3.0.0)
 
@@ -188,54 +188,54 @@ The 62 per-widget convenience tools and the old universal `add-widget` were remo
 
 | Ability Name | Purpose |
 |---|---|
-| `elementor-mcp/list-widgets` | Compact catalog index of widgets; filter by `tier`/`category`/`search`. Step 1 of discover → inspect → act. |
-| `elementor-mcp/get-widget-schema` | Curated `params` for a widget (or `types[]` batch); `full:true` for the raw control schema. |
-| `elementor-mcp/add-free-widget` | Add any free/core widget by type (always registered; folds the old `add-widget`). |
-| `elementor-mcp/add-pro-widget` | Add an Elementor Pro / WooCommerce widget by type (registered only when Elementor Pro is active). |
-| `elementor-mcp/update-widget` | Update settings on an existing widget. |
+| `emcp-tools/list-widgets` | Compact catalog index of widgets; filter by `tier`/`category`/`search`. Step 1 of discover → inspect → act. |
+| `emcp-tools/get-widget-schema` | Curated `params` for a widget (or `types[]` batch); `full:true` for the raw control schema. |
+| `emcp-tools/add-free-widget` | Add any free/core widget by type (always registered; folds the old `add-widget`). |
+| `emcp-tools/add-pro-widget` | Add an Elementor Pro / WooCommerce widget by type (registered only when Elementor Pro is active). |
+| `emcp-tools/update-widget` | Update settings on an existing widget. |
 
 ### P2 — Templates (2 tools)
 
 | Ability Name | Purpose |
 |---|---|
-| `elementor-mcp/save-as-template` | Save a page or element as reusable template |
-| `elementor-mcp/apply-template` | Apply a saved template to a page |
+| `emcp-tools/save-as-template` | Save a page or element as reusable template |
+| `emcp-tools/apply-template` | Apply a saved template to a page |
 
 ### P2 — Global Settings (2 tools)
 
 | Ability Name | Purpose |
 |---|---|
-| `elementor-mcp/update-global-colors` | Update site-wide color palette in Elementor kit |
-| `elementor-mcp/update-global-typography` | Update site-wide typography in Elementor kit |
+| `emcp-tools/update-global-colors` | Update site-wide color palette in Elementor kit |
+| `emcp-tools/update-global-typography` | Update site-wide typography in Elementor kit |
 
 ### P2 — Composite (1 tool)
 
 | Ability Name | Purpose |
 |---|---|
-| `elementor-mcp/build-page` | Create complete page from declarative structure in one call |
+| `emcp-tools/build-page` | Create complete page from declarative structure in one call |
 
 ### Media Library (1 tool)
 
 | Ability Name | Purpose |
 |---|---|
-| `elementor-mcp/list-media` | List/search images already in the WordPress Media Library (the site's own uploads). Optional `search` matches title, alt text, caption, and description; `mime_type` / pagination / sort filters. Read-only WP_Query, no HTTP. ([#25](https://github.com/msrbuilds/elementor-mcp/issues/25)) |
+| `emcp-tools/list-media` | List/search images already in the WordPress Media Library (the site's own uploads). Optional `search` matches title, alt text, caption, and description; `mime_type` / pagination / sort filters. Read-only WP_Query, no HTTP. ([#25](https://github.com/msrbuilds/elementor-mcp/issues/25)) |
 
 ### Stock Images (3 tools)
 
 | Ability Name | Purpose |
 |---|---|
-| `elementor-mcp/search-images` | Search Openverse (WordPress.org) for Creative Commons images by keyword |
-| `elementor-mcp/sideload-image` | Download an external image URL into the WordPress Media Library |
-| `elementor-mcp/add-stock-image` | Search + sideload + add image widget to page in one call |
+| `emcp-tools/search-images` | Search Openverse (WordPress.org) for Creative Commons images by keyword |
+| `emcp-tools/sideload-image` | Download an external image URL into the WordPress Media Library |
+| `emcp-tools/add-stock-image` | Search + sideload + add image widget to page in one call |
 
 ### Custom Code (4 tools)
 
 | Ability Name | Purpose |
 |---|---|
-| `elementor-mcp/add-custom-css` | Add custom CSS to a specific element or page-level (Pro only, uses `selector` keyword) |
-| `elementor-mcp/add-custom-js` | Add JavaScript to a page via HTML widget with auto `<script>` wrapping |
-| `elementor-mcp/add-code-snippet` | Create a site-wide Custom Code snippet for head/body injection (Pro only) |
-| `elementor-mcp/list-code-snippets` | List existing Custom Code snippets with locations and statuses (Pro only) |
+| `emcp-tools/add-custom-css` | Add custom CSS to a specific element or page-level (Pro only, uses `selector` keyword) |
+| `emcp-tools/add-custom-js` | Add JavaScript to a page via HTML widget with auto `<script>` wrapping |
+| `emcp-tools/add-code-snippet` | Create a site-wide Custom Code snippet for head/body injection (Pro only) |
+| `emcp-tools/list-code-snippets` | List existing Custom Code snippets with locations and statuses (Pro only) |
 
 ### PHP Snippets — Sandbox (6 tools, FREE, off by default)
 
@@ -247,12 +247,12 @@ Free but capability-gated and powerful, so all six are **disabled-by-default** (
 
 | Ability Name | Purpose |
 |---|---|
-| `elementor-mcp/validate-php-snippet` | Static parse + security scan of code; no store, no run. Returns critical/warning findings |
-| `elementor-mcp/create-php-snippet` | Create an **inactive draft** (validated; critical = rejected). Never runs until an admin activates it |
-| `elementor-mcp/update-php-snippet` | Update a snippet's code/settings; re-validates |
-| `elementor-mcp/get-php-snippet` | Return code, status, shortcode, and validation report |
-| `elementor-mcp/list-php-snippets` | List snippets with status and run context |
-| `elementor-mcp/delete-php-snippet` | Delete a snippet and its sandbox file |
+| `emcp-tools/validate-php-snippet` | Static parse + security scan of code; no store, no run. Returns critical/warning findings |
+| `emcp-tools/create-php-snippet` | Create an **inactive draft** (validated; critical = rejected). Never runs until an admin activates it |
+| `emcp-tools/update-php-snippet` | Update a snippet's code/settings; re-validates |
+| `emcp-tools/get-php-snippet` | Return code, status, shortcode, and validation report |
+| `emcp-tools/list-php-snippets` | List snippets with status and run context |
+| `emcp-tools/delete-php-snippet` | Delete a snippet and its sandbox file |
 
 ### SEO & Accessibility Toolkit — Pro (7 tools, off by default)
 
@@ -260,13 +260,13 @@ Pro-only, registered only when `emcp_pro_fs()->can_use_premium_code()` (self-gua
 
 | Ability Name | Purpose |
 |---|---|
-| `elementor-mcp/audit-page-seo` | Scored on-page SEO report: H1 presence, title/meta length, canonical, heading hierarchy, image alts, internal links, word count, optional target-keyword usage |
-| `elementor-mcp/extract-keywords-from-content` | Frequency/TF-IDF-style keyword + bigram extraction from page text (stop-word filtered, no external service) |
-| `elementor-mcp/generate-meta-tags` | Proposes an SEO title (≤60) + meta description (≤155) from page content, keyword-front-loaded; proposal-only |
-| `elementor-mcp/generate-schema-markup` | Generates JSON-LD (Article / LocalBusiness / FAQPage / Service / Product); LocalBusiness takes a `business` object, FAQPage a `faqs` array; proposal-only |
-| `elementor-mcp/audit-page-a11y` | WCAG-oriented report: color contrast (best-effort, `inconclusive` when background unresolved), missing alts, heading order, generic/empty link text, form-label coverage |
-| `elementor-mcp/fix-color-contrast` | Proposes (and with `apply:true` writes) adjusted text colors so failing pairs meet WCAG AA. Dry-run by default; writes the resolved `*_color` setting via the data layer |
-| `elementor-mcp/add-alt-text-from-context` | Proposes (and with `apply:true` writes) alt text for images lacking it, derived from filename → nearest heading → page title. Dry-run by default; writes `_wp_attachment_image_alt` + the image widget's alt |
+| `emcp-tools/audit-page-seo` | Scored on-page SEO report: H1 presence, title/meta length, canonical, heading hierarchy, image alts, internal links, word count, optional target-keyword usage |
+| `emcp-tools/extract-keywords-from-content` | Frequency/TF-IDF-style keyword + bigram extraction from page text (stop-word filtered, no external service) |
+| `emcp-tools/generate-meta-tags` | Proposes an SEO title (≤60) + meta description (≤155) from page content, keyword-front-loaded; proposal-only |
+| `emcp-tools/generate-schema-markup` | Generates JSON-LD (Article / LocalBusiness / FAQPage / Service / Product); LocalBusiness takes a `business` object, FAQPage a `faqs` array; proposal-only |
+| `emcp-tools/audit-page-a11y` | WCAG-oriented report: color contrast (best-effort, `inconclusive` when background unresolved), missing alts, heading order, generic/empty link text, form-label coverage |
+| `emcp-tools/fix-color-contrast` | Proposes (and with `apply:true` writes) adjusted text colors so failing pairs meet WCAG AA. Dry-run by default; writes the resolved `*_color` setting via the data layer |
+| `emcp-tools/add-alt-text-from-context` | Proposes (and with `apply:true` writes) alt text for images lacking it, derived from filename → nearest heading → page title. Dry-run by default; writes `_wp_attachment_image_alt` + the image widget's alt |
 
 ### Atomic Elements — Elementor 4.0+ (13 tools)
 
@@ -276,19 +276,19 @@ These tools only register when Elementor >= 4.0 is detected. Legacy tools contin
 
 | Ability Name | Purpose |
 |---|---|
-| `elementor-mcp/detect-elementor-version` | Returns Elementor version and whether atomic elements are supported. Call first to choose tool family. |
-| `elementor-mcp/add-atomic-widget` | Universal: add any atomic widget by type name with raw $$type settings |
-| `elementor-mcp/update-atomic-widget` | Universal: partial-merge update on an existing atomic widget's settings |
-| `elementor-mcp/add-atomic-heading` | Convenience: atomic heading (e-heading). Params: title, tag (h1-h6), link, css_id |
-| `elementor-mcp/add-atomic-paragraph` | Convenience: atomic paragraph (e-paragraph). Params: content, link, css_id |
-| `elementor-mcp/add-atomic-button` | Convenience: atomic button (e-button). Params: text, link, target_blank, css_id |
-| `elementor-mcp/add-atomic-image` | Convenience: atomic image (e-image). Params: image_id, image_url, alt, link, css_id |
-| `elementor-mcp/add-atomic-svg` | Convenience: atomic SVG (e-svg). Params: svg_id, svg_url, css_id |
-| `elementor-mcp/add-atomic-youtube` | Convenience: atomic YouTube embed (e-youtube). Params: video_url, css_id |
-| `elementor-mcp/add-atomic-video` | Convenience: atomic self-hosted video (e-self-hosted-video). Params: video_url, video_id, css_id |
-| `elementor-mcp/add-atomic-divider` | Convenience: atomic divider (e-divider). Params: css_id |
-| `elementor-mcp/add-flexbox` | Atomic flexbox container (e-flexbox). Params: direction, justify, align, gap, wrap, tag, padding, background_color |
-| `elementor-mcp/add-div-block` | Atomic div-block container (e-div-block). Params: tag, padding, background_color |
+| `emcp-tools/detect-elementor-version` | Returns Elementor version and whether atomic elements are supported. Call first to choose tool family. |
+| `emcp-tools/add-atomic-widget` | Universal: add any atomic widget by type name with raw $$type settings |
+| `emcp-tools/update-atomic-widget` | Universal: partial-merge update on an existing atomic widget's settings |
+| `emcp-tools/add-atomic-heading` | Convenience: atomic heading (e-heading). Params: title, tag (h1-h6), link, css_id |
+| `emcp-tools/add-atomic-paragraph` | Convenience: atomic paragraph (e-paragraph). Params: content, link, css_id |
+| `emcp-tools/add-atomic-button` | Convenience: atomic button (e-button). Params: text, link, target_blank, css_id |
+| `emcp-tools/add-atomic-image` | Convenience: atomic image (e-image). Params: image_id, image_url, alt, link, css_id |
+| `emcp-tools/add-atomic-svg` | Convenience: atomic SVG (e-svg). Params: svg_id, svg_url, css_id |
+| `emcp-tools/add-atomic-youtube` | Convenience: atomic YouTube embed (e-youtube). Params: video_url, css_id |
+| `emcp-tools/add-atomic-video` | Convenience: atomic self-hosted video (e-self-hosted-video). Params: video_url, video_id, css_id |
+| `emcp-tools/add-atomic-divider` | Convenience: atomic divider (e-divider). Params: css_id |
+| `emcp-tools/add-flexbox` | Atomic flexbox container (e-flexbox). Params: direction, justify, align, gap, wrap, tag, padding, background_color |
+| `emcp-tools/add-div-block` | Atomic div-block container (e-div-block). Params: tag, padding, background_color |
 
 ### Global Classes — Class Manager (1 tool, Elementor 4.0+)
 
@@ -296,7 +296,7 @@ Registers only when Elementor's `Global_Classes_Repository` exists (Elementor 4.
 
 | Ability Name | Purpose |
 |---|---|
-| `elementor-mcp/list-global-classes` | Map Class Manager `g-` IDs → human label + CSS properties (per breakpoint/state). Optional `class_ids` filter; omit for all. |
+| `emcp-tools/list-global-classes` | Map Class Manager `g-` IDs → human label + CSS properties (per breakpoint/state). Optional `class_ids` filter; omit for all. |
 
 ### Atomic Element Data Model (Elementor 4.0+)
 
@@ -333,10 +333,10 @@ The MCP Adapter includes a built-in WP-CLI stdio bridge. No HTTP round-trip, no 
 ```json
 {
   "mcpServers": {
-    "elementor-mcp": {
+    "emcp-tools": {
       "type": "stdio",
       "command": "wp",
-      "args": ["mcp-adapter", "serve", "--server=elementor-mcp-server", "--user=admin", "--path=/path/to/wordpress"]
+      "args": ["mcp-adapter", "serve", "--server=emcp-tools-server", "--user=admin", "--path=/path/to/wordpress"]
     }
   }
 }
@@ -346,15 +346,15 @@ The MCP Adapter includes a built-in WP-CLI stdio bridge. No HTTP round-trip, no 
 ```json
 {
   "mcpServers": {
-    "elementor-mcp": {
+    "emcp-tools": {
       "command": "wp",
-      "args": ["mcp-adapter", "serve", "--server=elementor-mcp-server", "--user=admin", "--path=/path/to/wordpress"]
+      "args": ["mcp-adapter", "serve", "--server=emcp-tools-server", "--user=admin", "--path=/path/to/wordpress"]
     }
   }
 }
 ```
 
-**Verify:** `wp mcp-adapter list --path=/path/to/wordpress` should show `elementor-mcp-server`.
+**Verify:** `wp mcp-adapter list --path=/path/to/wordpress` should show `emcp-tools-server`.
 
 ### Option B: Node.js proxy (remote sites)
 
@@ -365,7 +365,7 @@ For remote WordPress sites or environments without WP-CLI, use the Node.js proxy
 ```json
 {
   "mcpServers": {
-    "elementor-mcp": {
+    "emcp-tools": {
       "command": "npx",
       "args": ["-y", "@msrbuilds/emcp-proxy@latest"],
       "env": {
@@ -388,9 +388,9 @@ For remote WordPress sites or environments without WP-CLI, use the Node.js proxy
 ```json
 {
   "servers": {
-    "elementor-mcp": {
+    "emcp-tools": {
       "type": "http",
-      "url": "https://your-site.com/wp-json/mcp/elementor-mcp-server",
+      "url": "https://your-site.com/wp-json/mcp/emcp-tools-server",
       "headers": {
         "Authorization": "Basic BASE64_ENCODED_CREDENTIALS"
       }
@@ -402,7 +402,7 @@ For remote WordPress sites or environments without WP-CLI, use the Node.js proxy
 ### Testing with MCP Inspector
 
 ```bash
-npx @modelcontextprotocol/inspector wp mcp-adapter serve --server=elementor-mcp-server --user=admin --path=/path/to/wordpress
+npx @modelcontextprotocol/inspector wp mcp-adapter serve --server=emcp-tools-server --user=admin --path=/path/to/wordpress
 ```
 
 ### Troubleshooting

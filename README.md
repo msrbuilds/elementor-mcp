@@ -82,7 +82,7 @@ Connect to your WordPress site from any AI client using HTTP. No proxy or Node.j
 
 1. Create an Application Password at **Users > Profile > Application Passwords**.
 2. Base64-encode your credentials: `echo -n "username:app-password" | base64`
-3. Your MCP endpoint is: `https://your-site.com/wp-json/mcp/elementor-mcp-server`
+3. Your MCP endpoint is: `https://your-site.com/wp-json/mcp/emcp-tools-server`
 
 > **Tip:** The plugin's **EMCP Tools > Connection** admin screen can generate all configs automatically — just enter your username and Application Password.
 
@@ -93,9 +93,9 @@ Add as `.mcp.json` in your project root:
 ```json
 {
     "mcpServers": {
-        "elementor-mcp": {
+        "emcp-tools": {
             "type": "http",
-            "url": "https://your-site.com/wp-json/mcp/elementor-mcp-server",
+            "url": "https://your-site.com/wp-json/mcp/emcp-tools-server",
             "headers": {
                 "Authorization": "Basic BASE64_ENCODED_CREDENTIALS"
             }
@@ -111,9 +111,9 @@ Add to `claude_desktop_config.json` (`%APPDATA%\Claude\` on Windows, `~/Library/
 ```json
 {
     "mcpServers": {
-        "elementor-mcp": {
+        "emcp-tools": {
             "type": "http",
-            "url": "https://your-site.com/wp-json/mcp/elementor-mcp-server",
+            "url": "https://your-site.com/wp-json/mcp/emcp-tools-server",
             "headers": {
                 "Authorization": "Basic BASE64_ENCODED_CREDENTIALS"
             }
@@ -129,8 +129,8 @@ Add to `.cursor/mcp.json` in your project root, or `~/.cursor/mcp.json` for glob
 ```json
 {
     "mcpServers": {
-        "elementor-mcp": {
-            "url": "https://your-site.com/wp-json/mcp/elementor-mcp-server",
+        "emcp-tools": {
+            "url": "https://your-site.com/wp-json/mcp/emcp-tools-server",
             "headers": {
                 "Authorization": "Basic BASE64_ENCODED_CREDENTIALS"
             }
@@ -146,8 +146,8 @@ Add to `~/.codeium/windsurf/mcp_config.json`:
 ```json
 {
     "mcpServers": {
-        "elementor-mcp": {
-            "serverUrl": "https://your-site.com/wp-json/mcp/elementor-mcp-server",
+        "emcp-tools": {
+            "serverUrl": "https://your-site.com/wp-json/mcp/emcp-tools-server",
             "headers": {
                 "Authorization": "Basic BASE64_ENCODED_CREDENTIALS"
             }
@@ -163,8 +163,8 @@ Add to `~/.gemini/antigravity/mcp_config.json`:
 ```json
 {
     "mcpServers": {
-        "elementor-mcp": {
-            "serverUrl": "https://your-site.com/wp-json/mcp/elementor-mcp-server",
+        "emcp-tools": {
+            "serverUrl": "https://your-site.com/wp-json/mcp/emcp-tools-server",
             "headers": {
                 "Authorization": "Basic BASE64_ENCODED_CREDENTIALS"
             }
@@ -180,12 +180,12 @@ For local development with WP-CLI available, you can use the stdio transport (no
 ```json
 {
     "mcpServers": {
-        "elementor-mcp": {
+        "emcp-tools": {
             "type": "stdio",
             "command": "wp",
             "args": [
                 "mcp-adapter", "serve",
-                "--server=elementor-mcp-server",
+                "--server=emcp-tools-server",
                 "--user=admin",
                 "--path=/path/to/wordpress"
             ]
@@ -203,7 +203,7 @@ For remote WordPress sites, environments without WP-CLI, or when your AI client 
 ```json
 {
     "mcpServers": {
-        "elementor-mcp": {
+        "emcp-tools": {
             "type": "stdio",
             "command": "npx",
             "args": ["-y", "@msrbuilds/emcp-proxy@latest"],
@@ -235,7 +235,7 @@ Extract `bin/mcp-proxy.mjs` from the plugin ZIP, save it anywhere on the machine
 
 ```bash
 npx @modelcontextprotocol/inspector wp mcp-adapter serve \
-  --server=elementor-mcp-server --user=admin --path=/path/to/wordpress
+  --server=emcp-tools-server --user=admin --path=/path/to/wordpress
 ```
 
 ## Available Tools
@@ -392,7 +392,7 @@ Let an AI agent author server-side PHP behind a hard human-approval gate. The AI
 |---|---|
 | `list-global-classes` | Resolve Class Manager `g-` IDs to their names and the CSS each defines, per breakpoint/state (read-only) |
 
-> All tool names are prefixed with `elementor-mcp/` in the MCP namespace (e.g., `elementor-mcp/list-widgets`). The MCP Adapter converts these to `elementor-mcp-list-widgets` for transport.
+> All tool names are prefixed with `emcp-tools/` in the MCP namespace (e.g., `emcp-tools/list-widgets`). The MCP Adapter converts these to `emcp-tools-list-widgets` for transport.
 
 ## Permission Model
 
@@ -420,7 +420,7 @@ If the MCP server connects but no tools appear in Claude Code, Cursor, or other 
 1. **Verify tools are registered.** Test the endpoint directly with curl to confirm the server returns tools:
    ```bash
    curl -s -u admin:YOUR_APP_PASSWORD \
-     https://your-site.com/wp-json/mcp/elementor-mcp-server \
+     https://your-site.com/wp-json/mcp/emcp-tools-server \
      -H "Content-Type: application/json" \
      -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"test","version":"1.0"}}}'
    ```
@@ -436,7 +436,7 @@ If the MCP server connects but no tools appear in Claude Code, Cursor, or other 
 3. **Enable debug logging.** Add the `MCP_LOG_FILE` environment variable to your proxy config to capture the full request/response flow:
    ```json
    "env": {
-       "MCP_LOG_FILE": "/tmp/elementor-mcp-debug.log"
+       "MCP_LOG_FILE": "/tmp/emcp-tools-debug.log"
    }
    ```
    The log will show the protocol version, session IDs, tools count, and response bodies.

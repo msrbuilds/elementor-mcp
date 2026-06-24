@@ -170,70 +170,70 @@ class EMCP_Tools_Plugin {
 	public static function get_essential_tool_slugs(): array {
 		return array(
 			// Query / discovery (7).
-			'elementor-mcp/list-widgets',
-			'elementor-mcp/get-widget-schema',
-			'elementor-mcp/get-page-structure',
-			'elementor-mcp/get-element-settings',
-			'elementor-mcp/list-pages',
-			'elementor-mcp/list-templates',
-			'elementor-mcp/get-global-settings',
+			'emcp-tools/list-widgets',
+			'emcp-tools/get-widget-schema',
+			'emcp-tools/get-page-structure',
+			'emcp-tools/get-element-settings',
+			'emcp-tools/list-pages',
+			'emcp-tools/list-templates',
+			'emcp-tools/get-global-settings',
 
 			// Page CRUD (5).
-			'elementor-mcp/create-page',
-			'elementor-mcp/update-page-settings',
-			'elementor-mcp/delete-page-content',
-			'elementor-mcp/import-template',
-			'elementor-mcp/export-page',
+			'emcp-tools/create-page',
+			'emcp-tools/update-page-settings',
+			'emcp-tools/delete-page-content',
+			'emcp-tools/import-template',
+			'emcp-tools/export-page',
 
 			// Layout / structure (10).
-			'elementor-mcp/add-container',
-			'elementor-mcp/move-element',
-			'elementor-mcp/remove-element',
-			'elementor-mcp/duplicate-element',
-			'elementor-mcp/update-container',
-			'elementor-mcp/get-container-schema',
-			'elementor-mcp/find-element',
-			'elementor-mcp/update-element',
-			'elementor-mcp/batch-update',
-			'elementor-mcp/reorder-elements',
+			'emcp-tools/add-container',
+			'emcp-tools/move-element',
+			'emcp-tools/remove-element',
+			'emcp-tools/duplicate-element',
+			'emcp-tools/update-container',
+			'emcp-tools/get-container-schema',
+			'emcp-tools/find-element',
+			'emcp-tools/update-element',
+			'emcp-tools/batch-update',
+			'emcp-tools/reorder-elements',
 
 			// Widget tools — catalog-backed (3 insert/update; discovery already
 			// listed in the Query block above).
-			'elementor-mcp/add-free-widget',
-			'elementor-mcp/add-pro-widget',
-			'elementor-mcp/update-widget',
+			'emcp-tools/add-free-widget',
+			'emcp-tools/add-pro-widget',
+			'emcp-tools/update-widget',
 
 			// Templates (2).
-			'elementor-mcp/save-as-template',
-			'elementor-mcp/apply-template',
+			'emcp-tools/save-as-template',
+			'emcp-tools/apply-template',
 
 			// Globals (2).
-			'elementor-mcp/update-global-colors',
-			'elementor-mcp/update-global-typography',
+			'emcp-tools/update-global-colors',
+			'emcp-tools/update-global-typography',
 
 			// Composite (1).
-			'elementor-mcp/build-page',
+			'emcp-tools/build-page',
 
 			// Stock images (3).
-			'elementor-mcp/search-images',
-			'elementor-mcp/sideload-image',
-			'elementor-mcp/add-stock-image',
+			'emcp-tools/search-images',
+			'emcp-tools/sideload-image',
+			'emcp-tools/add-stock-image',
 
 			// SVG icons (1).
-			'elementor-mcp/upload-svg-icon',
+			'emcp-tools/upload-svg-icon',
 
 			// Custom code (4).
-			'elementor-mcp/add-custom-css',
-			'elementor-mcp/add-custom-js',
-			'elementor-mcp/add-code-snippet',
-			'elementor-mcp/list-code-snippets',
+			'emcp-tools/add-custom-css',
+			'emcp-tools/add-custom-js',
+			'emcp-tools/add-code-snippet',
+			'emcp-tools/list-code-snippets',
 
 			// Atomic essentials (5) — only registered when Elementor 4.0+.
-			'elementor-mcp/detect-elementor-version',
-			'elementor-mcp/add-atomic-widget',
-			'elementor-mcp/update-atomic-widget',
-			'elementor-mcp/add-flexbox',
-			'elementor-mcp/add-div-block',
+			'emcp-tools/detect-elementor-version',
+			'emcp-tools/add-atomic-widget',
+			'emcp-tools/update-atomic-widget',
+			'emcp-tools/add-flexbox',
+			'emcp-tools/add-div-block',
 		);
 	}
 
@@ -307,9 +307,9 @@ class EMCP_Tools_Plugin {
 		}
 
 		$mcp_adapter->create_server(
-			'elementor-mcp-server',                                   // server_id
+			'emcp-tools-server',                                   // server_id
 			'mcp',                                                    // route_namespace
-			'elementor-mcp-server',                                   // route
+			'emcp-tools-server',                                   // route
 			__( 'MCP Tools for Elementor Server', 'emcp-tools' ),            // server_name
 			__( 'Exposes Elementor data and design tools as MCP tools for AI agents.', 'emcp-tools' ), // description
 			'v' . EMCP_TOOLS_VERSION,                              // version

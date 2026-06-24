@@ -75,7 +75,7 @@ Use the MCP Inspector to test tools interactively:
 
 ```bash
 npx @modelcontextprotocol/inspector wp mcp-adapter serve \
-  --server=elementor-mcp-server --user=admin --path=/path/to/wordpress
+  --server=emcp-tools-server --user=admin --path=/path/to/wordpress
 ```
 
 ## Architecture Overview
@@ -83,7 +83,7 @@ npx @modelcontextprotocol/inspector wp mcp-adapter serve \
 Understanding the plugin's architecture will help you contribute effectively.
 
 ```
-elementor-mcp/
+emcp-tools/
 ├── elementor-mcp.php              # Bootstrap: constants, dependency checks, require_once
 ├── includes/
 │   ├── class-plugin.php           # Singleton orchestrator (hooks registration)
@@ -132,7 +132,7 @@ In your ability class's `register()` method, call `wp_register_ability()`:
 
 ```php
 wp_register_ability(
-    'elementor-mcp/my-new-tool',
+    'emcp-tools/my-new-tool',
     array(
         'title'               => __( 'My New Tool', 'elementor-mcp' ),
         'description'         => __( 'What this tool does.', 'elementor-mcp' ),

@@ -52,7 +52,7 @@ class EMCP_Tools_Svg_Icon_Abilities {
 	 */
 	public function get_ability_names(): array {
 		return array(
-			'elementor-mcp/upload-svg-icon',
+			'emcp-tools/upload-svg-icon',
 		);
 	}
 
@@ -91,7 +91,7 @@ class EMCP_Tools_Svg_Icon_Abilities {
 	 */
 	private function register_upload_svg_icon(): void {
 		emcp_tools_register_ability(
-			'elementor-mcp/upload-svg-icon',
+			'emcp-tools/upload-svg-icon',
 			array(
 				'label'               => __( 'Upload SVG Icon', 'emcp-tools' ),
 				'description'         => __( 'Uploads an SVG icon to the WordPress Media Library and returns an Elementor icon object ready to use with any widget that accepts icons (icon, icon-box, button, etc.). Accepts either an external SVG URL or raw SVG markup. The returned icon object has the format: { "value": { "id": 123, "url": "..." }, "library": "svg" }. Use this value for the selected_icon setting in icon/icon-box widgets, or the selected_icon setting in button widgets.', 'emcp-tools' ),

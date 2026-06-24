@@ -54,15 +54,15 @@ class WidgetCapabilityTest extends Ability_Test_Case {
     public function test_pro_insert_tool_gated_on_elementor_pro(): void {
         $this->assertFalse(defined('ELEMENTOR_PRO_VERSION'), 'ELEMENTOR_PRO_VERSION must not be defined in test environment.');
         $names = $this->ability->get_ability_names();
-        $this->assertNotContains('elementor-mcp/add-pro-widget', $names, 'add-pro-widget must be gated on Elementor Pro');
-        $this->assertContains('elementor-mcp/add-free-widget', $names);
+        $this->assertNotContains('emcp-tools/add-pro-widget', $names, 'add-pro-widget must be gated on Elementor Pro');
+        $this->assertContains('emcp-tools/add-free-widget', $names);
     }
 
     // Core tools always present
     /** @test @group t0 */
     public function test_core_tools_always_registered(): void {
         $names = $this->ability->get_ability_names();
-        foreach (['elementor-mcp/add-free-widget', 'elementor-mcp/update-widget'] as $tool) {
+        foreach (['emcp-tools/add-free-widget', 'emcp-tools/update-widget'] as $tool) {
             $this->assertContains($tool, $names, "Core widget tool must always be registered: $tool");
         }
     }
@@ -70,7 +70,7 @@ class WidgetCapabilityTest extends Ability_Test_Case {
     /** @test @group t0 */
     public function test_old_convenience_tools_removed(): void {
         $names = $this->ability->get_ability_names();
-        foreach (['elementor-mcp/add-widget', 'elementor-mcp/add-heading', 'elementor-mcp/add-button', 'elementor-mcp/add-form'] as $gone) {
+        foreach (['emcp-tools/add-widget', 'emcp-tools/add-heading', 'emcp-tools/add-button', 'emcp-tools/add-form'] as $gone) {
             $this->assertNotContains($gone, $names, "Removed in v3.0.0: $gone");
         }
     }

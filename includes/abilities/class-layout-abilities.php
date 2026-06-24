@@ -52,14 +52,14 @@ class EMCP_Tools_Layout_Abilities {
 	 */
 	public function get_ability_names(): array {
 		return array(
-			'elementor-mcp/add-container',
-			'elementor-mcp/update-container',
-			'elementor-mcp/update-element',
-			'elementor-mcp/batch-update',
-			'elementor-mcp/reorder-elements',
-			'elementor-mcp/move-element',
-			'elementor-mcp/remove-element',
-			'elementor-mcp/duplicate-element',
+			'emcp-tools/add-container',
+			'emcp-tools/update-container',
+			'emcp-tools/update-element',
+			'emcp-tools/batch-update',
+			'emcp-tools/reorder-elements',
+			'emcp-tools/move-element',
+			'emcp-tools/remove-element',
+			'emcp-tools/duplicate-element',
 		);
 	}
 
@@ -106,7 +106,7 @@ class EMCP_Tools_Layout_Abilities {
 
 	private function register_add_container(): void {
 		emcp_tools_register_ability(
-			'elementor-mcp/add-container',
+			'emcp-tools/add-container',
 			array(
 				'label'               => __( 'Add Container', 'emcp-tools' ),
 				'description'         => __( 'Adds a container to a page. Supports both flex (default) and grid layouts via container_type. Omit parent_id for top-level, or provide a parent container ID for nesting. Flex tips: Use flex_direction=row for side-by-side children, flex_wrap=wrap for wrapping, flex_justify_content for main-axis alignment (e.g. space-between, center), flex_align_items for cross-axis alignment. (The shorthand justify_content / align_items are also accepted and remapped to flex_justify_content / flex_align_items.) Grid tips: Set container_type=grid with grid_columns_grid, grid_rows_grid, grid_gaps. Background: set background_background=classic and background_color=#hex. Border: set border_border=solid, border_width, border_color. Also supports min_height, overflow, html_tag, padding, margin, position, z_index, animation.', 'emcp-tools' ),
@@ -215,7 +215,7 @@ class EMCP_Tools_Layout_Abilities {
 
 	private function register_update_container(): void {
 		emcp_tools_register_ability(
-			'elementor-mcp/update-container',
+			'emcp-tools/update-container',
 			array(
 				'label'               => __( 'Update Container', 'emcp-tools' ),
 				'description'         => __( 'Updates settings on an existing container. Settings are merged (partial update). Supports all container controls: flex_direction, flex_justify_content, flex_align_items, flex_wrap, flex_align_content, gap, content_width, min_height, overflow, html_tag, container_type, grid controls, background (set background_background=classic first), border (set border_border=solid first), border_radius, box_shadow, padding, margin, position, z_index, animation, shape dividers, etc. (The unprefixed justify_content / align_items / align_content are accepted and remapped to the flex_-prefixed keys.)', 'emcp-tools' ),
@@ -312,7 +312,7 @@ class EMCP_Tools_Layout_Abilities {
 
 	private function register_update_element(): void {
 		emcp_tools_register_ability(
-			'elementor-mcp/update-element',
+			'emcp-tools/update-element',
 			array(
 				'label'               => __( 'Update Element', 'emcp-tools' ),
 				'description'         => __( 'Updates settings on any element (container or widget). Settings are merged (partial update). Works for all element types — no need to know if the target is a container or widget.', 'emcp-tools' ),
@@ -403,7 +403,7 @@ class EMCP_Tools_Layout_Abilities {
 
 	private function register_batch_update(): void {
 		emcp_tools_register_ability(
-			'elementor-mcp/batch-update',
+			'emcp-tools/batch-update',
 			array(
 				'label'               => __( 'Batch Update Elements', 'emcp-tools' ),
 				'description'         => __( 'Updates multiple elements in a single save operation. Each operation specifies an element_id and settings to merge. Much more efficient than calling update-element multiple times.', 'emcp-tools' ),
@@ -513,7 +513,7 @@ class EMCP_Tools_Layout_Abilities {
 
 	private function register_reorder_elements(): void {
 		emcp_tools_register_ability(
-			'elementor-mcp/reorder-elements',
+			'emcp-tools/reorder-elements',
 			array(
 				'label'               => __( 'Reorder Elements', 'emcp-tools' ),
 				'description'         => __( 'Reorders the children of a container by providing an ordered array of element IDs. All IDs must be direct children of the specified container.', 'emcp-tools' ),
@@ -659,7 +659,7 @@ class EMCP_Tools_Layout_Abilities {
 
 	private function register_move_element(): void {
 		emcp_tools_register_ability(
-			'elementor-mcp/move-element',
+			'emcp-tools/move-element',
 			array(
 				'label'               => __( 'Move Element', 'emcp-tools' ),
 				'description'         => __( 'Moves an element to a new parent container and/or position within the page tree.', 'emcp-tools' ),
@@ -766,7 +766,7 @@ class EMCP_Tools_Layout_Abilities {
 
 	private function register_remove_element(): void {
 		emcp_tools_register_ability(
-			'elementor-mcp/remove-element',
+			'emcp-tools/remove-element',
 			array(
 				'label'               => __( 'Remove Element', 'emcp-tools' ),
 				'description'         => __( 'Removes an element and all its children from a page.', 'emcp-tools' ),
@@ -848,7 +848,7 @@ class EMCP_Tools_Layout_Abilities {
 
 	private function register_duplicate_element(): void {
 		emcp_tools_register_ability(
-			'elementor-mcp/duplicate-element',
+			'emcp-tools/duplicate-element',
 			array(
 				'label'               => __( 'Duplicate Element', 'emcp-tools' ),
 				'description'         => __( 'Duplicates an element (including all children) with fresh IDs. The duplicate is placed immediately after the original.', 'emcp-tools' ),

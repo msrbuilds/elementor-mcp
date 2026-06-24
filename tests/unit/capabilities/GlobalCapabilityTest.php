@@ -51,8 +51,8 @@ class GlobalCapabilityTest extends Ability_Test_Case {
     /** @test @group t0 */
     public function test_ability_names_contains_both_global_tools(): void {
         $names = $this->ability->get_ability_names();
-        $this->assertContains('elementor-mcp/update-global-colors', $names, 'Missing tool: update-global-colors');
-        $this->assertContains('elementor-mcp/update-global-typography', $names, 'Missing tool: update-global-typography');
+        $this->assertContains('emcp-tools/update-global-colors', $names, 'Missing tool: update-global-colors');
+        $this->assertContains('emcp-tools/update-global-typography', $names, 'Missing tool: update-global-typography');
         $this->assertCount(2, $names, 'Global class must register exactly 2 tools.');
     }
 }

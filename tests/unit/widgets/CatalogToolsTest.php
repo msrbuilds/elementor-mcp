@@ -27,14 +27,14 @@ class CatalogToolsTest extends Ability_Test_Case {
 	/** @test */
 	public function test_registers_the_catalog_tools(): void {
 		$names = $this->ability->get_ability_names();
-		$this->assertContains( 'elementor-mcp/add-free-widget', $names );
-		$this->assertContains( 'elementor-mcp/update-widget', $names );
+		$this->assertContains( 'emcp-tools/add-free-widget', $names );
+		$this->assertContains( 'emcp-tools/update-widget', $names );
 	}
 
 	/** @test */
 	public function test_does_not_register_old_convenience_tools(): void {
 		$names = $this->ability->get_ability_names();
-		foreach ( array( 'elementor-mcp/add-heading', 'elementor-mcp/add-button', 'elementor-mcp/add-form', 'elementor-mcp/add-widget' ) as $gone ) {
+		foreach ( array( 'emcp-tools/add-heading', 'emcp-tools/add-button', 'emcp-tools/add-form', 'emcp-tools/add-widget' ) as $gone ) {
 			$this->assertNotContains( $gone, $names, "$gone must be removed in v3.0.0" );
 		}
 	}
@@ -42,7 +42,7 @@ class CatalogToolsTest extends Ability_Test_Case {
 	/** @test */
 	public function test_add_pro_widget_not_registered_without_pro(): void {
 		$this->assertFalse( defined( 'ELEMENTOR_PRO_VERSION' ) );
-		$this->assertNotContains( 'elementor-mcp/add-pro-widget', $this->ability->get_ability_names() );
+		$this->assertNotContains( 'emcp-tools/add-pro-widget', $this->ability->get_ability_names() );
 	}
 
 	/** @test */

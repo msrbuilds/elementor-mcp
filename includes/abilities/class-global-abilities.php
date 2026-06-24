@@ -45,8 +45,8 @@ class EMCP_Tools_Global_Abilities {
 	 */
 	public function get_ability_names(): array {
 		return array(
-			'elementor-mcp/update-global-colors',
-			'elementor-mcp/update-global-typography',
+			'emcp-tools/update-global-colors',
+			'emcp-tools/update-global-typography',
 		);
 	}
 
@@ -77,7 +77,7 @@ class EMCP_Tools_Global_Abilities {
 
 	private function register_update_global_colors(): void {
 		emcp_tools_register_ability(
-			'elementor-mcp/update-global-colors',
+			'emcp-tools/update-global-colors',
 			array(
 				'label'               => __( 'Update Global Colors', 'emcp-tools' ),
 				'description'         => __( 'Updates the site-wide color palette in the Elementor kit. Provide an array of color objects with id, title, and color (hex).', 'emcp-tools' ),
@@ -194,7 +194,7 @@ class EMCP_Tools_Global_Abilities {
 
 	private function register_update_global_typography(): void {
 		emcp_tools_register_ability(
-			'elementor-mcp/update-global-typography',
+			'emcp-tools/update-global-typography',
 			array(
 				'label'               => __( 'Update Global Typography', 'emcp-tools' ),
 				'description'         => __( 'Updates the site-wide typography settings in the Elementor kit.', 'emcp-tools' ),

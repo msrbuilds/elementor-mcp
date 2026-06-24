@@ -104,7 +104,7 @@ class DataIntegrityRegressionTest extends Ability_Test_Case {
 	 * This test DOCUMENTS THE KNOWN BUG. When B-02 is fixed this assertion
 	 * should change to assertWPError (or verify fallback is triggered).
 	 *
-	 * @see https://github.com/elementor/elementor-mcp/issues (ADVERSARIAL-2)
+	 * @see https://github.com/elementor/emcp-tools/issues (ADVERSARIAL-2)
 	 */
 	public function test_save_page_data_silently_succeeds_when_document_save_returns_null(): void {
 		$data   = $this->make_data_with_document_save_returning( null );

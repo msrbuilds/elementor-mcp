@@ -37,12 +37,12 @@ class EMCP_Tools_PHP_Snippet_Abilities {
 	 */
 	public function get_ability_names(): array {
 		return array(
-			'elementor-mcp/validate-php-snippet',
-			'elementor-mcp/create-php-snippet',
-			'elementor-mcp/update-php-snippet',
-			'elementor-mcp/get-php-snippet',
-			'elementor-mcp/list-php-snippets',
-			'elementor-mcp/delete-php-snippet',
+			'emcp-tools/validate-php-snippet',
+			'emcp-tools/create-php-snippet',
+			'emcp-tools/update-php-snippet',
+			'emcp-tools/get-php-snippet',
+			'emcp-tools/list-php-snippets',
+			'emcp-tools/delete-php-snippet',
 		);
 	}
 
@@ -160,7 +160,7 @@ class EMCP_Tools_PHP_Snippet_Abilities {
 
 	private function register_validate(): void {
 		emcp_tools_register_ability(
-			'elementor-mcp/validate-php-snippet',
+			'emcp-tools/validate-php-snippet',
 			array(
 				'label'               => __( 'Validate PHP Snippet', 'emcp-tools' ),
 				'description'         => __( 'Statically checks PHP snippet code WITHOUT storing or running it: confirms it parses, then scans for dangerous constructs (code execution, shell, file writes, network, obfuscation, destructive SQL). Returns a report of critical (blocking) and warning findings. Use this to iterate before create-php-snippet.', 'emcp-tools' ),
@@ -201,7 +201,7 @@ class EMCP_Tools_PHP_Snippet_Abilities {
 
 	private function register_create(): void {
 		emcp_tools_register_ability(
-			'elementor-mcp/create-php-snippet',
+			'emcp-tools/create-php-snippet',
 			array(
 				'label'               => __( 'Create PHP Snippet (draft)', 'emcp-tools' ),
 				'description'         => __( 'Creates a PHP snippet as an INACTIVE DRAFT. It does NOT run: a site administrator must review and activate it in EMCP Tools → Sandbox before it executes. The code is validated first and rejected if it trips a critical security finding (the findings are returned so you can fix it).', 'emcp-tools' ),
@@ -237,7 +237,7 @@ class EMCP_Tools_PHP_Snippet_Abilities {
 
 	private function register_update(): void {
 		emcp_tools_register_ability(
-			'elementor-mcp/update-php-snippet',
+			'emcp-tools/update-php-snippet',
 			array(
 				'label'               => __( 'Update PHP Snippet', 'emcp-tools' ),
 				'description'         => __( 'Updates a snippet\'s code or settings. Re-validates and rejects critical findings. If the snippet is currently active it is re-compiled (or demoted to draft if it no longer passes). Activation still requires an admin.', 'emcp-tools' ),
@@ -280,7 +280,7 @@ class EMCP_Tools_PHP_Snippet_Abilities {
 
 	private function register_get(): void {
 		emcp_tools_register_ability(
-			'elementor-mcp/get-php-snippet',
+			'emcp-tools/get-php-snippet',
 			array(
 				'label'               => __( 'Get PHP Snippet', 'emcp-tools' ),
 				'description'         => __( 'Returns a snippet: its code, status (draft/active), run context, shortcode, and the latest validation report.', 'emcp-tools' ),
@@ -319,7 +319,7 @@ class EMCP_Tools_PHP_Snippet_Abilities {
 
 	private function register_list(): void {
 		emcp_tools_register_ability(
-			'elementor-mcp/list-php-snippets',
+			'emcp-tools/list-php-snippets',
 			array(
 				'label'               => __( 'List PHP Snippets', 'emcp-tools' ),
 				'description'         => __( 'Lists PHP snippets with their status (draft/active), run context, and shortcode.', 'emcp-tools' ),
@@ -370,7 +370,7 @@ class EMCP_Tools_PHP_Snippet_Abilities {
 
 	private function register_delete(): void {
 		emcp_tools_register_ability(
-			'elementor-mcp/delete-php-snippet',
+			'emcp-tools/delete-php-snippet',
 			array(
 				'label'               => __( 'Delete PHP Snippet', 'emcp-tools' ),
 				'description'         => __( 'Permanently deletes a PHP snippet and removes its sandbox file.', 'emcp-tools' ),

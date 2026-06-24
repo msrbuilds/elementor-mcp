@@ -80,7 +80,7 @@ class EMCP_Tools_Atomic_Layout_Abilities {
 	// =========================================================================
 
 	private function register_add_flexbox(): void {
-		$name                  = 'elementor-mcp/add-flexbox';
+		$name                  = 'emcp-tools/add-flexbox';
 		$this->ability_names[] = $name;
 
 		emcp_tools_register_ability(
@@ -191,7 +191,7 @@ class EMCP_Tools_Atomic_Layout_Abilities {
 	// =========================================================================
 
 	private function register_add_div_block(): void {
-		$name                  = 'elementor-mcp/add-div-block';
+		$name                  = 'emcp-tools/add-div-block';
 		$this->ability_names[] = $name;
 
 		emcp_tools_register_ability(
@@ -293,7 +293,7 @@ class EMCP_Tools_Atomic_Layout_Abilities {
 	// =========================================================================
 
 	private function register_detect_elementor_version(): void {
-		$name                  = 'elementor-mcp/detect-elementor-version';
+		$name                  = 'emcp-tools/detect-elementor-version';
 		$this->ability_names[] = $name;
 
 		emcp_tools_register_ability(

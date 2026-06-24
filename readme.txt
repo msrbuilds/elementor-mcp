@@ -63,9 +63,9 @@ Add to your MCP client configuration:
 `
 {
   "mcpServers": {
-    "elementor-mcp": {
+    "emcp-tools": {
       "command": "wp",
-      "args": ["mcp-adapter", "serve", "--server=elementor-mcp-server", "--user=admin", "--path=/path/to/wordpress"]
+      "args": ["mcp-adapter", "serve", "--server=emcp-tools-server", "--user=admin", "--path=/path/to/wordpress"]
     }
   }
 }
@@ -77,7 +77,7 @@ Add to `~/.codex/config.toml` or `.codex/config.toml`:
 
 `
 [mcp_servers.elementor-mcp]
-url = "https://your-site.com/wp-json/mcp/elementor-mcp-server"
+url = "https://your-site.com/wp-json/mcp/emcp-tools-server"
 
 [mcp_servers.elementor-mcp.http_headers]
 "Authorization" = "Basic BASE64_ENCODED_CREDENTIALS"
@@ -90,12 +90,12 @@ For local development, use `mcp-remote` to bridge your AI client to the WordPres
 `
 {
   "mcpServers": {
-    "elementor-mcp": {
+    "emcp-tools": {
       "command": "npx",
       "args": [
         "-y",
         "mcp-remote",
-        "http://localhost:10003/wp-json/mcp/elementor-mcp-server",
+        "http://localhost:10003/wp-json/mcp/emcp-tools-server",
         "--header",
         "Authorization: Basic BASE64_ENCODED_CREDENTIALS"
       ]
@@ -114,7 +114,7 @@ Replace `localhost:10003` with your local WordPress address and `BASE64_ENCODED_
 `
 {
   "mcpServers": {
-    "elementor-mcp": {
+    "emcp-tools": {
       "command": "node",
       "args": ["bin/mcp-proxy.mjs"],
       "env": {
@@ -203,8 +203,8 @@ The plugin enforces WordPress capability checks on every tool. Read operations r
 
 = 2.0.0 =
 * ⚠️ PRO USERS — ACTION NEEDED: Because the plugin folder/slug changed (elementor-mcp -> emcp-tools), the new install is a separate plugin to WordPress, so your Pro license does NOT carry over automatically. After deleting the old plugin and activating "EMCP Tools", you will likely need to re-activate your license and complete the Freemius opt-in/connection again. Your license stays valid — this only re-links it to the renamed plugin. Free users have nothing extra to do.
-* Changed: The plugin was renamed from "elementor-mcp" to "emcp-tools" as it grows beyond Elementor. The folder, main file, text domain, and all internal PHP identifiers were rebranded. In the Plugins list it now shows as "EMCP Tools" (the old one stays "MCP Tools for Elementor", so it's clear which to remove). Your AI clients keep working unchanged — the MCP tool names and server (elementor-mcp/..., elementor-mcp-server) are intentionally unchanged, so no connection config or skill needs editing.
-* New: Safe automatic migration. If the old "elementor-mcp" plugin is still active, EMCP Tools pauses and shows a notice to deactivate and delete it; your settings and banner dismissals are carried over to the new keys (captured before the old plugin's uninstall can wipe them).
+* Changed: The plugin was renamed from "emcp-tools" to "emcp-tools" as it grows beyond Elementor. The folder, main file, text domain, and all internal PHP identifiers were rebranded. In the Plugins list it now shows as "EMCP Tools" (the old one stays "MCP Tools for Elementor", so it's clear which to remove). Your AI clients keep working unchanged — the MCP tool names and server (emcp-tools/..., emcp-tools-server) are intentionally unchanged, so no connection config or skill needs editing.
+* New: Safe automatic migration. If the old "emcp-tools" plugin is still active, EMCP Tools pauses and shows a notice to deactivate and delete it; your settings and banner dismissals are carried over to the new keys (captured before the old plugin's uninstall can wipe them).
 * Note: Install emcp-tools as a new plugin, then remove the old elementor-mcp one when prompted. All PHP symbols are uniquely re-prefixed so the two coexist during the switch without fatal errors.
 
 = 1.9.0 =

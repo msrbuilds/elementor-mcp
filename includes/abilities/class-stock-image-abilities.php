@@ -58,9 +58,9 @@ class EMCP_Tools_Stock_Image_Abilities {
 	 */
 	public function get_ability_names(): array {
 		return array(
-			'elementor-mcp/search-images',
-			'elementor-mcp/sideload-image',
-			'elementor-mcp/add-stock-image',
+			'emcp-tools/search-images',
+			'emcp-tools/sideload-image',
+			'emcp-tools/add-stock-image',
 		);
 	}
 
@@ -128,7 +128,7 @@ class EMCP_Tools_Stock_Image_Abilities {
 
 	private function register_search_images(): void {
 		emcp_tools_register_ability(
-			'elementor-mcp/search-images',
+			'emcp-tools/search-images',
 			array(
 				'label'               => __( 'Search Images', 'emcp-tools' ),
 				'description'         => __( 'Searches Openverse (WordPress.org) for Creative Commons licensed images. Returns image URLs, thumbnails, licensing info, and attribution. Use the returned URLs with sideload-image or add-stock-image.', 'emcp-tools' ),
@@ -284,7 +284,7 @@ class EMCP_Tools_Stock_Image_Abilities {
 
 	private function register_sideload_image(): void {
 		emcp_tools_register_ability(
-			'elementor-mcp/sideload-image',
+			'emcp-tools/sideload-image',
 			array(
 				'label'               => __( 'Sideload Image', 'emcp-tools' ),
 				'description'         => __( 'Downloads an external image URL into the WordPress Media Library and returns the local attachment ID and URL. Use this after search-images to import a chosen image.', 'emcp-tools' ),
@@ -453,7 +453,7 @@ class EMCP_Tools_Stock_Image_Abilities {
 
 	private function register_add_stock_image(): void {
 		emcp_tools_register_ability(
-			'elementor-mcp/add-stock-image',
+			'emcp-tools/add-stock-image',
 			array(
 				'label'               => __( 'Add Stock Image', 'emcp-tools' ),
 				'description'         => __( 'Searches Openverse for an image, downloads it to the Media Library, and adds it as an image widget to the page — all in one step. Defaults to landscape (wide) images for consistent layouts. Combines search-images + sideload-image + add-free-widget.', 'emcp-tools' ),

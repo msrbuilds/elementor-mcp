@@ -48,7 +48,7 @@ class EMCP_Tools_Global_Classes_Abilities {
 	 * @return string[]
 	 */
 	public function get_ability_names(): array {
-		return self::is_available() ? array( 'elementor-mcp/list-global-classes' ) : array();
+		return self::is_available() ? array( 'emcp-tools/list-global-classes' ) : array();
 	}
 
 	/**
@@ -59,7 +59,7 @@ class EMCP_Tools_Global_Classes_Abilities {
 			return;
 		}
 		emcp_tools_register_ability(
-			'elementor-mcp/list-global-classes',
+			'emcp-tools/list-global-classes',
 			array(
 				'label'               => __( 'List Global Classes', 'emcp-tools' ),
 				'description'         => __( 'Resolves Elementor Class Manager (Global Classes) entries. Maps the opaque "g-" class IDs that appear on elements back to their human-readable names and the CSS properties they define, per breakpoint/state. Use it to understand what styling a g- class applies. Pass class_ids to resolve specific IDs, or omit to list them all. Read-only.', 'emcp-tools' ),

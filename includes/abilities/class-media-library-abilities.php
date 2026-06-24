@@ -52,7 +52,7 @@ class EMCP_Tools_Media_Library_Abilities {
 	 */
 	public function get_ability_names(): array {
 		return array(
-			'elementor-mcp/list-media',
+			'emcp-tools/list-media',
 		);
 	}
 
@@ -84,7 +84,7 @@ class EMCP_Tools_Media_Library_Abilities {
 
 	private function register_list_media(): void {
 		emcp_tools_register_ability(
-			'elementor-mcp/list-media',
+			'emcp-tools/list-media',
 			array(
 				'label'               => __( 'List Media', 'emcp-tools' ),
 				'description'         => __( 'Lists and searches images already in the WordPress Media Library. Use this to find a site\'s own uploaded photos (e.g. a client\'s product or job-site images) before reaching for Openverse stock. The optional "search" matches the title, alt text, caption, and description. Returns attachment IDs and URLs you can pass straight to add-free-widget.', 'emcp-tools' ),

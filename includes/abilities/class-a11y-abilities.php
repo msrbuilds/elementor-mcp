@@ -72,9 +72,9 @@ class EMCP_Tools_A11y_Abilities {
 			return array();
 		}
 		return array(
-			'elementor-mcp/audit-page-a11y',
-			'elementor-mcp/fix-color-contrast',
-			'elementor-mcp/add-alt-text-from-context',
+			'emcp-tools/audit-page-a11y',
+			'emcp-tools/fix-color-contrast',
+			'emcp-tools/add-alt-text-from-context',
 		);
 	}
 
@@ -111,7 +111,7 @@ class EMCP_Tools_A11y_Abilities {
 
 	private function register_audit_page_a11y(): void {
 		emcp_tools_register_ability(
-			'elementor-mcp/audit-page-a11y',
+			'emcp-tools/audit-page-a11y',
 			array(
 				'label'               => __( 'Audit Page Accessibility', 'emcp-tools' ),
 				'description'         => __( 'Audits a page for accessibility issues: color contrast (best-effort), missing image alt text, heading hierarchy, generic link text, and form-label coverage. Read-only; returns a scored WCAG-oriented report.', 'emcp-tools' ),
@@ -171,7 +171,7 @@ class EMCP_Tools_A11y_Abilities {
 
 	private function register_fix_color_contrast(): void {
 		emcp_tools_register_ability(
-			'elementor-mcp/fix-color-contrast',
+			'emcp-tools/fix-color-contrast',
 			array(
 				'label'               => __( 'Fix Color Contrast', 'emcp-tools' ),
 				'description'         => __( 'Proposes (and, with apply:true, writes) adjusted text colors so failing text/background pairs meet WCAG AA. Dry-run by default — returns the proposed changes without modifying the page unless apply is true. Reversible via Elementor revisions.', 'emcp-tools' ),
@@ -264,7 +264,7 @@ class EMCP_Tools_A11y_Abilities {
 
 	private function register_add_alt_text(): void {
 		emcp_tools_register_ability(
-			'elementor-mcp/add-alt-text-from-context',
+			'emcp-tools/add-alt-text-from-context',
 			array(
 				'label'               => __( 'Add Alt Text from Context', 'emcp-tools' ),
 				'description'         => __( 'Proposes (and, with apply:true, writes) alt text for images that lack it, derived from the image filename, the nearest heading, or the page title. No AI call. Dry-run by default; writes to the media library alt + the image widget when applied.', 'emcp-tools' ),
