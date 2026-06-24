@@ -72,6 +72,8 @@ class EMCP_Tools_Bootstrap {
 		require_once EMCP_TOOLS_DIR . 'includes/schemas/class-schema-generator.php';
 		require_once EMCP_TOOLS_DIR . 'includes/validators/class-element-validator.php';
 		require_once EMCP_TOOLS_DIR . 'includes/validators/class-settings-validator.php';
+		// Widget catalog — source of truth for the 5 catalog-backed widget tools.
+		require_once EMCP_TOOLS_DIR . 'includes/widgets/class-widget-catalog.php';
 		// SEO / A11y toolkit shared helpers (used by the Pro audit abilities).
 		require_once EMCP_TOOLS_DIR . 'includes/class-color-contrast.php';
 		require_once EMCP_TOOLS_DIR . 'includes/class-content-extractor.php';
