@@ -59,8 +59,10 @@ class PluginToolsTest extends Ability_Test_Case {
 	/** @test */
 	public function test_registers_seven_tools(): void {
 		$names = $this->plugins()->get_ability_names();
-		$this->assertContains( 'emcp-tools/list-plugins', $names );
-		$this->assertContains( 'emcp-tools/search-plugins', $names );
+		foreach ( array( 'list-plugins', 'search-plugins', 'install-plugin', 'activate-plugin', 'deactivate-plugin', 'update-plugin', 'delete-plugin' ) as $slug ) {
+			$this->assertContains( 'emcp-tools/' . $slug, $names );
+		}
+		$this->assertCount( 7, $names );
 	}
 
 	/** @test */
@@ -93,5 +95,89 @@ class PluginToolsTest extends Ability_Test_Case {
 	/** @test */
 	public function test_search_plugins_requires_query(): void {
 		$this->assertWPError( $this->plugins()->execute_search_plugins( array() ), 'missing_params' );
+	}
+
+	/** @test */
+	public function test_install_plugin_installs_and_optionally_activates(): void {
+		$GLOBALS['_wp_upgrader_plugin_info'] = 'contact-form-7/wp-contact-form-7.php';
+		$out = $this->plugins()->execute_install_plugin( array( 'slug' => 'contact-form-7', 'activate' => true ) );
+		$this->assertNotWPError( $out );
+		$this->assertTrue( $out['installed'] );
+		$this->assertTrue( $out['activated'] );
+		$this->assertSame( 'contact-form-7/wp-contact-form-7.php', $out['file'] );
+		$this->assertNotEmpty( $GLOBALS['_wp_installed_packages'] );
+	}
+
+	/** @test */
+	public function test_install_plugin_requires_slug(): void {
+		$this->assertWPError( $this->plugins()->execute_install_plugin( array() ), 'missing_params' );
+	}
+
+	/** @test */
+	public function test_install_plugin_surfaces_api_error(): void {
+		$GLOBALS['_wp_plugins_api_error'] = 'no such plugin';
+		$this->assertWPError( $this->plugins()->execute_install_plugin( array( 'slug' => 'nope-xyz' ) ), 'plugins_api_failed' );
+	}
+
+	/** @test */
+	public function test_install_plugin_blocked_when_filesystem_not_direct(): void {
+		$GLOBALS['_wp_fs_method'] = 'ftpext';
+		$this->assertWPError( $this->plugins()->execute_install_plugin( array( 'slug' => 'contact-form-7' ) ), 'filesystem_unavailable' );
+	}
+
+	/** @test */
+	public function test_deactivate_refuses_protected(): void {
+		$this->assertWPError( $this->plugins()->execute_deactivate_plugin( array( 'plugin' => 'elementor/elementor.php' ) ), 'protected_plugin' );
+		$this->assertWPError( $this->plugins()->execute_deactivate_plugin( array( 'plugin' => 'elementor-mcp/emcp-tools.php' ) ), 'protected_plugin' );
+		$this->assertSame( array(), $GLOBALS['_wp_deactivated_plugins'] );
+	}
+
+	/** @test */
+	public function test_deactivate_allows_normal_plugin(): void {
+		$out = $this->plugins()->execute_deactivate_plugin( array( 'plugin' => 'akismet/akismet.php' ) );
+		$this->assertNotWPError( $out );
+		$this->assertContains( 'akismet/akismet.php', $GLOBALS['_wp_deactivated_plugins'] );
+	}
+
+	/** @test */
+	public function test_activate_unknown_plugin_errors(): void {
+		$this->assertWPError( $this->plugins()->execute_activate_plugin( array( 'plugin' => 'ghost/ghost.php' ) ), 'plugin_not_found' );
+	}
+
+	/** @test */
+	public function test_delete_refuses_active_plugin(): void {
+		$this->assertWPError( $this->plugins()->execute_delete_plugin( array( 'plugin' => 'akismet/akismet.php' ) ), 'plugin_active' );
+	}
+
+	/** @test */
+	public function test_delete_refuses_protected_plugin(): void {
+		$this->assertWPError( $this->plugins()->execute_delete_plugin( array( 'plugin' => 'elementor/elementor.php' ) ), 'protected_plugin' );
+	}
+
+	/** @test */
+	public function test_delete_removes_inactive_plugin(): void {
+		$out = $this->plugins()->execute_delete_plugin( array( 'plugin' => 'hello-dolly/hello.php' ) );
+		$this->assertNotWPError( $out );
+		$this->assertTrue( $out['deleted'] );
+		$this->assertContains( 'hello-dolly/hello.php', $GLOBALS['_wp_deleted_plugins'] );
+	}
+
+	/** @test */
+	public function test_update_reports_up_to_date(): void {
+		$GLOBALS['_wp_site_transients']['update_plugins'] = (object) array( 'response' => array() );
+		$out = $this->plugins()->execute_update_plugin( array( 'plugin' => 'akismet/akismet.php' ) );
+		$this->assertNotWPError( $out );
+		$this->assertTrue( $out['up_to_date'] );
+	}
+
+	/** @test */
+	public function test_update_runs_when_update_available(): void {
+		$GLOBALS['_wp_site_transients']['update_plugins'] = (object) array(
+			'response' => array( 'hello-dolly/hello.php' => (object) array( 'new_version' => '1.8' ) ),
+		);
+		$out = $this->plugins()->execute_update_plugin( array( 'plugin' => 'hello-dolly/hello.php' ) );
+		$this->assertNotWPError( $out );
+		$this->assertFalse( $out['up_to_date'] );
+		$this->assertContains( 'hello-dolly/hello.php', $GLOBALS['_wp_upgraded'] );
 	}
 }

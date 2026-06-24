@@ -170,7 +170,7 @@ class EMCP_Tools_Plugin_Abilities {
 	}
 
 	// -------------------------------------------------------------------
-	// install-plugin (stub — Task 4 adds execute_install_plugin)
+	// install-plugin
 	// -------------------------------------------------------------------
 
 	private function register_install_plugin(): void {
@@ -201,8 +201,53 @@ class EMCP_Tools_Plugin_Abilities {
 		);
 	}
 
+	/**
+	 * @param array $input
+	 * @return array|\WP_Error
+	 */
+	public function execute_install_plugin( $input ) {
+		$slug = sanitize_key( $input['slug'] ?? '' );
+		if ( '' === $slug ) {
+			return new \WP_Error( 'missing_params', __( 'A plugin "slug" is required.', 'emcp-tools' ) );
+		}
+		$activate = ! empty( $input['activate'] );
+		if ( $activate && ! current_user_can( 'activate_plugins' ) ) {
+			return new \WP_Error( 'cannot_activate', __( 'You cannot activate plugins.', 'emcp-tools' ) );
+		}
+		$ready = EMCP_Tools_Package_Guard::filesystem_ready();
+		if ( is_wp_error( $ready ) ) {
+			return $ready;
+		}
+		$api = plugins_api( 'plugin_information', array( 'slug' => $slug, 'fields' => array( 'sections' => false ) ) );
+		if ( is_wp_error( $api ) ) {
+			return $api;
+		}
+		$skin     = EMCP_Tools_Package_Guard::make_skin();
+		$upgrader = new \Plugin_Upgrader( $skin );
+		$result   = $upgrader->install( $api->download_link );
+		if ( is_wp_error( $result ) ) {
+			return $result;
+		}
+		if ( false === $result || null === $result ) {
+			return new \WP_Error( 'install_failed', __( 'Plugin installation failed.', 'emcp-tools' ) );
+		}
+		$file      = (string) $upgrader->plugin_info();
+		$activated = false;
+		if ( $activate && '' !== $file ) {
+			$act = activate_plugin( $file );
+			$activated = ! is_wp_error( $act );
+		}
+		return array(
+			'installed' => true,
+			'activated' => $activated,
+			'file'      => $file,
+			'slug'      => $slug,
+			'messages'  => EMCP_Tools_Package_Guard::skin_messages( $skin ),
+		);
+	}
+
 	// -------------------------------------------------------------------
-	// activate-plugin (stub — Task 4 adds execute_activate_plugin)
+	// activate-plugin
 	// -------------------------------------------------------------------
 
 	private function register_activate_plugin(): void {
@@ -226,8 +271,24 @@ class EMCP_Tools_Plugin_Abilities {
 		);
 	}
 
+	/**
+	 * @param array $input
+	 * @return array|\WP_Error
+	 */
+	public function execute_activate_plugin( $input ) {
+		$file = $this->resolve_plugin_file( $input['plugin'] ?? '' );
+		if ( is_wp_error( $file ) ) {
+			return $file;
+		}
+		$res = activate_plugin( $file );
+		if ( is_wp_error( $res ) ) {
+			return $res;
+		}
+		return array( 'success' => true, 'plugin' => $file, 'active' => EMCP_Tools_Package_Guard::is_active_plugin( $file ) );
+	}
+
 	// -------------------------------------------------------------------
-	// deactivate-plugin (stub — Task 4 adds execute_deactivate_plugin)
+	// deactivate-plugin
 	// -------------------------------------------------------------------
 
 	private function register_deactivate_plugin(): void {
@@ -251,8 +312,24 @@ class EMCP_Tools_Plugin_Abilities {
 		);
 	}
 
+	/**
+	 * @param array $input
+	 * @return array|\WP_Error
+	 */
+	public function execute_deactivate_plugin( $input ) {
+		$file = $this->resolve_plugin_file( $input['plugin'] ?? '' );
+		if ( is_wp_error( $file ) ) {
+			return $file;
+		}
+		if ( EMCP_Tools_Package_Guard::is_protected_plugin( $file ) ) {
+			return new \WP_Error( 'protected_plugin', sprintf( /* translators: %s: plugin file */ __( '"%s" is protected and cannot be deactivated via MCP (it would break EMCP Tools or Elementor).', 'emcp-tools' ), $file ) );
+		}
+		deactivate_plugins( array( $file ) );
+		return array( 'success' => true, 'plugin' => $file, 'active' => EMCP_Tools_Package_Guard::is_active_plugin( $file ) );
+	}
+
 	// -------------------------------------------------------------------
-	// update-plugin (stub — Task 4 adds execute_update_plugin)
+	// update-plugin
 	// -------------------------------------------------------------------
 
 	private function register_update_plugin(): void {
@@ -280,8 +357,50 @@ class EMCP_Tools_Plugin_Abilities {
 		);
 	}
 
+	/**
+	 * @param array $input
+	 * @return array|\WP_Error
+	 */
+	public function execute_update_plugin( $input ) {
+		$file = $this->resolve_plugin_file( $input['plugin'] ?? '' );
+		if ( is_wp_error( $file ) ) {
+			return $file;
+		}
+		$ready = EMCP_Tools_Package_Guard::filesystem_ready();
+		if ( is_wp_error( $ready ) ) {
+			return $ready;
+		}
+		if ( function_exists( 'wp_update_plugins' ) ) {
+			wp_update_plugins();
+		}
+		$updates = get_site_transient( 'update_plugins' );
+		$resp    = ( is_object( $updates ) && isset( $updates->response ) && is_array( $updates->response ) ) ? $updates->response : array();
+		$all     = function_exists( 'get_plugins' ) ? get_plugins() : array();
+		$old     = (string) ( $all[ $file ]['Version'] ?? '' );
+		if ( ! isset( $resp[ $file ] ) ) {
+			return array( 'success' => true, 'up_to_date' => true, 'plugin' => $file, 'old_version' => $old, 'new_version' => $old, 'messages' => array() );
+		}
+		$skin     = EMCP_Tools_Package_Guard::make_skin();
+		$upgrader = new \Plugin_Upgrader( $skin );
+		$result   = $upgrader->upgrade( $file );
+		if ( is_wp_error( $result ) ) {
+			return $result;
+		}
+		if ( false === $result ) {
+			return new \WP_Error( 'update_failed', __( 'Plugin update failed.', 'emcp-tools' ) );
+		}
+		return array(
+			'success'     => true,
+			'up_to_date'  => false,
+			'plugin'      => $file,
+			'old_version' => $old,
+			'new_version' => (string) ( $resp[ $file ]->new_version ?? '' ),
+			'messages'    => EMCP_Tools_Package_Guard::skin_messages( $skin ),
+		);
+	}
+
 	// -------------------------------------------------------------------
-	// delete-plugin (stub — Task 4 adds execute_delete_plugin)
+	// delete-plugin
 	// -------------------------------------------------------------------
 
 	private function register_delete_plugin(): void {
@@ -290,7 +409,7 @@ class EMCP_Tools_Plugin_Abilities {
 			'emcp-tools/delete-plugin',
 			array(
 				'label'               => __( 'Delete Plugin', 'emcp-tools' ),
-				'description'         => __( 'Permanently deletes an inactive plugin. Refuses to delete EMCP Tools or Elementor, and refuses to delete active plugins (deactivate first).', 'emcp-tools' ),
+				'description'         => __( 'Permanently deletes an installed plugin. Destructive. Refuses protected plugins (EMCP Tools / Elementor) and any active plugin (deactivate it first).', 'emcp-tools' ),
 				'category'            => 'emcp-tools',
 				'execute_callback'    => array( $this, 'execute_delete_plugin' ),
 				'permission_callback' => array( $this, 'can_delete' ),
@@ -299,9 +418,65 @@ class EMCP_Tools_Plugin_Abilities {
 					'properties' => array( 'plugin' => array( 'type' => 'string', 'description' => __( 'Plugin file or folder slug.', 'emcp-tools' ) ) ),
 					'required'   => array( 'plugin' ),
 				),
-				'output_schema'       => array( 'type' => 'object', 'properties' => array( 'deleted' => array( 'type' => 'boolean' ), 'plugin' => array( 'type' => 'string' ), 'messages' => array( 'type' => 'array', 'items' => array( 'type' => 'string' ) ) ) ),
+				'output_schema'       => array( 'type' => 'object', 'properties' => array( 'deleted' => array( 'type' => 'boolean' ), 'plugin' => array( 'type' => 'string' ) ) ),
 				'meta'                => array( 'annotations' => array( 'readonly' => false, 'destructive' => true, 'idempotent' => false ), 'show_in_rest' => true ),
 			)
 		);
+	}
+
+	/**
+	 * @param array $input
+	 * @return array|\WP_Error
+	 */
+	public function execute_delete_plugin( $input ) {
+		$file = $this->resolve_plugin_file( $input['plugin'] ?? '' );
+		if ( is_wp_error( $file ) ) {
+			return $file;
+		}
+		if ( EMCP_Tools_Package_Guard::is_protected_plugin( $file ) ) {
+			return new \WP_Error( 'protected_plugin', sprintf( /* translators: %s: plugin file */ __( '"%s" is protected and cannot be deleted via MCP.', 'emcp-tools' ), $file ) );
+		}
+		if ( EMCP_Tools_Package_Guard::is_active_plugin( $file ) ) {
+			return new \WP_Error( 'plugin_active', __( 'Deactivate the plugin before deleting it.', 'emcp-tools' ) );
+		}
+		$ready = EMCP_Tools_Package_Guard::filesystem_ready();
+		if ( is_wp_error( $ready ) ) {
+			return $ready;
+		}
+		$res = delete_plugins( array( $file ) );
+		if ( is_wp_error( $res ) ) {
+			return $res;
+		}
+		return array( 'deleted' => (bool) $res, 'plugin' => $file );
+	}
+
+	// -------------------------------------------------------------------
+	// helper
+	// -------------------------------------------------------------------
+
+	/**
+	 * Resolve a user-supplied plugin reference (file path or folder slug) to an
+	 * installed plugin file. Returns WP_Error('plugin_not_found') if unknown.
+	 *
+	 * @param string $ref
+	 * @return string|\WP_Error
+	 */
+	private function resolve_plugin_file( $ref ) {
+		$ref = (string) $ref;
+		if ( '' === $ref ) {
+			return new \WP_Error( 'missing_params', __( 'A "plugin" reference is required.', 'emcp-tools' ) );
+		}
+		EMCP_Tools_Package_Guard::load_upgrader_deps();
+		$all = function_exists( 'get_plugins' ) ? get_plugins() : array();
+		if ( isset( $all[ $ref ] ) ) {
+			return $ref;
+		}
+		// Treat $ref as a folder slug and match the first file in that folder.
+		foreach ( array_keys( $all ) as $file ) {
+			if ( dirname( (string) $file ) === $ref ) {
+				return (string) $file;
+			}
+		}
+		return new \WP_Error( 'plugin_not_found', sprintf( /* translators: %s: plugin reference */ __( 'No installed plugin matches "%s".', 'emcp-tools' ), $ref ) );
 	}
 }
