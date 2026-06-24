@@ -787,6 +787,7 @@ namespace {
 			'EMCP_Tools_A11y_Abilities'         => 'includes/abilities/class-a11y-abilities.php',
 			// Ability classes — all groups
 			'EMCP_Tools_Content_Abilities'      => 'includes/abilities/class-content-abilities.php',
+			'EMCP_Tools_Settings_Abilities'     => 'includes/abilities/class-settings-abilities.php',
 			'EMCP_Tools_Custom_Code_Abilities'  => 'includes/abilities/class-custom-code-abilities.php',
 			'EMCP_Tools_Stock_Image_Abilities'  => 'includes/abilities/class-stock-image-abilities.php',
 			'EMCP_Tools_Composite_Abilities'    => 'includes/abilities/class-composite-abilities.php',
