@@ -108,16 +108,25 @@ class EMCP_Tools_Query_Abilities {
 			'elementor-mcp/list-widgets',
 			array(
 				'label'               => __( 'List Elementor Widgets', 'emcp-tools' ),
-				'description'         => __( 'Returns all registered Elementor widget types with their names, titles, icons, categories, and keywords. Optionally filter by widget category.', 'emcp-tools' ),
+				'description'         => __( 'Lists Elementor widgets from the curated catalog as a compact index (type, title, tier, one-line use-case, param names). Filter by tier (free/pro/woo), category, or search by intent. Step 1 of discover → get-widget-schema → add-free-widget/add-pro-widget.', 'emcp-tools' ),
 				'category'            => 'emcp-tools',
 				'execute_callback'    => array( $this, 'execute_list_widgets' ),
 				'permission_callback' => array( $this, 'check_read_permission' ),
 				'input_schema'        => array(
 					'type'       => 'object',
 					'properties' => array(
+						'tier'     => array(
+							'type'        => 'string',
+							'enum'        => array( 'all', 'free', 'pro', 'woo' ),
+							'description' => __( 'Filter by tier. Default: all.', 'emcp-tools' ),
+						),
 						'category' => array(
 							'type'        => 'string',
-							'description' => __( 'Filter widgets by category slug.', 'emcp-tools' ),
+							'description' => __( 'Filter by widget category.', 'emcp-tools' ),
+						),
+						'search'   => array(
+							'type'        => 'string',
+							'description' => __( 'Match by intent across title, use-case, and keywords (e.g. "pricing table").', 'emcp-tools' ),
 						),
 					),
 				),
@@ -129,17 +138,16 @@ class EMCP_Tools_Query_Abilities {
 							'items' => array(
 								'type'       => 'object',
 								'properties' => array(
-									'name'       => array( 'type' => 'string' ),
-									'title'      => array( 'type' => 'string' ),
-									'icon'       => array( 'type' => 'string' ),
-									'categories' => array(
+									'type'        => array( 'type' => 'string' ),
+									'title'       => array( 'type' => 'string' ),
+									'tier'        => array( 'type' => 'string' ),
+									'category'    => array( 'type' => 'string' ),
+									'use_case'    => array( 'type' => 'string' ),
+									'param_names' => array(
 										'type'  => 'array',
 										'items' => array( 'type' => 'string' ),
 									),
-									'keywords'   => array(
-										'type'  => 'array',
-										'items' => array( 'type' => 'string' ),
-									),
+									'requires'    => array( 'type' => array( 'string', 'null' ) ),
 								),
 							),
 						),
@@ -160,33 +168,47 @@ class EMCP_Tools_Query_Abilities {
 	/**
 	 * Executes the list-widgets ability.
 	 *
+	 * Catalog-backed: returns a compact index built from the curated widget
+	 * catalog (no dependency on a live Elementor widget registry). Each row
+	 * carries type, title, tier, category, a one-line use-case, and the widget's
+	 * param names. Supports `tier` (all|free|pro|woo), `category`, and `search`
+	 * (intent match across title/use-case/keywords) filters.
+	 *
 	 * @since 1.0.0
 	 *
 	 * @param array|null $input The input parameters.
-	 * @return array The widgets list.
+	 * @return array The compact widgets index.
 	 */
 	public function execute_list_widgets( $input = null ): array {
-		$category = $input['category'] ?? '';
-		$widgets  = $this->data->get_registered_widgets();
-		$result   = array();
+		$tier     = isset( $input['tier'] ) ? sanitize_key( $input['tier'] ) : 'all';
+		$category = isset( $input['category'] ) ? sanitize_text_field( $input['category'] ) : '';
+		$search   = isset( $input['search'] ) ? sanitize_text_field( $input['search'] ) : '';
 
-		foreach ( $widgets as $name => $widget ) {
-			$widget_categories = $widget->get_categories();
+		$catalog = '' !== $search
+			? EMCP_Tools_Widget_Catalog::search( $search )
+			: EMCP_Tools_Widget_Catalog::get();
 
-			if ( ! empty( $category ) && ! in_array( $category, $widget_categories, true ) ) {
+		$rows = array();
+		foreach ( $catalog as $type => $entry ) {
+			$entry_tier = $entry['tier'] ?? 'free';
+			if ( 'all' !== $tier && $entry_tier !== $tier ) {
 				continue;
 			}
-
-			$result[] = array(
-				'name'       => $widget->get_name(),
-				'title'      => $widget->get_title(),
-				'icon'       => $widget->get_icon(),
-				'categories' => $widget_categories,
-				'keywords'   => $widget->get_keywords(),
+			if ( '' !== $category && ( $entry['category'] ?? '' ) !== $category ) {
+				continue;
+			}
+			$rows[] = array(
+				'type'        => $type,
+				'title'       => $entry['title'] ?? $type,
+				'tier'        => $entry_tier,
+				'category'    => $entry['category'] ?? '',
+				'use_case'    => $entry['use_case'] ?? '',
+				'param_names' => array_keys( $entry['params'] ?? array() ),
+				'requires'    => $entry['requires'] ?? null,
 			);
 		}
 
-		return array( 'widgets' => $result );
+		return array( 'widgets' => $rows );
 	}
 
 	/**

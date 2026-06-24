@@ -63,4 +63,35 @@ class CatalogToolsTest extends Ability_Test_Case {
 		) );
 		$this->assertInstanceOf( \WP_Error::class, $result );
 	}
+
+	/** @test */
+	public function test_list_widgets_compact_from_catalog(): void {
+		$query = new \EMCP_Tools_Query_Abilities(
+			$this->createStub( \EMCP_Tools_Data::class ),
+			$this->createStub( \EMCP_Tools_Schema_Generator::class )
+		);
+		$out = $query->execute_list_widgets( array( 'tier' => 'free', 'search' => 'headline' ) );
+		$this->assertArrayHasKey( 'widgets', $out );
+		$types = array_column( $out['widgets'], 'type' );
+		$this->assertContains( 'heading', $types );
+		$this->assertNotContains( 'form', $types, 'tier:free must exclude Pro widgets' );
+		// Compact shape: use_case + param_names present.
+		$idx     = array_search( 'heading', $types, true );
+		$heading = $out['widgets'][ $idx ];
+		$this->assertArrayHasKey( 'use_case', $heading );
+		$this->assertArrayHasKey( 'param_names', $heading );
+		$this->assertIsArray( $heading['param_names'] );
+	}
+
+	/** @test */
+	public function test_list_widgets_pro_filter(): void {
+		$query = new \EMCP_Tools_Query_Abilities(
+			$this->createStub( \EMCP_Tools_Data::class ),
+			$this->createStub( \EMCP_Tools_Schema_Generator::class )
+		);
+		$out   = $query->execute_list_widgets( array( 'tier' => 'pro' ) );
+		$types = array_column( $out['widgets'], 'type' );
+		$this->assertContains( 'form', $types );
+		$this->assertNotContains( 'heading', $types );
+	}
 }
