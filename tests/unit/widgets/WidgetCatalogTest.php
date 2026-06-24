@@ -52,4 +52,35 @@ class WidgetCatalogTest extends Ability_Test_Case {
 		$hits = \EMCP_Tools_Widget_Catalog::search('headline');
 		$this->assertArrayHasKey('heading', $hits, 'search "headline" should match heading via keywords/use_case');
 	}
+
+	/** @test */
+	public function test_free_tier_count(): void {
+		$this->assertCount( 27, \EMCP_Tools_Widget_Catalog::by_tier( 'free' ),
+			'Free tier must catalog exactly 27 widgets (one per free convenience tool).' );
+	}
+
+	/** @test */
+	public function test_pro_tier_count(): void {
+		$this->assertCount( 30, \EMCP_Tools_Widget_Catalog::by_tier( 'pro' ),
+			'Pro tier must catalog exactly 30 widgets.' );
+	}
+
+	/** @test */
+	public function test_woo_tier_count(): void {
+		$this->assertCount( 5, \EMCP_Tools_Widget_Catalog::by_tier( 'woo' ),
+			'Woo tier must catalog exactly 5 widgets.' );
+	}
+
+	/** @test */
+	public function test_every_entry_is_well_formed(): void {
+		foreach ( \EMCP_Tools_Widget_Catalog::get() as $type => $entry ) {
+			$this->assertIsString( $type );
+			$this->assertContains( $entry['tier'], array( 'free', 'pro', 'woo' ), "$type has a valid tier" );
+			$this->assertNotEmpty( $entry['title'], "$type has a title" );
+			$this->assertNotEmpty( $entry['use_case'], "$type has a use_case" );
+			$this->assertIsArray( $entry['params'], "$type has params" );
+			$this->assertIsArray( $entry['keywords'], "$type has keywords" );
+			$this->assertNotEmpty( $entry['keywords'], "$type has at least one keyword" );
+		}
+	}
 }
