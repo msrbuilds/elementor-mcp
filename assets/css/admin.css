@@ -299,21 +299,27 @@
  * ========================================================================= */
 
 .elementor-mcp-bulk-actions {
-	margin: 0 0 24px;
+	margin: 0 0 18px;
 	display: flex;
 	align-items: center;
+	justify-content: flex-end;
 	gap: 8px;
 }
 
 .elementor-mcp-bulk-actions .button {
-	padding: 6px 16px;
+	padding: 2px 16px;
 	font-size: 13px;
+	line-height: 1.9;
+	height: auto;
+	min-height: 0;
 	border-radius: var(--mcp-radius-sm);
 	transition: all var(--mcp-transition);
 }
 
+/* "Save Changes" sits with Enable/Disable on the right; a small gap sets it
+   apart from the bulk-toggle pair. */
 .elementor-mcp-bulk-actions .elementor-mcp-bulk-save {
-	margin-left: auto;
+	margin-left: 8px;
 }
 
 /* =========================================================================
