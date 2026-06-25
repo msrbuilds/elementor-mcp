@@ -30,9 +30,10 @@ class MediaToolsTest extends Ability_Test_Case {
 	/** @test */
 	public function test_registers_four_tools(): void {
 		$names = $this->ability->get_ability_names();
-		foreach ( array( 'list-media', 'get-media' ) as $slug ) {
+		foreach ( array( 'list-media', 'get-media', 'update-media', 'delete-media' ) as $slug ) {
 			$this->assertContains( 'emcp-tools/' . $slug, $names );
 		}
+		$this->assertCount( 4, $names );
 	}
 
 	/** @test */
@@ -78,5 +79,31 @@ class MediaToolsTest extends Ability_Test_Case {
 	/** @test */
 	public function test_update_media_requires_id(): void {
 		$this->assertWPError( $this->ability->execute_update_media( array( 'alt' => 'x' ) ), 'missing_params' );
+	}
+
+	/** @test */
+	public function test_delete_media_requires_confirm(): void {
+		$out = $this->ability->execute_delete_media( array( 'id' => 77 ) );
+		$this->assertWPError( $out, 'confirmation_required' );
+		$this->assertSame( array(), $GLOBALS['_wp_deleted_attachments'] );
+	}
+
+	/** @test */
+	public function test_delete_media_deletes_with_confirm_and_force(): void {
+		$out = $this->ability->execute_delete_media( array( 'id' => 77, 'confirm' => true, 'force' => true ) );
+		$this->assertNotWPError( $out );
+		$this->assertTrue( $out['success'] );
+		$this->assertSame( 'deleted', $out['deleted'] );
+		$this->assertSame( array( array( 'id' => 77, 'force' => true ) ), $GLOBALS['_wp_deleted_attachments'] );
+	}
+
+	/** @test */
+	public function test_delete_media_rejects_non_attachment(): void {
+		$this->assertWPError( $this->ability->execute_delete_media( array( 'id' => 88, 'confirm' => true ) ), 'not_an_attachment' );
+	}
+
+	/** @test */
+	public function test_delete_media_requires_id(): void {
+		$this->assertWPError( $this->ability->execute_delete_media( array( 'confirm' => true ) ), 'missing_params' );
 	}
 }

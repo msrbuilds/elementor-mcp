@@ -472,10 +472,58 @@ class EMCP_Tools_Media_Library_Abilities {
 	}
 
 	// -------------------------------------------------------------------------
-	// delete-media (stub — replaced in Task 4)
+	// delete-media
 	// -------------------------------------------------------------------------
 
-	private function register_delete_media(): void {}
+	private function register_delete_media(): void {
+		emcp_tools_register_ability(
+			'emcp-tools/delete-media',
+			array(
+				'label'               => __( 'Delete Media', 'emcp-tools' ),
+				'description'         => __( 'Deletes a Media Library attachment. DESTRUCTIVE and effectively permanent — WordPress bypasses Trash for media unless MEDIA_TRASH is defined. Requires confirm:true. Pass force:true to skip Trash even when MEDIA_TRASH is on.', 'emcp-tools' ),
+				'category'            => 'emcp-tools',
+				'execute_callback'    => array( $this, 'execute_delete_media' ),
+				'permission_callback' => array( $this, 'check_delete_permission' ),
+				'input_schema'        => array(
+					'type'       => 'object',
+					'properties' => array(
+						'id'      => array( 'type' => 'integer', 'description' => __( 'Attachment ID.', 'emcp-tools' ) ),
+						'confirm' => array( 'type' => 'boolean', 'description' => __( 'Must be true to proceed (acknowledges permanent deletion).', 'emcp-tools' ) ),
+						'force'   => array( 'type' => 'boolean', 'description' => __( 'Skip Trash even when MEDIA_TRASH is defined. Default: false.', 'emcp-tools' ) ),
+					),
+					'required'   => array( 'id', 'confirm' ),
+				),
+				'output_schema'       => array( 'type' => 'object', 'properties' => array(
+					'success' => array( 'type' => 'boolean' ), 'id' => array( 'type' => 'integer' ),
+					'deleted' => array( 'type' => 'string' ),
+				) ),
+				'meta'                => array( 'annotations' => array( 'readonly' => false, 'destructive' => true, 'idempotent' => false ), 'show_in_rest' => true ),
+			)
+		);
+	}
+
+	/**
+	 * @param array $input
+	 * @return array|\WP_Error
+	 */
+	public function execute_delete_media( $input ) {
+		$post = $this->resolve_attachment( $input['id'] ?? 0 );
+		if ( is_wp_error( $post ) ) {
+			return $post;
+		}
+		if ( true !== ( $input['confirm'] ?? null ) ) {
+			return new \WP_Error( 'confirmation_required', __( 'Deleting media is permanent on most sites (WordPress bypasses Trash unless MEDIA_TRASH is defined). Pass confirm:true to proceed.', 'emcp-tools' ) );
+		}
+		$id      = (int) $post->ID;
+		$force   = ! empty( $input['force'] );
+		$trashed = ! $force && defined( 'MEDIA_TRASH' ) && MEDIA_TRASH;
+		$res     = wp_delete_attachment( $id, $force );
+		return array(
+			'success' => (bool) $res,
+			'id'      => $id,
+			'deleted' => $trashed ? 'trashed' : 'deleted',
+		);
+	}
 
 	/**
 	 * Normalizes an attachment post into the tool's result shape.
