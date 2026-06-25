@@ -53,6 +53,9 @@ class EMCP_Tools_Media_Library_Abilities {
 	public function get_ability_names(): array {
 		return array(
 			'emcp-tools/list-media',
+			'emcp-tools/get-media',
+			'emcp-tools/update-media',
+			'emcp-tools/delete-media',
 		);
 	}
 
@@ -63,6 +66,9 @@ class EMCP_Tools_Media_Library_Abilities {
 	 */
 	public function register(): void {
 		$this->register_list_media();
+		$this->register_get_media();
+		$this->register_update_media();
+		$this->register_delete_media();
 	}
 
 	/**
@@ -253,6 +259,275 @@ class EMCP_Tools_Media_Library_Abilities {
 			'page_count'   => (int) $query->max_num_pages,
 			'total'        => (int) $query->found_posts,
 			'results'      => $results,
+		);
+	}
+
+	/**
+	 * Edit permission for a specific attachment (attachments are posts).
+	 *
+	 * @since 3.0.0
+	 * @param array|null $input Tool input; may carry an `id`.
+	 * @return bool
+	 */
+	public function check_edit_permission( $input = null ): bool {
+		$id = absint( $input['id'] ?? 0 );
+		return $id ? current_user_can( 'edit_post', $id ) : current_user_can( 'edit_posts' );
+	}
+
+	/**
+	 * Delete permission for a specific attachment.
+	 *
+	 * @since 3.0.0
+	 * @param array|null $input Tool input; may carry an `id`.
+	 * @return bool
+	 */
+	public function check_delete_permission( $input = null ): bool {
+		$id = absint( $input['id'] ?? 0 );
+		return $id ? current_user_can( 'delete_post', $id ) : current_user_can( 'delete_posts' );
+	}
+
+	/**
+	 * Resolve an id to an attachment post, or a WP_Error.
+	 *
+	 * @since 3.0.0
+	 * @param mixed $raw
+	 * @return object|\WP_Error WP_Post-like on success.
+	 */
+	private function resolve_attachment( $raw ) {
+		$id = absint( $raw );
+		if ( ! $id ) {
+			return new \WP_Error( 'missing_params', __( 'An attachment "id" is required.', 'emcp-tools' ) );
+		}
+		$post = get_post( $id );
+		if ( ! $post ) {
+			return new \WP_Error( 'attachment_not_found', __( 'Attachment not found.', 'emcp-tools' ) );
+		}
+		if ( 'attachment' !== ( $post->post_type ?? '' ) ) {
+			return new \WP_Error( 'not_an_attachment', __( 'That ID is not a media attachment.', 'emcp-tools' ) );
+		}
+		return $post;
+	}
+
+	// -------------------------------------------------------------------------
+	// get-media
+	// -------------------------------------------------------------------------
+
+	private function register_get_media(): void {
+		emcp_tools_register_ability(
+			'emcp-tools/get-media',
+			array(
+				'label'               => __( 'Get Media', 'emcp-tools' ),
+				'description'         => __( 'Returns full detail for one Media Library attachment: title, URL, every registered image size (url + dimensions), mime type, filesize, alt text, caption, description, and raw attachment metadata. The single-item complement to list-media.', 'emcp-tools' ),
+				'category'            => 'emcp-tools',
+				'execute_callback'    => array( $this, 'execute_get_media' ),
+				'permission_callback' => array( $this, 'check_read_permission' ),
+				'input_schema'        => array(
+					'type'       => 'object',
+					'properties' => array( 'id' => array( 'type' => 'integer', 'description' => __( 'Attachment ID.', 'emcp-tools' ) ) ),
+					'required'   => array( 'id' ),
+				),
+				'output_schema'       => array( 'type' => 'object', 'properties' => array(
+					'id' => array( 'type' => 'integer' ), 'title' => array( 'type' => 'string' ),
+					'slug' => array( 'type' => 'string' ), 'url' => array( 'type' => 'string' ),
+					'mime_type' => array( 'type' => 'string' ), 'filesize' => array( 'type' => 'integer' ),
+					'alt' => array( 'type' => 'string' ), 'caption' => array( 'type' => 'string' ),
+					'description' => array( 'type' => 'string' ), 'date' => array( 'type' => 'string' ),
+					'author' => array( 'type' => 'object' ), 'post_parent' => array( 'type' => 'integer' ),
+					'width' => array( 'type' => 'integer' ), 'height' => array( 'type' => 'integer' ),
+					'sizes' => array( 'type' => 'object' ), 'metadata' => array( 'type' => 'object' ),
+				) ),
+				'meta'                => array( 'annotations' => array( 'readonly' => true, 'destructive' => false, 'idempotent' => true ), 'show_in_rest' => true ),
+			)
+		);
+	}
+
+	/**
+	 * @param array $input
+	 * @return array|\WP_Error
+	 */
+	public function execute_get_media( $input ) {
+		$post = $this->resolve_attachment( $input['id'] ?? 0 );
+		if ( is_wp_error( $post ) ) {
+			return $post;
+		}
+		$id   = (int) $post->ID;
+		$meta = wp_get_attachment_metadata( $id );
+		$meta = is_array( $meta ) ? $meta : array();
+
+		$sizes = array();
+		if ( ! empty( $meta['sizes'] ) && is_array( $meta['sizes'] ) ) {
+			foreach ( array_keys( $meta['sizes'] ) as $size ) {
+				$src = wp_get_attachment_image_src( $id, $size );
+				if ( is_array( $src ) ) {
+					$sizes[ $size ] = array( 'url' => (string) $src[0], 'width' => (int) $src[1], 'height' => (int) $src[2] );
+				}
+			}
+		}
+
+		$author_id  = (int) ( $post->post_author ?? 0 );
+		$author_obj = $author_id && function_exists( 'get_userdata' ) ? get_userdata( $author_id ) : null;
+
+		$filesize = 0;
+		if ( isset( $meta['filesize'] ) ) {
+			$filesize = (int) $meta['filesize'];
+		}
+
+		return array(
+			'id'          => $id,
+			'title'       => (string) $post->post_title,
+			'slug'        => (string) $post->post_name,
+			'url'         => (string) wp_get_attachment_url( $id ),
+			'mime_type'   => (string) ( $post->post_mime_type ?? '' ),
+			'filesize'    => $filesize,
+			'alt'         => (string) get_post_meta( $id, '_wp_attachment_image_alt', true ),
+			'caption'     => (string) $post->post_excerpt,
+			'description' => (string) $post->post_content,
+			'date'        => (string) ( $post->post_date ?? '' ),
+			'author'      => array( 'id' => $author_id, 'name' => $author_obj ? (string) $author_obj->display_name : '' ),
+			'post_parent' => (int) ( $post->post_parent ?? 0 ),
+			'width'       => isset( $meta['width'] ) ? (int) $meta['width'] : 0,
+			'height'      => isset( $meta['height'] ) ? (int) $meta['height'] : 0,
+			'sizes'       => $sizes,
+			'metadata'    => $meta,
+		);
+	}
+
+	// -------------------------------------------------------------------------
+	// update-media
+	// -------------------------------------------------------------------------
+
+	private function register_update_media(): void {
+		emcp_tools_register_ability(
+			'emcp-tools/update-media',
+			array(
+				'label'               => __( 'Update Media', 'emcp-tools' ),
+				'description'         => __( 'Updates an existing attachment\'s metadata: title, alt text, caption, and/or description. Only the fields you pass change. Great for fixing missing alt text (accessibility/SEO) on images already in the library.', 'emcp-tools' ),
+				'category'            => 'emcp-tools',
+				'execute_callback'    => array( $this, 'execute_update_media' ),
+				'permission_callback' => array( $this, 'check_edit_permission' ),
+				'input_schema'        => array(
+					'type'       => 'object',
+					'properties' => array(
+						'id'          => array( 'type' => 'integer', 'description' => __( 'Attachment ID.', 'emcp-tools' ) ),
+						'title'       => array( 'type' => 'string' ),
+						'alt'         => array( 'type' => 'string', 'description' => __( 'Alt text (accessibility).', 'emcp-tools' ) ),
+						'caption'     => array( 'type' => 'string' ),
+						'description' => array( 'type' => 'string' ),
+					),
+					'required'   => array( 'id' ),
+				),
+				'output_schema'       => array( 'type' => 'object', 'properties' => array(
+					'id' => array( 'type' => 'integer' ), 'updated' => array( 'type' => 'array', 'items' => array( 'type' => 'string' ) ),
+					'alt' => array( 'type' => 'string' ), 'title' => array( 'type' => 'string' ),
+					'caption' => array( 'type' => 'string' ), 'description' => array( 'type' => 'string' ),
+				) ),
+				'meta'                => array( 'annotations' => array( 'readonly' => false, 'destructive' => false, 'idempotent' => false ), 'show_in_rest' => true ),
+			)
+		);
+	}
+
+	/**
+	 * @param array $input
+	 * @return array|\WP_Error
+	 */
+	public function execute_update_media( $input ) {
+		$post = $this->resolve_attachment( $input['id'] ?? 0 );
+		if ( is_wp_error( $post ) ) {
+			return $post;
+		}
+		$id      = (int) $post->ID;
+		$updated = array();
+
+		$postarr = array( 'ID' => $id );
+		if ( array_key_exists( 'title', $input ) ) {
+			$postarr['post_title'] = sanitize_text_field( (string) $input['title'] );
+			$updated[]             = 'title';
+		}
+		if ( array_key_exists( 'caption', $input ) ) {
+			$postarr['post_excerpt'] = sanitize_text_field( (string) $input['caption'] );
+			$updated[]               = 'caption';
+		}
+		if ( array_key_exists( 'description', $input ) ) {
+			// Description maps to post_content, which allows HTML by design;
+			// wp_update_post applies wp_filter_post_kses for users without
+			// unfiltered_html. Do NOT sanitize_text_field this (it would strip
+			// legitimate markup) — title/caption are plain-text, so they are.
+			$postarr['post_content'] = (string) $input['description'];
+			$updated[]               = 'description';
+		}
+		if ( count( $postarr ) > 1 ) {
+			$res = wp_update_post( wp_slash( $postarr ), true );
+			if ( is_wp_error( $res ) ) {
+				return $res;
+			}
+		}
+		if ( array_key_exists( 'alt', $input ) ) {
+			update_post_meta( $id, '_wp_attachment_image_alt', sanitize_text_field( (string) $input['alt'] ) );
+			$updated[] = 'alt';
+		}
+
+		$fresh = get_post( $id );
+		return array(
+			'id'          => $id,
+			'updated'     => $updated,
+			'alt'         => (string) get_post_meta( $id, '_wp_attachment_image_alt', true ),
+			'title'       => (string) ( $fresh->post_title ?? $post->post_title ),
+			'caption'     => (string) ( $fresh->post_excerpt ?? $post->post_excerpt ),
+			'description' => (string) ( $fresh->post_content ?? $post->post_content ),
+		);
+	}
+
+	// -------------------------------------------------------------------------
+	// delete-media
+	// -------------------------------------------------------------------------
+
+	private function register_delete_media(): void {
+		emcp_tools_register_ability(
+			'emcp-tools/delete-media',
+			array(
+				'label'               => __( 'Delete Media', 'emcp-tools' ),
+				'description'         => __( 'Deletes a Media Library attachment. DESTRUCTIVE and effectively permanent — WordPress bypasses Trash for media unless MEDIA_TRASH is defined. Requires confirm:true. Pass force:true to skip Trash even when MEDIA_TRASH is on.', 'emcp-tools' ),
+				'category'            => 'emcp-tools',
+				'execute_callback'    => array( $this, 'execute_delete_media' ),
+				'permission_callback' => array( $this, 'check_delete_permission' ),
+				'input_schema'        => array(
+					'type'       => 'object',
+					'properties' => array(
+						'id'      => array( 'type' => 'integer', 'description' => __( 'Attachment ID.', 'emcp-tools' ) ),
+						'confirm' => array( 'type' => 'boolean', 'description' => __( 'Must be true to proceed (acknowledges permanent deletion).', 'emcp-tools' ) ),
+						'force'   => array( 'type' => 'boolean', 'description' => __( 'Skip Trash even when MEDIA_TRASH is defined. Default: false.', 'emcp-tools' ) ),
+					),
+					'required'   => array( 'id', 'confirm' ),
+				),
+				'output_schema'       => array( 'type' => 'object', 'properties' => array(
+					'success' => array( 'type' => 'boolean' ), 'id' => array( 'type' => 'integer' ),
+					'deleted' => array( 'type' => 'string' ),
+				) ),
+				'meta'                => array( 'annotations' => array( 'readonly' => false, 'destructive' => true, 'idempotent' => false ), 'show_in_rest' => true ),
+			)
+		);
+	}
+
+	/**
+	 * @param array $input
+	 * @return array|\WP_Error
+	 */
+	public function execute_delete_media( $input ) {
+		$post = $this->resolve_attachment( $input['id'] ?? 0 );
+		if ( is_wp_error( $post ) ) {
+			return $post;
+		}
+		if ( true !== ( $input['confirm'] ?? null ) ) {
+			return new \WP_Error( 'confirmation_required', __( 'Deleting media is permanent on most sites (WordPress bypasses Trash unless MEDIA_TRASH is defined). Pass confirm:true to proceed.', 'emcp-tools' ) );
+		}
+		$id      = (int) $post->ID;
+		$force   = ! empty( $input['force'] );
+		$trashed = ! $force && defined( 'MEDIA_TRASH' ) && MEDIA_TRASH;
+		$res     = wp_delete_attachment( $id, $force );
+		return array(
+			'success' => (bool) $res,
+			'id'      => $id,
+			'deleted' => $trashed ? 'trashed' : 'deleted',
 		);
 	}
 

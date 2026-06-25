@@ -9,7 +9,7 @@
  * `_elementor_data`. To edit an Elementor-built page, use the Elementor tools.
  *
  * @package EMCP_Tools
- * @since   3.1.0
+ * @since   3.0.0
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -19,7 +19,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * Registers and implements the WordPress content abilities.
  *
- * @since 3.1.0
+ * @since 3.0.0
  */
 class EMCP_Tools_Content_Abilities {
 
@@ -30,7 +30,7 @@ class EMCP_Tools_Content_Abilities {
 	 * reports only the tools that exist this build — no phantom names leak to
 	 * the MCP server's create_server() call.
 	 *
-	 * @since 3.1.0
+	 * @since 3.0.0
 	 * @var string[]
 	 */
 	private $ability_names = array();
@@ -38,7 +38,7 @@ class EMCP_Tools_Content_Abilities {
 	/**
 	 * Returns the names of all abilities registered by this group.
 	 *
-	 * @since 3.1.0
+	 * @since 3.0.0
 	 * @return string[]
 	 */
 	public function get_ability_names(): array {
@@ -48,7 +48,7 @@ class EMCP_Tools_Content_Abilities {
 	/**
 	 * Registers this group's MCP abilities.
 	 *
-	 * @since 3.1.0
+	 * @since 3.0.0
 	 */
 	public function register(): void {
 		$this->register_list_post_types();
@@ -68,7 +68,7 @@ class EMCP_Tools_Content_Abilities {
 	/**
 	 * Read/query permission: the user must be able to edit posts.
 	 *
-	 * @since 3.1.0
+	 * @since 3.0.0
 	 * @return bool
 	 */
 	public function check_read_permission(): bool {
@@ -82,7 +82,7 @@ class EMCP_Tools_Content_Abilities {
 	 * authoring new posts; publishing is gated separately at save time. The
 	 * read==create cap is therefore intentional, not an oversight.
 	 *
-	 * @since 3.1.0
+	 * @since 3.0.0
 	 * @return bool
 	 */
 	public function check_create_permission(): bool {
@@ -92,7 +92,7 @@ class EMCP_Tools_Content_Abilities {
 	/**
 	 * Edit permission: `edit_posts` plus per-post ownership when a post_id is given.
 	 *
-	 * @since 3.1.0
+	 * @since 3.0.0
 	 * @param array|null $input Tool input; may carry a `post_id`.
 	 * @return bool
 	 */
@@ -107,7 +107,7 @@ class EMCP_Tools_Content_Abilities {
 	/**
 	 * Delete permission: `delete_posts` plus per-post ownership when a post_id is given.
 	 *
-	 * @since 3.1.0
+	 * @since 3.0.0
 	 * @param array|null $input Tool input; may carry a `post_id`.
 	 * @return bool
 	 */

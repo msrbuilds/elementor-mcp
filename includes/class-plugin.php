@@ -244,6 +244,22 @@ class EMCP_Tools_Plugin {
 			'emcp-tools/list-posts',
 			'emcp-tools/delete-post',
 			'emcp-tools/set-post-terms',
+
+			// WordPress settings (2) — curated site-settings read/update.
+			'emcp-tools/get-settings',
+			'emcp-tools/update-settings',
+
+			// WordPress plugins & themes (2 reads — writes opt-in only).
+			'emcp-tools/list-plugins',
+			'emcp-tools/list-themes',
+
+			// WordPress media (2 — detail read + metadata edit; delete is opt-in).
+			'emcp-tools/get-media',
+			'emcp-tools/update-media',
+
+			// WordPress users (2 reads — writes opt-in only).
+			'emcp-tools/list-users',
+			'emcp-tools/get-user',
 		);
 	}
 

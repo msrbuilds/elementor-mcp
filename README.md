@@ -29,13 +29,17 @@ A WordPress plugin that extends the [WordPress MCP Adapter](https://github.com/W
 
 ## Features
 
-- **A focused MCP toolset** covering the full Elementor page-building workflow — and, as of v3.1.0, growing beyond Elementor into general WordPress content management. As of v3.0.0 the 62 per-widget tools were folded into a catalog-backed model, so the active surface is much smaller — every widget is still reachable via discover → inspect → act. Counts scale with your environment (the v3.1.0 numbers below add the 8 WordPress Content tools + 3 surfaced core abilities, all enabled by default — estimates pending a fresh live count):
-  - ~55 tools — free Elementor only
-  - ~69 tools — free Elementor + Elementor 4.0 atomic elements
-  - ~81 tools — with Elementor Pro
-  - ~95 tools — with Elementor Pro + Elementor 4.0 (and + WooCommerce, which adds no new tools)
+- **A focused MCP toolset** covering the full Elementor page-building workflow — and, as of v3.0.0, growing beyond Elementor into general WordPress content and site management (content, settings, plugins, and themes). As of v3.0.0 the 62 per-widget tools were folded into a catalog-backed model, so the active surface is much smaller — every widget is still reachable via discover → inspect → act. Counts scale with your environment (the v3.0.0 numbers below add the 8 WordPress Content tools + 3 surfaced core abilities + 2 Settings tools + 13 Plugins & Themes tools, of which 4 read/search tools are enabled by default and 9 mutation tools ship disabled-by-default — estimates pending a fresh live count):
+  - ~57 tools — free Elementor only
+  - ~71 tools — free Elementor + Elementor 4.0 atomic elements
+  - ~83 tools — with Elementor Pro
+  - ~97 tools — with Elementor Pro + Elementor 4.0 (and + WooCommerce, which adds no new tools)
   - ~21 of these (SEO & Accessibility, Widget Builder, PHP Snippets) ship **disabled-by-default**, so the typical active surface is smaller
 - **WordPress Content (beyond Elementor)** — Create and manage posts, pages, and any custom post type — content, status, taxonomy terms, custom fields, and featured images — via MCP, without touching Elementor data. Built on WP core; every post carries an `is_elementor` flag that steers agents to the Elementor tools for builder pages
+- **WordPress Settings (beyond Elementor, domain 2)** — Read and batch-update core WordPress settings (general/reading/writing/discussion/media/permalinks) over MCP. Curated allowlist only — no arbitrary option access; `admin_email` is read-only; permalink changes auto-flush rewrite rules. `manage_options`. (v3.0.0)
+- **Plugins & Themes (beyond Elementor, domain 3)** — Discover, install (wordpress.org only), update, activate/deactivate, and delete plugins and themes over MCP. Strong guardrails (EMCP Tools + Elementor protected; per-op capability gating; direct-filesystem-only); the 9 mutation tools ship disabled-by-default. `manage_options`-class capabilities. (v3.0.0)
+- **Media Library (beyond Elementor, domain 4)** — Fetch full attachment detail (`get-media`: every registered size, dimensions, metadata, alt/caption/description), edit metadata (`update-media`: alt text, title, caption, description — a one-call accessibility/SEO fix), and delete attachments (`delete-media`: destructive and effectively permanent; disabled-by-default and requires `confirm:true`). URL uploads continue via `sideload-image`. (v3.0.0)
+- **Users (beyond Elementor, domain 5)** — List and read WordPress users, and safely create/edit non-admin profiles over MCP. Hard guardrails: no delete-user and no role-change tool; `create-user` assigns only non-admin roles and auto-generates a strong password (emailed to the new user — never returned); `update-user` edits profile fields only and refuses any user with admin-level capabilities (administrators are off-limits). `list-users`/`get-user` are enabled by default; `create-user`/`update-user` are disabled-by-default. (v3.0.0)
 - **Query & Discovery** — List widgets, inspect page structures, read element settings, browse templates, view global design tokens
 - **Page Management** — Create pages, update settings, clear content, import/export templates
 - **Layout Tools** — Add flexbox containers, move/remove/duplicate elements, update containers, find elements, batch update, reorder children, get container schema
@@ -253,7 +257,7 @@ npx @modelcontextprotocol/inspector wp mcp-adapter serve \
 | `list-templates` | Saved Elementor templates from the template library |
 | `get-global-settings` | Active kit/global settings (colors, typography, spacing) |
 
-### WordPress Content — beyond Elementor (8 tools, v3.1.0)
+### WordPress Content — beyond Elementor (8 tools, v3.0.0)
 
 General WordPress content management over MCP — built on WordPress core, these tools **never touch Elementor data**. Every returned post carries an `is_elementor` flag so an agent knows to switch to the Elementor tools for builder pages. Enabled by default; capability-gated. Featured image and custom-field meta are parameters of create/update.
 
@@ -269,6 +273,56 @@ General WordPress content management over MCP — built on WordPress core, these
 | `set-post-terms` | Assign taxonomy terms to a post |
 
 > WordPress core's read-only context abilities (`core/get-site-info`, `core/get-user-info`, `core/get-environment-info`) are also surfaced on the EMCP server.
+
+### WordPress Settings — beyond Elementor, domain 2 (2 tools, v3.0.0)
+
+Core WordPress settings management over MCP — curated allowlist of general/reading/writing/discussion/media/permalink settings. `get-settings` doubles as discovery (returns each setting's type, label, enum options, and writable flag). `update-settings` batch-writes allowlisted keys and reports rejects in `skipped[]` without aborting the batch; permalink changes auto-flush rewrite rules. Both require `manage_options`. Safety: curated allowlist only — no arbitrary option access; `siteurl`/`home` and `users_can_register`/`default_role` are excluded; `admin_email` is read-only.
+
+| Tool | Description |
+|---|---|
+| `get-settings` | Read allowlisted WordPress settings across all groups; doubles as discovery (read-only, `manage_options`) |
+| `update-settings` | Batch-update allowlisted settings; rejects reported in `skipped[]`; permalink changes auto-flush rewrite rules (`manage_options`) |
+
+### WordPress Plugins & Themes — beyond Elementor, domain 3 (13 tools, v3.0.0)
+
+Discover and manage WordPress plugins and themes over MCP — built on WP core upgrader APIs. Installs are wordpress.org-only (by slug; no arbitrary URLs). Guardrails: EMCP Tools and Elementor can never be deactivated or deleted; the active plugin/theme is protected from deletion; install/update/delete require a directly-writable filesystem (clear error instead of an FTP hang). The 4 read/search tools are **enabled by default**; the **9 mutation tools ship disabled-by-default** (admin opts in on the Tools tab).
+
+| Tool | Description |
+|---|---|
+| `list-plugins` | List installed plugins with active/inactive status, version, update-available flag, and protected marker (read-only, `activate_plugins`) |
+| `search-plugins` | Search the wordpress.org plugin directory by keyword — returns slug, name, version, rating, requirements (read-only, `install_plugins`) |
+| `install-plugin` | Install a plugin from wordpress.org by slug; optionally activate after install (`install_plugins`) |
+| `activate-plugin` | Activate an installed plugin by file path or slug (`activate_plugins`) |
+| `deactivate-plugin` | Deactivate a plugin; refuses to deactivate EMCP Tools or Elementor (`activate_plugins`) |
+| `update-plugin` | Update an installed plugin to the latest wordpress.org version; reports up-to-date when no update is pending (`update_plugins`) |
+| `delete-plugin` | Permanently delete an inactive, unprotected plugin (`delete_plugins`) |
+| `list-themes` | List installed themes with active status, version, update-available flag, and whether it is protected (read-only, `switch_themes`) |
+| `search-themes` | Search the wordpress.org theme directory by keyword (read-only, `install_themes`) |
+| `install-theme` | Install a theme from wordpress.org by slug (`install_themes`) |
+| `switch-theme` | Switch the active theme by stylesheet slug (`switch_themes`) |
+| `update-theme` | Update an installed theme to the latest wordpress.org version (`update_themes`) |
+| `delete-theme` | Permanently delete an inactive, unprotected theme (`delete_themes`) |
+
+### WordPress Media Library — beyond Elementor, domain 4 (3 tools, v3.0.0)
+
+Manage existing Media Library attachments over MCP — built on WP core attachment functions. `get-media` and `update-media` are **enabled by default**; `delete-media` ships **disabled-by-default** and additionally requires an explicit `confirm:true` (destructive and effectively permanent — WordPress bypasses Trash for media unless `MEDIA_TRASH` is defined). URL uploads continue to use the existing `sideload-image`.
+
+| Tool | Description |
+|---|---|
+| `get-media` | Full detail for one attachment — every registered image size (URL + dimensions), mime type, filesize, alt text, caption, description, and raw attachment metadata (read-only, `edit_posts`) |
+| `update-media` | Edit an attachment's title, alt text, caption, and/or description — only the fields you pass change (`edit_post` on ID) |
+| `delete-media` | Delete an attachment; **destructive and effectively permanent**; disabled-by-default; requires `confirm:true`; pass `force:true` to skip Trash even when `MEDIA_TRASH` is defined (`delete_post` on ID) |
+
+### WordPress Users — beyond Elementor, domain 5 (4 tools, v3.0.0)
+
+Safe user management over MCP — built on WP core user functions (`WP_User_Query`, `wp_insert_user`, `wp_update_user`). Guardrails: `create-user` only assigns non-admin roles and auto-generates a strong password (emailed to the new user via `wp_send_new_user_notifications` — the password is **never returned**); `update-user` edits profile fields only (no role or password changes) and refuses any user whose capabilities include `manage_options`, `promote_users`, `edit_users`, `delete_users`, or `manage_network`. There is deliberately no delete-user and no role-change tool. `list-users`/`get-user` are **enabled by default** (`list_users` cap); `create-user`/`update-user` ship **disabled-by-default** (admin opts in on the Tools tab).
+
+| Tool | Description |
+|---|---|
+| `list-users` | List WordPress users; filter by role or search text; paginated. Returns id, username, display name, email, roles, registration date, and post count. Never returns passwords or auth data (read-only, `list_users`) |
+| `get-user` | Full profile detail for one user — adds first/last name, nickname, URL, description, and an `is_admin` flag (true users are off-limits to `update-user`) (read-only, `list_users`) |
+| `create-user` | Create a new non-admin WordPress user. A strong password is auto-generated and emailed; the password is never returned. Role defaults to `subscriber`; administrator and any admin-grade role are refused (`create_users`) |
+| `update-user` | Update a non-admin user's profile (email, first/last name, display name, nickname, URL, description). Cannot change roles or passwords; refuses any user with admin-level capabilities (`edit_users`) |
 
 ### Page Management (5 tools)
 

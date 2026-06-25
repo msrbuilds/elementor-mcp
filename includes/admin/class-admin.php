@@ -161,7 +161,7 @@ class EMCP_Tools_Admin {
 	 *
 	 * @since 1.8.0
 	 */
-	const DEFAULTS_VERSION = 5;
+	const DEFAULTS_VERSION = 8;
 
 	/**
 	 * SEO/A11y Pro MCP tool slugs that ship disabled-by-default (v2 defaults).
@@ -222,6 +222,53 @@ class EMCP_Tools_Admin {
 	}
 
 	/**
+	 * The 9 Plugins & Themes mutation tool slugs. Powerful (install/delete/
+	 * activate), so they ship disabled-by-default; reads stay enabled. The admin
+	 * opts in on the Tools tab.
+	 *
+	 * @since 3.0.0
+	 *
+	 * @return string[]
+	 */
+	public static function package_write_tool_slugs(): array {
+		return array(
+			'emcp-tools/install-plugin',
+			'emcp-tools/activate-plugin',
+			'emcp-tools/deactivate-plugin',
+			'emcp-tools/update-plugin',
+			'emcp-tools/delete-plugin',
+			'emcp-tools/install-theme',
+			'emcp-tools/switch-theme',
+			'emcp-tools/update-theme',
+			'emcp-tools/delete-theme',
+		);
+	}
+
+	/**
+	 * Media tool slugs that ship disabled-by-default. Only delete-media (the
+	 * destructive, effectively-permanent op); get-media / update-media stay on.
+	 *
+	 * @since 3.0.0
+	 *
+	 * @return string[]
+	 */
+	public static function media_write_tool_slugs(): array {
+		return array( 'emcp-tools/delete-media' );
+	}
+
+	/**
+	 * Users mutation tool slugs that ship disabled-by-default. The reads
+	 * (list-users/get-user) stay enabled. The admin opts in on the Tools tab.
+	 *
+	 * @since 3.0.0
+	 *
+	 * @return string[]
+	 */
+	public static function user_write_tool_slugs(): array {
+		return array( 'emcp-tools/create-user', 'emcp-tools/update-user' );
+	}
+
+	/**
 	 * Seeds default disabled-tools on install/upgrade so new Pro tool batches
 	 * ship off-by-default (keeping sites under client tool caps), then records
 	 * the applied version. Each version step adds ONLY its newly-introduced
@@ -276,6 +323,22 @@ class EMCP_Tools_Admin {
 		// (it only registers when Elementor Pro is active anyway).
 		if ( $applied < 5 ) {
 			$existing = array_values( array_diff( $existing, self::removed_widget_tool_slugs() ) );
+		}
+
+		// v6 — Plugins & Themes mutation tools ship disabled-by-default
+		// (powerful: install/activate/deactivate/update/delete). Reads stay on.
+		if ( $applied < 6 ) {
+			$add = array_merge( $add, self::package_write_tool_slugs() );
+		}
+
+		// v7 — delete-media ships disabled-by-default (permanent deletion).
+		if ( $applied < 7 ) {
+			$add = array_merge( $add, self::media_write_tool_slugs() );
+		}
+
+		// v8 — Users mutation tools ship disabled-by-default (account changes).
+		if ( $applied < 8 ) {
+			$add = array_merge( $add, self::user_write_tool_slugs() );
 		}
 
 		$merged = array_values( array_unique( array_merge( $existing, $add ) ) );
@@ -1142,6 +1205,116 @@ class EMCP_Tools_Admin {
 					),
 				),
 			),
+			'wp_settings'      => array(
+				'label' => __( 'WordPress Settings', 'emcp-tools' ),
+				'tools' => array(
+					'emcp-tools/get-settings'    => array(
+						'label'       => __( 'Get Settings', 'emcp-tools' ),
+						'description' => __( 'Reads curated site settings (general, reading, writing, discussion, media, permalinks).', 'emcp-tools' ),
+						'badges'      => array( 'read-only' ),
+					),
+					'emcp-tools/update-settings' => array(
+						'label'       => __( 'Update Settings', 'emcp-tools' ),
+						'description' => __( 'Updates curated site settings; auto-flushes rewrite rules on permalink changes.', 'emcp-tools' ),
+						'badges'      => array(),
+					),
+				),
+			),
+			'wp_packages'      => array(
+				'label' => __( 'Plugins & Themes', 'emcp-tools' ),
+				'tools' => array(
+					'emcp-tools/list-plugins'      => array(
+						'label'       => __( 'List Plugins', 'emcp-tools' ),
+						'description' => __( 'Lists installed plugins, status, versions, and updates.', 'emcp-tools' ),
+						'badges'      => array( 'read-only' ),
+					),
+					'emcp-tools/search-plugins'    => array(
+						'label'       => __( 'Search Plugins', 'emcp-tools' ),
+						'description' => __( 'Searches the wordpress.org plugin directory.', 'emcp-tools' ),
+						'badges'      => array( 'read-only' ),
+					),
+					'emcp-tools/install-plugin'    => array(
+						'label'       => __( 'Install Plugin', 'emcp-tools' ),
+						'description' => __( 'Installs a plugin from wordpress.org by slug.', 'emcp-tools' ),
+						'badges'      => array(),
+					),
+					'emcp-tools/activate-plugin'   => array(
+						'label'       => __( 'Activate Plugin', 'emcp-tools' ),
+						'description' => __( 'Activates an installed plugin.', 'emcp-tools' ),
+						'badges'      => array(),
+					),
+					'emcp-tools/deactivate-plugin' => array(
+						'label'       => __( 'Deactivate Plugin', 'emcp-tools' ),
+						'description' => __( 'Deactivates a plugin (never EMCP Tools or Elementor).', 'emcp-tools' ),
+						'badges'      => array(),
+					),
+					'emcp-tools/update-plugin'     => array(
+						'label'       => __( 'Update Plugin', 'emcp-tools' ),
+						'description' => __( 'Updates a plugin to the latest wordpress.org version.', 'emcp-tools' ),
+						'badges'      => array(),
+					),
+					'emcp-tools/delete-plugin'     => array(
+						'label'       => __( 'Delete Plugin', 'emcp-tools' ),
+						'description' => __( 'Permanently deletes an inactive plugin.', 'emcp-tools' ),
+						'badges'      => array( 'destructive' ),
+					),
+					'emcp-tools/list-themes'       => array(
+						'label'       => __( 'List Themes', 'emcp-tools' ),
+						'description' => __( 'Lists installed themes, active status, and updates.', 'emcp-tools' ),
+						'badges'      => array( 'read-only' ),
+					),
+					'emcp-tools/search-themes'     => array(
+						'label'       => __( 'Search Themes', 'emcp-tools' ),
+						'description' => __( 'Searches the wordpress.org theme directory.', 'emcp-tools' ),
+						'badges'      => array( 'read-only' ),
+					),
+					'emcp-tools/install-theme'     => array(
+						'label'       => __( 'Install Theme', 'emcp-tools' ),
+						'description' => __( 'Installs a theme from wordpress.org by slug.', 'emcp-tools' ),
+						'badges'      => array(),
+					),
+					'emcp-tools/switch-theme'      => array(
+						'label'       => __( 'Switch Theme', 'emcp-tools' ),
+						'description' => __( 'Activates an installed theme.', 'emcp-tools' ),
+						'badges'      => array(),
+					),
+					'emcp-tools/update-theme'      => array(
+						'label'       => __( 'Update Theme', 'emcp-tools' ),
+						'description' => __( 'Updates a theme to the latest wordpress.org version.', 'emcp-tools' ),
+						'badges'      => array(),
+					),
+					'emcp-tools/delete-theme'      => array(
+						'label'       => __( 'Delete Theme', 'emcp-tools' ),
+						'description' => __( 'Permanently deletes an inactive theme.', 'emcp-tools' ),
+						'badges'      => array( 'destructive' ),
+					),
+				),
+			),
+			'wp_users'         => array(
+				'label' => __( 'Users', 'emcp-tools' ),
+				'tools' => array(
+					'emcp-tools/list-users'   => array(
+						'label'       => __( 'List Users', 'emcp-tools' ),
+						'description' => __( 'Lists users (admin-only); filter by role/search.', 'emcp-tools' ),
+						'badges'      => array( 'read-only' ),
+					),
+					'emcp-tools/get-user'     => array(
+						'label'       => __( 'Get User', 'emcp-tools' ),
+						'description' => __( 'Returns one user\'s profile detail.', 'emcp-tools' ),
+						'badges'      => array( 'read-only' ),
+					),
+					'emcp-tools/create-user'  => array(
+						'label'       => __( 'Create User', 'emcp-tools' ),
+						'description' => __( 'Creates a non-admin user; auto-password + email.', 'emcp-tools' ),
+						'badges'      => array(),
+					),
+					'emcp-tools/update-user'  => array(
+						'label'       => __( 'Update User', 'emcp-tools' ),
+						'description' => __( 'Edits a non-admin user\'s profile (no role/password; admins refused).', 'emcp-tools' ),
+						'badges'      => array(),
+					),
+				),
+			),
 			'page'             => array(
 				'label' => __( 'Page Management', 'emcp-tools' ),
 				'tools' => array(
@@ -1324,6 +1497,21 @@ class EMCP_Tools_Admin {
 						'label'       => __( 'List Media', 'emcp-tools' ),
 						'description' => __( 'Lists and searches images already in the WordPress Media Library (the site\'s own uploads).', 'emcp-tools' ),
 						'badges'      => array( 'read-only' ),
+					),
+					'emcp-tools/get-media'        => array(
+						'label'       => __( 'Get Media', 'emcp-tools' ),
+						'description' => __( 'Full detail of one attachment (sizes, metadata, alt/caption).', 'emcp-tools' ),
+						'badges'      => array( 'read-only' ),
+					),
+					'emcp-tools/update-media'     => array(
+						'label'       => __( 'Update Media', 'emcp-tools' ),
+						'description' => __( 'Edit an attachment\'s alt text, title, caption, description.', 'emcp-tools' ),
+						'badges'      => array(),
+					),
+					'emcp-tools/delete-media'     => array(
+						'label'       => __( 'Delete Media', 'emcp-tools' ),
+						'description' => __( 'Delete an attachment (permanent; requires confirm).', 'emcp-tools' ),
+						'badges'      => array( 'destructive' ),
 					),
 					'emcp-tools/search-images'    => array(
 						'label'       => __( 'Search Images', 'emcp-tools' ),

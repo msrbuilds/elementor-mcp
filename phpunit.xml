@@ -26,6 +26,21 @@
         <testsuite name="Widgets">
             <directory>tests/unit/widgets</directory>
         </testsuite>
+        <testsuite name="Content">
+            <directory>tests/unit/content</directory>
+        </testsuite>
+        <testsuite name="Settings">
+            <directory>tests/unit/settings</directory>
+        </testsuite>
+        <testsuite name="Packages">
+            <directory>tests/unit/packages</directory>
+        </testsuite>
+        <testsuite name="Media">
+            <directory>tests/unit/media</directory>
+        </testsuite>
+        <testsuite name="Users">
+            <directory>tests/unit/users</directory>
+        </testsuite>
     </testsuites>
 
     <source>

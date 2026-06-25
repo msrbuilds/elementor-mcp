@@ -99,6 +99,17 @@ namespace {
 		}
 	}
 
+	if ( ! function_exists( 'wp_strip_all_tags' ) ) {
+		function wp_strip_all_tags( $string, $remove_breaks = false ): string {
+			$string = preg_replace( '@<(script|style)[^>]*?>.*?</\\1>@si', '', (string) $string );
+			$string = strip_tags( $string );
+			if ( $remove_breaks ) {
+				$string = preg_replace( '/[\r\n\t ]+/', ' ', $string );
+			}
+			return trim( $string );
+		}
+	}
+
 	if ( ! function_exists( 'sanitize_file_name' ) ) {
 		function sanitize_file_name( string $filename ): string {
 			return preg_replace( '/[^a-zA-Z0-9._\-]/', '-', $filename );
@@ -365,13 +376,33 @@ namespace {
 
 	if ( ! function_exists( 'get_option' ) ) {
 		function get_option( string $option, $default = false ) {
+			if ( isset( $GLOBALS['_wp_options'] ) && array_key_exists( $option, $GLOBALS['_wp_options'] ) ) {
+				return $GLOBALS['_wp_options'][ $option ];
+			}
 			return $default;
 		}
 	}
 
 	if ( ! function_exists( 'update_option' ) ) {
 		function update_option( string $option, $value, $autoload = null ): bool {
+			if ( ! isset( $GLOBALS['_wp_options'] ) ) {
+				$GLOBALS['_wp_options'] = array();
+			}
+			if ( ! isset( $GLOBALS['_wp_options_updates'] ) ) {
+				$GLOBALS['_wp_options_updates'] = array();
+			}
+			$GLOBALS['_wp_options'][ $option ]   = $value;
+			$GLOBALS['_wp_options_updates'][]    = array( 'option' => $option, 'value' => $value );
 			return true;
+		}
+	}
+
+	if ( ! function_exists( 'flush_rewrite_rules' ) ) {
+		function flush_rewrite_rules( $hard = true ): void {
+			if ( ! isset( $GLOBALS['_wp_flush_calls'] ) ) {
+				$GLOBALS['_wp_flush_calls'] = array();
+			}
+			$GLOBALS['_wp_flush_calls'][] = $hard;
 		}
 	}
 
@@ -496,8 +527,96 @@ namespace {
 			if ( isset( $GLOBALS['_wp_users'] ) && array_key_exists( $user_id, $GLOBALS['_wp_users'] ) ) {
 				return $GLOBALS['_wp_users'][ $user_id ];
 			}
-			return (object) array( 'ID' => $user_id, 'display_name' => 'User ' . $user_id );
+			return false;
 		}
+	}
+
+	if ( ! function_exists( 'get_user_by' ) ) {
+		function get_user_by( $field, $value ) {
+			if ( 'id' === $field || 'ID' === $field ) {
+				return get_userdata( (int) $value );
+			}
+			foreach ( $GLOBALS['_wp_users'] ?? array() as $u ) {
+				if ( ( 'email' === $field && ( $u->user_email ?? '' ) === $value ) || ( 'login' === $field && ( $u->user_login ?? '' ) === $value ) ) {
+					return $u;
+				}
+			}
+			return false;
+		}
+	}
+	if ( ! function_exists( 'wp_insert_user' ) ) {
+		function wp_insert_user( $userdata ) {
+			if ( ! empty( $GLOBALS['_wp_insert_user_error'] ) ) {
+				return new \WP_Error( 'insert_failed', $GLOBALS['_wp_insert_user_error'] );
+			}
+			$GLOBALS['_wp_inserted_users'][] = (array) $userdata;
+			return $GLOBALS['_wp_next_user_id'] ?? 501;
+		}
+	}
+	if ( ! function_exists( 'wp_update_user' ) ) {
+		function wp_update_user( $userdata ) {
+			if ( ! empty( $GLOBALS['_wp_update_user_error'] ) ) {
+				return new \WP_Error( 'update_failed', $GLOBALS['_wp_update_user_error'] );
+			}
+			$arr = (array) $userdata;
+			$GLOBALS['_wp_updated_users'][] = $arr;
+			return (int) ( $arr['ID'] ?? 0 );
+		}
+	}
+	if ( ! function_exists( 'wp_generate_password' ) ) {
+		function wp_generate_password( $length = 12, $special_chars = true, $extra_special_chars = false ) {
+			return 'GENERATED-PASSWORD-' . $length;
+		}
+	}
+	if ( ! function_exists( 'wp_send_new_user_notifications' ) ) {
+		function wp_send_new_user_notifications( $user_id, $notify = 'both' ) {
+			$GLOBALS['_wp_new_user_notifications'][] = array( 'id' => (int) $user_id, 'notify' => $notify );
+		}
+	}
+	if ( ! function_exists( 'get_role' ) ) {
+		function get_role( $role ) {
+			$map = $GLOBALS['_wp_roles'] ?? array(
+				'subscriber'    => array(),
+				'contributor'   => array( 'edit_posts' => true ),
+				'author'        => array( 'publish_posts' => true ),
+				'editor'        => array( 'edit_others_posts' => true ),
+				'administrator' => array( 'manage_options' => true, 'edit_users' => true, 'promote_users' => true, 'delete_users' => true ),
+			);
+			if ( ! array_key_exists( $role, $map ) ) {
+				return null;
+			}
+			return (object) array( 'name' => $role, 'capabilities' => $map[ $role ] );
+		}
+	}
+	if ( ! function_exists( 'user_can' ) ) {
+		function user_can( $user, $cap ) {
+			$id   = is_object( $user ) ? (int) ( $user->ID ?? 0 ) : (int) $user;
+			$caps = $GLOBALS['_wp_user_caps'][ $id ] ?? array();
+			return in_array( $cap, $caps, true );
+		}
+	}
+	if ( ! function_exists( 'count_user_posts' ) ) {
+		function count_user_posts( $user_id, $post_type = 'post', $public_only = false ) {
+			return (int) ( $GLOBALS['_wp_user_post_counts'][ (int) $user_id ] ?? 0 );
+		}
+	}
+	if ( ! function_exists( 'sanitize_user' ) ) {
+		function sanitize_user( $username, $strict = false ) {
+			return preg_replace( '/[^a-zA-Z0-9._\-@ ]/', '', (string) $username );
+		}
+	}
+	if ( ! function_exists( 'is_email' ) ) {
+		function is_email( $email ) {
+			return ( is_string( $email ) && false !== strpos( $email, '@' ) ) ? $email : false;
+		}
+	}
+	if ( ! function_exists( 'sanitize_email' ) ) {
+		function sanitize_email( $email ) {
+			return trim( (string) $email );
+		}
+	}
+	if ( ! function_exists( 'sanitize_textarea_field' ) ) {
+		function sanitize_textarea_field( $s ) { return is_string( $s ) ? trim( $s ) : ''; }
 	}
 
 	if ( ! function_exists( 'get_current_user_id' ) ) {
@@ -566,6 +685,35 @@ namespace {
 		}
 	}
 
+	if ( ! function_exists( 'wp_get_attachment_metadata' ) ) {
+		function wp_get_attachment_metadata( $id = 0, $unfiltered = false ) {
+			return $GLOBALS['_wp_attachment_meta'][ (int) $id ] ?? array();
+		}
+	}
+	if ( ! function_exists( 'wp_get_attachment_image_src' ) ) {
+		function wp_get_attachment_image_src( $id, $size = 'thumbnail', $icon = false ) {
+			$map = $GLOBALS['_wp_attachment_src'][ (int) $id ][ is_string( $size ) ? $size : 'full' ] ?? null;
+			return $map ? $map : false; // [ url, width, height, is_intermediate ]
+		}
+	}
+	if ( ! function_exists( 'wp_get_attachment_url' ) ) {
+		function wp_get_attachment_url( $id = 0 ) {
+			return $GLOBALS['_wp_attachment_url'][ (int) $id ] ?? ( 'http://example.com/wp-content/uploads/file-' . (int) $id . '.jpg' );
+		}
+	}
+	if ( ! function_exists( 'get_post_field' ) ) {
+		function get_post_field( $field, $post = 0, $context = 'display' ) {
+			$p = is_object( $post ) ? $post : get_post( $post );
+			return $p && isset( $p->$field ) ? $p->$field : '';
+		}
+	}
+	if ( ! function_exists( 'wp_delete_attachment' ) ) {
+		function wp_delete_attachment( $id, $force_delete = false ) {
+			$GLOBALS['_wp_deleted_attachments'][] = array( 'id' => (int) $id, 'force' => (bool) $force_delete );
+			return get_post( $id ) ?: (object) array( 'ID' => (int) $id );
+		}
+	}
+
 	if ( ! function_exists( 'wp_remove_object_terms' ) ) {
 		function wp_remove_object_terms( int $object_id, $terms, string $taxonomy ) {
 			$GLOBALS['_wp_term_calls'][] = array( 'object_id' => $object_id, 'terms' => $terms, 'taxonomy' => $taxonomy, 'remove' => true );
@@ -586,6 +734,22 @@ namespace {
 				$this->max_num_pages = (int) ceil( $this->found_posts / $per );
 				$GLOBALS['_wp_query_args'] = $args;
 			}
+		}
+	}
+
+	// -----------------------------------------------------------------------
+	// WP_User_Query stub
+	// -----------------------------------------------------------------------
+
+	if ( ! class_exists( 'WP_User_Query' ) ) {
+		class WP_User_Query {
+			public $results; public $total;
+			public function __construct( $args = array() ) {
+				$this->results = $GLOBALS['_wp_user_query_result'] ?? array();
+				$this->total   = $GLOBALS['_wp_user_query_total'] ?? count( $this->results );
+			}
+			public function get_results() { return $this->results; }
+			public function get_total() { return (int) $this->total; }
 		}
 	}
 
@@ -616,6 +780,182 @@ namespace {
 			public function get_error_data( string $code = '' ) {
 				return $this->data;
 			}
+		}
+	}
+
+	if ( ! function_exists( 'get_plugins' ) ) {
+		function get_plugins( $folder = '' ) {
+			return isset( $GLOBALS['_wp_plugins'] ) && is_array( $GLOBALS['_wp_plugins'] ) ? $GLOBALS['_wp_plugins'] : array();
+		}
+	}
+	if ( ! function_exists( 'is_plugin_active' ) ) {
+		function is_plugin_active( $file ) {
+			return in_array( $file, $GLOBALS['_wp_active_plugins'] ?? array(), true );
+		}
+	}
+	if ( ! function_exists( 'is_plugin_active_for_network' ) ) {
+		function is_plugin_active_for_network( $file ) {
+			return in_array( $file, $GLOBALS['_wp_network_active_plugins'] ?? array(), true );
+		}
+	}
+	if ( ! function_exists( 'activate_plugin' ) ) {
+		function activate_plugin( $file, $redirect = '', $network_wide = false, $silent = false ) {
+			$GLOBALS['_wp_activated_plugins'][] = $file;
+			$GLOBALS['_wp_active_plugins'][]    = $file;
+			return null;
+		}
+	}
+	if ( ! function_exists( 'deactivate_plugins' ) ) {
+		function deactivate_plugins( $files, $silent = false, $network_wide = null ) {
+			foreach ( (array) $files as $f ) {
+				$GLOBALS['_wp_deactivated_plugins'][] = $f;
+				$GLOBALS['_wp_active_plugins']        = array_values( array_diff( $GLOBALS['_wp_active_plugins'] ?? array(), array( $f ) ) );
+			}
+		}
+	}
+	if ( ! function_exists( 'delete_plugins' ) ) {
+		function delete_plugins( $files ) {
+			foreach ( (array) $files as $f ) {
+				$GLOBALS['_wp_deleted_plugins'][] = $f;
+			}
+			return true;
+		}
+	}
+	if ( ! function_exists( 'wp_get_themes' ) ) {
+		function wp_get_themes( $args = array() ) {
+			return isset( $GLOBALS['_wp_themes'] ) && is_array( $GLOBALS['_wp_themes'] ) ? $GLOBALS['_wp_themes'] : array();
+		}
+	}
+	if ( ! function_exists( 'wp_get_theme' ) ) {
+		function wp_get_theme( $stylesheet = null, $theme_root = null ) {
+			$themes = $GLOBALS['_wp_themes'] ?? array();
+			if ( null === $stylesheet ) {
+				$stylesheet = $GLOBALS['_wp_active_stylesheet'] ?? '';
+			}
+			return $themes[ $stylesheet ] ?? new \WP_Theme( $stylesheet, false );
+		}
+	}
+	if ( ! function_exists( 'switch_theme' ) ) {
+		function switch_theme( $stylesheet ) {
+			$GLOBALS['_wp_switched_theme']     = $stylesheet;
+			$GLOBALS['_wp_active_stylesheet']  = $stylesheet;
+		}
+	}
+	if ( ! function_exists( 'delete_theme' ) ) {
+		function delete_theme( $stylesheet, $redirect = '' ) {
+			$GLOBALS['_wp_deleted_themes'][] = $stylesheet;
+			return true;
+		}
+	}
+	if ( ! function_exists( 'get_stylesheet' ) ) {
+		function get_stylesheet() { return $GLOBALS['_wp_active_stylesheet'] ?? 'activetheme'; }
+	}
+	if ( ! function_exists( 'get_template' ) ) {
+		function get_template() { return $GLOBALS['_wp_active_template'] ?? ( $GLOBALS['_wp_active_stylesheet'] ?? 'activetheme' ); }
+	}
+	if ( ! function_exists( 'get_filesystem_method' ) ) {
+		function get_filesystem_method( $args = array(), $context = '', $allow_relaxed = false ) {
+			return $GLOBALS['_wp_fs_method'] ?? 'direct';
+		}
+	}
+	if ( ! function_exists( 'WP_Filesystem' ) ) {
+		function WP_Filesystem( $args = false, $context = false, $allow_relaxed = false ) {
+			return ( ( $GLOBALS['_wp_fs_method'] ?? 'direct' ) === 'direct' );
+		}
+	}
+	if ( ! function_exists( 'request_filesystem_credentials' ) ) {
+		function request_filesystem_credentials( ...$a ) { return array(); }
+	}
+	if ( ! function_exists( 'plugins_api' ) ) {
+		function plugins_api( $action, $args = array() ) {
+			if ( isset( $GLOBALS['_wp_plugins_api_error'] ) ) {
+				return new \WP_Error( 'plugins_api_failed', $GLOBALS['_wp_plugins_api_error'] );
+			}
+			if ( 'query_plugins' === $action ) {
+				return (object) array( 'plugins' => $GLOBALS['_wp_plugins_api_query'] ?? array(), 'info' => array( 'results' => 0 ) );
+			}
+			$args = (object) $args;
+			return (object) array( 'name' => $args->slug ?? 'x', 'slug' => $args->slug ?? 'x', 'version' => '1.0', 'download_link' => 'https://downloads.wordpress.org/plugin/' . ( $args->slug ?? 'x' ) . '.zip' );
+		}
+	}
+	if ( ! function_exists( 'themes_api' ) ) {
+		function themes_api( $action, $args = array() ) {
+			if ( isset( $GLOBALS['_wp_themes_api_error'] ) ) {
+				return new \WP_Error( 'themes_api_failed', $GLOBALS['_wp_themes_api_error'] );
+			}
+			if ( 'query_themes' === $action ) {
+				return (object) array( 'themes' => $GLOBALS['_wp_themes_api_query'] ?? array(), 'info' => array( 'results' => 0 ) );
+			}
+			$args = (object) $args;
+			return (object) array( 'name' => $args->slug ?? 'x', 'slug' => $args->slug ?? 'x', 'version' => '1.0', 'download_link' => 'https://downloads.wordpress.org/theme/' . ( $args->slug ?? 'x' ) . '.zip' );
+		}
+	}
+	if ( ! function_exists( 'wp_update_plugins' ) ) {
+		function wp_update_plugins( $extra = array() ) {}
+	}
+	if ( ! function_exists( 'wp_update_themes' ) ) {
+		function wp_update_themes( $extra = array() ) {}
+	}
+	if ( ! function_exists( 'get_site_transient' ) ) {
+		function get_site_transient( $key ) {
+			return $GLOBALS['_wp_site_transients'][ $key ] ?? false;
+		}
+	}
+	if ( ! function_exists( 'get_plugin_data' ) ) {
+		function get_plugin_data( $file, $markup = true, $translate = true ) {
+			return $GLOBALS['_wp_plugin_data'][ $file ] ?? array( 'Name' => basename( $file ), 'Version' => '1.0', 'Author' => '' );
+		}
+	}
+
+	if ( ! class_exists( 'WP_Theme' ) ) {
+		class WP_Theme {
+			public $stylesheet; public $data; private $exists;
+			public function __construct( $stylesheet, $data = array() ) {
+				$this->stylesheet = (string) $stylesheet;
+				$this->exists     = false !== $data;
+				$this->data       = is_array( $data ) ? $data : array();
+			}
+			public function get( $k ) { return $this->data[ $k ] ?? ''; }
+			public function get_stylesheet() { return $this->stylesheet; }
+			public function get_template() { return $this->data['Template'] ?? $this->stylesheet; }
+			public function exists() { return $this->exists; }
+			public function errors() { return ! empty( $this->data['__errors'] ) ? new \WP_Error( 'theme_error', 'broken' ) : false; }
+			public function parent() { return ! empty( $this->data['Template'] ) && $this->data['Template'] !== $this->stylesheet; }
+		}
+	}
+	if ( ! class_exists( 'Automatic_Upgrader_Skin' ) ) {
+		class Automatic_Upgrader_Skin {
+			public function get_upgrade_messages() { return array( 'Done.' ); }
+		}
+	}
+	if ( ! class_exists( 'Plugin_Upgrader' ) ) {
+		class Plugin_Upgrader {
+			public $skin; public $result;
+			public function __construct( $skin = null ) { $this->skin = $skin; }
+			public function install( $package, $args = array() ) {
+				if ( ! empty( $GLOBALS['_wp_upgrader_install_error'] ) ) { return new \WP_Error( 'install_failed', $GLOBALS['_wp_upgrader_install_error'] ); }
+				$GLOBALS['_wp_installed_packages'][] = $package; return true;
+			}
+			public function upgrade( $file, $args = array() ) {
+				if ( ! empty( $GLOBALS['_wp_upgrader_upgrade_error'] ) ) { return new \WP_Error( 'upgrade_failed', $GLOBALS['_wp_upgrader_upgrade_error'] ); }
+				$GLOBALS['_wp_upgraded'][] = $file; return true;
+			}
+			public function plugin_info() { return $GLOBALS['_wp_upgrader_plugin_info'] ?? 'installed-plugin/installed-plugin.php'; }
+		}
+	}
+	if ( ! class_exists( 'Theme_Upgrader' ) ) {
+		class Theme_Upgrader {
+			public $skin; public $result;
+			public function __construct( $skin = null ) { $this->skin = $skin; }
+			public function install( $package, $args = array() ) {
+				if ( ! empty( $GLOBALS['_wp_upgrader_install_error'] ) ) { return new \WP_Error( 'install_failed', $GLOBALS['_wp_upgrader_install_error'] ); }
+				$GLOBALS['_wp_installed_packages'][] = $package; return true;
+			}
+			public function upgrade( $stylesheet, $args = array() ) {
+				if ( ! empty( $GLOBALS['_wp_upgrader_upgrade_error'] ) ) { return new \WP_Error( 'upgrade_failed', $GLOBALS['_wp_upgrader_upgrade_error'] ); }
+				$GLOBALS['_wp_upgraded'][] = $stylesheet; return true;
+			}
+			public function theme_info() { return new \WP_Theme( $GLOBALS['_wp_upgrader_theme_info'] ?? 'installed-theme', array( 'Version' => '1.0' ) ); }
 		}
 	}
 
@@ -744,6 +1084,7 @@ namespace {
 
 		$map = [
 			// Core classes
+			'EMCP_Tools_Package_Guard'          => 'includes/class-package-guard.php',
 			'EMCP_Tools_Atomic_Props'           => 'includes/class-atomic-props.php',
 			'EMCP_Tools_Data'                  => 'includes/class-elementor-data.php',
 			'EMCP_Tools_Element_Factory'        => 'includes/class-element-factory.php',
@@ -761,6 +1102,7 @@ namespace {
 			'EMCP_Tools_A11y_Abilities'         => 'includes/abilities/class-a11y-abilities.php',
 			// Ability classes — all groups
 			'EMCP_Tools_Content_Abilities'      => 'includes/abilities/class-content-abilities.php',
+			'EMCP_Tools_Settings_Abilities'     => 'includes/abilities/class-settings-abilities.php',
 			'EMCP_Tools_Custom_Code_Abilities'  => 'includes/abilities/class-custom-code-abilities.php',
 			'EMCP_Tools_Stock_Image_Abilities'  => 'includes/abilities/class-stock-image-abilities.php',
 			'EMCP_Tools_Composite_Abilities'    => 'includes/abilities/class-composite-abilities.php',
@@ -771,6 +1113,10 @@ namespace {
 			'EMCP_Tools_Global_Abilities'       => 'includes/abilities/class-global-abilities.php',
 			'EMCP_Tools_Template_Abilities'     => 'includes/abilities/class-template-abilities.php',
 			'EMCP_Tools_Widget_Abilities'       => 'includes/abilities/class-widget-abilities.php',
+			'EMCP_Tools_Plugin_Abilities'       => 'includes/abilities/class-plugin-abilities.php',
+			'EMCP_Tools_Theme_Abilities'        => 'includes/abilities/class-theme-abilities.php',
+			'EMCP_Tools_Media_Library_Abilities' => 'includes/abilities/class-media-library-abilities.php',
+			'EMCP_Tools_User_Abilities'         => 'includes/abilities/class-user-abilities.php',
 		];
 
 		if ( isset( $map[ $class ] ) ) {
