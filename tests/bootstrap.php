@@ -1116,6 +1116,7 @@ namespace {
 			'EMCP_Tools_Plugin_Abilities'       => 'includes/abilities/class-plugin-abilities.php',
 			'EMCP_Tools_Theme_Abilities'        => 'includes/abilities/class-theme-abilities.php',
 			'EMCP_Tools_Media_Library_Abilities' => 'includes/abilities/class-media-library-abilities.php',
+			'EMCP_Tools_User_Abilities'         => 'includes/abilities/class-user-abilities.php',
 		];
 
 		if ( isset( $map[ $class ] ) ) {
