@@ -4,7 +4,7 @@ All notable changes to MCP Tools for Elementor are documented in this file.
 
 ## [3.0.0]
 
-> The first major release of the rebranded **EMCP Tools** — the toolset's step beyond Elementor into general WordPress management, alongside a leaner, catalog-backed widget surface. This single 3.0.0 release bundles the MCP namespace rename, the widget consolidation, the WordPress **Content** tools (domain 1), the WordPress **Settings** tools (domain 2), and the WordPress **Plugins & Themes** tools (domain 3). (Previous release: 2.2.0.)
+> The first major release of the rebranded **EMCP Tools** — the toolset's step beyond Elementor into general WordPress management, alongside a leaner, catalog-backed widget surface. This single 3.0.0 release bundles the MCP namespace rename, the widget consolidation, the WordPress **Content** tools (domain 1), the WordPress **Settings** tools (domain 2), the WordPress **Plugins & Themes** tools (domain 3), and the WordPress **Media Library** tools (domain 4). (Previous release: 2.2.0.)
 
 ### Changed (BREAKING)
 - **MCP namespace + server route renamed `elementor-mcp` → `emcp-tools`.** As the toolset grows beyond Elementor, every tool is now under the `emcp-tools/` ability namespace (MCP tool names become `emcp-tools-<tool>`, e.g. `emcp-tools-list-widgets`), and the server route moved from `/wp-json/mcp/elementor-mcp-server` to `/wp-json/mcp/emcp-tools-server` (WP-CLI `--server=emcp-tools-server`). **Every existing AI-client connection (Claude Desktop/Code, Cursor, WP-CLI, the proxy) must be reconnected with the new route** — regenerate configs from the EMCP Tools → Connection tab. Your stored per-tool enable/disable toggles migrate automatically to the new slugs, so Pro tools stay disabled-by-default as before.
