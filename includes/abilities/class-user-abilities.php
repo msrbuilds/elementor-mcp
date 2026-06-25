@@ -349,8 +349,97 @@ class EMCP_Tools_User_Abilities {
 	}
 
 	// -------------------------------------------------------------------
-	// update-user (stub — implemented in Task 4)
+	// update-user
 	// -------------------------------------------------------------------
 
-	private function register_update_user(): void {}
+	private function register_update_user(): void {
+		$this->ability_names[] = 'emcp-tools/update-user';
+		emcp_tools_register_ability(
+			'emcp-tools/update-user',
+			array(
+				'label'               => __( 'Update User', 'emcp-tools' ),
+				'description'         => __( 'Updates a non-admin user\'s profile: email, first/last name, display name, nickname, URL, description. Cannot change roles or passwords, and refuses to edit any user with admin-level capabilities (administrators are off-limits via MCP).', 'emcp-tools' ),
+				'category'            => 'emcp-tools',
+				'execute_callback'    => array( $this, 'execute_update_user' ),
+				'permission_callback' => array( $this, 'can_edit' ),
+				'input_schema'        => array(
+					'type'       => 'object',
+					'properties' => array(
+						'id'           => array( 'type' => 'integer', 'description' => __( 'User ID.', 'emcp-tools' ) ),
+						'email'        => array( 'type' => 'string' ),
+						'first_name'   => array( 'type' => 'string' ),
+						'last_name'    => array( 'type' => 'string' ),
+						'display_name' => array( 'type' => 'string' ),
+						'nickname'     => array( 'type' => 'string' ),
+						'url'          => array( 'type' => 'string' ),
+						'description'  => array( 'type' => 'string' ),
+					),
+					'required'   => array( 'id' ),
+				),
+				'output_schema'       => array( 'type' => 'object', 'properties' => array(
+					'id' => array( 'type' => 'integer' ), 'updated' => array( 'type' => 'array', 'items' => array( 'type' => 'string' ) ),
+					'email' => array( 'type' => 'string' ), 'display_name' => array( 'type' => 'string' ),
+				) ),
+				'meta'                => array( 'annotations' => array( 'readonly' => false, 'destructive' => false, 'idempotent' => false ), 'show_in_rest' => true ),
+			)
+		);
+	}
+
+	/**
+	 * @param array $input
+	 * @return array|\WP_Error
+	 */
+	public function execute_update_user( $input ) {
+		$id = absint( $input['id'] ?? 0 );
+		if ( ! $id ) {
+			return new \WP_Error( 'missing_params', __( 'A user "id" is required.', 'emcp-tools' ) );
+		}
+		$u = get_userdata( $id );
+		if ( ! $u ) {
+			return new \WP_Error( 'user_not_found', __( 'User not found.', 'emcp-tools' ) );
+		}
+		if ( $this->user_has_admin_caps( $id ) ) {
+			return new \WP_Error( 'protected_user', __( 'This user has administrator-level capabilities and cannot be edited via MCP.', 'emcp-tools' ) );
+		}
+
+		// Build the update from ONLY the allowed profile fields. role/password are
+		// deliberately never read, so they can never be changed here.
+		$userdata = array( 'ID' => $id );
+		$updated  = array();
+		foreach ( array( 'first_name' => 'first_name', 'last_name' => 'last_name', 'display_name' => 'display_name', 'nickname' => 'nickname' ) as $in => $key ) {
+			if ( array_key_exists( $in, $input ) ) {
+				$userdata[ $key ] = sanitize_text_field( (string) $input[ $in ] );
+				$updated[]        = $in;
+			}
+		}
+		if ( array_key_exists( 'description', $input ) ) {
+			$userdata['description'] = function_exists( 'sanitize_textarea_field' ) ? sanitize_textarea_field( (string) $input['description'] ) : sanitize_text_field( (string) $input['description'] );
+			$updated[]               = 'description';
+		}
+		if ( array_key_exists( 'url', $input ) ) {
+			$userdata['user_url'] = esc_url_raw( (string) $input['url'] );
+			$updated[]            = 'url';
+		}
+		if ( array_key_exists( 'email', $input ) ) {
+			$email = sanitize_email( (string) $input['email'] );
+			if ( ! is_email( $email ) ) {
+				return new \WP_Error( 'invalid_email', __( 'That email address is not valid.', 'emcp-tools' ) );
+			}
+			$userdata['user_email'] = $email;
+			$updated[]              = 'email';
+		}
+
+		$res = wp_update_user( $userdata );
+		if ( is_wp_error( $res ) ) {
+			return $res;
+		}
+
+		$fresh = get_userdata( $id );
+		return array(
+			'id'           => $id,
+			'updated'      => $updated,
+			'email'        => (string) ( $fresh->user_email ?? '' ),
+			'display_name' => (string) ( $fresh->display_name ?? '' ),
+		);
+	}
 }

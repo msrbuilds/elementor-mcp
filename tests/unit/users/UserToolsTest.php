@@ -32,9 +32,10 @@ class UserToolsTest extends Ability_Test_Case {
 	/** @test */
 	public function test_registers_four_tools(): void {
 		$names = $this->ability->get_ability_names();
-		foreach ( array( 'list-users', 'get-user' ) as $slug ) {
+		foreach ( array( 'list-users', 'get-user', 'create-user', 'update-user' ) as $slug ) {
 			$this->assertContains( 'emcp-tools/' . $slug, $names );
 		}
+		$this->assertCount( 4, $names );
 	}
 
 	/** @test */
@@ -115,5 +116,43 @@ class UserToolsTest extends Ability_Test_Case {
 	public function test_create_user_surfaces_insert_error(): void {
 		$GLOBALS['_wp_insert_user_error'] = 'username exists';
 		$this->assertWPError( $this->ability->execute_create_user( array( 'username' => 'dup', 'email' => 'dup@example.com' ) ), 'insert_failed' );
+	}
+
+	/** @test */
+	public function test_update_user_edits_non_admin_profile(): void {
+		$out = $this->ability->execute_update_user( array( 'id' => 9, 'display_name' => 'Jane Q. Doe', 'description' => 'Senior writer' ) );
+		$this->assertNotWPError( $out );
+		$this->assertContains( 'display_name', $out['updated'] );
+		$this->assertContains( 'description', $out['updated'] );
+		$arr = $GLOBALS['_wp_updated_users'][0];
+		$this->assertSame( 9, (int) $arr['ID'] );
+		$this->assertSame( 'Jane Q. Doe', $arr['display_name'] );
+	}
+
+	/** @test */
+	public function test_update_user_refuses_admin_target(): void {
+		$out = $this->ability->execute_update_user( array( 'id' => 1, 'description' => 'hacked' ) );
+		$this->assertWPError( $out, 'protected_user' );
+		$this->assertSame( array(), $GLOBALS['_wp_updated_users'] );
+	}
+
+	/** @test */
+	public function test_update_user_ignores_role_and_password(): void {
+		$out = $this->ability->execute_update_user( array( 'id' => 9, 'role' => 'administrator', 'password' => 'x', 'user_pass' => 'x', 'display_name' => 'Jane' ) );
+		$this->assertNotWPError( $out );
+		$arr = $GLOBALS['_wp_updated_users'][0];
+		$this->assertArrayNotHasKey( 'role', $arr );
+		$this->assertArrayNotHasKey( 'user_pass', $arr );
+		$this->assertArrayNotHasKey( 'password', $arr );
+	}
+
+	/** @test */
+	public function test_update_user_not_found(): void {
+		$this->assertWPError( $this->ability->execute_update_user( array( 'id' => 999, 'display_name' => 'x' ) ), 'user_not_found' );
+	}
+
+	/** @test */
+	public function test_update_user_requires_id(): void {
+		$this->assertWPError( $this->ability->execute_update_user( array( 'display_name' => 'x' ) ), 'missing_params' );
 	}
 }
