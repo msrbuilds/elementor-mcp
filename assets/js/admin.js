@@ -170,6 +170,49 @@
 		} );
 	}
 
+	// Tools-page platform sub-tabs (Elementor / WordPress). Presentation only —
+	// hidden panels keep their checkboxes in the form, so switching tabs never
+	// affects what gets saved.
+	( function initToolSubtabs() {
+		var tabs = document.querySelectorAll( '.elementor-mcp-subtab' );
+		var panels = document.querySelectorAll( '.elementor-mcp-tabpanel' );
+		if ( ! tabs.length || ! panels.length ) {
+			return;
+		}
+		var STORAGE_KEY = 'emcpToolsActiveTab';
+
+		function activate( tabId ) {
+			var matched = false;
+			panels.forEach( function ( panel ) {
+				var on = panel.getAttribute( 'data-tab' ) === tabId;
+				panel.classList.toggle( 'is-active', on );
+				if ( on ) { matched = true; }
+			} );
+			if ( ! matched ) {
+				return; // unknown stored id (e.g. a removed tab) — leave server default.
+			}
+			tabs.forEach( function ( tab ) {
+				var on = tab.getAttribute( 'data-tab' ) === tabId;
+				tab.classList.toggle( 'is-active', on );
+				tab.setAttribute( 'aria-selected', on ? 'true' : 'false' );
+			} );
+			try { window.localStorage.setItem( STORAGE_KEY, tabId ); } catch ( e ) {}
+		}
+
+		tabs.forEach( function ( tab ) {
+			tab.addEventListener( 'click', function () {
+				activate( tab.getAttribute( 'data-tab' ) );
+			} );
+		} );
+
+		// Restore the last-used tab (falls back to the server-rendered active one).
+		var stored = null;
+		try { stored = window.localStorage.getItem( STORAGE_KEY ); } catch ( e ) {}
+		if ( stored ) {
+			activate( stored );
+		}
+	} )();
+
 	/**
 	 * Populate a code block and its hidden copy source.
 	 *
