@@ -328,11 +328,13 @@ class EMCP_Tools_Media_Library_Abilities {
 				),
 				'output_schema'       => array( 'type' => 'object', 'properties' => array(
 					'id' => array( 'type' => 'integer' ), 'title' => array( 'type' => 'string' ),
-					'url' => array( 'type' => 'string' ), 'mime_type' => array( 'type' => 'string' ),
+					'slug' => array( 'type' => 'string' ), 'url' => array( 'type' => 'string' ),
+					'mime_type' => array( 'type' => 'string' ), 'filesize' => array( 'type' => 'integer' ),
 					'alt' => array( 'type' => 'string' ), 'caption' => array( 'type' => 'string' ),
-					'description' => array( 'type' => 'string' ), 'width' => array( 'type' => 'integer' ),
-					'height' => array( 'type' => 'integer' ), 'sizes' => array( 'type' => 'object' ),
-					'metadata' => array( 'type' => 'object' ),
+					'description' => array( 'type' => 'string' ), 'date' => array( 'type' => 'string' ),
+					'author' => array( 'type' => 'object' ), 'post_parent' => array( 'type' => 'integer' ),
+					'width' => array( 'type' => 'integer' ), 'height' => array( 'type' => 'integer' ),
+					'sizes' => array( 'type' => 'object' ), 'metadata' => array( 'type' => 'object' ),
 				) ),
 				'meta'                => array( 'annotations' => array( 'readonly' => true, 'destructive' => false, 'idempotent' => true ), 'show_in_rest' => true ),
 			)
@@ -446,6 +448,10 @@ class EMCP_Tools_Media_Library_Abilities {
 			$updated[]               = 'caption';
 		}
 		if ( array_key_exists( 'description', $input ) ) {
+			// Description maps to post_content, which allows HTML by design;
+			// wp_update_post applies wp_filter_post_kses for users without
+			// unfiltered_html. Do NOT sanitize_text_field this (it would strip
+			// legitimate markup) — title/caption are plain-text, so they are.
 			$postarr['post_content'] = (string) $input['description'];
 			$updated[]               = 'description';
 		}
