@@ -84,19 +84,6 @@ $emcp_tools_badge_labels = array(
 		</label>
 	</div>
 
-	<p class="elementor-mcp-tools-summary">
-		<?php
-		printf(
-			/* translators: %1$s: opening strong tag, %2$d: enabled count, %3$d: total count, %4$s: closing strong tag */
-			esc_html__( '%1$s%2$d of %3$d%4$s tools enabled.', 'emcp-tools' ),
-			'<strong>',
-			(int) $emcp_tools_enabled_count,
-			(int) $emcp_tools_total_count,
-			'</strong>'
-		);
-		?>
-	</p>
-
 	<?php if ( $emcp_tools_low_mode ) : ?>
 		<div class="elementor-mcp-lowmode-banner">
 			<p>
@@ -112,6 +99,18 @@ $emcp_tools_badge_labels = array(
 	<?php endif; ?>
 
 	<div class="elementor-mcp-bulk-actions">
+		<p class="elementor-mcp-tools-summary">
+			<?php
+			printf(
+				/* translators: %1$s: opening strong tag, %2$d: enabled count, %3$d: total count, %4$s: closing strong tag */
+				esc_html__( '%1$s%2$d of %3$d%4$s tools enabled.', 'emcp-tools' ),
+				'<strong>',
+				(int) $emcp_tools_enabled_count,
+				(int) $emcp_tools_total_count,
+				'</strong>'
+			);
+			?>
+		</p>
 		<button type="button" class="button elementor-mcp-enable-all"><?php esc_html_e( 'Enable All', 'emcp-tools' ); ?></button>
 		<button type="button" class="button elementor-mcp-disable-all"><?php esc_html_e( 'Disable All', 'emcp-tools' ); ?></button>
 		<button type="submit" class="button button-primary elementor-mcp-bulk-save"><?php esc_html_e( 'Save Changes', 'emcp-tools' ); ?></button>

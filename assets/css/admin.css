@@ -302,24 +302,53 @@
 	margin: 0 0 18px;
 	display: flex;
 	align-items: center;
-	justify-content: flex-end;
 	gap: 8px;
 }
 
+/* Tool-count summary sits at the left of the bar; its auto right-margin pushes
+   the action buttons over to the right edge — count left, buttons right, one row. */
+.elementor-mcp-bulk-actions .elementor-mcp-tools-summary {
+	margin: 0 auto 0 0;
+}
+
+/* Secondary buttons (Enable All / Disable All) — match the plugin's header
+   buttons (flat, neutral) instead of WordPress's blue defaults. */
 .elementor-mcp-bulk-actions .button {
-	padding: 2px 16px;
-	font-size: 13px;
-	line-height: 1.9;
+	padding: 4px 16px;
+	font-size: 14px;
+	line-height: 1.3;
 	height: auto;
 	min-height: 0;
 	border-radius: var(--mcp-radius-sm);
+	background: var(--mcp-white);
+	color: var(--mcp-gray-600);
+	border: 1px solid var(--mcp-gray-300);
+	box-shadow: none;
+	text-shadow: none;
 	transition: all var(--mcp-transition);
 }
 
-/* "Save Changes" sits with Enable/Disable on the right; a small gap sets it
-   apart from the bulk-toggle pair. */
-.elementor-mcp-bulk-actions .elementor-mcp-bulk-save {
-	margin-left: 8px;
+.elementor-mcp-bulk-actions .button:hover,
+.elementor-mcp-bulk-actions .button:focus {
+	background: var(--mcp-gray-50);
+	border-color: var(--mcp-gray-400);
+	color: var(--mcp-gray-700);
+}
+
+/* Primary "Save Changes" — the brand indigo fill. A small extra gap sets it
+   apart from the Enable/Disable pair. */
+.elementor-mcp-bulk-actions .button.elementor-mcp-bulk-save {
+	margin-left: 0px;
+	background: var(--mcp-primary);
+	border-color: var(--mcp-primary);
+	color: var(--mcp-white);
+}
+
+.elementor-mcp-bulk-actions .button.elementor-mcp-bulk-save:hover,
+.elementor-mcp-bulk-actions .button.elementor-mcp-bulk-save:focus {
+	background: var(--mcp-primary-hover);
+	border-color: var(--mcp-primary-hover);
+	color: var(--mcp-white);
 }
 
 /* =========================================================================
