@@ -527,8 +527,96 @@ namespace {
 			if ( isset( $GLOBALS['_wp_users'] ) && array_key_exists( $user_id, $GLOBALS['_wp_users'] ) ) {
 				return $GLOBALS['_wp_users'][ $user_id ];
 			}
-			return (object) array( 'ID' => $user_id, 'display_name' => 'User ' . $user_id );
+			return false;
 		}
+	}
+
+	if ( ! function_exists( 'get_user_by' ) ) {
+		function get_user_by( $field, $value ) {
+			if ( 'id' === $field || 'ID' === $field ) {
+				return get_userdata( (int) $value );
+			}
+			foreach ( $GLOBALS['_wp_users'] ?? array() as $u ) {
+				if ( ( 'email' === $field && ( $u->user_email ?? '' ) === $value ) || ( 'login' === $field && ( $u->user_login ?? '' ) === $value ) ) {
+					return $u;
+				}
+			}
+			return false;
+		}
+	}
+	if ( ! function_exists( 'wp_insert_user' ) ) {
+		function wp_insert_user( $userdata ) {
+			if ( ! empty( $GLOBALS['_wp_insert_user_error'] ) ) {
+				return new \WP_Error( 'insert_failed', $GLOBALS['_wp_insert_user_error'] );
+			}
+			$GLOBALS['_wp_inserted_users'][] = (array) $userdata;
+			return $GLOBALS['_wp_next_user_id'] ?? 501;
+		}
+	}
+	if ( ! function_exists( 'wp_update_user' ) ) {
+		function wp_update_user( $userdata ) {
+			if ( ! empty( $GLOBALS['_wp_update_user_error'] ) ) {
+				return new \WP_Error( 'update_failed', $GLOBALS['_wp_update_user_error'] );
+			}
+			$arr = (array) $userdata;
+			$GLOBALS['_wp_updated_users'][] = $arr;
+			return (int) ( $arr['ID'] ?? 0 );
+		}
+	}
+	if ( ! function_exists( 'wp_generate_password' ) ) {
+		function wp_generate_password( $length = 12, $special_chars = true, $extra_special_chars = false ) {
+			return 'GENERATED-PASSWORD-' . $length;
+		}
+	}
+	if ( ! function_exists( 'wp_send_new_user_notifications' ) ) {
+		function wp_send_new_user_notifications( $user_id, $notify = 'both' ) {
+			$GLOBALS['_wp_new_user_notifications'][] = array( 'id' => (int) $user_id, 'notify' => $notify );
+		}
+	}
+	if ( ! function_exists( 'get_role' ) ) {
+		function get_role( $role ) {
+			$map = $GLOBALS['_wp_roles'] ?? array(
+				'subscriber'    => array(),
+				'contributor'   => array( 'edit_posts' => true ),
+				'author'        => array( 'publish_posts' => true ),
+				'editor'        => array( 'edit_others_posts' => true ),
+				'administrator' => array( 'manage_options' => true, 'edit_users' => true, 'promote_users' => true, 'delete_users' => true ),
+			);
+			if ( ! array_key_exists( $role, $map ) ) {
+				return null;
+			}
+			return (object) array( 'name' => $role, 'capabilities' => $map[ $role ] );
+		}
+	}
+	if ( ! function_exists( 'user_can' ) ) {
+		function user_can( $user, $cap ) {
+			$id   = is_object( $user ) ? (int) ( $user->ID ?? 0 ) : (int) $user;
+			$caps = $GLOBALS['_wp_user_caps'][ $id ] ?? array();
+			return in_array( $cap, $caps, true );
+		}
+	}
+	if ( ! function_exists( 'count_user_posts' ) ) {
+		function count_user_posts( $user_id, $post_type = 'post', $public_only = false ) {
+			return (int) ( $GLOBALS['_wp_user_post_counts'][ (int) $user_id ] ?? 0 );
+		}
+	}
+	if ( ! function_exists( 'sanitize_user' ) ) {
+		function sanitize_user( $username, $strict = false ) {
+			return preg_replace( '/[^a-zA-Z0-9._\-@ ]/', '', (string) $username );
+		}
+	}
+	if ( ! function_exists( 'is_email' ) ) {
+		function is_email( $email ) {
+			return ( is_string( $email ) && false !== strpos( $email, '@' ) ) ? $email : false;
+		}
+	}
+	if ( ! function_exists( 'sanitize_email' ) ) {
+		function sanitize_email( $email ) {
+			return trim( (string) $email );
+		}
+	}
+	if ( ! function_exists( 'sanitize_textarea_field' ) ) {
+		function sanitize_textarea_field( $s ) { return is_string( $s ) ? trim( $s ) : ''; }
 	}
 
 	if ( ! function_exists( 'get_current_user_id' ) ) {
@@ -646,6 +734,22 @@ namespace {
 				$this->max_num_pages = (int) ceil( $this->found_posts / $per );
 				$GLOBALS['_wp_query_args'] = $args;
 			}
+		}
+	}
+
+	// -----------------------------------------------------------------------
+	// WP_User_Query stub
+	// -----------------------------------------------------------------------
+
+	if ( ! class_exists( 'WP_User_Query' ) ) {
+		class WP_User_Query {
+			public $results; public $total;
+			public function __construct( $args = array() ) {
+				$this->results = $GLOBALS['_wp_user_query_result'] ?? array();
+				$this->total   = $GLOBALS['_wp_user_query_total'] ?? count( $this->results );
+			}
+			public function get_results() { return $this->results; }
+			public function get_total() { return (int) $this->total; }
 		}
 	}
 
