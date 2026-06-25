@@ -39,6 +39,7 @@ A WordPress plugin that extends the [WordPress MCP Adapter](https://github.com/W
 - **WordPress Settings (beyond Elementor, domain 2)** — Read and batch-update core WordPress settings (general/reading/writing/discussion/media/permalinks) over MCP. Curated allowlist only — no arbitrary option access; `admin_email` is read-only; permalink changes auto-flush rewrite rules. `manage_options`. (v3.0.0)
 - **Plugins & Themes (beyond Elementor, domain 3)** — Discover, install (wordpress.org only), update, activate/deactivate, and delete plugins and themes over MCP. Strong guardrails (EMCP Tools + Elementor protected; per-op capability gating; direct-filesystem-only); the 9 mutation tools ship disabled-by-default. `manage_options`-class capabilities. (v3.0.0)
 - **Media Library (beyond Elementor, domain 4)** — Fetch full attachment detail (`get-media`: every registered size, dimensions, metadata, alt/caption/description), edit metadata (`update-media`: alt text, title, caption, description — a one-call accessibility/SEO fix), and delete attachments (`delete-media`: destructive and effectively permanent; disabled-by-default and requires `confirm:true`). URL uploads continue via `sideload-image`. (v3.0.0)
+- **Users (beyond Elementor, domain 5)** — List and read WordPress users, and safely create/edit non-admin profiles over MCP. Hard guardrails: no delete-user and no role-change tool; `create-user` assigns only non-admin roles and auto-generates a strong password (emailed to the new user — never returned); `update-user` edits profile fields only and refuses any user with admin-level capabilities (administrators are off-limits). `list-users`/`get-user` are enabled by default; `create-user`/`update-user` are disabled-by-default. (v3.0.0)
 - **Query & Discovery** — List widgets, inspect page structures, read element settings, browse templates, view global design tokens
 - **Page Management** — Create pages, update settings, clear content, import/export templates
 - **Layout Tools** — Add flexbox containers, move/remove/duplicate elements, update containers, find elements, batch update, reorder children, get container schema
@@ -311,6 +312,17 @@ Manage existing Media Library attachments over MCP — built on WP core attachme
 | `get-media` | Full detail for one attachment — every registered image size (URL + dimensions), mime type, filesize, alt text, caption, description, and raw attachment metadata (read-only, `edit_posts`) |
 | `update-media` | Edit an attachment's title, alt text, caption, and/or description — only the fields you pass change (`edit_post` on ID) |
 | `delete-media` | Delete an attachment; **destructive and effectively permanent**; disabled-by-default; requires `confirm:true`; pass `force:true` to skip Trash even when `MEDIA_TRASH` is defined (`delete_post` on ID) |
+
+### WordPress Users — beyond Elementor, domain 5 (4 tools, v3.0.0)
+
+Safe user management over MCP — built on WP core user functions (`WP_User_Query`, `wp_insert_user`, `wp_update_user`). Guardrails: `create-user` only assigns non-admin roles and auto-generates a strong password (emailed to the new user via `wp_send_new_user_notifications` — the password is **never returned**); `update-user` edits profile fields only (no role or password changes) and refuses any user whose capabilities include `manage_options`, `promote_users`, `edit_users`, `delete_users`, or `manage_network`. There is deliberately no delete-user and no role-change tool. `list-users`/`get-user` are **enabled by default** (`list_users` cap); `create-user`/`update-user` ship **disabled-by-default** (admin opts in on the Tools tab).
+
+| Tool | Description |
+|---|---|
+| `list-users` | List WordPress users; filter by role or search text; paginated. Returns id, username, display name, email, roles, registration date, and post count. Never returns passwords or auth data (read-only, `list_users`) |
+| `get-user` | Full profile detail for one user — adds first/last name, nickname, URL, description, and an `is_admin` flag (true users are off-limits to `update-user`) (read-only, `list_users`) |
+| `create-user` | Create a new non-admin WordPress user. A strong password is auto-generated and emailed; the password is never returned. Role defaults to `subscriber`; administrator and any admin-grade role are refused (`create_users`) |
+| `update-user` | Update a non-admin user's profile (email, first/last name, display name, nickname, URL, description). Cannot change roles or passwords; refuses any user with admin-level capabilities (`edit_users`) |
 
 ### Page Management (5 tools)
 

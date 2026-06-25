@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-MCP Tools for Elementor Plugin — a WordPress plugin that extends the official WordPress MCP Adapter to expose Elementor data, widgets, structures, and methods as MCP (Model Context Protocol) tools. This enables AI tools (Claude, Cursor, etc.) to create and manipulate Elementor page designs programmatically via up to ~70 MCP tools (scales with environment). **v3.0.0 is the first major release of the rebranded EMCP Tools and bundles the whole step beyond Elementor as a single release** (previous release: 2.2.0): (1) the MCP namespace + server route renamed `elementor-mcp` → `emcp-tools`; (2) the 62 per-widget convenience tools folded into a catalog-backed model (5 widget tools), so the active surface is far smaller while every widget remains reachable; (3) **domain 1 — 8 general-WordPress Content tools** (create/read/update/list/delete posts of any type, plus taxonomy and post-type discovery) built on WP core, never touching `_elementor_data`; (4) **domain 2 — 2 WordPress Settings tools** (`get-settings`/`update-settings`) over a curated, typed allowlist of core WordPress settings; (5) **domain 3 — 13 WordPress Plugins & Themes tools** (discover/install/update/activate/delete plugins and themes; wordpress.org-only; writes disabled-by-default); and (6) **domain 4 — 3 WordPress Media Library tools** (`get-media`/`update-media`/`delete-media`) to fetch attachment detail, edit metadata, and delete attachments — `delete-media` ships disabled-by-default and requires `confirm:true`.
+MCP Tools for Elementor Plugin — a WordPress plugin that extends the official WordPress MCP Adapter to expose Elementor data, widgets, structures, and methods as MCP (Model Context Protocol) tools. This enables AI tools (Claude, Cursor, etc.) to create and manipulate Elementor page designs programmatically via up to ~70 MCP tools (scales with environment). **v3.0.0 is the first major release of the rebranded EMCP Tools and bundles the whole step beyond Elementor as a single release** (previous release: 2.2.0): (1) the MCP namespace + server route renamed `elementor-mcp` → `emcp-tools`; (2) the 62 per-widget convenience tools folded into a catalog-backed model (5 widget tools), so the active surface is far smaller while every widget remains reachable; (3) **domain 1 — 8 general-WordPress Content tools** (create/read/update/list/delete posts of any type, plus taxonomy and post-type discovery) built on WP core, never touching `_elementor_data`; (4) **domain 2 — 2 WordPress Settings tools** (`get-settings`/`update-settings`) over a curated, typed allowlist of core WordPress settings; (5) **domain 3 — 13 WordPress Plugins & Themes tools** (discover/install/update/activate/delete plugins and themes; wordpress.org-only; writes disabled-by-default); (6) **domain 4 — 3 WordPress Media Library tools** (`get-media`/`update-media`/`delete-media`) to fetch attachment detail, edit metadata, and delete attachments — `delete-media` ships disabled-by-default and requires `confirm:true`; and (7) **domain 5 — 4 WordPress Users tools** (`list-users`/`get-user`/`create-user`/`update-user`) for safe user management — reads enabled-by-default, writes disabled-by-default, no delete/role-change tool, administrators untouchable via MCP.
 
 ## Companion projects (sibling folders, edit from here)
 
@@ -15,17 +15,17 @@ MCP Tools for Elementor Plugin — a WordPress plugin that extends the official 
 
 When editing premium-prompts behavior, the plugin code (`includes/admin/class-pro-prompts.php`) and the website's API endpoint (`website/src/pages/api/emcp/prompts.json.ts` per the PLAN) must stay in sync via the contract in `docs/PREMIUM_PROMPTS_API.md`.
 
-**Current status: v3.0.0 — All phases implemented (P0/P1/P2) plus Elementor 4.0 atomic elements, top-level admin menu, the catalog-backed widget consolidation, the namespace rename, and the four beyond-Elementor domains (8 WordPress Content tools + 2 WordPress Settings tools + 13 WordPress Plugins & Themes tools + 3 WordPress Media Library tools), all shipping together as the single 3.0.0 release.** Foundation layer, query tools, page CRUD, layout, the 5 catalog-backed widget tools, template, global, composite tools, stock images, SVG icons, custom code tools, 13 atomic element tools for Elementor 4.0+, 8 general-WordPress content tools, 2 WordPress settings tools, 13 plugins & themes tools, 3 media library tools, and a curated essentials filter (Low-tools mode, now largely obsolete after the consolidation).
+**Current status: v3.0.0 — All phases implemented (P0/P1/P2) plus Elementor 4.0 atomic elements, top-level admin menu, the catalog-backed widget consolidation, the namespace rename, and the five beyond-Elementor domains (8 WordPress Content tools + 2 WordPress Settings tools + 13 WordPress Plugins & Themes tools + 3 WordPress Media Library tools + 4 WordPress Users tools), all shipping together as the single 3.0.0 release.** Foundation layer, query tools, page CRUD, layout, the 5 catalog-backed widget tools, template, global, composite tools, stock images, SVG icons, custom code tools, 13 atomic element tools for Elementor 4.0+, 8 general-WordPress content tools, 2 WordPress settings tools, 13 plugins & themes tools, 3 media library tools, 4 WordPress users tools, and a curated essentials filter (Low-tools mode, now largely obsolete after the consolidation).
 
-**Tool counts by configuration (v3.0.0 — the beyond-Elementor surface adds the 8 Content tools + 3 surfaced `core/*` abilities + 2 Settings tools + 13 Plugins & Themes tools, of which 4 read/search tools are enabled-by-default and 9 mutation tools ship disabled-by-default — estimates pending a fresh live count):**
-- Free Elementor only: **~61** (44 base + 13 Content/core*/Settings + 4 P&T reads enabled)
-- Free Elementor + Elementor 4.0+ atomic: **~75** (58 base + 13 + 4)
-- With Elementor Pro: **~87** (70 base + 13 + 4)
-- With Elementor Pro + Elementor 4.0+: **~101** (84 base + 13 + 4) — estimates pending a fresh live `tools/list` with the Plugins & Themes domain
-- With Pro + WooCommerce + Elementor 4.0+: **~101** — WooCommerce widgets are reached through `add-pro-widget` (catalog tier `woo`), so they add **no** new tools.
+**Tool counts by configuration (v3.0.0 — the beyond-Elementor surface adds the 8 Content tools + 3 surfaced `core/*` abilities + 2 Settings tools + 13 Plugins & Themes tools + 3 Media Library tools + 4 Users tools, of which 4 P&T read/search tools + 2 User reads are enabled-by-default and 9 P&T mutation tools + 1 Media delete + 2 User writes ship disabled-by-default — estimates pending a fresh live count):**
+- Free Elementor only: **~63** (44 base + 13 Content/core*/Settings + 4 P&T reads + 2 User reads enabled)
+- Free Elementor + Elementor 4.0+ atomic: **~77** (58 base + 13 + 4 + 2)
+- With Elementor Pro: **~89** (70 base + 13 + 4 + 2)
+- With Elementor Pro + Elementor 4.0+: **~103** (84 base + 13 + 4 + 2) — estimates pending a fresh live `tools/list`
+- With Pro + WooCommerce + Elementor 4.0+: **~103** — WooCommerce widgets are reached through `add-pro-widget` (catalog tier `woo`), so they add **no** new tools.
 - Low-tools mode (any config): still available but largely obsolete — the consolidation already keeps the surface well under common client caps.
 
-> The beyond-Elementor surface in v3.0.0 adds: 8 Content + 3 `core/*` + 2 Settings + 13 Plugins & Themes + 3 Media Library. Of those 29, the 9 Plugins & Themes mutation tools and 1 Media Library delete tool ship disabled-by-default (admin opts in on the Tools tab), so the net enabled-by-default addition is +19. The separate 21 disabled-by-default group (SEO/A11y, Widget Builder, PHP Snippets) is unchanged. All counts above are estimates pending a fresh live `tools/list` after all beyond-Elementor domains are deployed.
+> The beyond-Elementor surface in v3.0.0 adds: 8 Content + 3 `core/*` + 2 Settings + 13 Plugins & Themes + 3 Media Library + 4 Users = 33 tools. Of those 33, the 9 Plugins & Themes mutation tools, 1 Media Library delete tool, and 2 Users write tools ship disabled-by-default (admin opts in on the Tools tab), so the net enabled-by-default addition is +21. The separate 21 disabled-by-default group (SEO/A11y, Widget Builder, PHP Snippets) is unchanged. All counts above are estimates pending a fresh live `tools/list` after all beyond-Elementor domains are deployed.
 
 > **These are REGISTERED counts.** Three groups ship **disabled-by-default** — SEO & Accessibility (**7**, Pro), Widget Builder (**8**, Pro), and PHP Snippets / Sandbox (**6**, free) = **21** tools registered-but-off. So the typical **active** surface is ~21 smaller until a user enables them on the Tools tab (e.g. Pro + Elementor 4.0+ ≈ **63** active by default).
 >
@@ -221,6 +221,19 @@ Manage existing Media Library attachments over MCP — built on WP core attachme
 | `emcp-tools/update-media` | Edit an attachment's title, alt text, caption, and/or description. Only fields passed in the input change (`edit_post` on attachment ID). |
 | `emcp-tools/delete-media` | Delete an attachment; **destructive and effectively permanent**; disabled-by-default; requires `confirm:true`; pass `force:true` to skip Trash even when `MEDIA_TRASH` is defined (`delete_post` on attachment ID). |
 
+### WordPress Users — domain 5 (4 tools, v3.0.0)
+
+Safe user management over MCP — built on WP core user functions (`WP_User_Query`, `get_userdata`, `wp_insert_user`, `wp_update_user`, `wp_generate_password`, `wp_send_new_user_notifications`, `get_role`, `user_can`). The security boundary is the design itself: no delete-user tool, no role-change tool, passwords are auto-generated and emailed (never returned), and a strict privilege guard means agents can only create non-admin accounts and can never edit any user with admin-level capabilities.
+
+**Privilege guard:** A protected-capability set (`manage_options`, `promote_users`, `edit_users`, `delete_users`, `manage_network`) is checked against both role capabilities (`role_has_admin_caps`) and the target user's actual capabilities (`user_has_admin_caps`). Any role or user that holds one of these caps is off-limits via MCP. `list-users`/`get-user` are **enabled by default** (`list_users`); `create-user`/`update-user` ship **disabled-by-default** (admin opts in on the Tools tab; `create_users`/`edit_users` caps).
+
+| Ability Name | Purpose |
+|---|---|
+| `emcp-tools/list-users` | List WordPress users; filter by role or search text; paginated. Returns id, username, display name, email, roles, registration date, and post count. Never returns passwords or auth data. Read-only (`list_users`). |
+| `emcp-tools/get-user` | Full profile detail for one user — adds first/last name, nickname, URL, description, and an `is_admin` flag (true = off-limits to `update-user`). Read-only (`list_users`). |
+| `emcp-tools/create-user` | Create a new non-admin WordPress user. A strong password is auto-generated and emailed via `wp_send_new_user_notifications` — the password is **never returned**. Role defaults to `subscriber`; administrator and any admin-grade role are refused. (`create_users`) |
+| `emcp-tools/update-user` | Update a non-admin user's profile (email, first/last name, display name, nickname, URL, description). Cannot change roles or passwords; refuses any user with admin-level capabilities. (`edit_users`) |
+
 ### P1 — Page CRUD (5 tools)
 
 | Ability Name | Purpose |
@@ -280,6 +293,15 @@ The 62 per-widget convenience tools and the old universal `add-widget` were remo
 | `emcp-tools/get-media` | Full detail for one attachment — every registered image size (URL + dimensions), mime type, filesize, alt text, caption, description, raw attachment metadata. Read-only. (v3.0.0) |
 | `emcp-tools/update-media` | Edit an attachment's title, alt text, caption, and/or description. Only fields passed change. (v3.0.0) |
 | `emcp-tools/delete-media` | Delete an attachment; **destructive and effectively permanent**; disabled-by-default; requires `confirm:true`. (v3.0.0) |
+
+### WordPress Users — domain 5 (4 tools, v3.0.0)
+
+| Ability Name | Purpose |
+|---|---|
+| `emcp-tools/list-users` | List WordPress users (admin-only); filter by role/search; paginated. Never returns passwords or auth data. Read-only, enabled by default. |
+| `emcp-tools/get-user` | Full profile detail for one user plus an `is_admin` flag. Read-only, enabled by default. |
+| `emcp-tools/create-user` | Create a new non-admin user; auto-generates a password and emails a set-password link — password never returned. Admin-grade roles refused. Disabled-by-default. |
+| `emcp-tools/update-user` | Edit a non-admin user's profile fields only (no role/password change; admins refused). Disabled-by-default. |
 
 ### Stock Images (3 tools)
 
