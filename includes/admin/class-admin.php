@@ -1092,6 +1092,68 @@ class EMCP_Tools_Admin {
 	}
 
 	/**
+	 * Connection-tab client registry: the single source of truth for the
+	 * client cards grid + per-client reveal. `methods` declares WHICH options
+	 * a client supports; the actual JSON/CLI/prompt strings are assembled
+	 * client-side in admin.js from the generated credentials.
+	 *
+	 * `cli` is a printf-style template with these tokens, substituted in JS:
+	 *   %ENDPOINT% (REST MCP url), %B64% (base64 user:app-password).
+	 *
+	 * @since 3.0.0
+	 * @return array<int,array<string,mixed>>
+	 */
+	public static function connection_clients(): array {
+		$claude_cli = 'claude mcp add --transport http emcp-tools "%ENDPOINT%" --header "Authorization: Basic %B64%"';
+		$codex_cli  = 'codex mcp add emcp-tools --transport http --url "%ENDPOINT%" --header "Authorization=Basic %B64%"';
+
+		return array(
+			array(
+				'id'      => 'claude-desktop',
+				'label'   => __( 'Claude Desktop', 'emcp-tools' ),
+				'icon'    => 'desktop',
+				'methods' => array( 'bundle' => true, 'cli' => null, 'ai_prompt' => true, 'json' => array( 'npx', 'http' ) ),
+			),
+			array(
+				'id'      => 'claude-code',
+				'label'   => __( 'Claude Code', 'emcp-tools' ),
+				'icon'    => 'editor-code',
+				'methods' => array( 'bundle' => false, 'cli' => $claude_cli, 'ai_prompt' => false, 'json' => array( 'npx', 'http' ) ),
+			),
+			array(
+				'id'      => 'cursor',
+				'label'   => __( 'Cursor', 'emcp-tools' ),
+				'icon'    => 'editor-code',
+				'methods' => array( 'bundle' => false, 'cli' => null, 'ai_prompt' => true, 'json' => array( 'http' ) ),
+			),
+			array(
+				'id'      => 'codex',
+				'label'   => __( 'Codex', 'emcp-tools' ),
+				'icon'    => 'editor-code',
+				'methods' => array( 'bundle' => false, 'cli' => $codex_cli, 'ai_prompt' => false, 'json' => array( 'toml' ) ),
+			),
+			array(
+				'id'      => 'windsurf',
+				'label'   => __( 'Windsurf', 'emcp-tools' ),
+				'icon'    => 'editor-code',
+				'methods' => array( 'bundle' => false, 'cli' => null, 'ai_prompt' => false, 'json' => array( 'http' ) ),
+			),
+			array(
+				'id'      => 'antigravity',
+				'label'   => __( 'Antigravity', 'emcp-tools' ),
+				'icon'    => 'editor-code',
+				'methods' => array( 'bundle' => false, 'cli' => null, 'ai_prompt' => false, 'json' => array( 'http' ) ),
+			),
+			array(
+				'id'      => 'mcp-remote',
+				'label'   => __( 'npx mcp-remote', 'emcp-tools' ),
+				'icon'    => 'admin-links',
+				'methods' => array( 'bundle' => false, 'cli' => null, 'ai_prompt' => false, 'json' => array( 'remote' ) ),
+			),
+		);
+	}
+
+	/**
 	 * Group a tool-category map into one bucket per platform tab, preserving
 	 * category order within each bucket. A category with a missing or unknown
 	 * `platform` falls into the default ('elementor') bucket.
