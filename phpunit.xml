@@ -44,6 +44,9 @@
         <testsuite name="Admin">
             <directory>tests/unit/admin</directory>
         </testsuite>
+        <testsuite name="Performance">
+            <directory>tests/unit/Performance</directory>
+        </testsuite>
     </testsuites>
 
     <source>
