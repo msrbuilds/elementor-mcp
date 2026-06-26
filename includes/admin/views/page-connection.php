@@ -310,147 +310,44 @@ SetEnvIf Authorization "(.*)" HTTP_AUTHORIZATION=$1</pre>
 			</div>
 		</div>
 
-		<div id="elementor-mcp-proxy-configs" style="display: none;">
+		<div id="elementor-mcp-client-picker" style="display: none;">
+			<h3><?php esc_html_e( 'Step 2: Choose Your AI Client', 'emcp-tools' ); ?></h3>
+			<p class="description"><?php esc_html_e( 'Pick the app you will connect from — the setup options below are tailored to it.', 'emcp-tools' ); ?></p>
 
-			<h3><?php esc_html_e( 'Step 2: Node.js Proxy Configs (Recommended)', 'emcp-tools' ); ?></h3>
-			<p class="description">
-				<?php esc_html_e( 'These configs use a Node.js proxy that handles session management and protocol version compatibility automatically. Requires Node.js 18+ on the machine running your AI client.', 'emcp-tools' ); ?>
-			</p>
-
-			<h4 style="margin-bottom: 4px;"><?php esc_html_e( 'Remote WordPress — npx runner (recommended)', 'emcp-tools' ); ?></h4>
-			<p class="description">
-				<?php esc_html_e( 'Best for remote sites and shared hosting. npx fetches the proxy on demand and runs it locally, so there is no file to copy or keep in sync as the plugin updates.', 'emcp-tools' ); ?>
-			</p>
-
-			<!-- Claude Code (npx) -->
-			<div class="elementor-mcp-config-card">
-				<div class="elementor-mcp-config-card-header">
-					<span class="elementor-mcp-config-card-title"><?php esc_html_e( 'Claude Code', 'emcp-tools' ); ?> <span style="font-weight: 400; color: var(--mcp-gray-400);">&mdash; .mcp.json</span></span>
-					<button type="button" class="button elementor-mcp-copy-btn" data-target="claude-code-npx"><?php esc_html_e( 'Copy', 'emcp-tools' ); ?></button>
-				</div>
-				<pre><code id="elementor-mcp-claude-code-npx-code"></code></pre>
-				<textarea id="claude-code-npx" class="elementor-mcp-copy-source"></textarea>
+			<div class="elementor-mcp-client-grid" role="tablist" aria-label="<?php esc_attr_e( 'AI client', 'emcp-tools' ); ?>">
+				<?php foreach ( EMCP_Tools_Admin::connection_clients() as $emcp_tools_client ) : ?>
+					<button
+						type="button"
+						class="elementor-mcp-client-card"
+						role="tab"
+						aria-selected="false"
+						data-client="<?php echo esc_attr( $emcp_tools_client['id'] ); ?>"
+					>
+						<span class="dashicons dashicons-<?php echo esc_attr( $emcp_tools_client['icon'] ); ?>" aria-hidden="true"></span>
+						<span class="elementor-mcp-client-card-label"><?php echo esc_html( $emcp_tools_client['label'] ); ?></span>
+					</button>
+				<?php endforeach; ?>
 			</div>
 
-			<!-- Claude Desktop (npx) -->
-			<div class="elementor-mcp-config-card">
-				<div class="elementor-mcp-config-card-header">
-					<span class="elementor-mcp-config-card-title"><?php esc_html_e( 'Claude Desktop', 'emcp-tools' ); ?> <span style="font-weight: 400; color: var(--mcp-gray-400);">&mdash; claude_desktop_config.json</span></span>
-					<button type="button" class="button elementor-mcp-copy-btn" data-target="claude-desktop-npx"><?php esc_html_e( 'Copy', 'emcp-tools' ); ?></button>
-				</div>
-				<pre><code id="elementor-mcp-claude-desktop-npx-code"></code></pre>
-				<textarea id="claude-desktop-npx" class="elementor-mcp-copy-source"></textarea>
-			</div>
+			<h3 id="elementor-mcp-connect-heading" style="display: none;">
+				<?php esc_html_e( 'Step 3: Connect', 'emcp-tools' ); ?> <span id="elementor-mcp-connect-client-name"></span>
+			</h3>
 
-			<h4 style="margin-bottom: 4px;"><?php esc_html_e( 'Local WordPress — bundled proxy file', 'emcp-tools' ); ?></h4>
-			<p class="description">
-				<?php esc_html_e( 'Use this when WordPress runs on the same machine as your AI client. The path below points to bin/mcp-proxy.mjs in this installation.', 'emcp-tools' ); ?>
-			</p>
+			<?php // JS renders the selected client's option blocks here. ?>
+			<div id="elementor-mcp-client-options"></div>
 
-			<!-- Claude Code (Proxy) -->
-			<div class="elementor-mcp-config-card">
-				<div class="elementor-mcp-config-card-header">
-					<span class="elementor-mcp-config-card-title"><?php esc_html_e( 'Claude Code', 'emcp-tools' ); ?> <span style="font-weight: 400; color: var(--mcp-gray-400);">&mdash; .mcp.json</span></span>
-					<button type="button" class="button elementor-mcp-copy-btn" data-target="claude-code-proxy"><?php esc_html_e( 'Copy', 'emcp-tools' ); ?></button>
-				</div>
-				<pre><code id="elementor-mcp-claude-code-proxy-code"></code></pre>
-				<textarea id="claude-code-proxy" class="elementor-mcp-copy-source"></textarea>
-			</div>
-
-			<!-- Claude Desktop (Proxy) -->
-			<div class="elementor-mcp-config-card">
-				<div class="elementor-mcp-config-card-header">
-					<span class="elementor-mcp-config-card-title"><?php esc_html_e( 'Claude Desktop', 'emcp-tools' ); ?> <span style="font-weight: 400; color: var(--mcp-gray-400);">&mdash; claude_desktop_config.json</span></span>
-					<button type="button" class="button elementor-mcp-copy-btn" data-target="claude-desktop-proxy"><?php esc_html_e( 'Copy', 'emcp-tools' ); ?></button>
-				</div>
-				<pre><code id="elementor-mcp-claude-desktop-proxy-code"></code></pre>
-				<textarea id="claude-desktop-proxy" class="elementor-mcp-copy-source"></textarea>
-			</div>
-
-			<p class="description">
-				<strong><?php esc_html_e( 'Remote sites:', 'emcp-tools' ); ?></strong>
-				<?php esc_html_e( 'The path in the two configs above points to this server\'s filesystem and will not work from a remote AI client, which launches the proxy locally. Use the npx configs above instead, or copy bin/mcp-proxy.mjs to your local machine and point "args" at that local path.', 'emcp-tools' ); ?>
-			</p>
-
-		</div>
-
-		<div id="elementor-mcp-http-configs" style="display: none;">
-
-			<h3><?php esc_html_e( 'Step 3: Direct HTTP Configs (Advanced)', 'emcp-tools' ); ?></h3>
-			<p class="description">
-				<?php esc_html_e( 'Direct HTTP connections require your AI client to handle session management (Mcp-Session-Id headers). Use only if the Node.js proxy is not an option.', 'emcp-tools' ); ?>
-			</p>
-
-			<!-- Claude Code -->
-			<div class="elementor-mcp-config-card">
-				<div class="elementor-mcp-config-card-header">
-					<span class="elementor-mcp-config-card-title"><?php esc_html_e( 'Claude Code', 'emcp-tools' ); ?> <span style="font-weight: 400; color: var(--mcp-gray-400);">&mdash; .mcp.json</span></span>
-					<button type="button" class="button elementor-mcp-copy-btn" data-target="claude-code-http"><?php esc_html_e( 'Copy', 'emcp-tools' ); ?></button>
-				</div>
-				<pre><code id="elementor-mcp-claude-code-http-code"></code></pre>
-				<textarea id="claude-code-http" class="elementor-mcp-copy-source"></textarea>
-			</div>
-
-			<!-- Claude Desktop -->
-			<div class="elementor-mcp-config-card">
-				<div class="elementor-mcp-config-card-header">
-					<span class="elementor-mcp-config-card-title"><?php esc_html_e( 'Claude Desktop', 'emcp-tools' ); ?> <span style="font-weight: 400; color: var(--mcp-gray-400);">&mdash; claude_desktop_config.json</span></span>
-					<button type="button" class="button elementor-mcp-copy-btn" data-target="claude-desktop-http"><?php esc_html_e( 'Copy', 'emcp-tools' ); ?></button>
-				</div>
-				<pre><code id="elementor-mcp-claude-desktop-http-code"></code></pre>
-				<textarea id="claude-desktop-http" class="elementor-mcp-copy-source"></textarea>
-			</div>
-
-			<!-- Cursor -->
-			<div class="elementor-mcp-config-card">
-				<div class="elementor-mcp-config-card-header">
-					<span class="elementor-mcp-config-card-title"><?php esc_html_e( 'Cursor', 'emcp-tools' ); ?> <span style="font-weight: 400; color: var(--mcp-gray-400);">&mdash; .cursor/mcp.json</span></span>
-					<button type="button" class="button elementor-mcp-copy-btn" data-target="cursor-config"><?php esc_html_e( 'Copy', 'emcp-tools' ); ?></button>
-				</div>
-				<pre><code id="elementor-mcp-cursor-code"></code></pre>
-				<textarea id="cursor-config" class="elementor-mcp-copy-source"></textarea>
-			</div>
-
-			<!-- Windsurf -->
-			<div class="elementor-mcp-config-card">
-				<div class="elementor-mcp-config-card-header">
-					<span class="elementor-mcp-config-card-title"><?php esc_html_e( 'Windsurf', 'emcp-tools' ); ?> <span style="font-weight: 400; color: var(--mcp-gray-400);">&mdash; mcp_config.json</span></span>
-					<button type="button" class="button elementor-mcp-copy-btn" data-target="windsurf-config"><?php esc_html_e( 'Copy', 'emcp-tools' ); ?></button>
-				</div>
-				<pre><code id="elementor-mcp-windsurf-code"></code></pre>
-				<textarea id="windsurf-config" class="elementor-mcp-copy-source"></textarea>
-			</div>
-
-			<!-- Antigravity -->
-			<div class="elementor-mcp-config-card">
-				<div class="elementor-mcp-config-card-header">
-					<span class="elementor-mcp-config-card-title"><?php esc_html_e( 'Antigravity', 'emcp-tools' ); ?> <span style="font-weight: 400; color: var(--mcp-gray-400);">&mdash; mcp_config.json</span></span>
-					<button type="button" class="button elementor-mcp-copy-btn" data-target="antigravity-config"><?php esc_html_e( 'Copy', 'emcp-tools' ); ?></button>
-				</div>
-				<pre><code id="elementor-mcp-antigravity-code"></code></pre>
-				<textarea id="antigravity-config" class="elementor-mcp-copy-source"></textarea>
-			</div>
-
-			<!-- Codex -->
-			<div class="elementor-mcp-config-card">
-				<div class="elementor-mcp-config-card-header">
-					<span class="elementor-mcp-config-card-title"><?php esc_html_e( 'Codex', 'emcp-tools' ); ?> <span style="font-weight: 400; color: var(--mcp-gray-400);">&mdash; config.toml</span></span>
-					<button type="button" class="button elementor-mcp-copy-btn" data-target="codex-config"><?php esc_html_e( 'Copy', 'emcp-tools' ); ?></button>
-				</div>
-				<pre><code id="elementor-mcp-codex-code"></code></pre>
-				<textarea id="codex-config" class="elementor-mcp-copy-source"></textarea>
-			</div>
-
-			<!-- npx mcp-remote -->
-			<div class="elementor-mcp-config-card">
-				<div class="elementor-mcp-config-card-header">
-					<span class="elementor-mcp-config-card-title"><?php esc_html_e( 'npx mcp-remote', 'emcp-tools' ); ?> <span style="font-weight: 400; color: var(--mcp-gray-400);">&mdash; <?php esc_html_e( 'any stdio client', 'emcp-tools' ); ?></span></span>
-					<button type="button" class="button elementor-mcp-copy-btn" data-target="mcp-remote-config"><?php esc_html_e( 'Copy', 'emcp-tools' ); ?></button>
-				</div>
-				<pre><code id="elementor-mcp-mcp-remote-code"></code></pre>
-				<textarea id="mcp-remote-config" class="elementor-mcp-copy-source"></textarea>
-			</div>
-
+			<?php // Hidden form used to POST the .mcpb download (Claude Desktop). ?>
+			<form
+				id="elementor-mcp-mcpb-form"
+				method="post"
+				action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>"
+				style="display: none;"
+			>
+				<input type="hidden" name="action" value="emcp_tools_download_mcpb" />
+				<input type="hidden" name="_emcp_nonce" value="<?php echo esc_attr( wp_create_nonce( EMCP_Tools_Admin::NONCE_DOWNLOAD_MCPB ) ); ?>" />
+				<input type="hidden" name="user_id" id="elementor-mcp-mcpb-user-id" value="" />
+				<input type="hidden" name="app_password" id="elementor-mcp-mcpb-app-password" value="" />
+			</form>
 		</div>
 	</div>
 
