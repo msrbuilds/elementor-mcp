@@ -61,6 +61,9 @@ class EMCP_Tools_Admin {
 	 */
 	const SETTINGS_GROUP_SERVER = 'emcp_tools_server_settings';
 
+	/** Settings group for the Context page. */
+	const SETTINGS_GROUP_CONTEXT = 'emcp_tools_context_settings';
+
 	/**
 	 * Page slug.
 	 *
@@ -88,6 +91,7 @@ class EMCP_Tools_Admin {
 			$this->submenus = array(
 				self::PAGE_SLUG                 => __( 'Tools', 'emcp-tools' ),
 				self::PAGE_SLUG . '-connection' => __( 'Connection', 'emcp-tools' ),
+				self::PAGE_SLUG . '-context'    => __( 'Context', 'emcp-tools' ),
 				self::PAGE_SLUG . '-prompts'    => __( 'Prompts', 'emcp-tools' ),
 				self::PAGE_SLUG . '-templates'  => __( 'Templates', 'emcp-tools' ),
 				self::PAGE_SLUG . '-brand-kits' => __( 'Brand Kits', 'emcp-tools' ),
@@ -111,6 +115,8 @@ class EMCP_Tools_Admin {
 		switch ( $page ) {
 			case self::PAGE_SLUG . '-connection':
 				return 'connection';
+			case self::PAGE_SLUG . '-context':
+				return 'context';
 			case self::PAGE_SLUG . '-prompts':
 				return 'prompts';
 			case self::PAGE_SLUG . '-templates':
@@ -496,6 +502,31 @@ class EMCP_Tools_Admin {
 				},
 			)
 		);
+
+		// Context page — the site-wide guidance + its on/off toggle.
+		register_setting(
+			self::SETTINGS_GROUP_CONTEXT,
+			EMCP_Tools_Site_Context::OPTION_CONTEXT,
+			array(
+				'type'              => 'string',
+				'default'           => '',
+				'sanitize_callback' => static function ( $value ) {
+					$value = sanitize_textarea_field( (string) $value );
+					return mb_substr( $value, 0, EMCP_Tools_Site_Context::MAX_CHARS );
+				},
+			)
+		);
+		register_setting(
+			self::SETTINGS_GROUP_CONTEXT,
+			EMCP_Tools_Site_Context::OPTION_ENABLED,
+			array(
+				'type'              => 'string',
+				'default'           => '1',
+				'sanitize_callback' => static function ( $value ) {
+					return '1' === (string) $value ? '1' : '0';
+				},
+			)
+		);
 	}
 
 	/**
@@ -645,6 +676,8 @@ class EMCP_Tools_Admin {
 				'connectionClients'  => self::connection_clients(),
 				'mcpbNonce'          => wp_create_nonce( self::NONCE_DOWNLOAD_MCPB ),
 				'adminPostUrl'       => admin_url( 'admin-post.php' ),
+				'siteContextBase'      => EMCP_Tools_Site_Context::default_base(),
+				'siteContextDelimiter' => EMCP_Tools_Site_Context::DELIMITER,
 			)
 		);
 	}
@@ -1126,6 +1159,8 @@ class EMCP_Tools_Admin {
 				<?php
 				if ( 'connection' === $active_tab ) {
 					include EMCP_TOOLS_DIR . 'includes/admin/views/page-connection.php';
+				} elseif ( 'context' === $active_tab ) {
+					include EMCP_TOOLS_DIR . 'includes/admin/views/page-context.php';
 				} elseif ( 'prompts' === $active_tab ) {
 					include EMCP_TOOLS_DIR . 'includes/admin/views/page-prompts.php';
 				} elseif ( 'templates' === $active_tab ) {
