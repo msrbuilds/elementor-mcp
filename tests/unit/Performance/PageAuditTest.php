@@ -99,4 +99,22 @@ class PageAuditTest extends TestCase {
 		$result = $this->audit->analyze( $this->fetched( '<html></html>', array(), 404 ), false );
 		$this->assertSame( 'warning', $this->status_of( $result, 'http_status' ) );
 	}
+
+	/** @test */
+	public function safe_redirect_target_allows_same_host_absolute(): void {
+		$next = $this->audit->safe_redirect_target( 'https://example.com/landing/', 'https://example.com/', 'example.com' );
+		$this->assertSame( 'https://example.com/landing/', $next );
+	}
+
+	/** @test */
+	public function safe_redirect_target_rejects_offsite_absolute(): void {
+		$next = $this->audit->safe_redirect_target( 'https://evil.test/x', 'https://example.com/', 'example.com' );
+		$this->assertSame( '', $next );
+	}
+
+	/** @test */
+	public function safe_redirect_target_resolves_relative_to_same_host(): void {
+		$next = $this->audit->safe_redirect_target( '/landing/', 'https://example.com/start', 'example.com' );
+		$this->assertSame( 'https://example.com/landing/', $next );
+	}
 }

@@ -21,6 +21,7 @@ class EMCP_Tools_Performance_Page_Audit {
 
 	const FETCH_TIMEOUT     = 10;
 	const MAX_HTML_BYTES    = 2097152; // 2 MB cap for parsing.
+	const MAX_REDIRECTS     = 3;
 	const RESPONSE_WARN_MS  = 800;
 	const HTML_WARN_BYTES   = 512000;  // 500 KB of HTML.
 	const RENDER_BLOCK_WARN = 5;
@@ -29,47 +30,111 @@ class EMCP_Tools_Performance_Page_Audit {
 	/**
 	 * Perform the loopback fetch and normalize the response.
 	 *
+	 * Redirects are followed manually (never by wp_remote_get) so that every hop
+	 * is re-checked against the origin host — an open redirect to another host is
+	 * refused instead of fetched (SSRF guard).
+	 *
 	 * @param string $url     Same-host URL (validated by the Analyzer).
 	 * @param int    $timeout Seconds.
 	 * @return array { ok, status_code, response_ms, total_bytes, headers, body, error, host }
 	 */
 	public function fetch( string $url, int $timeout = self::FETCH_TIMEOUT ): array {
-		$host  = (string) wp_parse_url( $url, PHP_URL_HOST );
-		$start = microtime( true );
-		$res   = wp_remote_get(
-			$url,
-			array(
-				'timeout'     => $timeout,
-				'redirection' => 3,
-				'user-agent'  => 'EMCP-Performance-Analyzer/' . ( defined( 'EMCP_TOOLS_VERSION' ) ? EMCP_TOOLS_VERSION : '0' ),
-			)
-		);
-		$elapsed = (int) round( ( microtime( true ) - $start ) * 1000 );
+		$origin_host = (string) wp_parse_url( $url, PHP_URL_HOST );
+		$current     = $url;
+		$start       = microtime( true );
 
-		if ( is_wp_error( $res ) ) {
+		for ( $hop = 0; $hop <= self::MAX_REDIRECTS; $hop++ ) {
+			$res = wp_remote_get(
+				$current,
+				array(
+					'timeout'     => $timeout,
+					'redirection' => 0,
+					'user-agent'  => 'EMCP-Performance-Analyzer/' . ( defined( 'EMCP_TOOLS_VERSION' ) ? EMCP_TOOLS_VERSION : '0' ),
+				)
+			);
+
+			if ( is_wp_error( $res ) ) {
+				$elapsed = (int) round( ( microtime( true ) - $start ) * 1000 );
+				return array(
+					'ok' => false, 'status_code' => 0, 'response_ms' => $elapsed, 'total_bytes' => 0,
+					'headers' => array(), 'body' => '', 'error' => $res->get_error_message(), 'host' => $origin_host,
+				);
+			}
+
+			$status   = (int) wp_remote_retrieve_response_code( $res );
+			$location = (string) wp_remote_retrieve_header( $res, 'location' );
+
+			if ( $status >= 300 && $status < 400 && '' !== $location ) {
+				$next = $this->safe_redirect_target( $location, $current, $origin_host );
+				if ( '' === $next ) {
+					$elapsed = (int) round( ( microtime( true ) - $start ) * 1000 );
+					return array(
+						'ok' => false, 'status_code' => $status, 'response_ms' => $elapsed, 'total_bytes' => 0,
+						'headers' => array(), 'body' => '', 'error' => 'offsite_redirect', 'host' => $origin_host,
+					);
+				}
+				$current = $next;
+				continue;
+			}
+
+			// Terminal response.
+			$elapsed = (int) round( ( microtime( true ) - $start ) * 1000 );
+			$body    = (string) wp_remote_retrieve_body( $res );
+			$bytes   = strlen( $body );
+			$headers = $this->normalize_headers( wp_remote_retrieve_headers( $res ) );
+			if ( strlen( $body ) > self::MAX_HTML_BYTES ) {
+				$body = substr( $body, 0, self::MAX_HTML_BYTES );
+			}
+
 			return array(
-				'ok' => false, 'status_code' => 0, 'response_ms' => $elapsed, 'total_bytes' => 0,
-				'headers' => array(), 'body' => '', 'error' => $res->get_error_message(), 'host' => $host,
+				'ok'          => true,
+				'status_code' => $status,
+				'response_ms' => $elapsed,
+				'total_bytes' => $bytes,
+				'headers'     => $headers,
+				'body'        => $body,
+				'error'       => null,
+				'host'        => $origin_host,
 			);
 		}
 
-		$body    = (string) wp_remote_retrieve_body( $res );
-		$bytes   = strlen( $body );
-		$headers = $this->normalize_headers( wp_remote_retrieve_headers( $res ) );
-		if ( strlen( $body ) > self::MAX_HTML_BYTES ) {
-			$body = substr( $body, 0, self::MAX_HTML_BYTES );
-		}
-
+		$elapsed = (int) round( ( microtime( true ) - $start ) * 1000 );
 		return array(
-			'ok'          => true,
-			'status_code' => (int) wp_remote_retrieve_response_code( $res ),
-			'response_ms' => $elapsed,
-			'total_bytes' => $bytes,
-			'headers'     => $headers,
-			'body'        => $body,
-			'error'       => null,
-			'host'        => $host,
+			'ok' => false, 'status_code' => 0, 'response_ms' => $elapsed, 'total_bytes' => 0,
+			'headers' => array(), 'body' => '', 'error' => 'too_many_redirects', 'host' => $origin_host,
 		);
+	}
+
+	/**
+	 * Resolve a (possibly relative) Location against the current URL, then test
+	 * whether it leaves $origin_host. Returns the absolute redirect URL when it
+	 * stays on $origin_host, or '' when it is off-host / unresolvable.
+	 *
+	 * @param string $location    The raw Location header value.
+	 * @param string $current_url The URL that produced the redirect.
+	 * @param string $origin_host The host the loopback must stay on.
+	 * @return string
+	 */
+	public function safe_redirect_target( string $location, string $current_url, string $origin_host ): string {
+		$location = trim( $location );
+		if ( '' === $location ) {
+			return '';
+		}
+		// Resolve relative Location against the current URL's scheme+host.
+		if ( false === strpos( $location, '://' ) ) {
+			$scheme = (string) wp_parse_url( $current_url, PHP_URL_SCHEME );
+			$host   = (string) wp_parse_url( $current_url, PHP_URL_HOST );
+			if ( '' === $host ) {
+				return '';
+			}
+			$prefix   = $scheme ? $scheme . '://' . $host : '//' . $host;
+			$location = ( '/' === substr( $location, 0, 1 ) ) ? $prefix . $location : $prefix . '/' . ltrim( $location, '/' );
+		}
+		$target_host = (string) wp_parse_url( $location, PHP_URL_HOST );
+		if ( '' === $target_host || strtolower( $target_host ) !== strtolower( $origin_host ) ) {
+			return '';
+		}
+		return $location;
 	}
 
 	/**
