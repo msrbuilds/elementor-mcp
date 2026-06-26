@@ -1117,6 +1117,12 @@ namespace {
 			'EMCP_Tools_Theme_Abilities'        => 'includes/abilities/class-theme-abilities.php',
 			'EMCP_Tools_Media_Library_Abilities' => 'includes/abilities/class-media-library-abilities.php',
 			'EMCP_Tools_User_Abilities'         => 'includes/abilities/class-user-abilities.php',
+			// Performance Analyzer (v3.0.0)
+			'EMCP_Tools_Performance_Finding'     => 'includes/performance/class-performance-finding.php',
+			'EMCP_Tools_Performance_Server_Audit' => 'includes/performance/class-performance-server-audit.php',
+			'EMCP_Tools_Performance_Page_Audit'  => 'includes/performance/class-performance-page-audit.php',
+			'EMCP_Tools_Performance_Analyzer'    => 'includes/performance/class-performance-analyzer.php',
+			'EMCP_Tools_Performance_Abilities'   => 'includes/abilities/class-performance-abilities.php',
 		// Admin class (loaded standalone for static-method unit tests)
 		'EMCP_Tools_Admin'                  => 'includes/admin/class-admin.php',
 		];
