@@ -1123,6 +1123,8 @@ namespace {
 			'EMCP_Tools_Performance_Page_Audit'  => 'includes/performance/class-performance-page-audit.php',
 			'EMCP_Tools_Performance_Analyzer'    => 'includes/performance/class-performance-analyzer.php',
 			'EMCP_Tools_Performance_Abilities'   => 'includes/abilities/class-performance-abilities.php',
+		'EMCP_Tools_Filesystem_Guard'        => 'includes/class-filesystem-guard.php',
+		'EMCP_Tools_Filesystem_Abilities'    => 'includes/abilities/class-filesystem-abilities.php',
 		// Admin class (loaded standalone for static-method unit tests)
 		'EMCP_Tools_Site_Context'           => 'includes/class-site-context.php',
 		'EMCP_Tools_Admin'                  => 'includes/admin/class-admin.php',
