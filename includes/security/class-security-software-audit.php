@@ -19,6 +19,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 class EMCP_Tools_Security_Software_Audit {
 
 	const MAX_ABANDONED_LOOKUPS = 30;
+	const ABANDONED_CACHE_TTL   = 43200;  // 12 hours — cache per-slug closed/open status.
 
 	public function evaluate_core_update( bool $available, string $current, string $new ): array {
 		return $available
@@ -127,7 +128,17 @@ class EMCP_Tools_Security_Software_Audit {
 		return $findings;
 	}
 
-	/** @param string[] $active_plugins @return string[] closed/removed slugs */
+	/**
+	 * Detect plugins closed/removed from the wordpress.org directory.
+	 *
+	 * Per-slug results are cached in a transient so repeat scans are instant; the
+	 * MAX_ABANDONED_LOOKUPS cap bounds only live API calls (cached slugs are always
+	 * resolved). A WP_Error (premium plugin / API down) is neither flagged nor
+	 * cached, so a transient outage is retried next scan.
+	 *
+	 * @param string[] $active_plugins
+	 * @return string[] closed/removed slugs
+	 */
 	private function detect_abandoned( array $active_plugins ): array {
 		if ( ! function_exists( 'plugins_api' ) ) {
 			require_once ABSPATH . 'wp-admin/includes/plugin-install.php';
@@ -135,19 +146,32 @@ class EMCP_Tools_Security_Software_Audit {
 		$closed  = array();
 		$checked = 0;
 		foreach ( $active_plugins as $file ) {
-			if ( $checked >= self::MAX_ABANDONED_LOOKUPS ) {
-				break;
-			}
 			$slug = strtok( (string) $file, '/' );
 			if ( '' === $slug ) {
 				continue;
 			}
+
+			$cache_key = 'emcp_sec_abandoned_' . md5( $slug );
+			$cached    = get_transient( $cache_key );
+			if ( false !== $cached ) {
+				if ( 'closed' === $cached ) {
+					$closed[] = $slug;
+				}
+				continue;
+			}
+
+			if ( $checked >= self::MAX_ABANDONED_LOOKUPS ) {
+				continue; // Live API-call budget spent; skip uncached slugs this run.
+			}
 			$checked++;
+
 			$info = plugins_api( 'plugin_information', array( 'slug' => $slug, 'fields' => array( 'sections' => false ) ) );
 			if ( is_wp_error( $info ) ) {
-				continue; // Not on wordpress.org, or API down — do not flag (avoids false positives for premium plugins).
+				continue; // Not on wordpress.org, or API down — don't flag, don't cache.
 			}
-			if ( ! empty( $info->closed ) ) {
+			$state = ! empty( $info->closed ) ? 'closed' : 'open';
+			set_transient( $cache_key, $state, self::ABANDONED_CACHE_TTL );
+			if ( 'closed' === $state ) {
 				$closed[] = $slug;
 			}
 		}
