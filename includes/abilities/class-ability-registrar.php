@@ -163,6 +163,11 @@ class EMCP_Tools_Ability_Registrar {
 		$performance->register();
 		$this->ability_names = array_merge( $this->ability_names, $performance->get_ability_names() );
 
+		// Filesystem abilities (path-confined to ABSPATH; writes disabled-by-default).
+		$filesystem = new EMCP_Tools_Filesystem_Abilities();
+		$filesystem->register();
+		$this->ability_names = array_merge( $this->ability_names, $filesystem->get_ability_names() );
+
 		// SVG icon abilities (upload SVG for use as Elementor icons).
 		$svg_icons = new EMCP_Tools_Svg_Icon_Abilities( $this->data, $this->factory );
 		$svg_icons->register();

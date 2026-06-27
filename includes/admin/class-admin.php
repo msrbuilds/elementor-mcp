@@ -171,7 +171,7 @@ class EMCP_Tools_Admin {
 	 *
 	 * @since 1.8.0
 	 */
-	const DEFAULTS_VERSION = 8;
+	const DEFAULTS_VERSION = 9;
 
 	/**
 	 * SEO/A11y Pro MCP tool slugs that ship disabled-by-default (v2 defaults).
@@ -279,6 +279,17 @@ class EMCP_Tools_Admin {
 	}
 
 	/**
+	 * Filesystem mutation tool slugs that ship disabled-by-default. The reads
+	 * (read-file/list-directory/search-files) stay enabled.
+	 *
+	 * @since 3.0.0
+	 * @return string[]
+	 */
+	public static function filesystem_write_tool_slugs(): array {
+		return array( 'emcp-tools/write-file', 'emcp-tools/edit-file', 'emcp-tools/delete-file' );
+	}
+
+	/**
 	 * Seeds default disabled-tools on install/upgrade so new Pro tool batches
 	 * ship off-by-default (keeping sites under client tool caps), then records
 	 * the applied version. Each version step adds ONLY its newly-introduced
@@ -349,6 +360,11 @@ class EMCP_Tools_Admin {
 		// v8 — Users mutation tools ship disabled-by-default (account changes).
 		if ( $applied < 8 ) {
 			$add = array_merge( $add, self::user_write_tool_slugs() );
+		}
+
+		// v9 — Filesystem mutation tools ship disabled-by-default (write/edit/delete).
+		if ( $applied < 9 ) {
+			$add = array_merge( $add, self::filesystem_write_tool_slugs() );
 		}
 
 		$merged = array_values( array_unique( array_merge( $existing, $add ) ) );
@@ -1438,6 +1454,18 @@ class EMCP_Tools_Admin {
 						'description' => __( 'Audits server config, WordPress internals, and a target page; returns a scored report with recommendations.', 'emcp-tools' ),
 						'badges'      => array( 'read-only' ),
 					),
+				),
+			),
+			'filesystem'       => array(
+				'platform' => 'wordpress',
+				'label' => __( 'Filesystem', 'emcp-tools' ),
+				'tools' => array(
+					'emcp-tools/read-file'      => array( 'label' => __( 'Read File', 'emcp-tools' ),      'description' => __( 'Read a file in the WordPress install.', 'emcp-tools' ),          'badges' => array( 'read-only' ) ),
+					'emcp-tools/list-directory' => array( 'label' => __( 'List Directory', 'emcp-tools' ), 'description' => __( 'List a directory in the WordPress install.', 'emcp-tools' ),      'badges' => array( 'read-only' ) ),
+					'emcp-tools/search-files'   => array( 'label' => __( 'Search Files', 'emcp-tools' ),   'description' => __( 'Search file contents across the install.', 'emcp-tools' ),        'badges' => array( 'read-only' ) ),
+					'emcp-tools/write-file'     => array( 'label' => __( 'Write File', 'emcp-tools' ),     'description' => __( 'Create/overwrite a file (backs up first). Disabled by default.', 'emcp-tools' ), 'badges' => array() ),
+					'emcp-tools/edit-file'      => array( 'label' => __( 'Edit File', 'emcp-tools' ),      'description' => __( 'Replace a string in a file (backs up first). Disabled by default.', 'emcp-tools' ),  'badges' => array() ),
+					'emcp-tools/delete-file'    => array( 'label' => __( 'Delete File', 'emcp-tools' ),    'description' => __( 'Delete a file (backs up; needs confirm). Disabled by default.', 'emcp-tools' ),     'badges' => array() ),
 				),
 			),
 			'wp_packages'      => array(

@@ -47,6 +47,9 @@
         <testsuite name="Performance">
             <directory>tests/unit/Performance</directory>
         </testsuite>
+        <testsuite name="Filesystem">
+            <directory>tests/unit/Filesystem</directory>
+        </testsuite>
     </testsuites>
 
     <source>

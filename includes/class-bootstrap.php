@@ -101,6 +101,9 @@ class EMCP_Tools_Bootstrap {
 		require_once EMCP_TOOLS_DIR . 'includes/performance/class-performance-page-audit.php';
 		require_once EMCP_TOOLS_DIR . 'includes/performance/class-performance-analyzer.php';
 		require_once EMCP_TOOLS_DIR . 'includes/abilities/class-performance-abilities.php';
+		// Filesystem tools (read/scan + write/edit/delete; writes off by default).
+		require_once EMCP_TOOLS_DIR . 'includes/class-filesystem-guard.php';
+		require_once EMCP_TOOLS_DIR . 'includes/abilities/class-filesystem-abilities.php';
 		require_once EMCP_TOOLS_DIR . 'includes/abilities/class-svg-icon-abilities.php';
 		require_once EMCP_TOOLS_DIR . 'includes/abilities/class-custom-code-abilities.php';
 		// Brand Kits (Pro). The writer + backup store + fetcher + abilities load
