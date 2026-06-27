@@ -1478,11 +1478,16 @@ class EMCP_Tools_Admin {
 			),
 			'performance'      => array(
 				'platform' => 'wordpress',
-				'label' => __( 'Performance', 'emcp-tools' ),
+				'label' => __( 'Performance & Security', 'emcp-tools' ),
 				'tools' => array(
 					'emcp-tools/analyze-performance' => array(
 						'label'       => __( 'Analyze Performance', 'emcp-tools' ),
 						'description' => __( 'Audits server config, WordPress internals, and a target page; returns a scored report with recommendations.', 'emcp-tools' ),
+						'badges'      => array( 'read-only' ),
+					),
+					'emcp-tools/scan-security' => array(
+						'label'       => __( 'Scan Security', 'emcp-tools' ),
+						'description' => __( 'Scans for malware heuristics, core file integrity, configuration hardening, and outdated/abandoned software; returns a scored report with recommendations.', 'emcp-tools' ),
 						'badges'      => array( 'read-only' ),
 					),
 				),
