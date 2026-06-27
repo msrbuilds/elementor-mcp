@@ -24,24 +24,59 @@ class EMCP_Tools_Database_Guard {
 	const AUDIT_MAX        = 100;
 
 	/**
-	 * Pure: strip leading SQL comments + whitespace (line `--`/`#` and block).
+	 * Pure: normalize SQL for safe keyword scanning — replace every comment with
+	 * a space and every string / backtick-identifier literal with an empty
+	 * placeholder, so keywords cannot hide inside comments, strings, or quoted
+	 * identifiers. Does NOT special-case /*! (the caller rejects those first).
 	 *
 	 * @param string $sql
 	 * @return string
 	 */
-	public static function strip_leading_comments( string $sql ): string {
-		$s = $sql;
-		do {
-			$before = $s;
-			$s      = ltrim( $s );
-			if ( preg_match( '/^(--[^\n]*(\n|$)|#[^\n]*(\n|$))/', $s, $m ) ) {
-				$s = substr( $s, strlen( $m[0] ) );
+	public static function normalize_sql( string $sql ): string {
+		$out = '';
+		$len = strlen( $sql );
+		$i   = 0;
+		while ( $i < $len ) {
+			$c   = $sql[ $i ];
+			$two = substr( $sql, $i, 2 );
+			if ( '--' === $two || '#' === $c ) {
+				$nl  = strpos( $sql, "\n", $i );
+				$i   = ( false === $nl ) ? $len : $nl + 1;
+				$out .= ' ';
+				continue;
 			}
-			if ( preg_match( '#^/\*.*?\*/#s', $s, $m ) ) {
-				$s = substr( $s, strlen( $m[0] ) );
+			if ( '/*' === $two ) {
+				$end = strpos( $sql, '*/', $i + 2 );
+				$i   = ( false === $end ) ? $len : $end + 2;
+				$out .= ' ';
+				continue;
 			}
-		} while ( $s !== $before );
-		return $s;
+			if ( "'" === $c || '"' === $c ) {
+				$q = $c;
+				$i++;
+				while ( $i < $len ) {
+					if ( '\\' === $sql[ $i ] ) { $i += 2; continue; }
+					if ( $sql[ $i ] === $q ) {
+						if ( $i + 1 < $len && $sql[ $i + 1 ] === $q ) { $i += 2; continue; }
+						$i++;
+						break;
+					}
+					$i++;
+				}
+				$out .= "''";
+				continue;
+			}
+			if ( '`' === $c ) {
+				$i++;
+				while ( $i < $len && '`' !== $sql[ $i ] ) { $i++; }
+				$i++;
+				$out .= '``';
+				continue;
+			}
+			$out .= $c;
+			$i++;
+		}
+		return $out;
 	}
 
 	/**
@@ -51,20 +86,29 @@ class EMCP_Tools_Database_Guard {
 	 * @return true|\WP_Error
 	 */
 	public static function is_read_only_sql( string $sql ) {
-		$body = trim( self::strip_leading_comments( $sql ) );
-		if ( '' === $body ) {
+		// MySQL executes the body of /*! ... */ executable comments, so we cannot
+		// safely strip-and-trust. Refuse any SQL containing the marker.
+		if ( false !== strpos( $sql, '/*!' ) ) {
+			return new \WP_Error( 'executable_comment', __( 'MySQL executable comments (/*! ... */) are not allowed.', 'emcp-tools' ) );
+		}
+		$norm = trim( self::normalize_sql( $sql ) );
+		if ( '' === $norm ) {
 			return new \WP_Error( 'empty_sql', __( 'Empty query.', 'emcp-tools' ) );
 		}
-		// File-access vectors first (a SELECT can read/write disk via these).
-		if ( preg_match( '/\b(into\s+outfile|into\s+dumpfile|load_file\s*\()/i', $body ) ) {
-			return new \WP_Error( 'file_access_blocked', __( 'File-access SQL (OUTFILE/DUMPFILE/LOAD_FILE) is not allowed.', 'emcp-tools' ) );
-		}
-		// Reject stacked statements: a ';' anywhere except a single trailing one.
-		$no_trailing = rtrim( $body, "; \t\r\n" );
+		// Multi-statement: any ';' that isn't the sole trailing character.
+		$no_trailing = rtrim( $norm, "; \t\r\n" );
 		if ( false !== strpos( $no_trailing, ';' ) ) {
 			return new \WP_Error( 'multi_statement', __( 'Multiple SQL statements are not allowed.', 'emcp-tools' ) );
 		}
-		if ( ! preg_match( '/^([a-z]+)/i', $body, $m ) ) {
+		// File-access vectors (comments already normalized to spaces). Note: no
+		// trailing \b — the load_file(...) branch ends in '(', and '(' followed
+		// by another non-word char has no word boundary, so a trailing \b would
+		// (incorrectly) let LOAD_FILE through.
+		if ( preg_match( '/\b(into\s+outfile|into\s+dumpfile|load_file\s*\(|load\s+data\b)/i', $norm ) ) {
+			return new \WP_Error( 'file_access_blocked', __( 'File-access SQL (OUTFILE/DUMPFILE/LOAD_FILE/LOAD DATA) is not allowed.', 'emcp-tools' ) );
+		}
+		// First keyword must be read-only.
+		if ( ! preg_match( '/^([a-z]+)/i', $norm, $m ) ) {
 			return new \WP_Error( 'not_read_only', __( 'Only read-only queries are allowed.', 'emcp-tools' ) );
 		}
 		$kw      = strtoupper( $m[1] );
@@ -75,6 +119,11 @@ class EMCP_Tools_Database_Guard {
 				/* translators: %s: SQL keyword */
 				sprintf( __( 'Only read-only queries are allowed (got %s).', 'emcp-tools' ), $kw )
 			);
+		}
+		// Whole-statement write/DDL denylist (literals/comments already stripped,
+		// so these match only real keyword tokens, not strings or identifiers).
+		if ( preg_match( '/\b(INSERT|UPDATE|DELETE|REPLACE|MERGE|DROP|TRUNCATE|ALTER|CREATE|RENAME|GRANT|REVOKE|HANDLER|CALL|LOCK|UNLOCK|PREPARE|EXECUTE|INTO)\b/i', $norm ) ) {
+			return new \WP_Error( 'not_read_only', __( 'The query contains a write or unsafe keyword.', 'emcp-tools' ) );
 		}
 		return true;
 	}

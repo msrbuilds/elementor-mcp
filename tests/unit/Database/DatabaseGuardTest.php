@@ -74,8 +74,43 @@ class DatabaseGuardTest extends TestCase {
 	}
 
 	/** @test */
-	public function strip_leading_comments_is_pure(): void {
-		$this->assertSame( 'SELECT 1', trim( \EMCP_Tools_Database_Guard::strip_leading_comments( "/* a */ -- b\n SELECT 1" ) ) );
+	public function normalize_sql_strips_comments_and_literals(): void {
+		$norm = \EMCP_Tools_Database_Guard::normalize_sql( "/* a */ SELECT 'x;y' FROM `t`" );
+		$this->assertStringContainsString( 'SELECT', $norm );
+		$this->assertStringNotContainsString( 'x;y', $norm ); // literal emptied
+		$this->assertStringNotContainsString( '/*', $norm ); // comment gone
+	}
+
+	/** @test */
+	public function rejects_executable_comment_bypasses(): void {
+		foreach ( array(
+			"/*! INSERT INTO wp_options(option_name,option_value) */ SELECT 'inj','1'",
+			"/*!50000 INSERT INTO wp_options(option_name,option_value) */ SELECT 'inj','1'",
+			"/*! UPDATE wp_options SET option_value=(*/ SELECT 1 /*!) WHERE option_id=1 */",
+			"/*! CREATE TABLE wp_evil */ SELECT 1 AS a",
+		) as $sql ) {
+			$this->assertSame( 'executable_comment', $this->code( $sql ), $sql );
+		}
+	}
+
+	/** @test */
+	public function rejects_comment_separated_file_access(): void {
+		$this->assertSame( 'file_access_blocked', $this->code( "SELECT LOAD_FILE/**/('/etc/passwd')" ) );
+		$this->assertSame( 'file_access_blocked', $this->code( "SELECT * FROM x INTO/**/OUTFILE '/tmp/x'" ) );
+		$this->assertSame( 'file_access_blocked', $this->code( "SELECT * INTO/**/DUMPFILE '/tmp/x' FROM x" ) );
+	}
+
+	/** @test */
+	public function rejects_with_dml(): void {
+		$this->assertSame( 'not_read_only', $this->code( 'WITH x AS (SELECT 1) DELETE FROM y' ) );
+		$this->assertSame( 'not_read_only', $this->code( 'WITH x AS (SELECT 1) UPDATE y SET a=1' ) );
+	}
+
+	/** @test */
+	public function allows_keywords_inside_string_literals(): void {
+		$this->assertTrue( $this->ok( "SELECT 'please delete this' AS note" ) );
+		$this->assertTrue( $this->ok( "SELECT 'a;b' AS x" ) );
+		$this->assertTrue( $this->ok( 'SELECT delete_count FROM wp_x' ) );
 	}
 
 	/** @test */
