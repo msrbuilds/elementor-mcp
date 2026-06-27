@@ -1,7 +1,8 @@
 <?php
 /**
- * Premium Skills download — bundles plugin's skills/emcp-skills folder on the
- * fly and streams it as emcp-skills.zip for licensed Pro users.
+ * Premium Skills download — bundles every skill folder under the plugin's
+ * skills/ tree (emcp-skills, emcp-performance, emcp-security) on the fly and
+ * streams them as emcp-skills.zip for licensed Pro users.
  *
  * The skills/ folder ships only in the premium build (.emcp-pro marker
  * file present); the free zip excludes it. Even on a premium install the
@@ -22,7 +23,7 @@ class EMCP_Tools_Pro_Skills {
 	 * Relative path (inside the plugin directory) to the skill source folder.
 	 * Folder contents get zipped and streamed.
 	 */
-	const SOURCE_RELATIVE = 'skills/emcp-skills';
+	const SOURCE_RELATIVE = 'skills';
 
 	/**
 	 * Filename sent to the user.
@@ -118,17 +119,20 @@ class EMCP_Tools_Pro_Skills {
 			wp_die( esc_html__( 'Could not open the temporary zip archive for writing.', 'emcp-tools' ), '', array( 'response' => 500 ) );
 		}
 
-		// Top-level folder name inside the zip is `emcp-skills/` so users get
-		// a sensible directory when they extract it on their machine.
+		// Zip the whole skills/ tree so every bundled skill folder
+		// (emcp-skills/, emcp-performance/, emcp-security/) is a top-level
+		// directory when the user extracts the archive.
 		$iterator = new RecursiveIteratorIterator(
 			new RecursiveDirectoryIterator( $source, RecursiveDirectoryIterator::SKIP_DOTS ),
 			RecursiveIteratorIterator::SELF_FIRST
 		);
-		$base_in_zip = 'emcp-skills/';
 		foreach ( $iterator as $file_info ) {
-			$abs_path  = $file_info->getPathname();
-			$rel_path  = ltrim( substr( $abs_path, strlen( $source ) ), DIRECTORY_SEPARATOR . '/' );
-			$zip_path  = $base_in_zip . str_replace( DIRECTORY_SEPARATOR, '/', $rel_path );
+			$abs_path = $file_info->getPathname();
+			$rel_path = ltrim( substr( $abs_path, strlen( $source ) ), DIRECTORY_SEPARATOR . '/' );
+			if ( '' === $rel_path ) {
+				continue;
+			}
+			$zip_path = str_replace( DIRECTORY_SEPARATOR, '/', $rel_path );
 			if ( $file_info->isDir() ) {
 				$zip->addEmptyDir( $zip_path );
 			} else {
