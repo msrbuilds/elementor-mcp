@@ -598,6 +598,32 @@
 .elementor-mcp-category.is-danger .elementor-mcp-tool-card input[type="checkbox"]:focus-visible ~ .elementor-mcp-toggle .elementor-mcp-toggle-track {
 	box-shadow: 0 0 0 2px var(--mcp-white), 0 0 0 4px var(--mcp-danger);
 }
+/* Danger-section polish: deeper title, warm borders, red-tinted header hover +
+   count badge, and disabled cards that read against the red zone. */
+.elementor-mcp-category.is-danger .elementor-mcp-category-title,
+.elementor-mcp-category.is-danger .elementor-mcp-category-chevron {
+	color: #dc2626;
+}
+.elementor-mcp-category.is-danger .elementor-mcp-category-header {
+	border-bottom-color: #fecaca;
+}
+.elementor-mcp-category.is-danger .elementor-mcp-category-toggle:hover {
+	background: #fde4e4;
+}
+.elementor-mcp-category.is-danger .elementor-mcp-category-count {
+	background: #fde4e4;
+	color: #b91c1c;
+}
+.elementor-mcp-category.is-danger .elementor-mcp-tool-card,
+.elementor-mcp-category.is-danger .elementor-mcp-tool-card.is-enabled {
+	border-color: #fecaca;
+}
+.elementor-mcp-category.is-danger .elementor-mcp-tool-card.is-disabled {
+	background: #fdeaea;
+}
+.elementor-mcp-category.is-danger .elementor-mcp-tool-slug {
+	background: #fdeaea;
+}
 
 /* =========================================================================
  * Tool Info
