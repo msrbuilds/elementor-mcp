@@ -1131,6 +1131,14 @@ namespace {
 			'EMCP_Tools_Mcpb_Builder'           => 'includes/admin/class-mcpb-builder.php',
 			'EMCP_Tools_Database_Guard'          => 'includes/class-database-guard.php',
 			'EMCP_Tools_Database_Abilities'      => 'includes/abilities/class-database-abilities.php',
+			// Security & Malware Scanner (v3.0.0)
+			'EMCP_Tools_Security_Finding'        => 'includes/security/class-security-finding.php',
+			'EMCP_Tools_Security_Malware_Audit'  => 'includes/security/class-security-malware-audit.php',
+			'EMCP_Tools_Security_Integrity_Audit' => 'includes/security/class-security-integrity-audit.php',
+			'EMCP_Tools_Security_Hardening_Audit' => 'includes/security/class-security-hardening-audit.php',
+			'EMCP_Tools_Security_Software_Audit' => 'includes/security/class-security-software-audit.php',
+			'EMCP_Tools_Security_Scanner'        => 'includes/security/class-security-scanner.php',
+			'EMCP_Tools_Security_Abilities'      => 'includes/abilities/class-security-abilities.php',
 		];
 
 		if ( isset( $map[ $class ] ) ) {
