@@ -256,11 +256,6 @@ class EMCP_Tools_Bootstrap {
 
 		$missing = array();
 
-		// Elementor must be active.
-		if ( ! did_action( 'elementor/loaded' ) ) {
-			$missing[] = 'Elementor';
-		}
-
 		// WordPress Abilities API must be available. Core in WordPress 6.9+ (and
 		// 7.0); only missing on older WordPress, which the plugin doesn't support.
 		if ( ! function_exists( 'wp_register_ability' ) ) {
@@ -291,6 +286,27 @@ class EMCP_Tools_Bootstrap {
 			);
 
 			return false;
+		}
+
+		// Elementor is OPTIONAL. When absent, the plugin still loads and every
+		// beyond-Elementor tool works; only the Elementor tool family + the
+		// Elementor admin areas are unavailable. Surface a non-blocking warning.
+		if ( ! self::elementor_active() ) {
+			add_action(
+				'admin_notices',
+				function () {
+					if ( ! current_user_can( 'manage_options' ) ) {
+						return;
+					}
+					$install = self_admin_url( 'plugin-install.php?s=Elementor&tab=search&type=term' );
+					printf(
+						'<div class="notice notice-warning"><p>%s</p><p><a class="button button-secondary" href="%s">%s</a></p></div>',
+						esc_html__( 'EMCP Tools is active. Install and activate Elementor to enable the Elementor page-building tools (widgets, layout, templates, brand kits). All other tools — WordPress content, plugins & themes, users, media, performance, security, filesystem, and database — work without it.', 'emcp-tools' ),
+						esc_url( $install ),
+						esc_html__( 'Install Elementor', 'emcp-tools' )
+					);
+				}
+			);
 		}
 
 		return true;
