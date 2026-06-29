@@ -1329,6 +1329,38 @@ class EMCP_Tools_Admin {
 	}
 
 	/**
+	 * Whether a tool category belongs to the Elementor platform (the default
+	 * when no platform key is set), i.e. it is unavailable when Elementor
+	 * is inactive.
+	 *
+	 * @since 3.0.0
+	 *
+	 * @param array $category A get_all_tools() category entry.
+	 * @return bool
+	 */
+	public static function is_elementor_category( array $category ): bool {
+		return 'elementor' === ( $category['platform'] ?? 'elementor' );
+	}
+
+	/**
+	 * Returns the categories with the Elementor-platform ones removed. Used for
+	 * truthful tool counts when Elementor is inactive (those tools never register).
+	 *
+	 * @since 3.0.0
+	 *
+	 * @param array $categories get_all_tools() output.
+	 * @return array
+	 */
+	public static function filter_out_elementor( array $categories ): array {
+		return array_filter(
+			$categories,
+			static function ( $cat ) {
+				return ! self::is_elementor_category( $cat );
+			}
+		);
+	}
+
+	/**
 	 * Get all tools grouped by category for the UI.
 	 *
 	 * Returns the curated catalog (see get_tool_catalog()) and, under WP_DEBUG,
@@ -2155,9 +2187,16 @@ class EMCP_Tools_Admin {
 	 * @return string[] All tool slugs.
 	 */
 	public function get_all_tool_slugs(): array {
-		$slugs = array();
+		$slugs      = array();
+		$categories = $this->get_all_tools();
 
-		foreach ( $this->get_all_tools() as $category ) {
+		// When Elementor is inactive its tool groups never register, so they must
+		// not inflate the "X of Y enabled" stats. Drop Elementor-platform categories.
+		if ( ! EMCP_Tools_Bootstrap::elementor_active() ) {
+			$categories = self::filter_out_elementor( $categories );
+		}
+
+		foreach ( $categories as $category ) {
 			foreach ( $category['tools'] as $slug => $tool ) {
 				$slugs[] = $slug;
 			}
