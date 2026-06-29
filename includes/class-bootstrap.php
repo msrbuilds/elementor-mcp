@@ -291,7 +291,7 @@ class EMCP_Tools_Bootstrap {
 		// Elementor is OPTIONAL. When absent, the plugin still loads and every
 		// beyond-Elementor tool works; only the Elementor tool family + the
 		// Elementor admin areas are unavailable. Surface a non-blocking warning.
-		if ( ! self::elementor_active() ) {
+		if ( ! self::elementor_active() && is_admin() ) {
 			add_action(
 				'admin_notices',
 				function () {
