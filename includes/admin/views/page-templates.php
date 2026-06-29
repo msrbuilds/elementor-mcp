@@ -31,6 +31,17 @@ $emcp_tools_upgrade_url = emcp_tools_upgrade_url();
 
 <div class="elementor-mcp-templates">
 
+	<?php if ( ! EMCP_Tools_Bootstrap::elementor_active() ) : ?>
+	<div class="notice notice-warning inline">
+		<p>
+			<?php esc_html_e( 'Templates import ready-made designs into Elementor. Install and activate Elementor to use this feature.', 'emcp-tools' ); ?>
+			<a href="<?php echo esc_url( self_admin_url( 'plugin-install.php?s=Elementor&tab=search&type=term' ) ); ?>">
+				<?php esc_html_e( 'Install Elementor', 'emcp-tools' ); ?>
+			</a>
+		</p>
+	</div>
+	<?php endif; ?>
+
 	<?php if ( $emcp_tools_has_pro && is_array( $emcp_tools_pro_bundle ) ) :
 		$emcp_tools_total = 0;
 		foreach ( $emcp_tools_pro_bundle['categories'] as $emcp_tools_cat ) {

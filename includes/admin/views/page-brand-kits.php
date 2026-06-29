@@ -64,6 +64,17 @@ foreach ( $emcp_tools_render['categories'] as $emcp_tools_bk_cat ) {
 
 <div class="elementor-mcp-brand-kits">
 
+	<?php if ( ! EMCP_Tools_Bootstrap::elementor_active() ) : ?>
+	<div class="notice notice-warning inline">
+		<p>
+			<?php esc_html_e( 'Brand Kits apply colors and typography to your Elementor kit. Install and activate Elementor to use this feature.', 'emcp-tools' ); ?>
+			<a href="<?php echo esc_url( self_admin_url( 'plugin-install.php?s=Elementor&tab=search&type=term' ) ); ?>">
+				<?php esc_html_e( 'Install Elementor', 'emcp-tools' ); ?>
+			</a>
+		</p>
+	</div>
+	<?php endif; ?>
+
 	<?php if ( $emcp_tools_bk_total > 0 ) : ?>
 
 		<div class="elementor-mcp-pro-prompts">
