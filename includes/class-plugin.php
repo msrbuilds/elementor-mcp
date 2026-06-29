@@ -308,7 +308,7 @@ class EMCP_Tools_Plugin {
 	 * @since 1.0.0
 	 */
 	public function register_abilities(): void {
-		$this->ability_names = $this->registrar->register_all();
+		$this->ability_names = $this->registrar->register_all( EMCP_Tools_Bootstrap::elementor_active() );
 	}
 
 	/**
