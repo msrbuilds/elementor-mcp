@@ -2831,3 +2831,8 @@
 	overflow: auto;
 }
 .elementor-mcp-client-card-label { font-weight: 600; font-size: 13px; text-align: center; }
+
+/* Elementor-inactive state: tools not registered */
+.elementor-mcp-tool-card.is-unavailable { opacity: 0.55; }
+.elementor-mcp-tool-card.is-unavailable .elementor-mcp-toggle-track { cursor: not-allowed; }
+.elementor-mcp-elementor-inactive { margin: 0 0 16px; }

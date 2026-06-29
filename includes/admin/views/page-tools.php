@@ -21,8 +21,9 @@ $emcp_tools_total_count   = $this->get_total_tool_count();
 $emcp_tools_low_mode      = '1' === (string) get_option( EMCP_Tools_Admin::OPTION_LOW_TOOL_MODE, '0' );
 $emcp_tools_essentials    = EMCP_Tools_Plugin::get_essential_tool_slugs();
 
-$emcp_tools_tabs    = EMCP_Tools_Admin::platform_tabs();
-$emcp_tools_buckets = EMCP_Tools_Admin::partition_by_platform( $emcp_tools_all_tools );
+$emcp_tools_tabs               = EMCP_Tools_Admin::platform_tabs();
+$emcp_tools_buckets            = EMCP_Tools_Admin::partition_by_platform( $emcp_tools_all_tools );
+$emcp_tools_elementor_active   = EMCP_Tools_Bootstrap::elementor_active();
 
 /**
  * Per-tab enabled/total counts, computed with the same effective-state logic
@@ -151,6 +152,16 @@ $emcp_tools_badge_labels = array(
 			role="tabpanel"
 			data-tab="<?php echo esc_attr( $emcp_tools_tab_id ); ?>"
 		>
+			<?php if ( 'elementor' === $emcp_tools_tab_id && ! $emcp_tools_elementor_active ) : ?>
+			<div class="notice notice-warning inline elementor-mcp-elementor-inactive">
+				<p>
+					<?php esc_html_e( 'Elementor is not active. Install and activate Elementor to use these tools.', 'emcp-tools' ); ?>
+					<a href="<?php echo esc_url( self_admin_url( 'plugin-install.php?s=Elementor&tab=search&type=term' ) ); ?>">
+						<?php esc_html_e( 'Install Elementor', 'emcp-tools' ); ?>
+					</a>
+				</p>
+			</div>
+			<?php endif; ?>
 			<?php foreach ( $emcp_tools_tab_cats as $emcp_tools_category_id => $emcp_tools_category ) : ?>
 				<div class="elementor-mcp-category <?php echo esc_attr( ! empty( $emcp_tools_category['danger'] ) ? 'is-danger' : '' ); ?>" data-category="<?php echo esc_attr( $emcp_tools_category_id ); ?>">
 					<?php
@@ -164,7 +175,8 @@ $emcp_tools_badge_labels = array(
 							$emcp_tools_cat_enabled++;
 						}
 					}
-					$emcp_tools_grid_id = 'emcp-cat-' . $emcp_tools_category_id;
+					$emcp_tools_grid_id       = 'emcp-cat-' . $emcp_tools_category_id;
+					$emcp_tools_cat_unavailable = ( ! $emcp_tools_elementor_active && EMCP_Tools_Admin::is_elementor_category( $emcp_tools_category ) );
 					?>
 					<div class="elementor-mcp-category-header">
 						<button
@@ -201,7 +213,7 @@ $emcp_tools_badge_labels = array(
 								? in_array( $emcp_tools_slug, $emcp_tools_essentials, true )
 								: ! in_array( $emcp_tools_slug, $emcp_tools_disabled, true );
 							?>
-							<label class="elementor-mcp-tool-card <?php echo esc_attr( $emcp_tools_is_enabled ? 'is-enabled' : 'is-disabled' ); ?>">
+							<label class="elementor-mcp-tool-card <?php echo esc_attr( ( $emcp_tools_is_enabled ? 'is-enabled' : 'is-disabled' ) . ( $emcp_tools_cat_unavailable ? ' is-unavailable' : '' ) ); ?>">
 								<input
 									type="checkbox"
 									name="<?php echo esc_attr( EMCP_Tools_Admin::OPTION_DISABLED_TOOLS ); ?>[]"
@@ -209,7 +221,7 @@ $emcp_tools_badge_labels = array(
 									data-essential="<?php echo esc_attr( in_array( $emcp_tools_slug, $emcp_tools_essentials, true ) ? '1' : '0' ); ?>"
 									data-stored-enabled="<?php echo esc_attr( in_array( $emcp_tools_slug, $emcp_tools_disabled, true ) ? '0' : '1' ); ?>"
 									<?php checked( $emcp_tools_is_enabled ); ?>
-									<?php disabled( $emcp_tools_low_mode ); ?>
+									<?php disabled( $emcp_tools_low_mode || $emcp_tools_cat_unavailable ); ?>
 								/>
 								<span class="elementor-mcp-toggle" aria-hidden="true">
 									<span class="elementor-mcp-toggle-track"></span>
