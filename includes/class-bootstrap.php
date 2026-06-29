@@ -54,6 +54,20 @@ class EMCP_Tools_Bootstrap {
 	}
 
 	/**
+	 * Whether Elementor is loaded/active in this request.
+	 *
+	 * Single source of truth for the optional-Elementor gate: the tool registrar,
+	 * the admin Tools page, and the Brand Kits / Templates tabs all read this.
+	 *
+	 * @since 3.0.0
+	 *
+	 * @return bool
+	 */
+	public static function elementor_active(): bool {
+		return (bool) did_action( 'elementor/loaded' );
+	}
+
+	/**
 	 * Loads all class files (core, data, abilities, features). Self-guarded
 	 * feature groups (Pro / atomic) are loaded unconditionally; they no-op on
 	 * registration when their gate isn't met.

@@ -53,6 +53,9 @@
         <testsuite name="Database">
             <directory>tests/unit/Database</directory>
         </testsuite>
+        <testsuite name="Bootstrap">
+            <directory>tests/unit/Bootstrap</directory>
+        </testsuite>
     </testsuites>
 
     <source>

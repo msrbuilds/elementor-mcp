@@ -543,6 +543,12 @@ namespace {
 		}
 	}
 
+	if ( ! function_exists( 'did_action' ) ) {
+		function did_action( string $hook_name ): int {
+			return (int) ( $GLOBALS['_did_actions'][ $hook_name ] ?? 0 );
+		}
+	}
+
 	// --- Content-tool stubs (added for WordPress Content tools) ---
 	// Note: sanitize_key() and sanitize_title() already defined above; skipped here.
 
@@ -1184,6 +1190,7 @@ namespace {
 		'EMCP_Tools_Filesystem_Guard'        => 'includes/class-filesystem-guard.php',
 		'EMCP_Tools_Filesystem_Abilities'    => 'includes/abilities/class-filesystem-abilities.php',
 		// Admin class (loaded standalone for static-method unit tests)
+		'EMCP_Tools_Bootstrap'              => 'includes/class-bootstrap.php',
 		'EMCP_Tools_Site_Context'           => 'includes/class-site-context.php',
 		'EMCP_Tools_Admin'                  => 'includes/admin/class-admin.php',
 			'EMCP_Tools_Mcpb_Builder'           => 'includes/admin/class-mcpb-builder.php',
