@@ -1,6 +1,6 @@
 <?php
 /**
- * Fetches and caches the premium prompts library from emcp.msrbuilds.com.
+ * Fetches and caches the premium prompts library from emcptools.com.
  *
  * The prompt content lives on the server, not in the plugin zip. The plugin
  * sends the active Freemius license key via Authorization header to a
@@ -62,7 +62,7 @@ class EMCP_Tools_Pro_Prompts {
 	 *
 	 * @var string
 	 */
-	const DEFAULT_ENDPOINT = 'https://emcp.msrbuilds.com/api/emcp/prompts.json';
+	const DEFAULT_ENDPOINT = 'https://emcptools.com/api/emcp/prompts.json';
 
 	/**
 	 * Whether the current site can access premium prompts.

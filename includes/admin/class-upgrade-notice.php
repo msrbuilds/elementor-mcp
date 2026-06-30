@@ -69,8 +69,8 @@ class EMCP_Tools_Upgrade_Notice {
 
 		$upgrade_url = function_exists( 'emcp_tools_upgrade_url' )
 			? emcp_tools_upgrade_url()
-			: 'https://emcp.msrbuilds.com/pricing';
-		$docs_url    = 'https://emcp.msrbuilds.com/docs/prompts/premium-library';
+			: 'https://emcptools.com/pricing';
+		$docs_url    = 'https://emcptools.com/docs/prompts/premium-library';
 		$nonce       = wp_create_nonce( self::NONCE_ACTION );
 		?>
 		<style>

@@ -1,6 +1,6 @@
 <?php
 /**
- * Fetches and caches the premium templates library from emcp.msrbuilds.com.
+ * Fetches and caches the premium templates library from emcptools.com.
  *
  * Mirror of class-pro-prompts.php for templates. Same auth flow, different
  * endpoint and bundle shape. Each template's `data` field is an Elementor
@@ -40,7 +40,7 @@ class EMCP_Tools_Pro_Templates {
 	 *
 	 * @var string
 	 */
-	const DEFAULT_ENDPOINT = 'https://emcp.msrbuilds.com/api/emcp/templates.json';
+	const DEFAULT_ENDPOINT = 'https://emcptools.com/api/emcp/templates.json';
 
 	/**
 	 * Whether the current site can access premium templates.

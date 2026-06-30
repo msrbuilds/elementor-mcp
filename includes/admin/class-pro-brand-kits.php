@@ -1,6 +1,6 @@
 <?php
 /**
- * Fetches and caches the premium Brand Kits library from emcp.msrbuilds.com,
+ * Fetches and caches the premium Brand Kits library from emcptools.com,
  * and orchestrates applying a kit to the active Elementor kit.
  *
  * Mirror of class-pro-templates.php for brand kits: same auth flow, same 24h
@@ -61,7 +61,7 @@ class EMCP_Tools_Pro_Brand_Kits {
 	 *
 	 * @var string
 	 */
-	const DEFAULT_ENDPOINT = 'https://emcp.msrbuilds.com/api/emcp/brand-kits.json';
+	const DEFAULT_ENDPOINT = 'https://emcptools.com/api/emcp/brand-kits.json';
 
 	/**
 	 * Whether the current site can access premium brand kits.
