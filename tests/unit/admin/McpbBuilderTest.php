@@ -40,7 +40,9 @@ class McpbBuilderTest extends TestCase {
 		$cfg = $this->manifest()['server']['mcp_config'];
 		// mcp_config now runs the bundled entry-point via node (no npx needed).
 		$this->assertSame( 'node', $cfg['command'] );
-		$this->assertContains( 'server/index.js', $cfg['args'] );
+		// args MUST use ${__dirname} so Node resolves the entry-point against the
+		// extracted bundle dir, not Claude Desktop's CWD.
+		$this->assertContains( '${__dirname}/server/index.js', $cfg['args'] );
 	}
 
 	/** @test */

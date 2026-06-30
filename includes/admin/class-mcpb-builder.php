@@ -53,9 +53,14 @@ class EMCP_Tools_Mcpb_Builder {
 				'entry_point' => self::ENTRY_POINT,
 				// mcp_config mirrors the entry-point command so the manifest
 				// is valid regardless of which path Claude Desktop takes.
+				// args MUST use ${__dirname} — Claude Desktop does not cd into
+				// the extracted bundle dir before running `node`, so a relative
+				// path resolves against the wrong CWD and Node throws "Cannot
+				// find module" → instant "Server disconnected". ${__dirname} is
+				// the MCPB substitution variable for the bundle's install path.
 				'mcp_config'  => array(
 					'command' => 'node',
-					'args'    => array( self::ENTRY_POINT ),
+					'args'    => array( '${__dirname}/' . self::ENTRY_POINT ),
 					'env'     => array(
 						'WP_URL'               => $site_url,
 						'WP_USERNAME'          => $username,
