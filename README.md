@@ -608,7 +608,6 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines on how to get sta
 ## Contributors
 
 - **[@msrbuilds](https://github.com/msrbuilds)** — Original author and maintainer
-- **[@mhamzashafiq](https://github.com/mhamzashafiq)** — Layout & element tools, widget convenience shortcuts, theme builder, dynamic tags, popup builder, WooCommerce widget tools, motion effects support, settings validator improvements
 
 ## License
 
