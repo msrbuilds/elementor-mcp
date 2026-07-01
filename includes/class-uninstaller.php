@@ -57,5 +57,23 @@ class EMCP_Tools_Uninstaller {
 		if ( class_exists( 'EMCP_Tools_PHP_Snippet_Store' ) ) {
 			EMCP_Tools_PHP_Snippet_Store::uninstall_cleanup();
 		}
+
+		// AI Chat: saved conversations + per-user API keys + cached model lists.
+		// The store class ships in the private Pro overlay; on a free install the
+		// file is absent, so resolve it defensively (dual-root) instead of a hard
+		// require that would fatal uninstall. The option/meta deletes below still
+		// clean up regardless.
+		if ( ! class_exists( 'EMCP_Tools_AI_Chat_Store' ) && class_exists( 'EMCP_Tools_Pro_Loader' ) ) {
+			$emcp_store = EMCP_Tools_Pro_Loader::path( 'includes/ai-chat/class-ai-chat-store.php' );
+			if ( '' !== $emcp_store ) {
+				require_once $emcp_store;
+			}
+		}
+		if ( class_exists( 'EMCP_Tools_AI_Chat_Store' ) ) {
+			EMCP_Tools_AI_Chat_Store::uninstall_cleanup();
+		}
+		delete_option( 'emcp_tools_ai_models' );
+		delete_metadata( 'user', 0, 'emcp_tools_ai_keys', '', true );
+		delete_metadata( 'user', 0, 'emcp_tools_ai_defaults', '', true );
 	}
 }

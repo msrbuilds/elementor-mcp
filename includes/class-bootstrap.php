@@ -89,10 +89,6 @@ class EMCP_Tools_Bootstrap {
 		require_once EMCP_TOOLS_DIR . 'includes/validators/class-settings-validator.php';
 		// Widget catalog — source of truth for the 5 catalog-backed widget tools.
 		require_once EMCP_TOOLS_DIR . 'includes/widgets/class-widget-catalog.php';
-		// SEO / A11y toolkit shared helpers (used by the Pro audit abilities).
-		require_once EMCP_TOOLS_DIR . 'includes/class-color-contrast.php';
-		require_once EMCP_TOOLS_DIR . 'includes/class-content-extractor.php';
-		require_once EMCP_TOOLS_DIR . 'includes/class-seo-meta.php';
 		require_once EMCP_TOOLS_DIR . 'includes/abilities/class-query-abilities.php';
 		require_once EMCP_TOOLS_DIR . 'includes/abilities/class-page-abilities.php';
 		require_once EMCP_TOOLS_DIR . 'includes/abilities/class-layout-abilities.php';
@@ -131,21 +127,18 @@ class EMCP_Tools_Bootstrap {
 		require_once EMCP_TOOLS_DIR . 'includes/abilities/class-security-abilities.php';
 		require_once EMCP_TOOLS_DIR . 'includes/abilities/class-svg-icon-abilities.php';
 		require_once EMCP_TOOLS_DIR . 'includes/abilities/class-custom-code-abilities.php';
-		// Brand Kits (Pro). The writer + backup store + fetcher + abilities load
-		// unconditionally (no admin dependency) so the MCP REST/CLI/proxy surface
-		// can reach them; every write method is independently Pro-gated.
+		// Brand Kits. The free writer + backup store + free-kit fetcher load
+		// unconditionally so the MCP REST/CLI/proxy surface can reach them. The
+		// Pro brand-kit admin + system-kit abilities live in the private Pro
+		// overlay and are loaded by EMCP_Tools_Pro_Loader below.
 		require_once EMCP_TOOLS_DIR . 'includes/class-system-kit-writer.php';
 		require_once EMCP_TOOLS_DIR . 'includes/class-kit-backup-store.php';
 		require_once EMCP_TOOLS_DIR . 'includes/class-free-brand-kits.php';
-		require_once EMCP_TOOLS_DIR . 'includes/admin/class-pro-brand-kits.php';
-		require_once EMCP_TOOLS_DIR . 'includes/abilities/class-system-kit-abilities.php';
-		// Widget Builder (Pro) — sandboxed AI-generated Elementor widgets. The
-		// generator/store/loader load unconditionally so the MCP surface can reach
-		// them; every write + the loader itself are independently Pro-gated.
-		require_once EMCP_TOOLS_DIR . 'includes/class-widget-generator.php';
+		// Widget Builder infra (free base). The store + loader load unconditionally
+		// so the MCP surface + CPT registration can reach them; the generator +
+		// builder abilities ship in the Pro overlay (loaded via Pro_Loader).
 		require_once EMCP_TOOLS_DIR . 'includes/class-widget-store.php';
 		require_once EMCP_TOOLS_DIR . 'includes/class-widget-loader.php';
-		require_once EMCP_TOOLS_DIR . 'includes/abilities/class-widget-builder-abilities.php';
 		// PHP Code Snippets (Sandbox) — free, capability-gated. AI can author +
 		// validate drafts via MCP; only an admin can activate. The loader runs
 		// ACTIVE snippets (hash-verified, fatal-isolated).
@@ -153,10 +146,6 @@ class EMCP_Tools_Bootstrap {
 		require_once EMCP_TOOLS_DIR . 'includes/class-php-snippet-store.php';
 		require_once EMCP_TOOLS_DIR . 'includes/class-php-snippet-loader.php';
 		require_once EMCP_TOOLS_DIR . 'includes/abilities/class-php-snippet-abilities.php';
-		// SEO toolkit abilities (Pro only; self-guards on license at registration).
-		require_once EMCP_TOOLS_DIR . 'includes/abilities/class-seo-abilities.php';
-		// Accessibility toolkit abilities (Pro only; self-guards on license).
-		require_once EMCP_TOOLS_DIR . 'includes/abilities/class-a11y-abilities.php';
 		// Atomic elements support (Elementor 4.0+).
 		require_once EMCP_TOOLS_DIR . 'includes/class-atomic-props.php';
 		require_once EMCP_TOOLS_DIR . 'includes/class-atomic-styles.php';
@@ -166,6 +155,13 @@ class EMCP_Tools_Bootstrap {
 		require_once EMCP_TOOLS_DIR . 'includes/abilities/class-global-classes-abilities.php';
 		// Background library refresh.
 		require_once EMCP_TOOLS_DIR . 'includes/class-library-refresher.php';
+		// Pro-tier units (SEO/a11y helpers + abilities, widget generator + builder
+		// abilities, system-kit abilities, Pro brand kits, AI Chat). These ship in
+		// the private Pro overlay (pro/) and are absent from the free build; the
+		// loader require_once's each only when present, so the free plugin runs
+		// with zero Pro references. Each unit still self-gates on license.
+		require_once EMCP_TOOLS_DIR . 'includes/class-pro-loader.php';
+		EMCP_Tools_Pro_Loader::load_runtime();
 
 		require_once EMCP_TOOLS_DIR . 'includes/abilities/class-ability-registrar.php';
 		require_once EMCP_TOOLS_DIR . 'includes/class-plugin.php';
@@ -187,6 +183,9 @@ class EMCP_Tools_Bootstrap {
 		// unconditionally (cron runs in a non-admin context) so an expired 24h
 		// cache self-heals without the user clicking "Sync Library".
 		EMCP_Tools_Library_Refresher::register();
+		// AI Chat (Pro): REST routes + weekly model-list refresh cron + saved-
+		// conversation CPT. No-op in the free build (classes absent).
+		EMCP_Tools_Pro_Loader::wire_runtime_hooks();
 	}
 
 	/**
@@ -198,17 +197,12 @@ class EMCP_Tools_Bootstrap {
 		require_once EMCP_TOOLS_DIR . 'includes/admin/class-admin.php';
 		require_once EMCP_TOOLS_DIR . 'includes/admin/class-mcpb-builder.php';
 
-		if ( ! function_exists( 'emcp_tools_fs' ) ) {
-			return;
-		}
-
-		require_once EMCP_TOOLS_DIR . 'includes/admin/class-pro-prompts.php';
-		require_once EMCP_TOOLS_DIR . 'includes/admin/class-pro-templates.php';
-		require_once EMCP_TOOLS_DIR . 'includes/admin/class-pro-ajax.php';
-		EMCP_Tools_Pro_Ajax::register();
-
-		require_once EMCP_TOOLS_DIR . 'includes/admin/class-pro-skills.php';
-		( new EMCP_Tools_Pro_Skills() )->init();
+		// Pro admin units (AI Chat page assets + Pro prompts/templates/skills +
+		// Pro-library ajax). Loaded from the private Pro overlay when present;
+		// no-op in the free build. wire_admin_hooks() replicates the previous
+		// order: AI-chat page init, then the emcp_tools_fs()-gated Pro handlers.
+		EMCP_Tools_Pro_Loader::load_admin();
+		EMCP_Tools_Pro_Loader::wire_admin_hooks();
 
 		require_once EMCP_TOOLS_DIR . 'includes/admin/class-upgrade-notice.php';
 		( new EMCP_Tools_Upgrade_Notice() )->init();

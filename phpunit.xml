@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/10.0/phpunit.xsd"
-         bootstrap="tests/bootstrap.php"
+         bootstrap="pro/tests/bootstrap.php"
          colors="true"
          stopOnFailure="false"
          beStrictAboutOutputDuringTests="true"
@@ -9,61 +9,62 @@
 
     <testsuites>
         <testsuite name="Security">
-            <directory>tests/unit/Security</directory>
+            <directory>pro/tests/unit/Security</directory>
         </testsuite>
         <testsuite name="Capabilities">
-            <directory>tests/unit/capabilities</directory>
+            <directory>pro/tests/unit/capabilities</directory>
         </testsuite>
         <testsuite name="Input">
-            <directory>tests/unit/input</directory>
+            <directory>pro/tests/unit/input</directory>
         </testsuite>
         <testsuite name="Functional">
-            <directory>tests/unit/functional</directory>
+            <directory>pro/tests/unit/functional</directory>
         </testsuite>
         <testsuite name="Regression">
-            <directory>tests/unit/regression</directory>
+            <directory>pro/tests/unit/regression</directory>
         </testsuite>
         <testsuite name="Widgets">
-            <directory>tests/unit/widgets</directory>
+            <directory>pro/tests/unit/widgets</directory>
         </testsuite>
         <testsuite name="Content">
-            <directory>tests/unit/content</directory>
+            <directory>pro/tests/unit/content</directory>
         </testsuite>
         <testsuite name="Settings">
-            <directory>tests/unit/settings</directory>
+            <directory>pro/tests/unit/settings</directory>
         </testsuite>
         <testsuite name="Packages">
-            <directory>tests/unit/packages</directory>
+            <directory>pro/tests/unit/packages</directory>
         </testsuite>
         <testsuite name="Media">
-            <directory>tests/unit/media</directory>
+            <directory>pro/tests/unit/media</directory>
         </testsuite>
         <testsuite name="Users">
-            <directory>tests/unit/users</directory>
+            <directory>pro/tests/unit/users</directory>
         </testsuite>
         <testsuite name="Admin">
-            <directory>tests/unit/admin</directory>
+            <directory>pro/tests/unit/admin</directory>
         </testsuite>
         <testsuite name="Performance">
-            <directory>tests/unit/Performance</directory>
+            <directory>pro/tests/unit/Performance</directory>
         </testsuite>
         <testsuite name="Filesystem">
-            <directory>tests/unit/Filesystem</directory>
+            <directory>pro/tests/unit/Filesystem</directory>
         </testsuite>
         <testsuite name="Database">
-            <directory>tests/unit/Database</directory>
+            <directory>pro/tests/unit/Database</directory>
         </testsuite>
         <testsuite name="Bootstrap">
-            <directory>tests/unit/Bootstrap</directory>
+            <directory>pro/tests/unit/Bootstrap</directory>
         </testsuite>
     </testsuites>
 
     <source>
         <include>
             <directory suffix=".php">includes</directory>
+            <directory suffix=".php">pro/includes</directory>
         </include>
         <exclude>
-            <directory>tests</directory>
+            <directory>pro/tests</directory>
             <directory>vendor</directory>
         </exclude>
     </source>

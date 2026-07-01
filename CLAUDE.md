@@ -47,6 +47,31 @@ No external dependencies. The plugin uses WordPress core, Elementor, the core Ab
 
 For plugin review tooling, the `.claude/skills/wp-plugin-review/scripts/setup_tools.sh` script installs PHPCS, WPCS, PHPStan, and PHPUnit.
 
+### Release build (free/pro split)
+
+- **Free zip** (`emcp-tools-X.Y.Z.zip`, GitHub release): built from the public repo **excluding `pro/`, `tests/`, `tools/`, `skills/`** (plus the usual `.*`, `vendor/`, `docs/`, etc.). No `.emcp-pro` marker.
+- **Pro zip** (`emcp-pro-X.Y.Z.zip`, Freemius): the free tree with **`pro/*` overlaid onto plugin paths** (`cp -r pro/includes/. includes/`, `cp -r pro/assets/. assets/`), plus `skills/` and the `.emcp-pro` marker. `pro/tests` + `pro/tools` are NOT shipped.
+- **Always run** `tools/verify-release-zip.sh <zip> pro-manifest.txt` on the free zip (hard-fails on any Pro-path leak) and `tools/verify-release-zip.sh <pro-zip>` on the Pro zip. `tools/` lives in the `pro/` submodule.
+
+### Freemius policy (do NOT regress)
+
+Freemius has **no separate free-zip upload** — it auto-generates a free build from the premium upload. Since that generated build is derived from the premium tree, it would contain Pro source. Therefore: **upload the premium zip only, and keep the auto-generated free build UNRELEASED on Freemius.** Free distribution **and updates** happen via **GitHub only** (`is_org_compliant => false` means the SDK would otherwise serve Freemius updates to connected free installs). The generated free zip is reachable only from the private Developer Dashboard — never publish/Release it.
+
+## Repository topology (free/pro split — 2026-07-02)
+
+The plugin is split across **two repos** so no Pro-tier source ships in any free artifact:
+
+- **`msrbuilds/elementor-mcp`** (public) — the free plugin + source of truth for all free-tier code.
+- **`msrbuilds/emcp-pro`** (**private**) — the Pro overlay, mounted as a **git submodule at `pro/`**. Mirrors plugin paths (`pro/includes/…`, `pro/assets/…`) plus `tests/`, `tools/`, and `skills/`.
+
+**Loader.** `includes/class-pro-loader.php` (`EMCP_Tools_Pro_Loader`, a free class) is the single boundary that conditionally loads Pro units. `path()`/`url()` resolve each Pro file **dual-root**: from the plugin root (premium build, where `pro/*` is overlaid) or from `pro/<rel>` (dev checkout with the submodule). The free plugin runs with `pro/` absent — every Pro `require`/instantiation is guarded by `file_exists`/`class_exists`, and each Pro unit still self-gates on `can_use_premium_code()`.
+
+**Classification rule.** A file belongs in `pro/` **only if every consumer is Pro**. Anything a free file references stays free (its Pro-only methods stay license-gated). `pro-manifest.txt` (public repo root) is the authoritative Pro-path list; the build + `tools/verify-release-zip.sh` Pro-leak gate consume it.
+
+**Dev workflow.** Clone with `--recurse-submodules` (Pro devs only; free clones can't fetch the private submodule and just get the free plugin). Edit Pro code directly in `pro/` — no in-place copies, no sync. Run tests from the plugin root: `phpunit` (config points at `pro/tests`). Verified counts: Pro present = 134 abilities; free (`pro/` absent) = 115.
+
+**History note.** Pre-split Pro code remains in the public repo's *history* (HEAD-only removal, by decision). The AI-chat crypto was reviewed — no hardcoded secrets, keys derive from per-site `AUTH_KEY` — so nothing exploitable was disclosed. See `pro/SECURITY.md`.
+
 ## Architecture
 
 ### MCP Server Registration
@@ -64,6 +89,7 @@ emcp-tools/
 │   ├── class-element-factory.php              # Builds valid Elementor JSON element structures (container, widget, section, column)
 │   ├── class-id-generator.php                 # 7-char hex unique IDs via random_bytes()
 │   ├── class-openverse-client.php             # HTTP client for Openverse image search API
+│   ├── class-pro-loader.php                   # EMCP_Tools_Pro_Loader — conditional dual-root loader for the private Pro overlay (pro/). Free class; no-op when pro/ absent
 │   ├── widgets/                               # Curated widget catalog (v3.0.0): class-widget-catalog.php + catalog-{free,pro,woo}.php (27/30/5 = 62 widgets as DATA, not tools)
 │   ├── abilities/
 │   │   ├── class-ability-registrar.php        # Coordinates registration of all ability groups across all phases
@@ -95,8 +121,18 @@ emcp-tools/
 │   ├── WEB_DEVELOPER_PORTFOLIO.md
 │   ├── HAIR_SALON.md
 │   └── CAR_WASH.md
-└── tests/                                      # PHPUnit tests (not yet created)
+└── pro/                                        # PRIVATE Pro overlay — git submodule → msrbuilds/emcp-pro. Absent in free clones.
+    ├── includes/abilities/                     #   Pro abilities: seo, a11y, widget-builder, system-kit
+    ├── includes/ai-chat/                       #   AI Chat (key-crypto, providers, controller, store, admin page)
+    ├── includes/admin/                         #   class-pro-{prompts,templates,ajax,skills,brand-kits}.php + views page-ai-chat/page-skills
+    ├── includes/                               #   Pro helpers: color-contrast, content-extractor, seo-meta, widget-generator
+    ├── assets/{js,css}/ai-chat.*               #   Pro assets
+    ├── skills/                                 #   premium-only skills content
+    ├── tests/                                  #   PHPUnit suite (run from plugin root: `phpunit` → config points at pro/tests)
+    └── tools/                                  #   release + verify tooling (verify-release-zip.sh)
 ```
+
+> **Note:** `tests/` and `tools/` moved into the private `pro/` submodule; the public repo ships neither. `phpunit.xml`/`.dist` (dev-only, excluded from zips) point at `pro/tests`.
 
 ### Hook Registration Flow
 

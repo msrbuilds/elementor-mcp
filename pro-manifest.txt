@@ -1,0 +1,22 @@
+# Pro-only paths. Present in the private emcp-pro submodule (pro/), absent from
+# the free plugin + free zip. Consumed by build + verify scripts.
+includes/abilities/class-seo-abilities.php
+includes/abilities/class-a11y-abilities.php
+includes/abilities/class-widget-builder-abilities.php
+includes/abilities/class-system-kit-abilities.php
+includes/class-color-contrast.php
+includes/class-content-extractor.php
+includes/class-seo-meta.php
+includes/class-widget-generator.php
+includes/ai-chat
+includes/admin/class-pro-prompts.php
+includes/admin/class-pro-templates.php
+includes/admin/class-pro-ajax.php
+includes/admin/class-pro-skills.php
+includes/admin/class-pro-brand-kits.php
+includes/admin/views/page-ai-chat.php
+includes/admin/views/page-skills.php
+assets/js/ai-chat.js
+assets/css/ai-chat.css
+tests
+tools

@@ -381,6 +381,11 @@ class EMCP_Tools_Widget_Store {
 	 * @return true|WP_Error
 	 */
 	private static function write_widget( int $post_id, array $spec ) {
+		// The generator ships in the private Pro overlay. Guard defensively so a
+		// free build (pro/ absent) returns a clean error instead of fataling.
+		if ( ! class_exists( 'EMCP_Tools_Widget_Generator' ) ) {
+			return new WP_Error( 'emcp_pro_required', __( 'Widget Builder requires EMCP Pro.', 'emcp-tools' ) );
+		}
 		$class_name  = 'EMCP_Widget_' . $post_id;
 		$widget_name = 'emcp_custom_' . $post_id;
 

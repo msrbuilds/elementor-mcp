@@ -91,6 +91,7 @@ class EMCP_Tools_Admin {
 			$this->submenus = array(
 				self::PAGE_SLUG                 => __( 'Tools', 'emcp-tools' ),
 				self::PAGE_SLUG . '-connection' => __( 'Connection', 'emcp-tools' ),
+				self::PAGE_SLUG . '-ai-chat'    => __( 'AI Chat', 'emcp-tools' ),
 				self::PAGE_SLUG . '-context'    => __( 'Context', 'emcp-tools' ),
 				self::PAGE_SLUG . '-prompts'    => __( 'Prompts', 'emcp-tools' ),
 				self::PAGE_SLUG . '-templates'  => __( 'Templates', 'emcp-tools' ),
@@ -115,6 +116,8 @@ class EMCP_Tools_Admin {
 		switch ( $page ) {
 			case self::PAGE_SLUG . '-connection':
 				return 'connection';
+			case self::PAGE_SLUG . '-ai-chat':
+				return 'ai-chat';
 			case self::PAGE_SLUG . '-context':
 				return 'context';
 			case self::PAGE_SLUG . '-prompts':
@@ -1191,6 +1194,14 @@ class EMCP_Tools_Admin {
 				<?php
 				if ( 'connection' === $active_tab ) {
 					include EMCP_TOOLS_DIR . 'includes/admin/views/page-connection.php';
+				} elseif ( 'ai-chat' === $active_tab ) {
+					$emcp_pro_view = EMCP_Tools_Pro_Loader::path( 'includes/admin/views/page-ai-chat.php' );
+					if ( '' !== $emcp_pro_view ) {
+						include $emcp_pro_view;
+					} else {
+						$emcp_upsell_feature = __( 'AI Chat', 'emcp-tools' );
+						include EMCP_TOOLS_DIR . 'includes/admin/views/page-pro-upsell.php';
+					}
 				} elseif ( 'context' === $active_tab ) {
 					include EMCP_TOOLS_DIR . 'includes/admin/views/page-context.php';
 				} elseif ( 'prompts' === $active_tab ) {
@@ -1200,7 +1211,13 @@ class EMCP_Tools_Admin {
 				} elseif ( 'brand-kits' === $active_tab ) {
 					include EMCP_TOOLS_DIR . 'includes/admin/views/page-brand-kits.php';
 				} elseif ( 'skills' === $active_tab ) {
-					include EMCP_TOOLS_DIR . 'includes/admin/views/page-skills.php';
+					$emcp_pro_view = EMCP_Tools_Pro_Loader::path( 'includes/admin/views/page-skills.php' );
+					if ( '' !== $emcp_pro_view ) {
+						include $emcp_pro_view;
+					} else {
+						$emcp_upsell_feature = __( 'Skills', 'emcp-tools' );
+						include EMCP_TOOLS_DIR . 'includes/admin/views/page-pro-upsell.php';
+					}
 				} elseif ( 'widgets' === $active_tab ) {
 					include EMCP_TOOLS_DIR . 'includes/admin/views/page-widgets.php';
 				} elseif ( 'changelog' === $active_tab ) {
