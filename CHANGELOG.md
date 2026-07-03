@@ -2,6 +2,12 @@
 
 All notable changes to MCP Tools for Elementor are documented in this file.
 
+## 1.12.1 — 2026-06-12
+
+Codex review follow-ups on the ported performance + security tools:
+- analyze-performance: count `auto-on` autoloaded options (WP 6.6+); bound the loopback response at the request level; validate the full origin (scheme+host+port), not just host, incl. redirects (SSRF).
+- scan-security: restrict "uploads" detection to the real uploads root (no false positives on plugin/theme `uploads/` subdirs); scan active single-file plugins in shallow mode; don't penalize header scoring when the loopback fetch failed; fall back to substr() when mbstring is absent.
+
 ## 1.12.0 — 2026-06-12
 
 - New: `scan-security` — read-only security & malware scan (malware heuristics, core-integrity checksum diff, hardening audit, outdated/abandoned software) → scored report; returns path:line + snippet, never full file contents. Ported from upstream msrbuilds/elementor-mcp (v3.0.0), including the sibling-prefix walk-confinement, regex, and false-positive hardening fixes (snippet-sandbox exclusion dropped — the fork ships no sandbox).

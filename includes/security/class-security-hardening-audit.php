@@ -84,6 +84,29 @@ class Elementor_MCP_Security_Hardening_Audit {
 	}
 
 	/**
+	 * Non-scoring finding for when the loopback fetch itself failed, so no headers
+	 * were received. Without this, an empty header map from a failed fetch would be
+	 * read as "every security header is missing" and wrongly penalize the score.
+	 */
+	public function evaluate_security_headers_unavailable(): array {
+		return Elementor_MCP_Security_Finding::make( 'harden_security_headers', 'hardening', 'Security headers', 'info', array(), 'Could not fetch a loopback response, so security headers were not audited (the request failed — often a blocked loopback, HTTP basic auth, or local DNS).', 'Re-run where the site can reach itself over HTTP so X-Frame-Options, X-Content-Type-Options, Strict-Transport-Security, and Content-Security-Policy can be checked.' );
+	}
+
+	/**
+	 * Choose the header finding from a fetch result: score the headers only when the
+	 * loopback succeeded; otherwise emit the non-scoring "unavailable" info finding.
+	 *
+	 * @param array $fetch { ok: bool, headers: array<string,string> }
+	 * @return array
+	 */
+	public function evaluate_headers_finding( array $fetch ): array {
+		if ( empty( $fetch['ok'] ) ) {
+			return $this->evaluate_security_headers_unavailable();
+		}
+		return $this->evaluate_security_headers( (array) ( $fetch['headers'] ?? array() ) );
+	}
+
+	/**
 	 * Live gather + one loopback GET.
 	 *
 	 * @return array { findings: Finding[], headers_fetch: array{ ok: bool, error: ?string } }
@@ -108,7 +131,7 @@ class Elementor_MCP_Security_Hardening_Audit {
 
 		// One loopback GET for headers + generator meta.
 		$fetch  = $this->fetch_home();
-		$findings[] = $this->evaluate_security_headers( $fetch['headers'] );
+		$findings[] = $this->evaluate_headers_finding( $fetch );
 		$findings[] = $this->evaluate_version_disclosure( file_exists( ABSPATH . 'readme.html' ), $fetch['generator'] );
 
 		return array(

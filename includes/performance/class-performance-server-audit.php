@@ -178,11 +178,25 @@ class Elementor_MCP_Performance_Server_Audit {
 		return $overdue;
 	}
 
+	/**
+	 * Pure: the SQL predicate selecting autoloaded options. WordPress 6.6+ stores
+	 * autoloaded options under any of the values in Core's
+	 * wp_autoload_values_to_autoload() — 'yes','on','auto-on','auto' — so all four
+	 * must be counted. Omitting 'auto-on' silently excludes large 6.6+ rows from
+	 * the autoload total, producing a false "pass".
+	 *
+	 * @return string
+	 */
+	public function autoload_where_clause(): string {
+		return "autoload IN ('yes','on','auto-on','auto')";
+	}
+
 	private function autoload_stats( $wpdb ): array {
-		$bytes = (int) $wpdb->get_var( "SELECT SUM(LENGTH(option_value)) FROM {$wpdb->options} WHERE autoload IN ('yes','on','auto')" );
+		$where = $this->autoload_where_clause();
+		$bytes = (int) $wpdb->get_var( "SELECT SUM(LENGTH(option_value)) FROM {$wpdb->options} WHERE {$where}" );
 		$rows  = $wpdb->get_results(
 			$wpdb->prepare(
-				"SELECT option_name, LENGTH(option_value) AS sz FROM {$wpdb->options} WHERE autoload IN ('yes','on','auto') ORDER BY sz DESC LIMIT %d",
+				"SELECT option_name, LENGTH(option_value) AS sz FROM {$wpdb->options} WHERE {$where} ORDER BY sz DESC LIMIT %d",
 				self::TOP_AUTOLOAD_OPTIONS
 			),
 			ARRAY_A

@@ -80,11 +80,11 @@ class Elementor_MCP_Performance_Analyzer {
 	 * @return array|\WP_Error { resolved_url, post_id, is_front_page }
 	 */
 	private function resolve_target( array $input ) {
-		$site_host = (string) wp_parse_url( home_url(), PHP_URL_HOST );
+		$site_url = home_url();
 
 		if ( ! empty( $input['url'] ) ) {
 			$url = esc_url_raw( (string) $input['url'] );
-			if ( '' === $url || ! $this->validate_same_host( $url, $site_host ) ) {
+			if ( '' === $url || ! $this->same_origin( $url, $site_url ) ) {
 				return new \WP_Error( 'invalid_target', __( 'The url must be a page on this site.', 'elementor-mcp' ) );
 			}
 			return array( 'resolved_url' => $url, 'post_id' => null, 'is_front_page' => false );
@@ -103,15 +103,56 @@ class Elementor_MCP_Performance_Analyzer {
 	}
 
 	/**
-	 * Pure: is $url on $site_host?
+	 * Pure: does $url share the FULL origin (scheme + host + port) of $site_url?
+	 *
+	 * Comparing only the host is an SSRF hole: http://example.com:8080/ (a
+	 * different port) or an http:// downgrade would pass the host-only check when
+	 * the site is https://example.com, letting the "this-site-only" loopback fetch
+	 * a different service. Default ports (80/443) are normalized so
+	 * https://example.com and https://example.com:443 match.
 	 *
 	 * @param string $url
-	 * @param string $site_host
+	 * @param string $site_url
 	 * @return bool
 	 */
-	public function validate_same_host( string $url, string $site_host ): bool {
-		$host = (string) wp_parse_url( $url, PHP_URL_HOST );
-		return '' !== $host && strtolower( $host ) === strtolower( $site_host );
+	public function same_origin( string $url, string $site_url ): bool {
+		$a = $this->origin_parts( $url );
+		$b = $this->origin_parts( $site_url );
+		return null !== $a && null !== $b && $a === $b;
+	}
+
+	/**
+	 * Pure: normalized { scheme, host, port } for $url, or null when it has no host.
+	 *
+	 * @param string $url
+	 * @return array{scheme:string,host:string,port:int}|null
+	 */
+	private function origin_parts( string $url ): ?array {
+		$host = strtolower( (string) wp_parse_url( $url, PHP_URL_HOST ) );
+		if ( '' === $host ) {
+			return null;
+		}
+		$scheme = strtolower( (string) wp_parse_url( $url, PHP_URL_SCHEME ) );
+		$port   = wp_parse_url( $url, PHP_URL_PORT );
+		return array(
+			'scheme' => $scheme,
+			'host'   => $host,
+			'port'   => $this->normalize_port( $scheme, $port ),
+		);
+	}
+
+	/**
+	 * Pure: resolve the effective port, defaulting 443 for https and 80 otherwise.
+	 *
+	 * @param string   $scheme
+	 * @param int|null $port
+	 * @return int
+	 */
+	private function normalize_port( string $scheme, $port ): int {
+		if ( null !== $port && '' !== $port ) {
+			return (int) $port;
+		}
+		return 'https' === $scheme ? 443 : 80;
 	}
 
 	/**

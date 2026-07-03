@@ -101,20 +101,60 @@ class PageAuditTest extends TestCase {
 	}
 
 	/** @test */
-	public function safe_redirect_target_allows_same_host_absolute(): void {
-		$next = $this->audit->safe_redirect_target( 'https://example.com/landing/', 'https://example.com/', 'example.com' );
+	public function ranged_206_status_is_treated_as_pass(): void {
+		// The loopback fetch sends a Range header, so a range-honoring server
+		// returns 206 Partial Content for a healthy page — must not be a warning.
+		$result = $this->audit->analyze( $this->fetched( '<html></html>', array(), 206 ), false );
+		$this->assertSame( 'pass', $this->status_of( $result, 'http_status' ) );
+	}
+
+	/** @test */
+	public function safe_redirect_target_allows_same_origin_absolute(): void {
+		$next = $this->audit->safe_redirect_target( 'https://example.com/landing/', 'https://example.com/', 'https://example.com/' );
 		$this->assertSame( 'https://example.com/landing/', $next );
 	}
 
 	/** @test */
 	public function safe_redirect_target_rejects_offsite_absolute(): void {
-		$next = $this->audit->safe_redirect_target( 'https://evil.test/x', 'https://example.com/', 'example.com' );
+		$next = $this->audit->safe_redirect_target( 'https://evil.test/x', 'https://example.com/', 'https://example.com/' );
 		$this->assertSame( '', $next );
 	}
 
 	/** @test */
-	public function safe_redirect_target_resolves_relative_to_same_host(): void {
-		$next = $this->audit->safe_redirect_target( '/landing/', 'https://example.com/start', 'example.com' );
+	public function safe_redirect_target_resolves_relative_to_same_origin(): void {
+		$next = $this->audit->safe_redirect_target( '/landing/', 'https://example.com/start', 'https://example.com/' );
 		$this->assertSame( 'https://example.com/landing/', $next );
+	}
+
+	/**
+	 * A3 (SSRF mirror): a redirect that keeps the host but changes the port or
+	 * downgrades the scheme leaves the site's origin and MUST be refused — the
+	 * old host-only check would have followed it.
+	 *
+	 * @test
+	 */
+	public function safe_redirect_target_rejects_port_and_scheme_change_on_same_host(): void {
+		$origin = 'https://example.com/';
+		$this->assertSame( '', $this->audit->safe_redirect_target( 'http://example.com:8080/x', 'https://example.com/', $origin ) );
+		$this->assertSame( '', $this->audit->safe_redirect_target( 'https://example.com:8080/x', 'https://example.com/', $origin ) );
+		$this->assertSame( '', $this->audit->safe_redirect_target( 'http://example.com/x', 'https://example.com/', $origin ) );
+		// Explicit default port still matches the origin.
+		$this->assertSame( 'https://example.com:443/x', $this->audit->safe_redirect_target( 'https://example.com:443/x', 'https://example.com/', $origin ) );
+	}
+
+	/**
+	 * A2 (memory): the loopback request must bound the download at the request
+	 * level with a Range header so a cooperating same-host server returns only the
+	 * first chunk instead of a huge body.
+	 *
+	 * @test
+	 */
+	public function request_args_set_a_range_header_bounding_the_download(): void {
+		$args = $this->audit->request_args( 10 );
+		$this->assertArrayHasKey( 'headers', $args );
+		$this->assertArrayHasKey( 'Range', $args['headers'] );
+		$this->assertSame( 'bytes=0-2097151', $args['headers']['Range'] ); // MAX_HTML_BYTES - 1
+		$this->assertSame( 0, $args['redirection'] ); // redirects still followed manually
+		$this->assertSame( 10, $args['timeout'] );
 	}
 }

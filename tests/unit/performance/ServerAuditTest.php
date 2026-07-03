@@ -67,4 +67,20 @@ class ServerAuditTest extends TestCase {
 		$this->assertSame( 'info',    $this->audit->evaluate_wp_debug( true, 'local' )['status'] );
 		$this->assertSame( 'pass',    $this->audit->evaluate_wp_debug( false, 'production' )['status'] );
 	}
+
+	/**
+	 * A1: WordPress 6.6+ stores autoloaded options under 'auto-on' too (Core's
+	 * wp_autoload_values_to_autoload() = yes,on,auto-on,auto). The autoload-size
+	 * queries must count all four, or large 'auto-on' rows are silently excluded
+	 * from the total → false "pass".
+	 *
+	 * @test
+	 */
+	public function autoload_query_counts_the_wp66_auto_on_value(): void {
+		$where = $this->audit->autoload_where_clause();
+		$this->assertStringContainsString( "'auto-on'", $where );
+		foreach ( array( "'yes'", "'on'", "'auto-on'", "'auto'" ) as $value ) {
+			$this->assertStringContainsString( $value, $where );
+		}
+	}
 }

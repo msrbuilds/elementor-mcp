@@ -44,18 +44,12 @@ class Elementor_MCP_Performance_Page_Audit {
 	 */
 	public function fetch( string $url, int $timeout = self::FETCH_TIMEOUT ): array {
 		$origin_host = (string) wp_parse_url( $url, PHP_URL_HOST );
+		$origin_url  = $url;
 		$current     = $url;
 		$start       = microtime( true );
 
 		for ( $hop = 0; $hop <= self::MAX_REDIRECTS; $hop++ ) {
-			$res = wp_remote_get(
-				$current,
-				array(
-					'timeout'     => $timeout,
-					'redirection' => 0,
-					'user-agent'  => 'Elementor-MCP-Performance-Analyzer/' . ( defined( 'ELEMENTOR_MCP_VERSION' ) ? ELEMENTOR_MCP_VERSION : '0' ),
-				)
-			);
+			$res = wp_remote_get( $current, $this->request_args( $timeout ) );
 
 			if ( is_wp_error( $res ) ) {
 				$elapsed = (int) round( ( microtime( true ) - $start ) * 1000 );
@@ -69,7 +63,7 @@ class Elementor_MCP_Performance_Page_Audit {
 			$location = (string) wp_remote_retrieve_header( $res, 'location' );
 
 			if ( $status >= 300 && $status < 400 && '' !== $location ) {
-				$next = $this->safe_redirect_target( $location, $current, $origin_host );
+				$next = $this->safe_redirect_target( $location, $current, $origin_url );
 				if ( '' === $next ) {
 					$elapsed = (int) round( ( microtime( true ) - $start ) * 1000 );
 					return array(
@@ -110,35 +104,96 @@ class Elementor_MCP_Performance_Page_Audit {
 	}
 
 	/**
+	 * Build the wp_remote_get() args for a loopback hop.
+	 *
+	 * The Range header bounds the download at the request level: a cooperating
+	 * same-host server returns only the first MAX_HTML_BYTES instead of a huge body
+	 * (e.g. a giant page or a same-host upload), avoiding memory exhaustion. Servers
+	 * that ignore Range still return the full body, which the MAX_HTML_BYTES
+	 * substring cap in fetch() truncates before parsing (the backstop).
+	 *
+	 * @param int $timeout Seconds.
+	 * @return array
+	 */
+	public function request_args( int $timeout ): array {
+		return array(
+			'timeout'     => $timeout,
+			'redirection' => 0,
+			'user-agent'  => 'Elementor-MCP-Performance-Analyzer/' . ( defined( 'ELEMENTOR_MCP_VERSION' ) ? ELEMENTOR_MCP_VERSION : '0' ),
+			'headers'     => array(
+				'Range' => 'bytes=0-' . ( self::MAX_HTML_BYTES - 1 ),
+			),
+		);
+	}
+
+	/**
 	 * Resolve a (possibly relative) Location against the current URL, then test
-	 * whether it leaves $origin_host. Returns the absolute redirect URL when it
-	 * stays on $origin_host, or '' when it is off-host / unresolvable.
+	 * whether it leaves the origin. Returns the absolute redirect URL when it stays
+	 * on the SAME ORIGIN (scheme + host + port) as $origin_url, or '' when it is
+	 * off-origin / unresolvable.
+	 *
+	 * Comparing the full origin (not just the host) is an SSRF guard: an open
+	 * redirect to http://origin-host:8080/ or an http:// downgrade of an https site
+	 * must be refused, not followed.
 	 *
 	 * @param string $location    The raw Location header value.
 	 * @param string $current_url The URL that produced the redirect.
-	 * @param string $origin_host The host the loopback must stay on.
+	 * @param string $origin_url  The origin URL the loopback must stay on.
 	 * @return string
 	 */
-	public function safe_redirect_target( string $location, string $current_url, string $origin_host ): string {
+	public function safe_redirect_target( string $location, string $current_url, string $origin_url ): string {
 		$location = trim( $location );
 		if ( '' === $location ) {
 			return '';
 		}
-		// Resolve relative Location against the current URL's scheme+host.
+		// Resolve relative Location against the current URL's scheme+host+port.
 		if ( false === strpos( $location, '://' ) ) {
 			$scheme = (string) wp_parse_url( $current_url, PHP_URL_SCHEME );
 			$host   = (string) wp_parse_url( $current_url, PHP_URL_HOST );
 			if ( '' === $host ) {
 				return '';
 			}
-			$prefix   = $scheme ? $scheme . '://' . $host : '//' . $host;
-			$location = ( '/' === substr( $location, 0, 1 ) ) ? $prefix . $location : $prefix . '/' . ltrim( $location, '/' );
+			$port      = wp_parse_url( $current_url, PHP_URL_PORT );
+			$authority = ( null !== $port && '' !== $port ) ? $host . ':' . (int) $port : $host;
+			$prefix    = $scheme ? $scheme . '://' . $authority : '//' . $authority;
+			$location  = ( '/' === substr( $location, 0, 1 ) ) ? $prefix . $location : $prefix . '/' . ltrim( $location, '/' );
 		}
-		$target_host = (string) wp_parse_url( $location, PHP_URL_HOST );
-		if ( '' === $target_host || strtolower( $target_host ) !== strtolower( $origin_host ) ) {
+		if ( ! $this->same_origin( $location, $origin_url ) ) {
 			return '';
 		}
 		return $location;
+	}
+
+	/**
+	 * Pure: does $url share the FULL origin (scheme + host + port) of $origin_url?
+	 * Default ports (80/443) are normalized. Mirrors the Analyzer's same-origin
+	 * SSRF guard so redirect hops cannot leave the site's origin.
+	 *
+	 * @param string $url
+	 * @param string $origin_url
+	 * @return bool
+	 */
+	public function same_origin( string $url, string $origin_url ): bool {
+		$a = $this->origin_parts( $url );
+		$b = $this->origin_parts( $origin_url );
+		return null !== $a && null !== $b && $a === $b;
+	}
+
+	/**
+	 * Pure: normalized { scheme, host, port } for $url, or null when it has no host.
+	 *
+	 * @param string $url
+	 * @return array{scheme:string,host:string,port:int}|null
+	 */
+	private function origin_parts( string $url ): ?array {
+		$host = strtolower( (string) wp_parse_url( $url, PHP_URL_HOST ) );
+		if ( '' === $host ) {
+			return null;
+		}
+		$scheme = strtolower( (string) wp_parse_url( $url, PHP_URL_SCHEME ) );
+		$port   = wp_parse_url( $url, PHP_URL_PORT );
+		$port   = ( null !== $port && '' !== $port ) ? (int) $port : ( 'https' === $scheme ? 443 : 80 );
+		return array( 'scheme' => $scheme, 'host' => $host, 'port' => $port );
 	}
 
 	/**
@@ -172,9 +227,10 @@ class Elementor_MCP_Performance_Page_Audit {
 		$host     = (string) ( $fetched['host'] ?? '' );
 		$findings = array();
 
-		// HTTP status.
-		$findings[] = ( 200 === $status )
-			? Elementor_MCP_Performance_Finding::make( 'http_status', 'page', 'HTTP status', 'pass', $status, 'Page returned HTTP 200.' )
+		// HTTP status. 206 is a healthy response to our ranged loopback request
+		// (the fetch sends a Range header), so treat it as a pass like 200.
+		$findings[] = ( 200 === $status || 206 === $status )
+			? Elementor_MCP_Performance_Finding::make( 'http_status', 'page', 'HTTP status', 'pass', $status, sprintf( 'Page returned HTTP %d.', $status ) )
 			: Elementor_MCP_Performance_Finding::make( 'http_status', 'page', 'HTTP status', 'warning', $status, sprintf( 'Page returned HTTP %d.', $status ), 'A non-200 status means the analyzed URL is redirecting or erroring; verify the target.' );
 
 		// Response time.

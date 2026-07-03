@@ -65,9 +65,24 @@ class AnalyzerTest extends TestCase {
 		$this->assertStringContainsString( 'crit rec', $s['top_recommendations'][0] );
 	}
 
-	/** @test */
-	public function same_host_guard(): void {
-		$this->assertTrue( $this->analyzer->validate_same_host( 'https://example.com/page', 'example.com' ) );
-		$this->assertFalse( $this->analyzer->validate_same_host( 'https://evil.test/page', 'example.com' ) );
+	/**
+	 * A3 (SSRF): the loopback target must share the FULL origin — scheme + host +
+	 * port — of the site, not just the host. A host-only check let a different port
+	 * or an http:// downgrade fetch a different service on the same host.
+	 *
+	 * @test
+	 */
+	public function same_origin_guard_rejects_port_and_scheme_changes(): void {
+		$site = 'https://example.com';
+		// Same origin (default 443 normalized) is accepted.
+		$this->assertTrue( $this->analyzer->same_origin( 'https://example.com/page', $site ) );
+		$this->assertTrue( $this->analyzer->same_origin( 'https://example.com:443/page', $site ) );
+		// Different port on the same host is rejected.
+		$this->assertFalse( $this->analyzer->same_origin( 'http://example.com:8080/', $site ) );
+		$this->assertFalse( $this->analyzer->same_origin( 'https://example.com:8080/', $site ) );
+		// Scheme downgrade (http vs https) is rejected.
+		$this->assertFalse( $this->analyzer->same_origin( 'http://example.com/', $site ) );
+		// Different host is rejected.
+		$this->assertFalse( $this->analyzer->same_origin( 'https://evil.test/page', $site ) );
 	}
 }

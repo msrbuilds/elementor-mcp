@@ -62,4 +62,35 @@ class HardeningAuditTest extends TestCase {
 		$this->assertSame( 'pass', $this->audit()->evaluate_security_headers( $present )['status'] );
 		$this->assertSame( 'warning', $this->audit()->evaluate_security_headers( array() )['status'] );
 	}
+
+	/**
+	 * S3: when the loopback fetch itself fails, no headers are received. The audit
+	 * must NOT read that as "every security header is missing" and penalize the
+	 * score — it emits a single non-scoring info finding instead. Only when the
+	 * fetch succeeds are the (possibly missing) headers scored.
+	 *
+	 * @test
+	 */
+	public function failed_loopback_fetch_does_not_penalize_header_scoring(): void {
+		$a = $this->audit();
+
+		// Fetch failed (ok=false, empty headers) → info, not warning.
+		$unavailable = $a->evaluate_headers_finding( array( 'ok' => false, 'headers' => array() ) );
+		$this->assertSame( 'info', $unavailable['status'] );
+		$this->assertSame( 'harden_security_headers', $unavailable['id'] );
+		$this->assertSame( 'info', $a->evaluate_security_headers_unavailable()['status'] );
+
+		// Fetch succeeded but headers genuinely missing → still warning (scored).
+		$missing = $a->evaluate_headers_finding( array( 'ok' => true, 'headers' => array() ) );
+		$this->assertSame( 'warning', $missing['status'] );
+
+		// Fetch succeeded with all headers present → pass.
+		$present = array(
+			'x-frame-options'           => 'SAMEORIGIN',
+			'x-content-type-options'    => 'nosniff',
+			'strict-transport-security' => 'max-age=31536000',
+			'content-security-policy'   => "default-src 'self'",
+		);
+		$this->assertSame( 'pass', $a->evaluate_headers_finding( array( 'ok' => true, 'headers' => $present ) )['status'] );
+	}
 }
