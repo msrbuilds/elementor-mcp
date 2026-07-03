@@ -64,6 +64,9 @@ class EMCP_Tools_Admin {
 	/** Settings group for the Context page. */
 	const SETTINGS_GROUP_CONTEXT = 'emcp_tools_context_settings';
 
+	/** Settings group for the Modules tab (active-modules list + each module's knobs). */
+	const SETTINGS_GROUP_MODULES = 'emcp_tools_modules_settings';
+
 	/**
 	 * Page slug.
 	 *
@@ -90,6 +93,7 @@ class EMCP_Tools_Admin {
 		if ( null === $this->submenus ) {
 			$this->submenus = array(
 				self::PAGE_SLUG                 => __( 'Tools', 'emcp-tools' ),
+				self::PAGE_SLUG . '-modules'    => __( 'Modules', 'emcp-tools' ),
 				self::PAGE_SLUG . '-connection' => __( 'Connection', 'emcp-tools' ),
 				self::PAGE_SLUG . '-ai-chat'    => __( 'AI Chat', 'emcp-tools' ),
 				self::PAGE_SLUG . '-context'    => __( 'Context', 'emcp-tools' ),
@@ -114,6 +118,8 @@ class EMCP_Tools_Admin {
 		$page = isset( $_GET['page'] ) ? sanitize_key( wp_unslash( $_GET['page'] ) ) : '';
 
 		switch ( $page ) {
+			case self::PAGE_SLUG . '-modules':
+				return 'modules';
 			case self::PAGE_SLUG . '-connection':
 				return 'connection';
 			case self::PAGE_SLUG . '-ai-chat':
@@ -538,6 +544,22 @@ class EMCP_Tools_Admin {
 			)
 		);
 
+		// Stock-image provider API keys (Connection tab) — power the stock-image
+		// tools (search-images / add-stock-image). All three are free keys.
+		foreach ( array( EMCP_Tools_Unsplash_Client::OPTION, EMCP_Tools_Pexels_Client::OPTION, EMCP_Tools_Pixabay_Client::OPTION ) as $emcp_stock_option ) {
+			register_setting(
+				self::SETTINGS_GROUP_SERVER,
+				$emcp_stock_option,
+				array(
+					'type'              => 'string',
+					'default'           => '',
+					'sanitize_callback' => static function ( $value ) {
+						return sanitize_text_field( (string) $value );
+					},
+				)
+			);
+		}
+
 		// Context page — the site-wide guidance + its on/off toggle.
 		register_setting(
 			self::SETTINGS_GROUP_CONTEXT,
@@ -562,6 +584,28 @@ class EMCP_Tools_Admin {
 				},
 			)
 		);
+
+		// Modules tab — the active-modules list + each registered module's own
+		// option keys (declared by the module's settings_fields()).
+		register_setting(
+			self::SETTINGS_GROUP_MODULES,
+			EMCP_Tools_Module::OPTION_ACTIVE,
+			array(
+				'type'              => 'array',
+				'default'           => array(),
+				'sanitize_callback' => static function ( $value ) {
+					$value = is_array( $value ) ? $value : array();
+					return array_values( array_map( 'sanitize_key', $value ) );
+				},
+			)
+		);
+		if ( class_exists( 'EMCP_Tools_Modules_Registry' ) ) {
+			foreach ( EMCP_Tools_Modules_Registry::instance()->all() as $emcp_module ) {
+				foreach ( $emcp_module->settings_fields() as $emcp_key => $emcp_args ) {
+					register_setting( self::SETTINGS_GROUP_MODULES, $emcp_key, $emcp_args );
+				}
+			}
+		}
 	}
 
 	/**
@@ -715,6 +759,30 @@ class EMCP_Tools_Admin {
 				'siteContextDelimiter' => EMCP_Tools_Site_Context::DELIMITER,
 			)
 		);
+
+		// Modules tab: the bulk-optimizer progress UI.
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only page routing.
+		if ( isset( $_GET['page'] ) && ( self::PAGE_SLUG . '-modules' ) === sanitize_key( wp_unslash( $_GET['page'] ) ) ) {
+			$bulk_path = EMCP_TOOLS_DIR . 'assets/js/modules-bulk.js';
+			if ( file_exists( $bulk_path ) && class_exists( 'EMCP_Tools_Bulk_Optimizer' ) ) {
+				$bulk_ver = ( defined( 'WP_DEBUG' ) && WP_DEBUG ) ? filemtime( $bulk_path ) : EMCP_TOOLS_VERSION;
+				wp_enqueue_script( 'emcp-tools-modules-bulk', EMCP_TOOLS_URL . 'assets/js/modules-bulk.js', array(), $bulk_ver, true );
+				wp_localize_script(
+					'emcp-tools-modules-bulk',
+					'emcpToolsModules',
+					array(
+						'ajaxUrl'       => admin_url( 'admin-ajax.php' ),
+						'nonce'         => wp_create_nonce( EMCP_Tools_Bulk_Optimizer::NONCE ),
+						'batchAction'   => EMCP_Tools_Bulk_Optimizer::ACTION_BATCH,
+						'restoreAction' => EMCP_Tools_Bulk_Optimizer::ACTION_RESTORE,
+						'batchSize'     => 10,
+						'optimizing'    => __( 'Optimizing…', 'emcp-tools' ),
+						'restoring'     => __( 'Restoring…', 'emcp-tools' ),
+						'done'          => __( 'Done', 'emcp-tools' ),
+					)
+				);
+			}
+		}
 	}
 
 	/**
@@ -1192,7 +1260,9 @@ class EMCP_Tools_Admin {
 			<!-- Content -->
 			<div class="tab-content">
 				<?php
-				if ( 'connection' === $active_tab ) {
+				if ( 'modules' === $active_tab ) {
+					include EMCP_TOOLS_DIR . 'includes/admin/views/page-modules.php';
+				} elseif ( 'connection' === $active_tab ) {
 					include EMCP_TOOLS_DIR . 'includes/admin/views/page-connection.php';
 				} elseif ( 'ai-chat' === $active_tab ) {
 					$emcp_pro_view = EMCP_Tools_Pro_Loader::path( 'includes/admin/views/page-ai-chat.php' );
