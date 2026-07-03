@@ -68,6 +68,15 @@ class EMCP_Tools_Admin {
 	const SETTINGS_GROUP_MODULES = 'emcp_tools_modules_settings';
 
 	/**
+	 * Settings group for third-party service credentials (stock-image provider
+	 * keys). Separate from SETTINGS_GROUP_SERVER so the "3rd Party Services"
+	 * sub-tab form saves independently of the server-gate toggles.
+	 *
+	 * @var string
+	 */
+	const SETTINGS_GROUP_SERVICES = 'emcp_tools_services_settings';
+
+	/**
 	 * Page slug.
 	 *
 	 * @var string
@@ -544,11 +553,13 @@ class EMCP_Tools_Admin {
 			)
 		);
 
-		// Stock-image provider API keys (Connection tab) — power the stock-image
-		// tools (search-images / add-stock-image). All three are free keys.
+		// Stock-image provider API keys (Connection → 3rd Party Services sub-tab)
+		// — power the stock-image tools (search-images / add-stock-image). All
+		// three are free keys. Registered in their own group so that sub-tab's
+		// form saves without touching the server-gate toggles.
 		foreach ( array( EMCP_Tools_Unsplash_Client::OPTION, EMCP_Tools_Pexels_Client::OPTION, EMCP_Tools_Pixabay_Client::OPTION ) as $emcp_stock_option ) {
 			register_setting(
-				self::SETTINGS_GROUP_SERVER,
+				self::SETTINGS_GROUP_SERVICES,
 				$emcp_stock_option,
 				array(
 					'type'              => 'string',

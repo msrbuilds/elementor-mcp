@@ -2846,9 +2846,9 @@
 .emcp-module-card.is-unavailable .emcp-module-head { cursor: not-allowed; }
 
 /* Live toggle flip (no Tools-grid JS on this tab). */
-.emcp-module-head input[type="checkbox"]:checked + .elementor-mcp-toggle .elementor-mcp-toggle-track { background: var(--mcp-primary); }
-.emcp-module-head input[type="checkbox"]:checked + .elementor-mcp-toggle .elementor-mcp-toggle-track::after { transform: translateX(16px); }
-.emcp-module-head input[type="checkbox"]:focus-visible + .elementor-mcp-toggle .elementor-mcp-toggle-track { box-shadow: 0 0 0 2px var(--mcp-white), 0 0 0 4px var(--mcp-primary); }
+.emcp-switch input[type="checkbox"]:checked + .elementor-mcp-toggle .elementor-mcp-toggle-track { background: var(--mcp-primary); }
+.emcp-switch input[type="checkbox"]:checked + .elementor-mcp-toggle .elementor-mcp-toggle-track::after { transform: translateX(16px); }
+.emcp-switch input[type="checkbox"]:focus-visible + .elementor-mcp-toggle .elementor-mcp-toggle-track { box-shadow: 0 0 0 2px var(--mcp-white), 0 0 0 4px var(--mcp-primary); }
 
 .emcp-module-unavailable { color: #b32d2e; font-style: italic; margin: 12px 0 0 50px; }
 .emcp-module-settings { margin: 14px 0 0 50px; }
@@ -2860,3 +2860,22 @@
 .emcp-bulk-bar { height: 8px; background: var(--mcp-gray-200); border-radius: 4px; overflow: hidden; }
 .emcp-bulk-bar span { display: block; height: 100%; width: 0; background: var(--mcp-primary); transition: width .2s; }
 .emcp-bulk-status { font-size: 12px; color: var(--mcp-gray-600, #50575e); }
+/* Shared switch (Connection cards, Modules) --------------------------------- */
+.emcp-switch { display: flex; align-items: center; gap: 12px; cursor: pointer; }
+.emcp-switch input[type="checkbox"] { position: absolute; opacity: 0; width: 0; height: 0; pointer-events: none; }
+.emcp-switch-label { font-weight: 600; font-size: 14px; }
+
+/* Connection sub-tab: two cards in a row ------------------------------------ */
+.emcp-conn-cards { display: grid; grid-template-columns: repeat( auto-fit, minmax( 340px, 1fr ) ); gap: 16px; margin: 4px 0 16px; }
+.emcp-conn-card { border: 1px solid var(--mcp-gray-200); border-radius: var(--mcp-radius); background: var(--mcp-white); padding: 18px 20px; }
+.emcp-conn-card-title { margin: 0 0 14px; font-size: 15px; }
+.emcp-conn-toggle { margin-bottom: 12px; }
+
+/* 3rd Party Services: aligned key fields ------------------------------------ */
+.emcp-services-grid { display: grid; grid-template-columns: repeat( auto-fill, minmax( 340px, 1fr ) ); gap: 18px; margin: 16px 0 20px; }
+.emcp-service-field { display: flex; flex-direction: column; gap: 6px; }
+.emcp-service-field-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+.emcp-service-field-head label { font-weight: 600; }
+.emcp-service-field-head a { font-size: 12px; text-decoration: none; }
+.emcp-service-field input[type="text"] { width: 100%; }
+.emcp-service-field input[type="text"]:disabled { background: var(--mcp-gray-50); color: var(--mcp-gray-600, #50575e); }

@@ -2,7 +2,8 @@
 /**
  * Connection info tab view for the MCP Tools for Elementor admin settings page.
  *
- * Displays MCP connection configurations for various clients.
+ * Organised into two sub-tabs: "Connections" (server gate + strict schemas +
+ * status + client wizard) and "3rd Party Services" (stock-image provider keys).
  *
  * @package EMCP_Tools
  * @since   1.0.0
@@ -37,318 +38,394 @@ $emcp_tools_server_enabled = class_exists( 'EMCP_Tools_Plugin' )
 
 <div class="elementor-mcp-connection">
 
-	<?php // ===== Step 1: Activate Abilities API for EMCP ===== ?>
-	<div class="elementor-mcp-section elementor-mcp-activate-card">
-	<div class="elementor-mcp-activate-head">
-		<span class="elementor-mcp-step-num" aria-hidden="true">1</span>
-		<h2><?php esc_html_e( 'Activate Abilities API for EMCP', 'emcp-tools' ); ?></h2>
+	<div class="elementor-mcp-subtabs" data-subtab-key="connection" role="tablist" aria-label="<?php esc_attr_e( 'Connection sections', 'emcp-tools' ); ?>">
+		<button type="button" class="elementor-mcp-subtab is-active" role="tab" data-tab="conn-main" aria-selected="true" aria-controls="emcp-conn-main">
+			<span class="elementor-mcp-subtab-label"><?php esc_html_e( 'Connections', 'emcp-tools' ); ?></span>
+		</button>
+		<button type="button" class="elementor-mcp-subtab" role="tab" data-tab="conn-services" aria-selected="false" aria-controls="emcp-conn-services">
+			<span class="elementor-mcp-subtab-label"><?php esc_html_e( '3rd Party Services', 'emcp-tools' ); ?></span>
+		</button>
 	</div>
 
-	<form method="post" action="options.php" class="elementor-mcp-activate-form">
-		<?php settings_fields( EMCP_Tools_Admin::SETTINGS_GROUP_SERVER ); ?>
+	<?php // ===== Sub-tab: Connections ===== ?>
+	<div class="elementor-mcp-tabpanel is-active" id="emcp-conn-main" role="tabpanel" data-tab="conn-main">
 
-		<label class="elementor-mcp-activate-toggle">
-			<input
-				type="checkbox"
-				name="<?php echo esc_attr( EMCP_Tools_Plugin::OPTION_SERVER_ENABLED ); ?>"
-				value="1"
-				<?php checked( $emcp_tools_server_enabled ); ?>
-			/>
-			<strong><?php esc_html_e( 'Expose EMCP tools to AI agents on this site', 'emcp-tools' ); ?></strong>
-		</label>
+		<form method="post" action="options.php" class="elementor-mcp-activate-form">
+			<?php settings_fields( EMCP_Tools_Admin::SETTINGS_GROUP_SERVER ); ?>
 
-		<p class="elementor-mcp-activate-note elementor-mcp-activate-note--security">
-			<strong><?php esc_html_e( 'Security note:', 'emcp-tools' ); ?></strong>
-			<?php esc_html_e( 'When enabled, connected AI agents can create, edit, and delete Elementor pages and content on this site through the MCP server. Use a capable AI model and set your client to ask for confirmation before every action — read what the agent is about to do before approving.', 'emcp-tools' ); ?>
-		</p>
-		<p class="elementor-mcp-activate-note">
-			<?php
-			if ( $emcp_tools_has_abilities ) {
-				printf(
-					/* translators: %s: how the MCP Adapter is provided. */
-					esc_html__( 'WordPress Abilities API: core (no separate plugin needed). MCP Adapter: %s.', 'emcp-tools' ),
-					'bundled' === $emcp_tools_adapter_source
-						? esc_html__( 'bundled with EMCP', 'emcp-tools' )
-						: ( 'external' === $emcp_tools_adapter_source ? esc_html__( 'provided by an active MCP Adapter plugin', 'emcp-tools' ) : esc_html__( 'unavailable', 'emcp-tools' ) )
-				);
-			} else {
-				esc_html_e( 'WordPress Abilities API is unavailable — WordPress 6.9 or newer is required.', 'emcp-tools' );
-			}
-			?>
-		</p>
+			<div class="emcp-conn-cards">
 
-		<hr class="elementor-mcp-activate-divider" />
+				<?php // Card A: server gate. ?>
+				<div class="emcp-conn-card">
+					<h2 class="emcp-conn-card-title"><?php esc_html_e( 'Activate Abilities API for EMCP', 'emcp-tools' ); ?></h2>
 
-		<label class="elementor-mcp-activate-toggle">
-			<input
-				type="checkbox"
-				name="emcp_tools_strict_schemas"
-				value="1"
-				<?php checked( '1' === (string) get_option( 'emcp_tools_strict_schemas', '0' ) ); ?>
-			/>
-			<strong><?php esc_html_e( 'OpenAI-strict tool schemas', 'emcp-tools' ); ?></strong>
-		</label>
-		<p class="elementor-mcp-activate-note">
-			<?php esc_html_e( 'Enable only for OpenAI-compatible strict function-calling clients (e.g. CrewAI) that reject the default tool schemas. It lists every property as required (optional ones become nullable) and sets additionalProperties:false. Leave this OFF for Claude, Gemini, and Antigravity — they work with the default schemas, and strict mode can break Gemini/Antigravity.', 'emcp-tools' ); ?>
-		</p>
+					<label class="emcp-switch emcp-conn-toggle">
+						<input
+							type="checkbox"
+							name="<?php echo esc_attr( EMCP_Tools_Plugin::OPTION_SERVER_ENABLED ); ?>"
+							value="1"
+							<?php checked( $emcp_tools_server_enabled ); ?>
+						/>
+						<span class="elementor-mcp-toggle" aria-hidden="true"><span class="elementor-mcp-toggle-track"></span></span>
+						<span class="emcp-switch-label"><?php esc_html_e( 'Expose EMCP tools to AI agents on this site', 'emcp-tools' ); ?></span>
+					</label>
 
-		<?php submit_button( __( 'Save Settings', 'emcp-tools' ), 'primary', 'submit', false ); ?>
-	</form>
-	</div>
-
-	<!-- Server Status -->
-	<div class="elementor-mcp-section">
-		<h2><?php esc_html_e( 'Server Status', 'emcp-tools' ); ?></h2>
-		<p class="description"><?php esc_html_e( 'Current status of your MCP server and connected components.', 'emcp-tools' ); ?></p>
-
-		<div class="elementor-mcp-status-grid">
-			<div class="elementor-mcp-status-card">
-				<span class="elementor-mcp-status-card-icon elementor-mcp-status-card-icon--ok">
-					<svg viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"/></svg>
-				</span>
-				<span class="elementor-mcp-status-card-info">
-					<span class="elementor-mcp-status-card-label"><?php esc_html_e( 'MCP Tools for Elementor', 'emcp-tools' ); ?></span>
-					<span class="elementor-mcp-status-card-value"><?php esc_html_e( 'Active', 'emcp-tools' ); ?></span>
-				</span>
-			</div>
-
-			<div class="elementor-mcp-status-card">
-				<span class="elementor-mcp-status-card-icon <?php echo esc_attr( $emcp_tools_has_adapter ? 'elementor-mcp-status-card-icon--ok' : 'elementor-mcp-status-card-icon--warn' ); ?>">
-					<?php if ( $emcp_tools_has_adapter ) : ?>
-						<svg viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"/></svg>
-					<?php else : ?>
-						<svg viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"/></svg>
-					<?php endif; ?>
-				</span>
-				<span class="elementor-mcp-status-card-info">
-					<span class="elementor-mcp-status-card-label"><?php esc_html_e( 'MCP Adapter', 'emcp-tools' ); ?></span>
-					<span class="elementor-mcp-status-card-value"><?php echo esc_html( $emcp_tools_adapter_label ); ?></span>
-				</span>
-			</div>
-
-			<div class="elementor-mcp-status-card">
-				<span class="elementor-mcp-status-card-icon <?php echo esc_attr( $emcp_tools_server_enabled ? 'elementor-mcp-status-card-icon--ok' : 'elementor-mcp-status-card-icon--warn' ); ?>">
-					<?php if ( $emcp_tools_server_enabled ) : ?>
-						<svg viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"/></svg>
-					<?php else : ?>
-						<svg viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"/></svg>
-					<?php endif; ?>
-				</span>
-				<span class="elementor-mcp-status-card-info">
-					<span class="elementor-mcp-status-card-label"><?php esc_html_e( 'MCP Server', 'emcp-tools' ); ?></span>
-					<span class="elementor-mcp-status-card-value"><?php echo esc_html( $emcp_tools_server_enabled ? __( 'Enabled', 'emcp-tools' ) : __( 'Disabled', 'emcp-tools' ) ); ?></span>
-				</span>
-			</div>
-
-			<div class="elementor-mcp-status-card">
-				<span class="elementor-mcp-status-card-icon elementor-mcp-status-card-icon--ok">
-					<svg viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M5 3a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2H5zM5 11a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2v-2a2 2 0 00-2-2H5zM11 5a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V5zM11 13a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
-				</span>
-				<span class="elementor-mcp-status-card-info">
-					<span class="elementor-mcp-status-card-label"><?php esc_html_e( 'Tools Enabled', 'emcp-tools' ); ?></span>
-					<span class="elementor-mcp-status-card-value">
+					<p class="elementor-mcp-activate-note elementor-mcp-activate-note--security">
+						<strong><?php esc_html_e( 'Security note:', 'emcp-tools' ); ?></strong>
+						<?php esc_html_e( 'When enabled, connected AI agents can create, edit, and delete Elementor pages and content on this site through the MCP server. Use a capable AI model and set your client to ask for confirmation before every action — read what the agent is about to do before approving.', 'emcp-tools' ); ?>
+					</p>
+					<p class="elementor-mcp-activate-note">
 						<?php
-						printf(
-							/* translators: %1$d: enabled count, %2$d: total count */
-							esc_html__( '%1$d / %2$d', 'emcp-tools' ),
-							(int) $emcp_tools_enabled_count,
-							(int) $emcp_tools_total_count
-						);
-						?>
-					</span>
-				</span>
-			</div>
-		</div>
-
-		<div class="elementor-mcp-endpoint">
-			<code><?php echo esc_html( $emcp_tools_endpoint ); ?></code>
-			<button type="button" class="button elementor-mcp-copy-btn" data-target="elementor-mcp-endpoint-copy"><?php esc_html_e( 'Copy', 'emcp-tools' ); ?></button>
-			<textarea id="elementor-mcp-endpoint-copy" class="elementor-mcp-copy-source"><?php echo esc_html( $emcp_tools_endpoint ); ?></textarea>
-		</div>
-	</div>
-
-	<!-- HTTP Connection -->
-	<div class="elementor-mcp-section">
-		<h2><?php esc_html_e( 'Connect Your AI Client', 'emcp-tools' ); ?></h2>
-		<p class="description">
-			<?php esc_html_e( 'Connect to this site from any AI client using HTTP. No proxy or Node.js needed — just an Application Password.', 'emcp-tools' ); ?>
-		</p>
-
-		<h3><?php esc_html_e( 'Step 1: Generate Your Credentials', 'emcp-tools' ); ?></h3>
-		<p class="description">
-			<?php esc_html_e( 'Pick an administrator and click Generate — a new Application Password is created automatically and every client config below is filled in. No need to visit your profile.', 'emcp-tools' ); ?>
-		</p>
-
-		<?php
-		$emcp_tools_current_user = wp_get_current_user();
-		$emcp_tools_admins       = get_users(
-			array(
-				'role'    => 'administrator',
-				'orderby' => 'display_name',
-				'order'   => 'ASC',
-			)
-		);
-		// Only offer users the current user is allowed to manage.
-		$emcp_tools_admins = array_values(
-			array_filter(
-				$emcp_tools_admins,
-				static function ( $emcp_tools_u ) {
-					return current_user_can( 'edit_user', $emcp_tools_u->ID );
-				}
-			)
-		);
-		// Sort the current user to the top, then alphabetically.
-		usort(
-			$emcp_tools_admins,
-			static function ( $a, $b ) use ( $emcp_tools_current_user ) {
-				if ( (int) $a->ID === (int) $emcp_tools_current_user->ID ) {
-					return -1;
-				}
-				if ( (int) $b->ID === (int) $emcp_tools_current_user->ID ) {
-					return 1;
-				}
-				return strcasecmp( (string) $a->display_name, (string) $b->display_name );
-			}
-		);
-		?>
-
-		<div class="elementor-mcp-cred-form">
-			<div class="elementor-mcp-cred-field">
-				<label for="elementor-mcp-b64-username"><?php esc_html_e( 'Administrator account', 'emcp-tools' ); ?></label>
-				<select id="elementor-mcp-b64-username">
-					<?php foreach ( $emcp_tools_admins as $emcp_tools_u ) : ?>
-						<option
-							value="<?php echo esc_attr( (string) $emcp_tools_u->ID ); ?>"
-							data-login="<?php echo esc_attr( $emcp_tools_u->user_login ); ?>"
-							<?php selected( (int) $emcp_tools_u->ID, (int) $emcp_tools_current_user->ID ); ?>
-						>
-							<?php
-							echo esc_html(
-								(int) $emcp_tools_u->ID === (int) $emcp_tools_current_user->ID
-									/* translators: %s: username */
-									? sprintf( __( '%s (you)', 'emcp-tools' ), $emcp_tools_u->user_login )
-									: $emcp_tools_u->user_login
+						if ( $emcp_tools_has_abilities ) {
+							printf(
+								/* translators: %s: how the MCP Adapter is provided. */
+								esc_html__( 'WordPress Abilities API: core (no separate plugin needed). MCP Adapter: %s.', 'emcp-tools' ),
+								'bundled' === $emcp_tools_adapter_source
+									? esc_html__( 'bundled with EMCP', 'emcp-tools' )
+									: ( 'external' === $emcp_tools_adapter_source ? esc_html__( 'provided by an active MCP Adapter plugin', 'emcp-tools' ) : esc_html__( 'unavailable', 'emcp-tools' ) )
 							);
-							?>
-						</option>
-					<?php endforeach; ?>
-				</select>
-			</div>
-			<button type="button" class="button button-primary elementor-mcp-generate-btn" id="elementor-mcp-generate-b64"><?php esc_html_e( 'Generate Password &amp; Configs', 'emcp-tools' ); ?></button>
-
-			<p id="elementor-mcp-cred-status" class="description" style="display: none;"></p>
-
-			<div id="elementor-mcp-generated-pw-row" style="display: none;">
-				<div class="elementor-mcp-cred-field">
-					<label for="elementor-mcp-generated-pw-copy"><?php esc_html_e( 'New Application Password (save it — shown only once)', 'emcp-tools' ); ?></label>
-					<div class="elementor-mcp-auth-result">
-						<code id="elementor-mcp-generated-pw"></code>
-						<button type="button" class="button elementor-mcp-copy-btn" data-target="elementor-mcp-generated-pw-copy"><?php esc_html_e( 'Copy', 'emcp-tools' ); ?></button>
-						<textarea id="elementor-mcp-generated-pw-copy" class="elementor-mcp-copy-source"></textarea>
-					</div>
-					<p class="description">
-						<?php
-						printf(
-							/* translators: %s: link to profile */
-							esc_html__( 'Manage or revoke application passwords under %s.', 'emcp-tools' ),
-							'<a href="' . esc_url( admin_url( 'profile.php#application-passwords-section' ) ) . '">' . esc_html__( 'Users > Profile', 'emcp-tools' ) . '</a>'
-						);
+						} else {
+							esc_html_e( 'WordPress Abilities API is unavailable — WordPress 6.9 or newer is required.', 'emcp-tools' );
+						}
 						?>
 					</p>
 				</div>
+
+				<?php // Card B: strict schemas. ?>
+				<div class="emcp-conn-card">
+					<h2 class="emcp-conn-card-title"><?php esc_html_e( 'OpenAI-strict tool schemas', 'emcp-tools' ); ?></h2>
+
+					<label class="emcp-switch emcp-conn-toggle">
+						<input
+							type="checkbox"
+							name="emcp_tools_strict_schemas"
+							value="1"
+							<?php checked( '1' === (string) get_option( 'emcp_tools_strict_schemas', '0' ) ); ?>
+						/>
+						<span class="elementor-mcp-toggle" aria-hidden="true"><span class="elementor-mcp-toggle-track"></span></span>
+						<span class="emcp-switch-label"><?php esc_html_e( 'Enable strict function-calling schemas', 'emcp-tools' ); ?></span>
+					</label>
+
+					<p class="elementor-mcp-activate-note">
+						<?php esc_html_e( 'Enable only for OpenAI-compatible strict function-calling clients (e.g. CrewAI) that reject the default tool schemas. It lists every property as required (optional ones become nullable) and sets additionalProperties:false. Leave this OFF for Claude, Gemini, and Antigravity — they work with the default schemas, and strict mode can break Gemini/Antigravity.', 'emcp-tools' ); ?>
+					</p>
+				</div>
+
 			</div>
 
-			<details class="elementor-mcp-cred-advanced">
-				<summary><?php esc_html_e( 'Use an existing Application Password instead', 'emcp-tools' ); ?></summary>
-				<div class="elementor-mcp-cred-field" style="margin-top: 8px;">
-					<label for="elementor-mcp-b64-app-password"><?php esc_html_e( 'Application Password', 'emcp-tools' ); ?></label>
-					<input type="text" id="elementor-mcp-b64-app-password" placeholder="xxxx xxxx xxxx xxxx xxxx xxxx" autocomplete="off" />
-					<p class="description"><?php esc_html_e( 'If filled in, this is used as-is and no new password is created.', 'emcp-tools' ); ?></p>
-				</div>
-			</details>
+			<?php submit_button( __( 'Save Settings', 'emcp-tools' ), 'primary', 'submit', false ); ?>
+		</form>
 
-			<div id="elementor-mcp-b64-result-row" style="display: none;">
+		<!-- Server Status -->
+		<div class="elementor-mcp-section">
+			<h2><?php esc_html_e( 'Server Status', 'emcp-tools' ); ?></h2>
+			<p class="description"><?php esc_html_e( 'Current status of your MCP server and connected components.', 'emcp-tools' ); ?></p>
+
+			<div class="elementor-mcp-status-grid">
+				<div class="elementor-mcp-status-card">
+					<span class="elementor-mcp-status-card-icon elementor-mcp-status-card-icon--ok">
+						<svg viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"/></svg>
+					</span>
+					<span class="elementor-mcp-status-card-info">
+						<span class="elementor-mcp-status-card-label"><?php esc_html_e( 'MCP Tools for Elementor', 'emcp-tools' ); ?></span>
+						<span class="elementor-mcp-status-card-value"><?php esc_html_e( 'Active', 'emcp-tools' ); ?></span>
+					</span>
+				</div>
+
+				<div class="elementor-mcp-status-card">
+					<span class="elementor-mcp-status-card-icon <?php echo esc_attr( $emcp_tools_has_adapter ? 'elementor-mcp-status-card-icon--ok' : 'elementor-mcp-status-card-icon--warn' ); ?>">
+						<?php if ( $emcp_tools_has_adapter ) : ?>
+							<svg viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"/></svg>
+						<?php else : ?>
+							<svg viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"/></svg>
+						<?php endif; ?>
+					</span>
+					<span class="elementor-mcp-status-card-info">
+						<span class="elementor-mcp-status-card-label"><?php esc_html_e( 'MCP Adapter', 'emcp-tools' ); ?></span>
+						<span class="elementor-mcp-status-card-value"><?php echo esc_html( $emcp_tools_adapter_label ); ?></span>
+					</span>
+				</div>
+
+				<div class="elementor-mcp-status-card">
+					<span class="elementor-mcp-status-card-icon <?php echo esc_attr( $emcp_tools_server_enabled ? 'elementor-mcp-status-card-icon--ok' : 'elementor-mcp-status-card-icon--warn' ); ?>">
+						<?php if ( $emcp_tools_server_enabled ) : ?>
+							<svg viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"/></svg>
+						<?php else : ?>
+							<svg viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"/></svg>
+						<?php endif; ?>
+					</span>
+					<span class="elementor-mcp-status-card-info">
+						<span class="elementor-mcp-status-card-label"><?php esc_html_e( 'MCP Server', 'emcp-tools' ); ?></span>
+						<span class="elementor-mcp-status-card-value"><?php echo esc_html( $emcp_tools_server_enabled ? __( 'Enabled', 'emcp-tools' ) : __( 'Disabled', 'emcp-tools' ) ); ?></span>
+					</span>
+				</div>
+
+				<div class="elementor-mcp-status-card">
+					<span class="elementor-mcp-status-card-icon elementor-mcp-status-card-icon--ok">
+						<svg viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M5 3a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2H5zM5 11a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2v-2a2 2 0 00-2-2H5zM11 5a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V5zM11 13a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+					</span>
+					<span class="elementor-mcp-status-card-info">
+						<span class="elementor-mcp-status-card-label"><?php esc_html_e( 'Tools Enabled', 'emcp-tools' ); ?></span>
+						<span class="elementor-mcp-status-card-value">
+							<?php
+							printf(
+								/* translators: %1$d: enabled count, %2$d: total count */
+								esc_html__( '%1$d / %2$d', 'emcp-tools' ),
+								(int) $emcp_tools_enabled_count,
+								(int) $emcp_tools_total_count
+							);
+							?>
+						</span>
+					</span>
+				</div>
+			</div>
+
+			<div class="elementor-mcp-endpoint">
+				<code><?php echo esc_html( $emcp_tools_endpoint ); ?></code>
+				<button type="button" class="button elementor-mcp-copy-btn" data-target="elementor-mcp-endpoint-copy"><?php esc_html_e( 'Copy', 'emcp-tools' ); ?></button>
+				<textarea id="elementor-mcp-endpoint-copy" class="elementor-mcp-copy-source"><?php echo esc_html( $emcp_tools_endpoint ); ?></textarea>
+			</div>
+		</div>
+
+		<!-- HTTP Connection -->
+		<div class="elementor-mcp-section">
+			<h2><?php esc_html_e( 'Connect Your AI Client', 'emcp-tools' ); ?></h2>
+			<p class="description">
+				<?php esc_html_e( 'Connect to this site from any AI client using HTTP. No proxy or Node.js needed — just an Application Password.', 'emcp-tools' ); ?>
+			</p>
+
+			<h3><?php esc_html_e( 'Step 1: Generate Your Credentials', 'emcp-tools' ); ?></h3>
+			<p class="description">
+				<?php esc_html_e( 'Pick an administrator and click Generate — a new Application Password is created automatically and every client config below is filled in. No need to visit your profile.', 'emcp-tools' ); ?>
+			</p>
+
+			<?php
+			$emcp_tools_current_user = wp_get_current_user();
+			$emcp_tools_admins       = get_users(
+				array(
+					'role'    => 'administrator',
+					'orderby' => 'display_name',
+					'order'   => 'ASC',
+				)
+			);
+			// Only offer users the current user is allowed to manage.
+			$emcp_tools_admins = array_values(
+				array_filter(
+					$emcp_tools_admins,
+					static function ( $emcp_tools_u ) {
+						return current_user_can( 'edit_user', $emcp_tools_u->ID );
+					}
+				)
+			);
+			// Sort the current user to the top, then alphabetically.
+			usort(
+				$emcp_tools_admins,
+				static function ( $a, $b ) use ( $emcp_tools_current_user ) {
+					if ( (int) $a->ID === (int) $emcp_tools_current_user->ID ) {
+						return -1;
+					}
+					if ( (int) $b->ID === (int) $emcp_tools_current_user->ID ) {
+						return 1;
+					}
+					return strcasecmp( (string) $a->display_name, (string) $b->display_name );
+				}
+			);
+			?>
+
+			<div class="elementor-mcp-cred-form">
 				<div class="elementor-mcp-cred-field">
-					<label for="elementor-mcp-b64-result-copy"><?php esc_html_e( 'Authorization header (for direct HTTP clients)', 'emcp-tools' ); ?></label>
-					<div class="elementor-mcp-auth-result">
-						<code id="elementor-mcp-b64-result"></code>
-						<button type="button" class="button elementor-mcp-copy-btn" data-target="elementor-mcp-b64-result-copy"><?php esc_html_e( 'Copy', 'emcp-tools' ); ?></button>
-						<textarea id="elementor-mcp-b64-result-copy" class="elementor-mcp-copy-source"></textarea>
+					<label for="elementor-mcp-b64-username"><?php esc_html_e( 'Administrator account', 'emcp-tools' ); ?></label>
+					<select id="elementor-mcp-b64-username">
+						<?php foreach ( $emcp_tools_admins as $emcp_tools_u ) : ?>
+							<option
+								value="<?php echo esc_attr( (string) $emcp_tools_u->ID ); ?>"
+								data-login="<?php echo esc_attr( $emcp_tools_u->user_login ); ?>"
+								<?php selected( (int) $emcp_tools_u->ID, (int) $emcp_tools_current_user->ID ); ?>
+							>
+								<?php
+								echo esc_html(
+									(int) $emcp_tools_u->ID === (int) $emcp_tools_current_user->ID
+										/* translators: %s: username */
+										? sprintf( __( '%s (you)', 'emcp-tools' ), $emcp_tools_u->user_login )
+										: $emcp_tools_u->user_login
+								);
+								?>
+							</option>
+						<?php endforeach; ?>
+					</select>
+				</div>
+				<button type="button" class="button button-primary elementor-mcp-generate-btn" id="elementor-mcp-generate-b64"><?php esc_html_e( 'Generate Password &amp; Configs', 'emcp-tools' ); ?></button>
+
+				<p id="elementor-mcp-cred-status" class="description" style="display: none;"></p>
+
+				<div id="elementor-mcp-generated-pw-row" style="display: none;">
+					<div class="elementor-mcp-cred-field">
+						<label for="elementor-mcp-generated-pw-copy"><?php esc_html_e( 'New Application Password (save it — shown only once)', 'emcp-tools' ); ?></label>
+						<div class="elementor-mcp-auth-result">
+							<code id="elementor-mcp-generated-pw"></code>
+							<button type="button" class="button elementor-mcp-copy-btn" data-target="elementor-mcp-generated-pw-copy"><?php esc_html_e( 'Copy', 'emcp-tools' ); ?></button>
+							<textarea id="elementor-mcp-generated-pw-copy" class="elementor-mcp-copy-source"></textarea>
+						</div>
+						<p class="description">
+							<?php
+							printf(
+								/* translators: %s: link to profile */
+								esc_html__( 'Manage or revoke application passwords under %s.', 'emcp-tools' ),
+								'<a href="' . esc_url( admin_url( 'profile.php#application-passwords-section' ) ) . '">' . esc_html__( 'Users > Profile', 'emcp-tools' ) . '</a>'
+							);
+							?>
+						</p>
 					</div>
 				</div>
-			</div>
 
-			<div id="elementor-mcp-authtest-row" style="display: none;">
-				<button type="button" class="button" id="elementor-mcp-authtest-btn"><?php esc_html_e( 'Test authentication', 'emcp-tools' ); ?></button>
-				<p id="elementor-mcp-authtest-status" class="description" style="display: none;"></p>
+				<details class="elementor-mcp-cred-advanced">
+					<summary><?php esc_html_e( 'Use an existing Application Password instead', 'emcp-tools' ); ?></summary>
+					<div class="elementor-mcp-cred-field" style="margin-top: 8px;">
+						<label for="elementor-mcp-b64-app-password"><?php esc_html_e( 'Application Password', 'emcp-tools' ); ?></label>
+						<input type="text" id="elementor-mcp-b64-app-password" placeholder="xxxx xxxx xxxx xxxx xxxx xxxx" autocomplete="off" />
+						<p class="description"><?php esc_html_e( 'If filled in, this is used as-is and no new password is created.', 'emcp-tools' ); ?></p>
+					</div>
+				</details>
 
-				<div id="elementor-mcp-authtest-fix" class="elementor-mcp-authtest-fix" style="display: none;">
-					<p><strong><?php esc_html_e( 'Got 401 Unauthorized? Your server is most likely stripping the Authorization header.', 'emcp-tools' ); ?></strong></p>
-					<p class="description"><?php esc_html_e( 'Common on Apache, Plesk, LiteSpeed and some Azure/IIS stacks: the Authorization header never reaches PHP, so WordPress never sees the Application Password and every MCP "initialize" fails with Unauthorized. Pass the header through to PHP, then re-test:', 'emcp-tools' ); ?></p>
+				<div id="elementor-mcp-b64-result-row" style="display: none;">
+					<div class="elementor-mcp-cred-field">
+						<label for="elementor-mcp-b64-result-copy"><?php esc_html_e( 'Authorization header (for direct HTTP clients)', 'emcp-tools' ); ?></label>
+						<div class="elementor-mcp-auth-result">
+							<code id="elementor-mcp-b64-result"></code>
+							<button type="button" class="button elementor-mcp-copy-btn" data-target="elementor-mcp-b64-result-copy"><?php esc_html_e( 'Copy', 'emcp-tools' ); ?></button>
+							<textarea id="elementor-mcp-b64-result-copy" class="elementor-mcp-copy-source"></textarea>
+						</div>
+					</div>
+				</div>
 
-					<p class="description" style="margin-bottom: 4px;"><strong><?php esc_html_e( 'Apache / Plesk / LiteSpeed', 'emcp-tools' ); ?></strong> — <?php esc_html_e( 'add to .htaccess, above the # BEGIN WordPress block:', 'emcp-tools' ); ?></p>
-					<pre class="elementor-mcp-authtest-snippet">&lt;IfModule mod_rewrite.c&gt;
+				<div id="elementor-mcp-authtest-row" style="display: none;">
+					<button type="button" class="button" id="elementor-mcp-authtest-btn"><?php esc_html_e( 'Test authentication', 'emcp-tools' ); ?></button>
+					<p id="elementor-mcp-authtest-status" class="description" style="display: none;"></p>
+
+					<div id="elementor-mcp-authtest-fix" class="elementor-mcp-authtest-fix" style="display: none;">
+						<p><strong><?php esc_html_e( 'Got 401 Unauthorized? Your server is most likely stripping the Authorization header.', 'emcp-tools' ); ?></strong></p>
+						<p class="description"><?php esc_html_e( 'Common on Apache, Plesk, LiteSpeed and some Azure/IIS stacks: the Authorization header never reaches PHP, so WordPress never sees the Application Password and every MCP "initialize" fails with Unauthorized. Pass the header through to PHP, then re-test:', 'emcp-tools' ); ?></p>
+
+						<p class="description" style="margin-bottom: 4px;"><strong><?php esc_html_e( 'Apache / Plesk / LiteSpeed', 'emcp-tools' ); ?></strong> — <?php esc_html_e( 'add to .htaccess, above the # BEGIN WordPress block:', 'emcp-tools' ); ?></p>
+						<pre class="elementor-mcp-authtest-snippet">&lt;IfModule mod_rewrite.c&gt;
 RewriteEngine On
 RewriteCond %{HTTP:Authorization} ^(.*)
 RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
 &lt;/IfModule&gt;
 SetEnvIf Authorization "(.*)" HTTP_AUTHORIZATION=$1</pre>
 
-					<p class="description" style="margin-bottom: 4px;"><strong><?php esc_html_e( 'Nginx', 'emcp-tools' ); ?></strong> — <?php esc_html_e( 'add inside the PHP location block, then reload nginx:', 'emcp-tools' ); ?></p>
-					<pre class="elementor-mcp-authtest-snippet">fastcgi_param HTTP_AUTHORIZATION $http_authorization;</pre>
+						<p class="description" style="margin-bottom: 4px;"><strong><?php esc_html_e( 'Nginx', 'emcp-tools' ); ?></strong> — <?php esc_html_e( 'add inside the PHP location block, then reload nginx:', 'emcp-tools' ); ?></p>
+						<pre class="elementor-mcp-authtest-snippet">fastcgi_param HTTP_AUTHORIZATION $http_authorization;</pre>
 
-					<p class="description">
-						<?php
-						printf(
-							/* translators: %s: command-line example */
-							esc_html__( 'You can also confirm from a terminal: %s — a 200 response means auth works; 401 means the header is being stripped.', 'emcp-tools' ),
-							'<code>curl -u "USER:APP PASSWORD" ' . esc_html( esc_url_raw( rest_url( 'wp/v2/users/me' ) ) ) . '</code>'
-						);
-						?>
-					</p>
+						<p class="description">
+							<?php
+							printf(
+								/* translators: %s: command-line example */
+								esc_html__( 'You can also confirm from a terminal: %s — a 200 response means auth works; 401 means the header is being stripped.', 'emcp-tools' ),
+								'<code>curl -u "USER:APP PASSWORD" ' . esc_html( esc_url_raw( rest_url( 'wp/v2/users/me' ) ) ) . '</code>'
+							);
+							?>
+						</p>
+					</div>
 				</div>
 			</div>
+
+			<div id="elementor-mcp-client-picker" style="display: none;">
+				<h3><?php esc_html_e( 'Step 2: Choose Your AI Client', 'emcp-tools' ); ?></h3>
+				<p class="description"><?php esc_html_e( 'Pick the app you will connect from — the setup options below are tailored to it.', 'emcp-tools' ); ?></p>
+
+				<div class="elementor-mcp-client-grid" role="tablist" aria-label="<?php esc_attr_e( 'AI client', 'emcp-tools' ); ?>">
+					<?php foreach ( EMCP_Tools_Admin::connection_clients() as $emcp_tools_client ) : ?>
+						<button
+							type="button"
+							class="elementor-mcp-client-card"
+							role="tab"
+							aria-selected="false"
+							data-client="<?php echo esc_attr( $emcp_tools_client['id'] ); ?>"
+						>
+							<span class="dashicons dashicons-<?php echo esc_attr( $emcp_tools_client['icon'] ); ?>" aria-hidden="true"></span>
+							<span class="elementor-mcp-client-card-label"><?php echo esc_html( $emcp_tools_client['label'] ); ?></span>
+						</button>
+					<?php endforeach; ?>
+				</div>
+
+				<h3 id="elementor-mcp-connect-heading" style="display: none;">
+					<?php esc_html_e( 'Step 3: Connect', 'emcp-tools' ); ?> <span id="elementor-mcp-connect-client-name"></span>
+				</h3>
+
+				<?php // JS renders the selected client's option blocks here. ?>
+				<div id="elementor-mcp-client-options"></div>
+
+				<?php // Hidden form used to POST the .mcpb download (Claude Desktop). ?>
+				<form
+					id="elementor-mcp-mcpb-form"
+					method="post"
+					action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>"
+					style="display: none;"
+				>
+					<input type="hidden" name="action" value="emcp_tools_download_mcpb" />
+					<input type="hidden" name="_emcp_nonce" value="<?php echo esc_attr( wp_create_nonce( EMCP_Tools_Admin::NONCE_DOWNLOAD_MCPB ) ); ?>" />
+					<input type="hidden" name="user_id" id="elementor-mcp-mcpb-user-id" value="" />
+					<input type="hidden" name="app_password" id="elementor-mcp-mcpb-app-password" value="" />
+				</form>
+			</div>
 		</div>
 
-		<div id="elementor-mcp-client-picker" style="display: none;">
-			<h3><?php esc_html_e( 'Step 2: Choose Your AI Client', 'emcp-tools' ); ?></h3>
-			<p class="description"><?php esc_html_e( 'Pick the app you will connect from — the setup options below are tailored to it.', 'emcp-tools' ); ?></p>
+	</div><?php // /#emcp-conn-main ?>
 
-			<div class="elementor-mcp-client-grid" role="tablist" aria-label="<?php esc_attr_e( 'AI client', 'emcp-tools' ); ?>">
-				<?php foreach ( EMCP_Tools_Admin::connection_clients() as $emcp_tools_client ) : ?>
-					<button
-						type="button"
-						class="elementor-mcp-client-card"
-						role="tab"
-						aria-selected="false"
-						data-client="<?php echo esc_attr( $emcp_tools_client['id'] ); ?>"
-					>
-						<span class="dashicons dashicons-<?php echo esc_attr( $emcp_tools_client['icon'] ); ?>" aria-hidden="true"></span>
-						<span class="elementor-mcp-client-card-label"><?php echo esc_html( $emcp_tools_client['label'] ); ?></span>
-					</button>
-				<?php endforeach; ?>
-			</div>
+	<?php // ===== Sub-tab: 3rd Party Services ===== ?>
+	<div class="elementor-mcp-tabpanel" id="emcp-conn-services" role="tabpanel" data-tab="conn-services">
+		<div class="elementor-mcp-section">
+			<h2><?php esc_html_e( '3rd Party Services', 'emcp-tools' ); ?></h2>
+			<p class="description"><?php esc_html_e( 'Connect external services EMCP tools can use. Stock-image providers power the search-images / add-stock-image tools — add at least one free key; the tools use the first connected provider unless a specific one is requested.', 'emcp-tools' ); ?></p>
 
-			<h3 id="elementor-mcp-connect-heading" style="display: none;">
-				<?php esc_html_e( 'Step 3: Connect', 'emcp-tools' ); ?> <span id="elementor-mcp-connect-client-name"></span>
-			</h3>
+			<form method="post" action="options.php" class="emcp-services-form">
+				<?php settings_fields( EMCP_Tools_Admin::SETTINGS_GROUP_SERVICES ); ?>
 
-			<?php // JS renders the selected client's option blocks here. ?>
-			<div id="elementor-mcp-client-options"></div>
+				<div class="emcp-services-grid">
+					<?php
+					$emcp_stock_providers = array(
+						array( 'label' => 'Unsplash', 'option' => EMCP_Tools_Unsplash_Client::OPTION, 'const' => 'EMCP_TOOLS_UNSPLASH_ACCESS_KEY', 'url' => 'https://unsplash.com/developers' ),
+						array( 'label' => 'Pexels', 'option' => EMCP_Tools_Pexels_Client::OPTION, 'const' => 'EMCP_TOOLS_PEXELS_API_KEY', 'url' => 'https://www.pexels.com/api/' ),
+						array( 'label' => 'Pixabay', 'option' => EMCP_Tools_Pixabay_Client::OPTION, 'const' => 'EMCP_TOOLS_PIXABAY_API_KEY', 'url' => 'https://pixabay.com/api/docs/' ),
+					);
+					foreach ( $emcp_stock_providers as $emcp_sp ) :
+						$emcp_sp_const = defined( $emcp_sp['const'] );
+						?>
+						<div class="emcp-service-field">
+							<div class="emcp-service-field-head">
+								<label for="emcp-tools-<?php echo esc_attr( $emcp_sp['option'] ); ?>">
+									<?php
+									/* translators: %s: provider name (Unsplash / Pexels / Pixabay). */
+									echo esc_html( sprintf( __( '%s API key', 'emcp-tools' ), $emcp_sp['label'] ) );
+									?>
+								</label>
+								<a href="<?php echo esc_url( $emcp_sp['url'] ); ?>" target="_blank" rel="noopener noreferrer"><?php esc_html_e( 'Get a free key', 'emcp-tools' ); ?> &rarr;</a>
+							</div>
+							<input
+								type="text"
+								id="emcp-tools-<?php echo esc_attr( $emcp_sp['option'] ); ?>"
+								name="<?php echo esc_attr( $emcp_sp['option'] ); ?>"
+								value="<?php echo esc_attr( $emcp_sp_const ? '' : (string) get_option( $emcp_sp['option'], '' ) ); ?>"
+								placeholder="<?php
+								if ( $emcp_sp_const ) {
+									/* translators: %s: PHP constant name. */
+									echo esc_attr( sprintf( __( 'Set via the %s constant', 'emcp-tools' ), $emcp_sp['const'] ) );
+								} else {
+									echo esc_attr__( 'Paste your API key', 'emcp-tools' );
+								}
+								?>"
+								autocomplete="off"
+								spellcheck="false"
+								<?php disabled( $emcp_sp_const ); ?>
+							/>
+						</div>
+					<?php endforeach; ?>
+				</div>
 
-			<?php // Hidden form used to POST the .mcpb download (Claude Desktop). ?>
-			<form
-				id="elementor-mcp-mcpb-form"
-				method="post"
-				action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>"
-				style="display: none;"
-			>
-				<input type="hidden" name="action" value="emcp_tools_download_mcpb" />
-				<input type="hidden" name="_emcp_nonce" value="<?php echo esc_attr( wp_create_nonce( EMCP_Tools_Admin::NONCE_DOWNLOAD_MCPB ) ); ?>" />
-				<input type="hidden" name="user_id" id="elementor-mcp-mcpb-user-id" value="" />
-				<input type="hidden" name="app_password" id="elementor-mcp-mcpb-app-password" value="" />
+				<?php submit_button( __( 'Save Settings', 'emcp-tools' ), 'primary', 'submit', false ); ?>
 			</form>
 		</div>
-	</div>
+	</div><?php // /#emcp-conn-services ?>
 
 </div>

@@ -179,7 +179,11 @@
 		if ( ! tabs.length || ! panels.length ) {
 			return;
 		}
-		var STORAGE_KEY = 'emcpToolsActiveTab';
+		// Per-page storage key so different sub-tab groups (Tools vs Connection)
+		// don't overwrite each other's remembered tab. Falls back to the legacy
+		// key when the tablist doesn't declare one.
+		var tablist = document.querySelector( '.elementor-mcp-subtabs' );
+		var STORAGE_KEY = ( tablist && tablist.getAttribute( 'data-subtab-key' ) ) || 'emcpToolsActiveTab';
 
 		function activate( tabId ) {
 			var matched = false;

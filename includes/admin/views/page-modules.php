@@ -37,7 +37,7 @@ $modules  = $registry ? $registry->all() : array();
 			}
 			?>
 			<div class="elementor-mcp-tool-card emcp-module-card <?php echo esc_attr( $state ); ?>">
-				<label class="emcp-module-head">
+				<label class="emcp-module-head emcp-switch">
 					<input
 						type="checkbox"
 						name="<?php echo esc_attr( EMCP_Tools_Module::OPTION_ACTIVE ); ?>[]"
