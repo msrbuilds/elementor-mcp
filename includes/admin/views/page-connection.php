@@ -395,6 +395,17 @@ SetEnvIf Authorization "(.*)" HTTP_AUTHORIZATION=$1</pre>
 					);
 					foreach ( $emcp_stock_providers as $emcp_sp ) :
 						$emcp_sp_const = defined( $emcp_sp['const'] );
+						// A key is on file when the option is non-empty and not
+						// constant-overridden. The value itself is NEVER rendered.
+						$emcp_sp_saved = ! $emcp_sp_const && '' !== (string) get_option( $emcp_sp['option'], '' );
+						if ( $emcp_sp_const ) {
+							/* translators: %s: PHP constant name. */
+							$emcp_sp_placeholder = sprintf( __( 'Set via the %s constant', 'emcp-tools' ), $emcp_sp['const'] );
+						} elseif ( $emcp_sp_saved ) {
+							$emcp_sp_placeholder = __( '•••••••••••••• saved — leave blank to keep', 'emcp-tools' );
+						} else {
+							$emcp_sp_placeholder = __( 'Paste your API key', 'emcp-tools' );
+						}
 						?>
 						<div class="emcp-service-field">
 							<div class="emcp-service-field-head">
@@ -403,26 +414,29 @@ SetEnvIf Authorization "(.*)" HTTP_AUTHORIZATION=$1</pre>
 									/* translators: %s: provider name (Unsplash / Pexels / Pixabay). */
 									echo esc_html( sprintf( __( '%s API key', 'emcp-tools' ), $emcp_sp['label'] ) );
 									?>
+									<?php if ( $emcp_sp_saved ) : ?>
+										<span class="emcp-service-badge"><?php esc_html_e( 'saved', 'emcp-tools' ); ?></span>
+									<?php endif; ?>
 								</label>
 								<a href="<?php echo esc_url( $emcp_sp['url'] ); ?>" target="_blank" rel="noopener noreferrer"><?php esc_html_e( 'Get a free key', 'emcp-tools' ); ?> &rarr;</a>
 							</div>
 							<input
-								type="text"
+								type="password"
 								id="emcp-tools-<?php echo esc_attr( $emcp_sp['option'] ); ?>"
 								name="<?php echo esc_attr( $emcp_sp['option'] ); ?>"
-								value="<?php echo esc_attr( $emcp_sp_const ? '' : (string) get_option( $emcp_sp['option'], '' ) ); ?>"
-								placeholder="<?php
-								if ( $emcp_sp_const ) {
-									/* translators: %s: PHP constant name. */
-									echo esc_attr( sprintf( __( 'Set via the %s constant', 'emcp-tools' ), $emcp_sp['const'] ) );
-								} else {
-									echo esc_attr__( 'Paste your API key', 'emcp-tools' );
-								}
-								?>"
+								value=""
+								placeholder="<?php echo esc_attr( $emcp_sp_placeholder ); ?>"
 								autocomplete="off"
+								autocapitalize="off"
 								spellcheck="false"
 								<?php disabled( $emcp_sp_const ); ?>
 							/>
+							<?php if ( $emcp_sp_saved ) : ?>
+								<label class="emcp-service-clear">
+									<input type="checkbox" name="<?php echo esc_attr( $emcp_sp['option'] . '__clear' ); ?>" value="1" />
+									<?php esc_html_e( 'Remove saved key', 'emcp-tools' ); ?>
+								</label>
+							<?php endif; ?>
 						</div>
 					<?php endforeach; ?>
 				</div>

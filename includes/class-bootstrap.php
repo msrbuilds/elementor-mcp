@@ -96,6 +96,7 @@ class EMCP_Tools_Bootstrap {
 		require_once EMCP_TOOLS_DIR . 'includes/abilities/class-template-abilities.php';
 		require_once EMCP_TOOLS_DIR . 'includes/abilities/class-global-abilities.php';
 		require_once EMCP_TOOLS_DIR . 'includes/abilities/class-composite-abilities.php';
+		require_once EMCP_TOOLS_DIR . 'includes/class-secret.php';
 		require_once EMCP_TOOLS_DIR . 'includes/class-unsplash-client.php';
 		require_once EMCP_TOOLS_DIR . 'includes/class-pexels-client.php';
 		require_once EMCP_TOOLS_DIR . 'includes/class-pixabay-client.php';

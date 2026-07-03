@@ -556,7 +556,10 @@ class EMCP_Tools_Admin {
 		// Stock-image provider API keys (Connection → 3rd Party Services sub-tab)
 		// — power the stock-image tools (search-images / add-stock-image). All
 		// three are free keys. Registered in their own group so that sub-tab's
-		// form saves without touching the server-gate toggles.
+		// form saves without touching the server-gate toggles. Keys are stored
+		// encrypted at rest (EMCP_Tools_Secret) and never rendered back to the
+		// form: the field posts empty when unchanged (we keep the stored value),
+		// a per-field "__clear" checkbox removes it, and a new value is encrypted.
 		foreach ( array( EMCP_Tools_Unsplash_Client::OPTION, EMCP_Tools_Pexels_Client::OPTION, EMCP_Tools_Pixabay_Client::OPTION ) as $emcp_stock_option ) {
 			register_setting(
 				self::SETTINGS_GROUP_SERVICES,
@@ -564,8 +567,17 @@ class EMCP_Tools_Admin {
 				array(
 					'type'              => 'string',
 					'default'           => '',
-					'sanitize_callback' => static function ( $value ) {
-						return sanitize_text_field( (string) $value );
+					'sanitize_callback' => static function ( $value ) use ( $emcp_stock_option ) {
+						// phpcs:ignore WordPress.Security.NonceVerification.Missing -- options.php verifies the settings-group nonce before this runs.
+						if ( ! empty( $_POST[ $emcp_stock_option . '__clear' ] ) ) {
+							return '';
+						}
+						$value = sanitize_text_field( (string) $value );
+						if ( '' === $value ) {
+							// Unchanged (masked) submit — keep the stored value.
+							return (string) get_option( $emcp_stock_option, '' );
+						}
+						return EMCP_Tools_Secret::encrypt( $value );
 					},
 				)
 			);

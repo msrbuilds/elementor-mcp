@@ -2886,3 +2886,6 @@
 .emcp-subtab-save { margin: 0 !important; }
 /* [hidden] alone loses to WP's .button { display:inline-block } — force it. */
 .emcp-subtab-save[hidden] { display: none !important; }
+/* 3rd Party Services: saved-key badge + clear control ----------------------- */
+.emcp-service-badge { display: inline-block; margin-left: 8px; font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: .3px; color: #1a7a34; background: #edfaef; border-radius: 3px; padding: 1px 6px; vertical-align: middle; }
+.emcp-service-clear { display: inline-flex; align-items: center; gap: 6px; margin-top: 6px; font-size: 12px; color: var(--mcp-gray-600, #50575e); }
