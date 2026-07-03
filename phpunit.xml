@@ -29,6 +29,9 @@
         <testsuite name="Performance">
             <directory>tests/unit/performance</directory>
         </testsuite>
+        <testsuite name="SecurityScanner">
+            <directory>tests/unit/security-scanner</directory>
+        </testsuite>
         <testsuite name="Unit">
             <file>tests/unit/WidgetGeneratorTest.php</file>
         </testsuite>

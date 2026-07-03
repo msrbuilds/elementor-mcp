@@ -2,6 +2,10 @@
 
 All notable changes to MCP Tools for Elementor are documented in this file.
 
+## 1.12.0 — 2026-06-12
+
+- New: `scan-security` — read-only security & malware scan (malware heuristics, core-integrity checksum diff, hardening audit, outdated/abandoned software) → scored report; returns path:line + snippet, never full file contents. Ported from upstream msrbuilds/elementor-mcp (v3.0.0), including the sibling-prefix walk-confinement, regex, and false-positive hardening fixes (snippet-sandbox exclusion dropped — the fork ships no sandbox).
+
 ## 1.11.0 — 2026-06-12
 
 - New: `analyze-performance` — read-only page + server + WordPress performance audit producing a scored (0-100 / A-F) report with ranked recommendations. Ported from upstream msrbuilds/elementor-mcp (v3.0.0), including the same-host-redirect SSRF hardening.

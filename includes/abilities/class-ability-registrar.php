@@ -154,6 +154,14 @@ class Elementor_MCP_Ability_Registrar {
 		$performance->register();
 		$this->ability_names = array_merge( $this->ability_names, $performance->get_ability_names() );
 
+		// Security & Malware Scanner (scan-security — read-only 4-dimension scan:
+		// malware heuristics, core-integrity checksum diff, hardening audit,
+		// outdated/abandoned software → scored report). Independent of Elementor
+		// version; the ability's manage_options permission callback is the guard.
+		$security = new Elementor_MCP_Security_Abilities();
+		$security->register();
+		$this->ability_names = array_merge( $this->ability_names, $security->get_ability_names() );
+
 		// Atomic widget abilities (Elementor 4.0+). Self-guards on version check.
 		$atomic_widgets = new Elementor_MCP_Atomic_Widget_Abilities( $this->data, $this->factory );
 		$atomic_widgets->register();
