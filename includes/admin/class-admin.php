@@ -1363,8 +1363,7 @@ class EMCP_Tools_Admin {
 					if ( '' !== $emcp_pro_view ) {
 						include $emcp_pro_view;
 					} else {
-						$emcp_upsell_feature = __( 'AI Chat', 'emcp-tools' );
-						include EMCP_TOOLS_DIR . 'includes/admin/views/page-pro-upsell.php';
+						include EMCP_TOOLS_DIR . 'includes/admin/views/page-ai-chat-upsell.php';
 					}
 				} elseif ( 'context' === $active_tab ) {
 					include EMCP_TOOLS_DIR . 'includes/admin/views/page-context.php';
