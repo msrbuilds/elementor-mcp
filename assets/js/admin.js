@@ -1374,6 +1374,32 @@
 	}
 
 	// Initialize on DOM ready.
+	/**
+	 * Header "Help & Support" dropdown: toggle on click, close on outside-click
+	 * and Escape. No-op on pages without the toggle.
+	 */
+	function initHelpMenu() {
+		var toggle = document.querySelector( '.emcp-help-toggle' );
+		var menu   = document.querySelector( '.emcp-help-dropdown' );
+		if ( ! toggle || ! menu ) { return; }
+		function setOpen( open ) {
+			menu.hidden = ! open;
+			toggle.setAttribute( 'aria-expanded', open ? 'true' : 'false' );
+		}
+		toggle.addEventListener( 'click', function ( e ) {
+			e.stopPropagation();
+			setOpen( menu.hidden );
+		} );
+		document.addEventListener( 'click', function ( e ) {
+			if ( ! menu.hidden && ! menu.contains( e.target ) && e.target !== toggle ) {
+				setOpen( false );
+			}
+		} );
+		document.addEventListener( 'keydown', function ( e ) {
+			if ( 'Escape' === e.key ) { setOpen( false ); }
+		} );
+	}
+
 	function initAll() {
 		initToolsForm();
 		initBase64Generator();
@@ -1385,6 +1411,7 @@
 		initCodeOverlay();
 		initClickToCopy();
 		initContextPage();
+		initHelpMenu();
 	}
 
 	if ( document.readyState === 'loading' ) {

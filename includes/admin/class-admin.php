@@ -116,6 +116,30 @@ class EMCP_Tools_Admin {
 		return $module->is_active();
 	}
 
+	/**
+	 * Dashicon class for a tab id, used by the in-header nav. Falls back to a
+	 * generic marker for unknown ids.
+	 *
+	 * @param string $tab_id Tab id as returned by get_active_tab().
+	 * @return string Dashicon class.
+	 */
+	public static function tab_icon( string $tab_id ): string {
+		$icons = array(
+			'tools'      => 'dashicons-admin-tools',
+			'modules'    => 'dashicons-screenoptions',
+			'connection' => 'dashicons-admin-links',
+			'ai-chat'    => 'dashicons-format-chat',
+			'context'    => 'dashicons-info-outline',
+			'prompts'    => 'dashicons-lightbulb',
+			'templates'  => 'dashicons-layout',
+			'brand-kits' => 'dashicons-art',
+			'skills'     => 'dashicons-superhero',
+			'widgets'    => 'dashicons-editor-code',
+			'changelog'  => 'dashicons-backup',
+		);
+		return $icons[ $tab_id ] ?? 'dashicons-marker';
+	}
+
 	private function get_submenus(): array {
 		if ( null === $this->submenus ) {
 			$this->submenus = array(
@@ -1215,49 +1239,59 @@ class EMCP_Tools_Admin {
 			endif;
 			?>
 
-			<!-- Header -->
-			<div class="elementor-mcp-header">
-				<span class="elementor-mcp-header-icon">
-					<img src="<?php echo esc_url( EMCP_TOOLS_URL . 'assets/img/icon-sm.png' ); ?>" alt="<?php esc_attr_e( 'EMCP Tools', 'emcp-tools' ); ?>" />
-				</span>
-				<div class="elementor-mcp-header-info">
-					<h2 class="elementor-mcp-header-title">
-						<?php esc_html_e( 'MCP Tools for WordPress & Page Builders', 'emcp-tools' ); ?>
-						<span class="elementor-mcp-header-version">v<?php echo esc_html( EMCP_TOOLS_VERSION ); ?></span>
-					</h2>
-					<p class="elementor-mcp-header-subtitle"><?php esc_html_e( 'AI-powered WordPress management and page-building tools via the Model Context Protocol.', 'emcp-tools' ); ?></p>
+			<?php
+			// Only show the upgrade CTA to sites without a valid Pro license.
+			// Freemius adds its own Contact / Account / Upgrade items to the
+			// EMCP Tools menu, so we don't need a redundant header link.
+			$emcp_tools_show_upgrade = ! function_exists( 'emcp_tools_fs' )
+				|| ! emcp_tools_fs()->can_use_premium_code();
+			?>
+
+			<!-- App bar -->
+			<div class="emcp-appbar">
+				<div class="emcp-appbar-brand">
+					<img class="emcp-appbar-logo" src="<?php echo esc_url( EMCP_TOOLS_URL . 'assets/img/icon-sm.png' ); ?>" alt="" />
+					<span class="emcp-appbar-title"><?php esc_html_e( 'MCP Tools for WordPress & Page Builders', 'emcp-tools' ); ?></span>
+					<span class="emcp-appbar-version">v<?php echo esc_html( EMCP_TOOLS_VERSION ); ?></span>
 				</div>
-				<div class="elementor-mcp-header-actions">
-					<a href="https://emcptools.com/tutorials" class="elementor-mcp-header-btn elementor-mcp-header-btn--secondary" target="_blank" rel="noopener noreferrer">
-						<svg viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"/></svg>
-						<?php esc_html_e( 'Tutorials', 'emcp-tools' ); ?>
-					</a>
-					<a href="https://emcptools.com/docs" class="elementor-mcp-header-btn elementor-mcp-header-btn--secondary" target="_blank" rel="noopener noreferrer">
-						<svg viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clip-rule="evenodd"/></svg>
-						<?php esc_html_e( 'Documentation', 'emcp-tools' ); ?>
-					</a>
-					<a href="https://support.msrbuilds.com/" class="elementor-mcp-header-btn elementor-mcp-header-btn--secondary" target="_blank" rel="noopener noreferrer">
-						<svg viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM8.94 6.94a1.5 1.5 0 012.45 1.16c0 .5-.25.78-.86 1.2-.66.45-1.03 1-1.03 1.7v.25a.75.75 0 001.5 0c0-.4.13-.55.7-.94.7-.48 1.19-1.06 1.19-2.06A3 3 0 006.6 7.34a.75.75 0 101.4.52c.1-.27.26-.66.94-.92zM10 14.5a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"/></svg>
-						<?php esc_html_e( 'Support', 'emcp-tools' ); ?>
-					</a>
-					<a href="https://www.facebook.com/groups/emcptools" class="elementor-mcp-header-btn elementor-mcp-header-btn--secondary" target="_blank" rel="noopener noreferrer">
-						<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path fill="currentColor" d="M24 12.073C24 5.405 18.627 0 12 0S0 5.405 0 12.073C0 18.1 4.388 23.094 10.125 24v-8.437H7.078v-3.49h3.047V9.43c0-3.014 1.792-4.679 4.533-4.679 1.313 0 2.686.235 2.686.235v2.96h-1.514c-1.491 0-1.956.93-1.956 1.886v2.264h3.328l-.532 3.49h-2.796V24C19.612 23.094 24 18.1 24 12.073z"/></svg>
-						<?php esc_html_e( 'Community', 'emcp-tools' ); ?>
-					</a>
-					<?php
-					// Only show the upgrade CTA to sites without a valid Pro license.
-					// Freemius adds its own Contact / Account / Upgrade items to the
-					// EMCP Tools menu, so we don't need a redundant header link.
-					$emcp_tools_show_upgrade = ! function_exists( 'emcp_tools_fs' )
-						|| ! emcp_tools_fs()->can_use_premium_code();
-					if ( $emcp_tools_show_upgrade ) : ?>
-						<a href="<?php echo esc_url( emcp_tools_upgrade_url() ); ?>" class="elementor-mcp-header-btn elementor-mcp-header-btn--primary" target="_blank" rel="noopener noreferrer">
-							<svg viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+				<div class="emcp-appbar-actions">
+					<div class="emcp-help-menu">
+						<button type="button" class="emcp-help-toggle" aria-haspopup="true" aria-expanded="false">
+							<span class="dashicons dashicons-editor-help" aria-hidden="true"></span>
+							<?php esc_html_e( 'Help & Support', 'emcp-tools' ); ?>
+							<span class="emcp-help-caret" aria-hidden="true">▾</span>
+						</button>
+						<div class="emcp-help-dropdown" role="menu" hidden>
+							<a role="menuitem" href="https://support.msrbuilds.com/" target="_blank" rel="noopener noreferrer"><span class="dashicons dashicons-sos" aria-hidden="true"></span><?php esc_html_e( 'Ticket Support', 'emcp-tools' ); ?></a>
+							<a role="menuitem" href="https://emcptools.com/docs" target="_blank" rel="noopener noreferrer"><span class="dashicons dashicons-book" aria-hidden="true"></span><?php esc_html_e( 'Documentation', 'emcp-tools' ); ?></a>
+							<a role="menuitem" href="https://www.facebook.com/groups/emcptools" target="_blank" rel="noopener noreferrer"><span class="dashicons dashicons-groups" aria-hidden="true"></span><?php esc_html_e( 'Community', 'emcp-tools' ); ?></a>
+							<a role="menuitem" href="https://emcptools.com/tutorials" target="_blank" rel="noopener noreferrer"><span class="dashicons dashicons-video-alt3" aria-hidden="true"></span><?php esc_html_e( 'Tutorials', 'emcp-tools' ); ?></a>
+						</div>
+					</div>
+					<?php if ( $emcp_tools_show_upgrade ) : ?>
+						<a class="emcp-appbar-upgrade" href="<?php echo esc_url( emcp_tools_upgrade_url() ); ?>" target="_blank" rel="noopener noreferrer">
+							<span class="dashicons dashicons-star-filled" aria-hidden="true"></span>
 							<?php esc_html_e( 'Upgrade to Pro', 'emcp-tools' ); ?>
 						</a>
 					<?php endif; ?>
 				</div>
 			</div>
+
+			<!-- Tab nav -->
+			<nav class="emcp-appnav" aria-label="<?php esc_attr_e( 'EMCP Tools sections', 'emcp-tools' ); ?>">
+				<?php
+				foreach ( $this->get_submenus() as $emcp_slug => $emcp_label ) :
+					$emcp_tab_id = ( self::PAGE_SLUG === $emcp_slug ) ? 'tools' : substr( $emcp_slug, strlen( self::PAGE_SLUG . '-' ) );
+					$emcp_is_on  = ( $emcp_tab_id === $active_tab );
+					?>
+					<a class="emcp-appnav-item<?php echo $emcp_is_on ? ' is-active' : ''; ?>"
+						href="<?php echo esc_url( admin_url( 'admin.php?page=' . $emcp_slug ) ); ?>"
+						<?php echo $emcp_is_on ? 'aria-current="page"' : ''; ?>>
+						<span class="dashicons <?php echo esc_attr( self::tab_icon( $emcp_tab_id ) ); ?>" aria-hidden="true"></span>
+						<span class="emcp-appnav-label"><?php echo esc_html( $emcp_label ); ?></span>
+					</a>
+				<?php endforeach; ?>
+			</nav>
 
 			<!-- Stats Bar -->
 			<div class="elementor-mcp-stats">
