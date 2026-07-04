@@ -2942,20 +2942,21 @@ body.emcp-modal-open { overflow: hidden; }
 /* Full-width admin header (app bar + tab nav + Help dropdown) ---------------- */
 .elementor-mcp-admin > h1 { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap; border: 0; }
 
-.emcp-appbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; background: var(--mcp-white); border-bottom: 1px solid var(--mcp-gray-200); padding: 14px 22px; margin: -10px -20px 0 -22px; }
+.emcp-appbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; background: var(--mcp-white); border-bottom: 1px solid var(--mcp-gray-200); padding: 0 0 0 20px; margin: -10px -20px 0 -22px; }
 .emcp-appbar-brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
-.emcp-appbar-logo { width: 26px; height: 26px; border-radius: 6px; object-fit: contain; }
+.emcp-appbar-logo { width: 34px; height: 34px; border-radius: 6px; object-fit: contain; }
 .emcp-appbar-title { font-size: 15px; font-weight: 700; color: var(--mcp-gray-800, #1d2327); }
 .emcp-appbar-version { font-size: 11px; font-weight: 700; color: var(--mcp-primary); background: var(--mcp-primary-light); border-radius: 10px; padding: 2px 8px; }
 .emcp-appbar-actions { display: flex; align-items: center; gap: 10px; }
 
 .emcp-help-menu { position: relative; }
-.emcp-help-toggle { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; background: var(--mcp-white); border: 1px solid var(--mcp-gray-200); border-radius: 6px; font-size: 13px; font-weight: 600; color: var(--mcp-gray-800, #1d2327); cursor: pointer; }
+.emcp-help-toggle { display: inline-flex; align-items: center; gap: 12px; padding: 18px 24px; background: var(--mcp-white); border: none; border-left: 1px solid var(--mcp-gray-200); border-radius: 0; font-size: 13px; font-weight: 600; color: var(--mcp-gray-800, #1d2327); cursor: pointer; background-color: #a5b4fc; }
 .emcp-help-toggle:hover { border-color: var(--mcp-primary); color: var(--mcp-primary); }
 .emcp-help-toggle .dashicons { font-size: 16px; width: 16px; height: 16px; }
-.emcp-help-caret { font-size: 10px; }
-.emcp-help-dropdown { position: absolute; right: 0; top: calc(100% + 6px); min-width: 210px; background: var(--mcp-white); border: 1px solid var(--mcp-gray-200); border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,.14); padding: 6px; z-index: 1000; }
-.emcp-help-dropdown[hidden] { display: none !important; }
+.emcp-help-caret { font-size: 18px; width: 18px; height: 18px; line-height: 1; color: var(--mcp-gray-500, #787c82); }
+.emcp-help-dropdown { display: none; position: absolute; right: 0; top: calc(100% + 6px); min-width: 210px; background: var(--mcp-white); border: 1px solid var(--mcp-gray-200); border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,.14); padding: 6px; z-index: 1000; }
+.emcp-help-dropdown::before { content: ''; position: absolute; top: -8px; left: 0; right: 0; height: 8px; }
+.emcp-help-menu:hover .emcp-help-dropdown, .emcp-help-menu:focus-within .emcp-help-dropdown { display: block; }
 .emcp-help-dropdown a { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 6px; color: var(--mcp-gray-800, #1d2327); text-decoration: none; font-size: 13px; }
 .emcp-help-dropdown a:hover { background: var(--mcp-primary-light); color: var(--mcp-primary); }
 .emcp-help-dropdown .dashicons { font-size: 18px; width: 18px; height: 18px; color: var(--mcp-gray-500, #787c82); }
@@ -2965,7 +2966,7 @@ body.emcp-modal-open { overflow: hidden; }
 .emcp-appbar-upgrade:hover { background: var(--mcp-primary-hover); border-color: var(--mcp-primary-hover); color: var(--mcp-white); }
 .emcp-appbar-upgrade .dashicons { font-size: 15px; width: 15px; height: 15px; }
 
-.emcp-appnav { display: flex; align-items: stretch; gap: 2px; background: var(--mcp-white); border-bottom: 1px solid var(--mcp-gray-200); padding: 0 14px; overflow-x: auto; margin: 0 -20px 20px -22px; }
+.emcp-appnav { display: flex; align-items: stretch; gap: 2px; background: var(--mcp-white); border-bottom: 1px solid var(--mcp-gray-200); padding: 0 14px; overflow-x: auto; overflow-y: hidden; margin: 0 -20px 20px -22px; }
 .emcp-appnav-item { display: inline-flex; align-items: center; gap: 7px; padding: 12px 13px; margin-bottom: -1px; white-space: nowrap; color: var(--mcp-gray-600, #50575e); text-decoration: none; font-size: 13px; font-weight: 600; border-bottom: 2px solid transparent; }
 .emcp-appnav-item:hover { color: var(--mcp-gray-800, #1d2327); background: var(--mcp-gray-50); }
 .emcp-appnav-item.is-active { color: var(--mcp-primary); border-bottom-color: var(--mcp-primary); }

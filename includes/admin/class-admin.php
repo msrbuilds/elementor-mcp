@@ -1255,25 +1255,25 @@ class EMCP_Tools_Admin {
 					<span class="emcp-appbar-version">v<?php echo esc_html( EMCP_TOOLS_VERSION ); ?></span>
 				</div>
 				<div class="emcp-appbar-actions">
-					<div class="emcp-help-menu">
-						<button type="button" class="emcp-help-toggle" aria-haspopup="true" aria-expanded="false">
-							<span class="dashicons dashicons-editor-help" aria-hidden="true"></span>
-							<?php esc_html_e( 'Help & Support', 'emcp-tools' ); ?>
-							<span class="emcp-help-caret" aria-hidden="true">▾</span>
-						</button>
-						<div class="emcp-help-dropdown" role="menu" hidden>
-							<a role="menuitem" href="https://support.msrbuilds.com/" target="_blank" rel="noopener noreferrer"><span class="dashicons dashicons-sos" aria-hidden="true"></span><?php esc_html_e( 'Ticket Support', 'emcp-tools' ); ?></a>
-							<a role="menuitem" href="https://emcptools.com/docs" target="_blank" rel="noopener noreferrer"><span class="dashicons dashicons-book" aria-hidden="true"></span><?php esc_html_e( 'Documentation', 'emcp-tools' ); ?></a>
-							<a role="menuitem" href="https://www.facebook.com/groups/emcptools" target="_blank" rel="noopener noreferrer"><span class="dashicons dashicons-groups" aria-hidden="true"></span><?php esc_html_e( 'Community', 'emcp-tools' ); ?></a>
-							<a role="menuitem" href="https://emcptools.com/tutorials" target="_blank" rel="noopener noreferrer"><span class="dashicons dashicons-video-alt3" aria-hidden="true"></span><?php esc_html_e( 'Tutorials', 'emcp-tools' ); ?></a>
-						</div>
-					</div>
 					<?php if ( $emcp_tools_show_upgrade ) : ?>
 						<a class="emcp-appbar-upgrade" href="<?php echo esc_url( emcp_tools_upgrade_url() ); ?>" target="_blank" rel="noopener noreferrer">
 							<span class="dashicons dashicons-star-filled" aria-hidden="true"></span>
 							<?php esc_html_e( 'Upgrade to Pro', 'emcp-tools' ); ?>
 						</a>
 					<?php endif; ?>
+					<div class="emcp-help-menu">
+						<button type="button" class="emcp-help-toggle" aria-haspopup="true">
+							<span class="dashicons dashicons-editor-help" aria-hidden="true"></span>
+							<?php esc_html_e( 'Help & Support', 'emcp-tools' ); ?>
+							<span class="dashicons dashicons-arrow-down-alt2 emcp-help-caret" aria-hidden="true"></span>
+						</button>
+						<div class="emcp-help-dropdown" role="menu">
+							<a role="menuitem" href="https://support.msrbuilds.com/" target="_blank" rel="noopener noreferrer"><span class="dashicons dashicons-sos" aria-hidden="true"></span><?php esc_html_e( 'Ticket Support', 'emcp-tools' ); ?></a>
+							<a role="menuitem" href="https://emcptools.com/docs" target="_blank" rel="noopener noreferrer"><span class="dashicons dashicons-book" aria-hidden="true"></span><?php esc_html_e( 'Documentation', 'emcp-tools' ); ?></a>
+							<a role="menuitem" href="https://www.facebook.com/groups/emcptools" target="_blank" rel="noopener noreferrer"><span class="dashicons dashicons-groups" aria-hidden="true"></span><?php esc_html_e( 'Community', 'emcp-tools' ); ?></a>
+							<a role="menuitem" href="https://emcptools.com/tutorials" target="_blank" rel="noopener noreferrer"><span class="dashicons dashicons-video-alt3" aria-hidden="true"></span><?php esc_html_e( 'Tutorials', 'emcp-tools' ); ?></a>
+						</div>
+					</div>
 				</div>
 			</div>
 
