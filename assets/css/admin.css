@@ -3016,3 +3016,16 @@ body.emcp-modal-open { overflow: hidden; }
 .emcp-appnav-arrow .dashicons { font-size: 22px; width: 22px; height: 22px; }
 .emcp-appnav-arrow--prev { left: 0; box-shadow: 8px 0 10px -6px rgba(0,0,0,.18); }
 .emcp-appnav-arrow--next { right: 0; box-shadow: -8px 0 10px -6px rgba(0,0,0,.18); }
+
+@media (max-width: 900px) {
+	.emcp-appbar-brand {
+		width: 30%;
+	}
+}
+/* Compact header title on small screens: show "MCP Tools" instead of the full
+   name wrapping to multiple lines. */
+.emcp-appbar-title--short { display: none; }
+@media screen and (max-width: 900px) {
+	.emcp-appbar-title--full { display: none; }
+	.emcp-appbar-title--short { display: inline; white-space: nowrap; }
+}

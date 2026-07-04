@@ -1270,7 +1270,8 @@ class EMCP_Tools_Admin {
 			<div class="emcp-appbar">
 				<div class="emcp-appbar-brand">
 					<img class="emcp-appbar-logo" src="<?php echo esc_url( EMCP_TOOLS_URL . 'assets/img/icon-sm.png' ); ?>" alt="" />
-					<span class="emcp-appbar-title"><?php esc_html_e( 'MCP Tools for WordPress & Page Builders', 'emcp-tools' ); ?></span>
+					<span class="emcp-appbar-title emcp-appbar-title--full"><?php esc_html_e( 'MCP Tools for WordPress & Page Builders', 'emcp-tools' ); ?></span>
+					<span class="emcp-appbar-title emcp-appbar-title--short"><?php esc_html_e( 'MCP Tools', 'emcp-tools' ); ?></span>
 					<span class="emcp-appbar-version">v<?php echo esc_html( EMCP_TOOLS_VERSION ); ?></span>
 				</div>
 				<div class="emcp-appbar-actions">
