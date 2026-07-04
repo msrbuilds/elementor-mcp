@@ -171,10 +171,11 @@
 .elementor-mcp-stats {
 	display: flex;
 	gap: 12px;
-	padding: 16px 24px;
+	padding: 16px 22px;
 	background: var(--mcp-gray-50);
-	border: 1px solid var(--mcp-gray-200);
-	border-top: none;
+	border-bottom: 1px solid var(--mcp-gray-200);
+	margin: 0 -20px 20px -22px;
+	overflow-x: auto;
 }
 
 .elementor-mcp-stat {
@@ -2966,7 +2967,7 @@ body.emcp-modal-open { overflow: hidden; }
 .emcp-appbar-upgrade:hover { background: var(--mcp-primary-hover); border-color: var(--mcp-primary-hover); color: var(--mcp-white); }
 .emcp-appbar-upgrade .dashicons { font-size: 15px; width: 15px; height: 15px; }
 
-.emcp-appnav { display: flex; align-items: stretch; gap: 2px; background: var(--mcp-white); border-bottom: 1px solid var(--mcp-gray-200); padding: 0 14px; overflow-x: auto; overflow-y: hidden; margin: 0 -20px 20px -22px; }
+.emcp-appnav { display: flex; align-items: stretch; gap: 2px; background: var(--mcp-white); border-bottom: 1px solid var(--mcp-gray-200); padding: 0 14px; overflow-x: auto; overflow-y: hidden; margin: 0 -20px 0 -22px; }
 .emcp-appnav-item { display: inline-flex; align-items: center; gap: 7px; padding: 12px 13px; margin-bottom: -1px; white-space: nowrap; color: var(--mcp-gray-600, #50575e); text-decoration: none; font-size: 13px; font-weight: 600; border-bottom: 2px solid transparent; }
 .emcp-appnav-item:hover { color: var(--mcp-gray-800, #1d2327); background: var(--mcp-gray-50); }
 .emcp-appnav-item.is-active { color: var(--mcp-primary); border-bottom-color: var(--mcp-primary); }
