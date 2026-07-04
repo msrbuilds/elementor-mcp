@@ -86,4 +86,14 @@ abstract class EMCP_Tools_Module {
 	public function has_settings(): bool {
 		return array() !== $this->settings_fields();
 	}
+
+	/**
+	 * URL of a dedicated admin page that configures this module, if any. When
+	 * set, the Modules card shows a "Configure →" link instead of an overlay.
+	 *
+	 * @return string
+	 */
+	public function settings_url(): string {
+		return '';
+	}
 }
