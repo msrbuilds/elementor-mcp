@@ -1255,6 +1255,10 @@ class EMCP_Tools_Admin {
 					<span class="emcp-appbar-version">v<?php echo esc_html( EMCP_TOOLS_VERSION ); ?></span>
 				</div>
 				<div class="emcp-appbar-actions">
+					<a class="emcp-appbar-changelog<?php echo 'changelog' === $active_tab ? ' is-active' : ''; ?>" href="<?php echo esc_url( admin_url( 'admin.php?page=' . self::PAGE_SLUG . '-changelog' ) ); ?>">
+						<span class="dashicons dashicons-backup" aria-hidden="true"></span>
+						<?php esc_html_e( 'Changelog', 'emcp-tools' ); ?>
+					</a>
 					<?php if ( $emcp_tools_show_upgrade ) : ?>
 						<a class="emcp-appbar-upgrade" href="<?php echo esc_url( emcp_tools_upgrade_url() ); ?>" target="_blank" rel="noopener noreferrer">
 							<span class="dashicons dashicons-star-filled" aria-hidden="true"></span>
@@ -1263,7 +1267,6 @@ class EMCP_Tools_Admin {
 					<?php endif; ?>
 					<div class="emcp-help-menu">
 						<button type="button" class="emcp-help-toggle" aria-haspopup="true">
-							<span class="dashicons dashicons-editor-help" aria-hidden="true"></span>
 							<?php esc_html_e( 'Help & Support', 'emcp-tools' ); ?>
 							<span class="dashicons dashicons-arrow-down-alt2 emcp-help-caret" aria-hidden="true"></span>
 						</button>
@@ -1282,7 +1285,11 @@ class EMCP_Tools_Admin {
 				<?php
 				foreach ( $this->get_submenus() as $emcp_slug => $emcp_label ) :
 					$emcp_tab_id = ( self::PAGE_SLUG === $emcp_slug ) ? 'tools' : substr( $emcp_slug, strlen( self::PAGE_SLUG . '-' ) );
-					$emcp_is_on  = ( $emcp_tab_id === $active_tab );
+					// Changelog lives in the app-bar top-right, not the tab nav.
+					if ( 'changelog' === $emcp_tab_id ) {
+						continue;
+					}
+					$emcp_is_on = ( $emcp_tab_id === $active_tab );
 					?>
 					<a class="emcp-appnav-item<?php echo $emcp_is_on ? ' is-active' : ''; ?>"
 						href="<?php echo esc_url( admin_url( 'admin.php?page=' . $emcp_slug ) ); ?>"

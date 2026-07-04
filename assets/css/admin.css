@@ -2950,8 +2950,8 @@ body.emcp-modal-open { overflow: hidden; }
 .emcp-appbar-actions { display: flex; align-items: center; gap: 10px; }
 
 .emcp-help-menu { position: relative; }
-.emcp-help-toggle { display: inline-flex; align-items: center; gap: 12px; padding: 18px 24px; background: var(--mcp-white); border: none; border-left: 1px solid var(--mcp-gray-200); border-radius: 0; font-size: 13px; font-weight: 600; color: var(--mcp-gray-800, #1d2327); cursor: pointer; background-color: #a5b4fc; }
-.emcp-help-toggle:hover { border-color: var(--mcp-primary); color: var(--mcp-primary); }
+.emcp-help-toggle { display: inline-flex; align-items: center; gap: 12px; padding: 18px 24px; background: var(--mcp-white); border: none; border-left: 1px solid var(--mcp-gray-200); border-radius: 0; font-size: 16px; font-weight: 600; color: var(--mcp-gray-800, #1d2327); cursor: pointer;}
+.emcp-help-toggle:hover { color: var(--mcp-primary);}
 .emcp-help-toggle .dashicons { font-size: 16px; width: 16px; height: 16px; }
 .emcp-help-caret { font-size: 18px; width: 18px; height: 18px; line-height: 1; color: var(--mcp-gray-500, #787c82); }
 .emcp-help-dropdown { display: none; position: absolute; right: 0; top: calc(100% + 6px); min-width: 210px; background: var(--mcp-white); border: 1px solid var(--mcp-gray-200); border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,.14); padding: 6px; z-index: 1000; }
@@ -2971,3 +2971,6 @@ body.emcp-modal-open { overflow: hidden; }
 .emcp-appnav-item:hover { color: var(--mcp-gray-800, #1d2327); background: var(--mcp-gray-50); }
 .emcp-appnav-item.is-active { color: var(--mcp-primary); border-bottom-color: var(--mcp-primary); }
 .emcp-appnav-item .dashicons { font-size: 16px; width: 16px; height: 16px; }
+.emcp-appbar-changelog { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; background: var(--mcp-white); border: 1px solid var(--mcp-gray-200); border-radius: 6px; font-size: 13px; font-weight: 600; color: var(--mcp-gray-800, #1d2327); text-decoration: none; }
+.emcp-appbar-changelog:hover, .emcp-appbar-changelog.is-active { border-color: var(--mcp-primary); color: var(--mcp-primary); }
+.emcp-appbar-changelog .dashicons { font-size: 16px; width: 16px; height: 16px; }
