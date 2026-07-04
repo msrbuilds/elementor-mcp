@@ -58,13 +58,28 @@ $modules  = $registry ? $registry->all() : array();
 
 					<?php if ( ! $available ) : ?>
 						<p class="emcp-module-unavailable">
-							<?php esc_html_e( 'Not available on this server (WebP support is missing in the image editor).', 'emcp-tools' ); ?>
+							<?php
+							if ( EMCP_Tools_Image_Optimization_Module::ID === $module->id() ) {
+								esc_html_e( 'Not available on this server (WebP support is missing in the image editor).', 'emcp-tools' );
+							} else {
+								esc_html_e( 'Not available — requires an active Pro license.', 'emcp-tools' );
+							}
+							?>
 						</p>
 					<?php elseif ( $active && $module->has_settings() ) : ?>
 						<div class="emcp-module-card-actions">
 							<button type="button" class="button emcp-module-settings-btn" data-modal="emcp-modal-<?php echo esc_attr( $module->id() ); ?>">
 								<?php esc_html_e( 'Show Settings', 'emcp-tools' ); ?>
 							</button>
+						</div>
+					<?php elseif ( $active && '' !== $module->settings_url() ) : ?>
+						<div class="emcp-module-card-actions">
+							<a class="button emcp-module-settings-btn" href="<?php echo esc_url( $module->settings_url() ); ?>">
+								<?php
+								/* translators: %s: module title */
+								echo esc_html( sprintf( __( 'Configure %s →', 'emcp-tools' ), $module->title() ) );
+								?>
+							</a>
 						</div>
 					<?php endif; ?>
 				</div>
