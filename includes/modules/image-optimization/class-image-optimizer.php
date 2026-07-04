@@ -42,13 +42,13 @@ class EMCP_Tools_Image_Optimizer {
 	}
 
 	/**
-	 * Clamp a quality value to the supported 40–95 range.
+	 * Clamp a quality value to the supported 1–100 range (matches the slider).
 	 *
 	 * @param int $q Raw quality.
 	 * @return int Clamped quality.
 	 */
 	public static function clamp_quality( int $q ): int {
-		return max( 40, min( 95, $q ) );
+		return max( 1, min( 100, $q ) );
 	}
 
 	/**

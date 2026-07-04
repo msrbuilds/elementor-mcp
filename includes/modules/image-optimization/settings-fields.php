@@ -77,8 +77,8 @@ $emcp_io_toggle = static function ( $name, $on, $title, $desc, $child = false ) 
 			id="<?php echo esc_attr( $p . 'quality' ); ?>"
 			name="<?php echo esc_attr( $p . 'quality' ); ?>"
 			class="emcp-io-range"
-			min="40"
-			max="95"
+			min="1"
+			max="100"
 			step="1"
 			value="<?php echo esc_attr( (string) $settings['quality'] ); ?>"
 		/>
