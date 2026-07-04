@@ -124,10 +124,23 @@ class EMCP_Tools_Secret {
 	/**
 	 * Decrypt when the value is a token; otherwise return it unchanged.
 	 *
+	 * Unwraps repeatedly (bounded) so a value that was accidentally encrypted
+	 * more than once — e.g. a Settings-API sanitize callback that fired twice —
+	 * still resolves to its real plaintext. Stops on the first non-token or on a
+	 * decrypt failure.
+	 *
 	 * @param string $value Stored value (encrypted token or plaintext).
 	 * @return string Plaintext.
 	 */
 	public static function decrypt_if_needed( string $value ): string {
-		return self::is_encrypted( $value ) ? self::decrypt( $value ) : $value;
+		$guard = 0;
+		while ( self::is_encrypted( $value ) && $guard++ < 8 ) {
+			$next = self::decrypt( $value );
+			if ( '' === $next ) {
+				break;
+			}
+			$value = $next;
+		}
+		return $value;
 	}
 }

@@ -577,6 +577,11 @@ class EMCP_Tools_Admin {
 							// Unchanged (masked) submit — keep the stored value.
 							return (string) get_option( $emcp_stock_option, '' );
 						}
+						// The Settings API can run this callback twice per save;
+						// don't re-encrypt an already-encrypted token (would nest).
+						if ( EMCP_Tools_Secret::is_encrypted( $value ) ) {
+							return $value;
+						}
 						return EMCP_Tools_Secret::encrypt( $value );
 					},
 				)
