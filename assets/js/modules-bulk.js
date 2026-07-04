@@ -2,11 +2,18 @@
 ( function () {
 	'use strict';
 
-	// Live value bubble for the Image Optimization quality slider.
+	// Live value bubble + colored fill for the Image Optimization quality slider.
 	document.querySelectorAll( '.emcp-io-range' ).forEach( function ( range ) {
 		var out = document.querySelector( '.emcp-io-range-out[for="' + range.id + '"]' );
-		if ( ! out ) { return; }
-		range.addEventListener( 'input', function () { out.textContent = range.value; } );
+		function sync() {
+			var min = parseFloat( range.min ) || 0;
+			var max = parseFloat( range.max ) || 100;
+			var pct = max > min ? ( ( parseFloat( range.value ) - min ) / ( max - min ) ) * 100 : 0;
+			range.style.setProperty( '--emcp-fill', pct + '%' );
+			if ( out ) { out.textContent = range.value; }
+		}
+		range.addEventListener( 'input', sync );
+		sync();
 	} );
 
 	// Module settings overlays: open on "Show Settings", close on backdrop /

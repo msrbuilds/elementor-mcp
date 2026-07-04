@@ -80,7 +80,7 @@ class EMCP_Tools_Image_Optimization_Module extends EMCP_Tools_Module {
 			),
 			self::PREFIX . 'quality'        => array(
 				'type'              => 'string',
-				'default'           => '82',
+				'default'           => '60',
 				'sanitize_callback' => $int,
 			),
 			self::PREFIX . 'max_dimension'  => array(
@@ -106,7 +106,7 @@ class EMCP_Tools_Image_Optimization_Module extends EMCP_Tools_Module {
 			'compress'       => '1' === (string) get_option( self::PREFIX . 'compress', '1' ),
 			'webp'           => '1' === (string) get_option( self::PREFIX . 'webp', '1' ),
 			'webp_serve'     => '1' === (string) get_option( self::PREFIX . 'webp_serve', '1' ),
-			'quality'        => EMCP_Tools_Image_Optimizer::clamp_quality( (int) get_option( self::PREFIX . 'quality', 82 ) ),
+			'quality'        => EMCP_Tools_Image_Optimizer::clamp_quality( (int) get_option( self::PREFIX . 'quality', 60 ) ),
 			'max_dimension'  => max( 0, (int) get_option( self::PREFIX . 'max_dimension', 0 ) ),
 			'keep_originals' => '1' === (string) get_option( self::PREFIX . 'keep_originals', '1' ),
 		);

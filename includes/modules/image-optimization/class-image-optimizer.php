@@ -35,7 +35,7 @@ class EMCP_Tools_Image_Optimizer {
 		$this->settings = array(
 			'compress'       => ! empty( $settings['compress'] ),
 			'webp'           => ! empty( $settings['webp'] ),
-			'quality'        => self::clamp_quality( (int) ( $settings['quality'] ?? 82 ) ),
+			'quality'        => self::clamp_quality( (int) ( $settings['quality'] ?? 60 ) ),
 			'max_dimension'  => max( 0, (int) ( $settings['max_dimension'] ?? 0 ) ),
 			'keep_originals' => ! empty( $settings['keep_originals'] ),
 		);
