@@ -1222,6 +1222,21 @@ class EMCP_Tools_Admin {
 			$show_brand_kits = $brand_kit_count > 0;
 		}
 
+		// Templates: Pro shows the templates-library total (sum across
+		// categories). Hidden for free users (the tab shows an upsell) and when
+		// the bundle can't be fetched.
+		$template_count = 0;
+		$show_templates = false;
+		if ( class_exists( 'EMCP_Tools_Pro_Templates' ) && EMCP_Tools_Pro_Templates::user_has_access() ) {
+			$emcp_tpl_bundle = EMCP_Tools_Pro_Templates::get_bundle();
+			if ( ! is_wp_error( $emcp_tpl_bundle ) && is_array( $emcp_tpl_bundle ) && ! empty( $emcp_tpl_bundle['categories'] ) ) {
+				foreach ( $emcp_tpl_bundle['categories'] as $emcp_tpl_cat ) {
+					$template_count += is_array( $emcp_tpl_cat['templates'] ?? null ) ? count( $emcp_tpl_cat['templates'] ) : 0;
+				}
+			}
+			$show_templates = $template_count > 0;
+		}
+
 		?>
 		<div class="wrap elementor-mcp-admin">
 			<h1><?php esc_html_e( 'MCP Tools for WordPress & Page Builders', 'emcp-tools' ); ?></h1>
@@ -1349,6 +1364,17 @@ class EMCP_Tools_Admin {
 						</span>
 					</div>
 				<?php endif; ?>
+					<?php if ( $show_templates ) : ?>
+						<div class="elementor-mcp-stat">
+							<span class="elementor-mcp-stat-icon elementor-mcp-stat-icon--templates">
+								<svg viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm0 5a1 1 0 011-1h6a1 1 0 011 1v7a1 1 0 01-1 1H4a1 1 0 01-1-1V9zm10 0a1 1 0 011-1h2a1 1 0 011 1v7a1 1 0 01-1 1h-2a1 1 0 01-1-1V9z"/></svg>
+							</span>
+							<span class="elementor-mcp-stat-content">
+								<span class="elementor-mcp-stat-value"><?php echo esc_html( $template_count ); ?></span>
+								<span class="elementor-mcp-stat-label"><?php esc_html_e( 'Templates', 'emcp-tools' ); ?></span>
+							</span>
+						</div>
+					<?php endif; ?>
 			</div>
 
 			<!-- Content -->
