@@ -120,6 +120,26 @@ if ( ! function_exists( 'emcp_tools_fs' ) ) {
 	emcp_tools_fs();
 	// Signal that SDK was initiated.
 	do_action( 'emcp_tools_fs_loaded' );
+
+	// Trim the Freemius-injected submenu items we surface elsewhere: Contact Us
+	// (Help & Support lives in the plugin header), Affiliation (shown in the
+	// header next to Changelog), and Pricing for licensed Pro users (free users
+	// keep the upgrade link). Freemius keeps the underlying pages reachable by
+	// URL, so the header links still work.
+	emcp_tools_fs()->add_filter(
+		'is_submenu_visible',
+		function ( $is_visible, $menu_id ) {
+			if ( 'contact' === $menu_id || 'affiliation' === $menu_id ) {
+				return false;
+			}
+			if ( 'pricing' === $menu_id && emcp_tools_fs()->can_use_premium_code() ) {
+				return false;
+			}
+			return $is_visible;
+		},
+		10,
+		2
+	);
 }
 
 // Uninstall cleanup runs via Freemius's after_uninstall action (uninstall.php

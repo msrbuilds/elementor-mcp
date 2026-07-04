@@ -513,6 +513,10 @@ class EMCP_Tools_Admin {
 				array( $this, 'render_page' )
 			);
 		}
+
+		// Changelog is surfaced as an app-bar button in the header; hide its
+		// sidebar entry (the page stays reachable by URL for that button).
+		remove_submenu_page( self::PAGE_SLUG, self::PAGE_SLUG . '-changelog' );
 	}
 
 	/**
@@ -1274,6 +1278,12 @@ class EMCP_Tools_Admin {
 						<span class="dashicons dashicons-backup" aria-hidden="true"></span>
 						<?php esc_html_e( 'Changelog', 'emcp-tools' ); ?>
 					</a>
+					<?php if ( function_exists( 'emcp_tools_fs' ) ) : ?>
+						<a class="emcp-appbar-changelog" href="<?php echo esc_url( admin_url( 'admin.php?page=' . self::PAGE_SLUG . '-affiliation' ) ); ?>">
+							<span class="dashicons dashicons-money-alt" aria-hidden="true"></span>
+							<?php esc_html_e( 'Affiliation', 'emcp-tools' ); ?>
+						</a>
+					<?php endif; ?>
 					<?php if ( $emcp_tools_show_upgrade ) : ?>
 						<a class="emcp-appbar-upgrade" href="<?php echo esc_url( emcp_tools_upgrade_url() ); ?>" target="_blank" rel="noopener noreferrer">
 							<span class="dashicons dashicons-star-filled" aria-hidden="true"></span>
