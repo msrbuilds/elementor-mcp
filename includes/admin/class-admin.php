@@ -831,6 +831,7 @@ class EMCP_Tools_Admin {
 						'optimizing'    => __( 'Optimizing…', 'emcp-tools' ),
 						'restoring'     => __( 'Restoring…', 'emcp-tools' ),
 						'done'          => __( 'Done', 'emcp-tools' ),
+						'unsaved'       => __( 'Unsaved changes — click Save Modules to apply.', 'emcp-tools' ),
 					)
 				);
 			}

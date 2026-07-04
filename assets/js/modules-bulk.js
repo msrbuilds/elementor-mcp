@@ -37,6 +37,28 @@
 		if ( 'Escape' === e.key ) { closeModals(); }
 	} );
 
+	// Module toggles don't save on flip — surface an "unsaved changes" hint next
+	// to the Save Modules button the moment a toggle changes.
+	( function () {
+		var form = document.querySelector( '.emcp-modules-tab form' );
+		if ( ! form ) { return; }
+		var toggles = form.querySelectorAll( '.emcp-module-card input[type="checkbox"]' );
+		if ( ! toggles.length ) { return; }
+		var submit = form.querySelector( 'p.submit' ) || form.querySelector( '[type="submit"]' );
+		var hint = null;
+		function showHint() {
+			if ( hint || ! submit ) { return; }
+			hint = document.createElement( 'span' );
+			hint.className = 'emcp-modules-unsaved';
+			var m = window.emcpToolsModules;
+			hint.textContent = ( m && m.unsaved ) || 'Unsaved changes — click Save Modules to apply.';
+			submit.appendChild( hint );
+		}
+		toggles.forEach( function ( cb ) {
+			cb.addEventListener( 'change', showHint );
+		} );
+	} )();
+
 	var cfg = window.emcpToolsModules;
 	if ( ! cfg ) { return; }
 

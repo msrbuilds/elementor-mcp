@@ -2933,3 +2933,4 @@
 .emcp-modal-bulk-title { margin: 0 0 10px; font-weight: 600; font-size: 13px; }
 .emcp-modal-bulk .emcp-module-bulk { margin: 0; padding: 0; border: none; }
 body.emcp-modal-open { overflow: hidden; }
+.emcp-modules-unsaved { margin-left: 12px; font-size: 12px; font-weight: 600; color: #a15c00; }
