@@ -1306,7 +1306,9 @@ class EMCP_Tools_Admin {
 			</div>
 
 			<!-- Tab nav -->
-			<nav class="emcp-appnav" aria-label="<?php esc_attr_e( 'EMCP Tools sections', 'emcp-tools' ); ?>">
+						<div class="emcp-appnav-wrap">
+				<button type="button" class="emcp-appnav-arrow emcp-appnav-arrow--prev" aria-label="<?php esc_attr_e( 'Scroll tabs left', 'emcp-tools' ); ?>" hidden><span class="dashicons dashicons-arrow-left-alt2" aria-hidden="true"></span></button>
+<nav class="emcp-appnav" aria-label="<?php esc_attr_e( 'EMCP Tools sections', 'emcp-tools' ); ?>">
 				<?php
 				foreach ( $this->get_submenus() as $emcp_slug => $emcp_label ) :
 					$emcp_tab_id = ( self::PAGE_SLUG === $emcp_slug ) ? 'tools' : substr( $emcp_slug, strlen( self::PAGE_SLUG . '-' ) );
@@ -1324,6 +1326,8 @@ class EMCP_Tools_Admin {
 					</a>
 				<?php endforeach; ?>
 			</nav>
+				<button type="button" class="emcp-appnav-arrow emcp-appnav-arrow--next" aria-label="<?php esc_attr_e( 'Scroll tabs right', 'emcp-tools' ); ?>" hidden><span class="dashicons dashicons-arrow-right-alt2" aria-hidden="true"></span></button>
+			</div>
 
 			<!-- Stats Bar -->
 			<div class="elementor-mcp-stats">

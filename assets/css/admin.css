@@ -2967,7 +2967,7 @@ body.emcp-modal-open { overflow: hidden; }
 .emcp-appbar-upgrade:hover { background: var(--mcp-primary-hover); border-color: var(--mcp-primary-hover); color: var(--mcp-white); }
 .emcp-appbar-upgrade .dashicons { font-size: 15px; width: 15px; height: 15px; }
 
-.emcp-appnav { display: flex; align-items: stretch; gap: 2px; background: var(--mcp-white); border-bottom: 1px solid var(--mcp-gray-200); padding: 0 14px; overflow-x: auto; overflow-y: hidden; margin: 0 -20px 0 -22px; }
+.emcp-appnav { display: flex; align-items: stretch; gap: 2px; background: var(--mcp-white); border-bottom: 1px solid var(--mcp-gray-200); padding: 0 14px; overflow-x: auto; overflow-y: hidden; margin: 0; }
 .emcp-appnav-item { display: inline-flex; align-items: center; gap: 7px; padding: 12px 13px; margin-bottom: -1px; white-space: nowrap; color: var(--mcp-gray-600, #50575e); text-decoration: none; font-size: 14px; font-weight: 600; border-bottom: 2px solid transparent; }
 .emcp-appnav-item:hover { color: var(--mcp-gray-800, #1d2327); background: var(--mcp-gray-50); }
 .emcp-appnav-item.is-active { color: var(--mcp-primary); border-bottom-color: var(--mcp-primary); }
@@ -3003,3 +3003,16 @@ body.emcp-modal-open { overflow: hidden; }
    the scrollbar so small screens read as a swipeable menu, not a scrolling box. */
 .emcp-appnav, .elementor-mcp-stats { scrollbar-width: none; -ms-overflow-style: none; -webkit-overflow-scrolling: touch; }
 .emcp-appnav::-webkit-scrollbar, .elementor-mcp-stats::-webkit-scrollbar { width: 0; height: 0; display: none; }
+/* Drag-to-scroll affordance for the header nav (mouse). */
+.emcp-appnav { cursor: grab; }
+.emcp-appnav.is-dragging { cursor: grabbing; user-select: none; }
+.emcp-appnav.is-dragging .emcp-appnav-item { cursor: grabbing; }
+/* Header nav overflow arrows (small desktops). Wrapper carries the full-bleed;
+   arrows overlay the edges and only show when the tabs overflow. */
+.emcp-appnav-wrap { position: relative; margin: 0 -20px 0 -22px; }
+.emcp-appnav-arrow { position: absolute; top: 0; bottom: 0; width: 44px; display: flex; align-items: center; justify-content: center; padding: 0; border: none; border-bottom: 1px solid var(--mcp-gray-200); background: var(--mcp-white); color: var(--mcp-gray-600, #50575e); cursor: pointer; z-index: 3; }
+.emcp-appnav-arrow[hidden] { display: none !important; }
+.emcp-appnav-arrow:hover { color: var(--mcp-primary); }
+.emcp-appnav-arrow .dashicons { font-size: 22px; width: 22px; height: 22px; }
+.emcp-appnav-arrow--prev { left: 0; box-shadow: 8px 0 10px -6px rgba(0,0,0,.18); }
+.emcp-appnav-arrow--next { right: 0; box-shadow: -8px 0 10px -6px rgba(0,0,0,.18); }

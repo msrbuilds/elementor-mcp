@@ -1374,6 +1374,44 @@
 	}
 
 	// Initialize on DOM ready.
+	/**
+	 * Header tab nav overflow controls: show prev/next arrows when the tabs
+	 * exceed the viewport (small desktops), scrolling the nav on click. Touch
+	 * devices still swipe natively. Arrows auto-hide at each end and when the
+	 * nav fits. The active tab is scrolled into view on load.
+	 */
+	function initNavArrows() {
+		var wrap = document.querySelector( '.emcp-appnav-wrap' );
+		if ( ! wrap ) { return; }
+		var nav  = wrap.querySelector( '.emcp-appnav' );
+		var prev = wrap.querySelector( '.emcp-appnav-arrow--prev' );
+		var next = wrap.querySelector( '.emcp-appnav-arrow--next' );
+		if ( ! nav || ! prev || ! next ) { return; }
+
+		function update() {
+			var max = nav.scrollWidth - nav.clientWidth;
+			var overflowing = max > 2;
+			prev.hidden = ! overflowing || nav.scrollLeft <= 1;
+			next.hidden = ! overflowing || nav.scrollLeft >= max - 1;
+			wrap.classList.toggle( 'is-overflowing', overflowing );
+		}
+		function step( dir ) {
+			nav.scrollBy( { left: dir * Math.max( 160, Math.round( nav.clientWidth * 0.7 ) ), behavior: 'smooth' } );
+		}
+
+		prev.addEventListener( 'click', function () { step( -1 ); } );
+		next.addEventListener( 'click', function () { step( 1 ); } );
+		nav.addEventListener( 'scroll', update, { passive: true } );
+		window.addEventListener( 'resize', update );
+
+		// Bring the active tab into view (in case it's off-screen on a narrow window).
+		var active = nav.querySelector( '.emcp-appnav-item.is-active' );
+		if ( active && active.scrollIntoView ) {
+			active.scrollIntoView( { inline: 'center', block: 'nearest' } );
+		}
+		update();
+	}
+
 	function initAll() {
 		initToolsForm();
 		initBase64Generator();
@@ -1385,6 +1423,7 @@
 		initCodeOverlay();
 		initClickToCopy();
 		initContextPage();
+		initNavArrows();
 	}
 
 	if ( document.readyState === 'loading' ) {
