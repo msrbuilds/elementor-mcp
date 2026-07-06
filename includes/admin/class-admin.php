@@ -1370,6 +1370,40 @@ class Elementor_MCP_Admin {
 					),
 				),
 			);
+
+			// Global Classes writers (Class Manager CRUD + apply). Registered
+			// only when Elementor's Global Classes repository is present; gate the
+			// catalog group on the same availability so it can't drift from the
+			// registry. No 'pro' badge -> enabled by default. Only delete is
+			// destructive.
+			if ( class_exists( 'Elementor_MCP_Global_Classes_Write_Abilities' )
+				&& Elementor_MCP_Global_Classes_Write_Abilities::is_available() ) {
+				$tools['global_classes_write'] = array(
+					'label' => __( 'Global Classes (Elementor 4.0+)', 'elementor-mcp' ),
+					'tools' => array(
+						'elementor-mcp/create-global-class' => array(
+							'label'       => __( 'Create Global Class', 'elementor-mcp' ),
+							'description' => __( 'Creates a reusable Global Class (Class Manager entry) from a label + CSS styles map.', 'elementor-mcp' ),
+							'badges'      => array(),
+						),
+						'elementor-mcp/update-global-class' => array(
+							'label'       => __( 'Update Global Class', 'elementor-mcp' ),
+							'description' => __( 'Updates a Global Class in place, preserving its g- id so bindings survive.', 'elementor-mcp' ),
+							'badges'      => array(),
+						),
+						'elementor-mcp/delete-global-class' => array(
+							'label'       => __( 'Delete Global Class', 'elementor-mcp' ),
+							'description' => __( 'Deletes a Global Class by g- id. Elementor ignores dangling refs (no cascade).', 'elementor-mcp' ),
+							'badges'      => array( 'destructive' ),
+						),
+						'elementor-mcp/apply-global-class'  => array(
+							'label'       => __( 'Apply Global Class', 'elementor-mcp' ),
+							'description' => __( 'Applies a Global Class to an atomic element on a page (appends to settings.classes).', 'elementor-mcp' ),
+							'badges'      => array(),
+						),
+					),
+				);
+			}
 		}
 
 		// System Kit writers. Fork: these act on THIS site's own Elementor kit

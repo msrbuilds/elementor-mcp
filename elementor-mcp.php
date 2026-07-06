@@ -3,7 +3,7 @@
  * Plugin Name:       MCP Tools for Elementor (Digitizers fork)
  * Plugin URI:        https://github.com/Digitizers/elementor-mcp
  * Description:       A Digitizers fork of elementor-mcp (originally by Mian Shahzad Raza / msrbuilds) — extends the WordPress MCP Adapter to expose Elementor data, widgets, and page-design tools as MCP tools for AI agents. Elementor 4.x-correct; bundles the MCP Adapter.
- * Version:           1.13.0
+ * Version:           1.14.0
  * Requires at least: 6.9
  * Tested up to:      6.9
  * Requires PHP:      8.0
@@ -20,7 +20,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Plugin constants.
-define( 'ELEMENTOR_MCP_VERSION', '1.13.0' );
+define( 'ELEMENTOR_MCP_VERSION', '1.14.0' );
 define( 'ELEMENTOR_MCP_DIR', plugin_dir_path( __FILE__ ) );
 define( 'ELEMENTOR_MCP_URL', plugin_dir_url( __FILE__ ) );
 define( 'ELEMENTOR_MCP_BASENAME', plugin_basename( __FILE__ ) );
@@ -593,6 +593,7 @@ function elementor_mcp_init(): void {
 	require_once ELEMENTOR_MCP_DIR . 'includes/abilities/class-custom-code-abilities.php';
 	require_once ELEMENTOR_MCP_DIR . 'includes/abilities/class-media-library-abilities.php';
 	require_once ELEMENTOR_MCP_DIR . 'includes/abilities/class-global-classes-abilities.php';
+	require_once ELEMENTOR_MCP_DIR . 'includes/abilities/class-global-classes-write-abilities.php';
 	// Performance Analyzer (read-only page + server + WordPress audit → scored
 	// report). Independent of Elementor version; gated on manage_options.
 	require_once ELEMENTOR_MCP_DIR . 'includes/performance/class-performance-finding.php';

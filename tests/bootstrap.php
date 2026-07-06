@@ -604,6 +604,96 @@ namespace Elementor {
 }  // end namespace Elementor
 
 // ---------------------------------------------------------------------------
+// Elementor Global Classes repository stub
+//
+// A fuller in-memory stub of Elementor's Global_Classes_Repository so the write
+// abilities' functional tests can exercise make()/all()/put() end to end. It
+// lives in bootstrap (not a test file) so it is declared before the capability
+// suites — whose bare eval('... class Global_Classes_Repository {}') is then a
+// no-op via its class_exists guard — and so is_available() is true everywhere.
+// State is per-process static; functional tests reset it via ::__reset().
+// ---------------------------------------------------------------------------
+
+namespace Elementor\Modules\GlobalClasses {
+
+	if ( ! class_exists( 'Elementor\\Modules\\GlobalClasses\\Global_Classes_Repository' ) ) {
+
+		/** Collection-like wrapper exposing ->all(). */
+		class Emcp_Test_Collection {
+			/** @var array */
+			private $items;
+			public function __construct( array $items ) {
+				$this->items = $items;
+			}
+			public function all(): array {
+				return $this->items;
+			}
+		}
+
+		/** Context returned by Global_Classes_Repository::all(). */
+		class Emcp_Test_Context {
+			public function get_items(): Emcp_Test_Collection {
+				return new Emcp_Test_Collection( Global_Classes_Repository::$store_items );
+			}
+			public function get_order(): Emcp_Test_Collection {
+				return new Emcp_Test_Collection( Global_Classes_Repository::$store_order );
+			}
+		}
+
+		class Global_Classes_Repository {
+			/** @var array<string,array> */
+			public static $store_items = array();
+			/** @var string[] */
+			public static $store_order = array();
+
+			public static function make(): self {
+				return new self();
+			}
+
+			public function all(): Emcp_Test_Context {
+				return new Emcp_Test_Context();
+			}
+
+			public function put( array $items, array $order ): void {
+				self::$store_items = $items;
+				self::$store_order = array_values( $order );
+			}
+
+			/** @var array Last $changes passed to apply_changes() (touched-item API). */
+			public static $last_changes = array();
+			/** @var array Last $touched map passed to apply_changes(). */
+			public static $last_touched = array();
+
+			/**
+			 * Touched-item write API — applies only the named changes, leaving other
+			 * classes (and, on real Elementor, their preview drafts) untouched.
+			 */
+			public function apply_changes( array $touched, array $changes, array $order ): void {
+				self::$last_changes = $changes;
+				self::$last_touched = $touched;
+				foreach ( array_merge( $changes['added'] ?? array(), $changes['modified'] ?? array() ) as $id ) {
+					if ( isset( $touched[ $id ] ) ) {
+						self::$store_items[ $id ] = $touched[ $id ];
+					}
+				}
+				foreach ( $changes['deleted'] ?? array() as $id ) {
+					unset( self::$store_items[ $id ] );
+				}
+				self::$store_order = array_values( $order );
+			}
+
+			/** Test helper: reset the in-memory store between tests. */
+			public static function __reset( array $items = array(), array $order = array() ): void {
+				self::$store_items = $items;
+				self::$store_order = $order;
+				self::$last_changes = array();
+				self::$last_touched = array();
+			}
+		}
+	}
+}
+
+// ---------------------------------------------------------------------------
 // Plugin class autoloader (back in global namespace)
 // ---------------------------------------------------------------------------
 
@@ -634,6 +724,7 @@ namespace {
 			'Elementor_MCP_Custom_Code_Abilities'  => 'includes/abilities/class-custom-code-abilities.php',
 			'Elementor_MCP_Media_Library_Abilities' => 'includes/abilities/class-media-library-abilities.php',
 			'Elementor_MCP_Global_Classes_Abilities' => 'includes/abilities/class-global-classes-abilities.php',
+			'Elementor_MCP_Global_Classes_Write_Abilities' => 'includes/abilities/class-global-classes-write-abilities.php',
 			// Performance Analyzer (audit → scored report)
 			'Elementor_MCP_Performance_Finding'    => 'includes/performance/class-performance-finding.php',
 			'Elementor_MCP_Performance_Server_Audit' => 'includes/performance/class-performance-server-audit.php',

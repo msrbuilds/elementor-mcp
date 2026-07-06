@@ -2,6 +2,15 @@
 
 All notable changes to MCP Tools for Elementor are documented in this file.
 
+## 1.14.0 — 2026-07-06
+
+- New: **Global Classes write tools** (Elementor 4.0+ Class Manager) — the companion write half of `list-global-classes`, letting an agent author the design system itself. All four are gated on `manage_options` and register only when Elementor exposes a supported Global Classes write API.
+  - `create-global-class` — authors a reusable Global Class from a human-readable label and an ergonomic CSS-prop->value `styles` map (values are wrapped into Elementor's atomic `$$type` prop format automatically), with optional responsive/state `variants`. Mints a `g-<7hex>` id (editor format), and validates props against Elementor's atomic `Style_Schema` when present — rejecting unknown properties / type mismatches with the schema embedded in the error so an agent can self-correct without a round trip. Refuses when Elementor's Global Classes count cap (100) is reached.
+  - `update-global-class` — edits a Global Class in place, preserving its `g-` id so element bindings survive. `styles` replaces only the base/desktop variant (other variants kept); `variants` replaces matching breakpoint/state variants; `label` renames.
+  - `delete-global-class` — removes a Global Class by `g-` id. Elementor ignores dangling class references left on elements (no cascade).
+  - `apply-global-class` — appends a Global Class to an atomic element's `settings.classes` on a page. Non-atomic elements (no classes control) are rejected with their compact schema embedded in the error; re-applying an already-present class is a no-op.
+  - Writes go through Elementor's touched-item `apply_changes()` API (bulk `put()` fallback on older builds) so a single change reconciles only that class's editor-preview state and never clobbers a user's unpublished drafts for other classes; writes target the published/frontend context, not the editor preview, respecting the publish boundary.
+
 ## 1.13.0 — 2026-07-06
 
 - **Premium tier unlocked.** 17 tools upstream gated behind a Freemius paid license this fork cannot activate now register for everyone: SEO audits (4), accessibility audits (3), the full Widget Builder (8), and the two **local** system-kit writers (`replace-system-colors`, `replace-system-typography`) — plus the generated-widget loader/store runtime. Six `can_use_premium_code()` gates are replaced by `emcp_fork_premium_tools_enabled()` (default `true`, filterable kill-switch).

@@ -147,6 +147,13 @@ class Elementor_MCP_Ability_Registrar {
 		$global_classes->register();
 		$this->ability_names = array_merge( $this->ability_names, $global_classes->get_ability_names() );
 
+		// Global Classes WRITE abilities (create/update/delete/apply). Same
+		// self-guard as the read group: no-ops when the Global Classes repository
+		// is absent, so the four write tools never surface on pre-4.0 sites.
+		$gc_write = new Elementor_MCP_Global_Classes_Write_Abilities( $this->data );
+		$gc_write->register();
+		$this->ability_names = array_merge( $this->ability_names, $gc_write->get_ability_names() );
+
 		// Performance Analyzer (analyze-performance — read-only page + server + WP
 		// audit → scored report). Independent of Elementor version; the ability's
 		// manage_options permission callback is the guard.
