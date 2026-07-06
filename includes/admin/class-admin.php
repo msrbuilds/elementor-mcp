@@ -135,6 +135,7 @@ class EMCP_Tools_Admin {
 	 */
 	public static function tab_icon( string $tab_id ): string {
 		$icons = array(
+			'dashboard'  => 'dashicons-dashboard',
 			'tools'      => 'dashicons-admin-tools',
 			'modules'    => 'dashicons-screenoptions',
 			'connection' => 'dashicons-admin-links',
@@ -153,7 +154,8 @@ class EMCP_Tools_Admin {
 	private function get_submenus(): array {
 		if ( null === $this->submenus ) {
 			$this->submenus = array(
-				self::PAGE_SLUG                 => __( 'Tools', 'emcp-tools' ),
+				self::PAGE_SLUG                 => __( 'Dashboard', 'emcp-tools' ),
+				self::PAGE_SLUG . '-tools'      => __( 'Tools', 'emcp-tools' ),
 				self::PAGE_SLUG . '-modules'    => __( 'Modules', 'emcp-tools' ),
 				self::PAGE_SLUG . '-connection' => __( 'Connection', 'emcp-tools' ),
 				self::PAGE_SLUG . '-ai-chat'    => __( 'AI Chat', 'emcp-tools' ),
@@ -188,6 +190,8 @@ class EMCP_Tools_Admin {
 		$page = isset( $_GET['page'] ) ? sanitize_key( wp_unslash( $_GET['page'] ) ) : '';
 
 		switch ( $page ) {
+			case self::PAGE_SLUG . '-tools':
+				return 'tools';
 			case self::PAGE_SLUG . '-modules':
 				return 'modules';
 			case self::PAGE_SLUG . '-connection':
@@ -209,7 +213,7 @@ class EMCP_Tools_Admin {
 			case self::PAGE_SLUG . '-changelog':
 				return 'changelog';
 			default:
-				return 'tools';
+				return 'dashboard';
 		}
 	}
 
@@ -1189,18 +1193,22 @@ class EMCP_Tools_Admin {
 	}
 
 	/**
-	 * Render the settings page.
+	 * Build the headline stat cards shown on the Dashboard.
 	 *
-	 * @since 1.0.0
+	 * Always includes Total Tools, Active, and Pro Tools. Prompts, Brand Kits,
+	 * and Templates are appended only when their module is active (and, for the
+	 * Pro-gated counts, when a value is available) — mirroring the module-tab
+	 * visibility rules. Each entry is `key`/`value`/`label`; the view maps `key`
+	 * to an icon.
+	 *
+	 * @since 3.2.0
+	 * @return array<int,array{key:string,value:int,label:string}>
 	 */
-	public function render_page(): void {
-		if ( ! current_user_can( 'manage_options' ) ) {
-			return;
-		}
-
-		$active_tab    = $this->get_active_tab();
-		$enabled_count = $this->get_enabled_tool_count();
-		$total_count   = $this->get_total_tool_count();
+	public function get_dashboard_stats(): array {
+		$stats = array(
+			array( 'key' => 'tools', 'value' => (int) $this->get_total_tool_count(), 'label' => __( 'Total Tools', 'emcp-tools' ) ),
+			array( 'key' => 'active', 'value' => (int) $this->get_enabled_tool_count(), 'label' => __( 'Active', 'emcp-tools' ) ),
+		);
 
 		// Count Pro tools.
 		$pro_count = 0;
@@ -1211,56 +1219,70 @@ class EMCP_Tools_Admin {
 				}
 			}
 		}
+		$stats[] = array( 'key' => 'pro', 'value' => $pro_count, 'label' => __( 'Pro Tools', 'emcp-tools' ) );
 
 		// Count prompts. For Pro sites with a synced bundle, use the actual
-		// premium-library count (matches what the Prompts tab shows). For
-		// everyone else, count the bundled sample files in prompts/.
-		$prompt_count = 0;
-		if (
-			class_exists( 'EMCP_Tools_Pro_Prompts' )
-			&& EMCP_Tools_Pro_Prompts::user_has_access()
-		) {
-			// Durable count: survives transient expiry/eviction and triggers a
-			// background refresh when stale (no more resets to the bundled 5).
-			$prompt_count = EMCP_Tools_Pro_Prompts::cached_count();
-		}
-		if ( 0 === $prompt_count ) {
-			$prompts_dir  = EMCP_TOOLS_DIR . 'prompts/';
-			$prompt_files = is_dir( $prompts_dir ) ? glob( $prompts_dir . '*.md' ) : array();
-			$prompt_count = count( $prompt_files );
+		// premium-library count (matches the Prompts tab). Otherwise count the
+		// bundled sample files in prompts/.
+		if ( $this->module_tab_visible( 'prompts' ) ) {
+			$prompt_count = 0;
+			if ( class_exists( 'EMCP_Tools_Pro_Prompts' ) && EMCP_Tools_Pro_Prompts::user_has_access() ) {
+				$prompt_count = EMCP_Tools_Pro_Prompts::cached_count();
+			}
+			if ( 0 === $prompt_count ) {
+				$prompts_dir  = EMCP_TOOLS_DIR . 'prompts/';
+				$prompt_files = is_dir( $prompts_dir ) ? glob( $prompts_dir . '*.md' ) : array();
+				$prompt_count = count( $prompt_files );
+			}
+			$stats[] = array( 'key' => 'prompts', 'value' => (int) $prompt_count, 'label' => __( 'Prompts', 'emcp-tools' ) );
 		}
 
 		// Brand kits: Pro shows the cached remote library count; everyone else
 		// shows the bundled free-kit count (applying is a free feature).
-		$brand_kit_count = 0;
-		$show_brand_kits = false;
-		if ( class_exists( 'EMCP_Tools_Pro_Brand_Kits' ) && EMCP_Tools_Pro_Brand_Kits::user_has_access() ) {
-			$brand_kit_count = EMCP_Tools_Pro_Brand_Kits::count_cached_kits();
-			$show_brand_kits = true;
-		} elseif ( class_exists( 'EMCP_Tools_Free_Brand_Kits' ) ) {
-			$brand_kit_count = EMCP_Tools_Free_Brand_Kits::count_kits();
-			$show_brand_kits = $brand_kit_count > 0;
+		if ( $this->module_tab_visible( 'brand-kits' ) ) {
+			$brand_kit_count = 0;
+			$show_brand_kits = false;
+			if ( class_exists( 'EMCP_Tools_Pro_Brand_Kits' ) && EMCP_Tools_Pro_Brand_Kits::user_has_access() ) {
+				$brand_kit_count = EMCP_Tools_Pro_Brand_Kits::count_cached_kits();
+				$show_brand_kits = true;
+			} elseif ( class_exists( 'EMCP_Tools_Free_Brand_Kits' ) ) {
+				$brand_kit_count = EMCP_Tools_Free_Brand_Kits::count_kits();
+				$show_brand_kits = $brand_kit_count > 0;
+			}
+			if ( $show_brand_kits ) {
+				$stats[] = array( 'key' => 'brand-kits', 'value' => (int) $brand_kit_count, 'label' => __( 'Brand Kits', 'emcp-tools' ) );
+			}
 		}
 
 		// Templates: Pro shows the templates-library total (sum across
-		// categories). Hidden for free users (the tab shows an upsell) and when
-		// the bundle can't be fetched.
-		$template_count = 0;
-		$show_templates = false;
-		if ( class_exists( 'EMCP_Tools_Pro_Templates' ) && EMCP_Tools_Pro_Templates::user_has_access() ) {
+		// categories). Hidden for free users and when the bundle can't be fetched.
+		if ( $this->module_tab_visible( 'templates' ) && class_exists( 'EMCP_Tools_Pro_Templates' ) && EMCP_Tools_Pro_Templates::user_has_access() ) {
+			$template_count  = 0;
 			$emcp_tpl_bundle = EMCP_Tools_Pro_Templates::get_bundle();
 			if ( ! is_wp_error( $emcp_tpl_bundle ) && is_array( $emcp_tpl_bundle ) && ! empty( $emcp_tpl_bundle['categories'] ) ) {
 				foreach ( $emcp_tpl_bundle['categories'] as $emcp_tpl_cat ) {
 					$template_count += is_array( $emcp_tpl_cat['templates'] ?? null ) ? count( $emcp_tpl_cat['templates'] ) : 0;
 				}
 			}
-			$show_templates = $template_count > 0;
+			if ( $template_count > 0 ) {
+				$stats[] = array( 'key' => 'templates', 'value' => $template_count, 'label' => __( 'Templates', 'emcp-tools' ) );
+			}
 		}
 
-		// A module's stat card only shows when its module is on.
-		$show_templates  = $show_templates && $this->module_tab_visible( 'templates' );
-		$show_brand_kits = $show_brand_kits && $this->module_tab_visible( 'brand-kits' );
-		$show_prompts    = $this->module_tab_visible( 'prompts' );
+		return $stats;
+	}
+
+	/**
+	 * Render the settings page.
+	 *
+	 * @since 1.0.0
+	 */
+	public function render_page(): void {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			return;
+		}
+
+		$active_tab = $this->get_active_tab();
 
 		?>
 		<div class="wrap elementor-mcp-admin">
@@ -1351,74 +1373,12 @@ class EMCP_Tools_Admin {
 				<button type="button" class="emcp-appnav-arrow emcp-appnav-arrow--next" aria-label="<?php esc_attr_e( 'Scroll tabs right', 'emcp-tools' ); ?>" hidden><span class="dashicons dashicons-arrow-right-alt2" aria-hidden="true"></span></button>
 			</div>
 
-			<!-- Stats Bar -->
-			<div class="elementor-mcp-stats">
-				<div class="elementor-mcp-stat">
-					<span class="elementor-mcp-stat-icon elementor-mcp-stat-icon--tools">
-						<svg viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M5 3a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2H5zM5 11a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2v-2a2 2 0 00-2-2H5zM11 5a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V5zM11 13a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
-					</span>
-					<span class="elementor-mcp-stat-content">
-						<span class="elementor-mcp-stat-value"><?php echo esc_html( $total_count ); ?></span>
-						<span class="elementor-mcp-stat-label"><?php esc_html_e( 'Total Tools', 'emcp-tools' ); ?></span>
-					</span>
-				</div>
-				<div class="elementor-mcp-stat">
-					<span class="elementor-mcp-stat-icon elementor-mcp-stat-icon--active">
-						<svg viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"/></svg>
-					</span>
-					<span class="elementor-mcp-stat-content">
-						<span class="elementor-mcp-stat-value"><?php echo esc_html( $enabled_count ); ?></span>
-						<span class="elementor-mcp-stat-label"><?php esc_html_e( 'Active', 'emcp-tools' ); ?></span>
-					</span>
-				</div>
-				<div class="elementor-mcp-stat">
-					<span class="elementor-mcp-stat-icon elementor-mcp-stat-icon--pro">
-						<svg viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
-					</span>
-					<span class="elementor-mcp-stat-content">
-						<span class="elementor-mcp-stat-value"><?php echo esc_html( $pro_count ); ?></span>
-						<span class="elementor-mcp-stat-label"><?php esc_html_e( 'Pro Tools', 'emcp-tools' ); ?></span>
-					</span>
-				</div>
-									<?php if ( $show_prompts ) : ?>
-					<div class="elementor-mcp-stat">
-					<span class="elementor-mcp-stat-icon elementor-mcp-stat-icon--prompts">
-						<svg viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clip-rule="evenodd"/></svg>
-					</span>
-					<span class="elementor-mcp-stat-content">
-						<span class="elementor-mcp-stat-value"><?php echo esc_html( $prompt_count ); ?></span>
-						<span class="elementor-mcp-stat-label"><?php esc_html_e( 'Prompts', 'emcp-tools' ); ?></span>
-					</span>
-				</div>
-					<?php endif; ?>
-				<?php if ( $show_brand_kits ) : ?>
-					<div class="elementor-mcp-stat">
-						<span class="elementor-mcp-stat-icon elementor-mcp-stat-icon--brand-kits">
-							<svg viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M2 5a2 2 0 012-2h3a2 2 0 012 2v10a2 2 0 01-2 2H4a2 2 0 01-2-2V5zm6.5 9.5L12 6l3.8 1.5a1 1 0 01.56 1.3l-3 7.5a2 2 0 01-2.6 1.1l-2.26-.9zM11 4a2 2 0 114 0 2 2 0 01-4 0z"/></svg>
-						</span>
-						<span class="elementor-mcp-stat-content">
-							<span class="elementor-mcp-stat-value"><?php echo esc_html( $brand_kit_count ); ?></span>
-							<span class="elementor-mcp-stat-label"><?php esc_html_e( 'Brand Kits', 'emcp-tools' ); ?></span>
-						</span>
-					</div>
-				<?php endif; ?>
-					<?php if ( $show_templates ) : ?>
-						<div class="elementor-mcp-stat">
-							<span class="elementor-mcp-stat-icon elementor-mcp-stat-icon--templates">
-								<svg viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm0 5a1 1 0 011-1h6a1 1 0 011 1v7a1 1 0 01-1 1H4a1 1 0 01-1-1V9zm10 0a1 1 0 011-1h2a1 1 0 011 1v7a1 1 0 01-1 1h-2a1 1 0 01-1-1V9z"/></svg>
-							</span>
-							<span class="elementor-mcp-stat-content">
-								<span class="elementor-mcp-stat-value"><?php echo esc_html( $template_count ); ?></span>
-								<span class="elementor-mcp-stat-label"><?php esc_html_e( 'Templates', 'emcp-tools' ); ?></span>
-							</span>
-						</div>
-					<?php endif; ?>
-			</div>
-
 			<!-- Content -->
 			<div class="tab-content">
 				<?php
-				if ( 'modules' === $active_tab ) {
+				if ( 'dashboard' === $active_tab ) {
+					include EMCP_TOOLS_DIR . 'includes/admin/views/page-dashboard.php';
+				} elseif ( 'modules' === $active_tab ) {
 					include EMCP_TOOLS_DIR . 'includes/admin/views/page-modules.php';
 				} elseif ( 'connection' === $active_tab ) {
 					include EMCP_TOOLS_DIR . 'includes/admin/views/page-connection.php';
