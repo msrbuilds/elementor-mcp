@@ -2977,7 +2977,7 @@ body.emcp-modal-open { overflow: hidden; }
 /* Full-width admin header (app bar + tab nav + Help dropdown) ---------------- */
 .elementor-mcp-admin > h1 { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap; border: 0; }
 
-.emcp-appbar { display: flex; align-items: stretch; justify-content: space-between; gap: 16px; flex-wrap: wrap; background: var(--mcp-white); border-bottom: 1px solid var(--mcp-gray-200); padding: 0 0 0 20px; margin: -10px -20px 0 -22px; }
+.emcp-appbar { display: flex; align-items: stretch; justify-content: space-between; gap: 16px; flex-wrap: wrap; background: var(--mcp-white); border-bottom: 1px solid var(--mcp-gray-200); padding: 0 0 0 20px; margin: -10px -20px 0 -22px; border-top: 1px solid var(--mcp-gray-200); }
 .emcp-appbar-brand { display: flex; align-items: center; gap: 10px; min-width: 0; padding: 15px 0; width: 40%;}
 .emcp-appbar-logo { width: 34px; height: 34px; border-radius: 6px; object-fit: contain; }
 .emcp-appbar-title { font-size: 18px; font-weight: 700; color: var(--mcp-gray-800, #1d2327); }
@@ -3001,8 +3001,8 @@ body.emcp-modal-open { overflow: hidden; }
 .emcp-appbar-upgrade:hover { background: var(--mcp-primary-hover); border-color: var(--mcp-primary-hover); color: var(--mcp-white); }
 .emcp-appbar-upgrade .dashicons { font-size: 15px; width: 15px; height: 15px; }
 
-.emcp-appnav { display: flex; align-items: stretch; gap: 2px; background: var(--mcp-white); border-bottom: 1px solid var(--mcp-gray-200); padding: 0 14px; overflow-x: auto; overflow-y: hidden; margin: 0; }
-.emcp-appnav-item { display: inline-flex; align-items: center; gap: 7px; padding: 14px 16px; margin-bottom: -1px; white-space: nowrap; color: var(--mcp-gray-600, #50575e); text-decoration: none; font-size: 14px; font-weight: 600; border-bottom: 2px solid transparent; flex: 1; justify-content: center; text-align: center; }
+.emcp-appnav { display: flex; align-items: stretch; gap: 0px; background: var(--mcp-white); border-bottom: 1px solid var(--mcp-gray-200); padding: 0 14px; overflow-x: auto; overflow-y: hidden; margin: 0; }
+.emcp-appnav-item { display: inline-flex; align-items: center; gap: 7px; padding: 14px 16px; margin-bottom: -1px; white-space: nowrap; color: var(--mcp-gray-600, #50575e); text-decoration: none; font-size: 14px; font-weight: 600; border-bottom: 2px solid transparent; flex: 1; justify-content: center; text-align: center; border-right: 1px solid var(--mcp-gray-200); }
 .emcp-appnav-item:hover { color: var(--mcp-gray-800, #1d2327); background: var(--mcp-gray-50); }
 .emcp-appnav-item.is-active { color: var(--mcp-primary); border-bottom-color: var(--mcp-primary); }
 .emcp-appnav-item .dashicons { font-size: 16px; width: 16px; height: 16px; }
@@ -3195,10 +3195,10 @@ body.emcp-modal-open { overflow: hidden; }
 }
 
 .emcp-dash-section-title {
-	font-size: 17px;
+	font-size: 24px;
 	font-weight: 700;
 	color: var(--mcp-gray-900);
-	margin: 0;
+	margin: 0 0 10px 0;
 	padding: 0;
 }
 
