@@ -291,6 +291,199 @@ class EMCP_Tools_Themer_PHP_Store {
 	}
 
 	// -------------------------------------------------------------------------
-	// Compile / manifest (added in Task 3)
+	// Compile / manifest
 	// -------------------------------------------------------------------------
+
+	/**
+	 * Ensure the sandbox subdir exists (reuses the snippet sandbox guards).
+	 *
+	 * @return true|WP_Error
+	 */
+	private static function ensure_dir() {
+		$ensured = EMCP_Tools_PHP_Snippet_Store::ensure_sandbox();
+		if ( is_wp_error( $ensured ) ) {
+			return $ensured;
+		}
+		$dir = self::dir();
+		if ( ! wp_mkdir_p( $dir ) ) {
+			return new WP_Error( 'sandbox_unwritable', __( 'Could not create the PHP-template sandbox directory.', 'emcp-tools' ) );
+		}
+		self::write_file( $dir . '/index.php', "<?php\n// Silence is golden.\n" );
+		return true;
+	}
+
+	private static function write_file( string $path, string $contents ): bool {
+		wp_mkdir_p( dirname( $path ) );
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents
+		$ok = false !== file_put_contents( $path, $contents );
+		if ( $ok && function_exists( 'opcache_invalidate' ) && '.php' === substr( $path, -4 ) ) {
+			opcache_invalidate( $path, true );
+		}
+		return $ok;
+	}
+
+	private static function delete_file( string $path ): void {
+		if ( file_exists( $path ) ) {
+			// phpcs:ignore WordPress.WP.AlternativeFunctions.unlink_unlink
+			@unlink( $path );
+			if ( function_exists( 'opcache_invalidate' ) ) {
+				opcache_invalidate( $path, true );
+			}
+		}
+	}
+
+	/**
+	 * Re-validate + wrap the code in a named function + write it, recording the hash.
+	 *
+	 * @param int $id Template id.
+	 * @return true|WP_Error
+	 */
+	public static function ensure_compiled( int $id ) {
+		$post = get_post( $id );
+		if ( ! $post || self::POST_TYPE !== $post->post_type ) {
+			return new WP_Error( 'not_found', __( 'Template not found.', 'emcp-tools' ) );
+		}
+		$code       = (string) get_post_meta( $id, self::META_CODE, true );
+		$validation = EMCP_Tools_PHP_Snippet_Validator::validate( $code );
+		if ( ! $validation['valid'] || ! $validation['safe'] ) {
+			update_post_meta( $id, self::META_VALIDATION, wp_slash( (string) wp_json_encode( $validation ) ) );
+			return new WP_Error( 'compile_blocked', __( 'Cannot compile — the template fails validation.', 'emcp-tools' ), array( 'validation' => $validation ) );
+		}
+
+		$ensured = self::ensure_dir();
+		if ( is_wp_error( $ensured ) ) {
+			return $ensured;
+		}
+
+		$body = EMCP_Tools_PHP_Snippet_Validator::strip_tags( $code );
+		$func = self::func_name( $id );
+		$php  = "<?php\n"
+			. "// EMCP Theme PHP Template {$id} — generated; edits fail the integrity check.\n"
+			. "if ( ! function_exists( '{$func}' ) ) {\n"
+			. "\tfunction {$func}() {\n"
+			. $body . "\n"
+			. "\t}\n"
+			. "}\n";
+
+		try {
+			token_get_all( $php, TOKEN_PARSE );
+		} catch ( \Throwable $e ) {
+			return new WP_Error( 'compile_failed', $e->getMessage() );
+		}
+
+		$path = self::php_path( $id );
+		if ( ! self::write_file( $path, $php ) ) {
+			return new WP_Error( 'write_failed', __( 'Could not write the template file to the sandbox.', 'emcp-tools' ) );
+		}
+		update_post_meta( $id, self::META_HASH, hash( 'sha256', $php ) );
+		self::rebuild_manifest();
+		return true;
+	}
+
+	/**
+	 * Remove the compiled file + hash, and refresh the manifest.
+	 *
+	 * @param int $id Template id.
+	 */
+	public static function decompile( int $id ): void {
+		self::delete_file( self::php_path( $id ) );
+		delete_post_meta( $id, self::META_HASH );
+		self::rebuild_manifest();
+	}
+
+	/**
+	 * How many Themer posts currently reference this template.
+	 *
+	 * @param int $id Template id.
+	 * @return int
+	 */
+	public static function reference_count( int $id ): int {
+		$q = new WP_Query(
+			array(
+				'post_type'      => EMCP_Tools_Themer_CPT::POST_TYPE,
+				'post_status'    => array( 'publish', 'draft' ),
+				'posts_per_page' => 100,
+				'fields'         => 'ids',
+				'no_found_rows'  => true,
+				'meta_key'       => '_emcp_themer_php_template',
+				'meta_value'     => (string) $id,
+			)
+		);
+		return count( (array) $q->posts );
+	}
+
+	/**
+	 * Compile when referenced by >=1 Themer post, else decompile. Idempotent.
+	 *
+	 * @param int $id Template id.
+	 * @return true|WP_Error
+	 */
+	public static function sync_reference( int $id ) {
+		if ( self::reference_count( $id ) > 0 ) {
+			return self::ensure_compiled( $id );
+		}
+		self::decompile( $id );
+		return true;
+	}
+
+	/**
+	 * Rebuild the manifest: one entry per compiled (hash-present) template.
+	 */
+	public static function rebuild_manifest(): void {
+		$query = new WP_Query(
+			array(
+				'post_type'      => self::POST_TYPE,
+				'post_status'    => 'draft',
+				'posts_per_page' => 200,
+				'fields'         => 'ids',
+				'no_found_rows'  => true,
+			)
+		);
+		$entries = array();
+		foreach ( $query->posts as $pid ) {
+			$pid  = (int) $pid;
+			$hash = (string) get_post_meta( $pid, self::META_HASH, true );
+			if ( '' === $hash ) {
+				continue;
+			}
+			$entries[] = array(
+				'post_id'  => $pid,
+				'func'     => self::func_name( $pid ),
+				'php_path' => self::relative_php_path( $pid ),
+				'hash'     => $hash,
+				'type'     => (string) ( get_post_meta( $pid, self::META_TYPE, true ) ?: 'any' ),
+			);
+		}
+		$ensured = self::ensure_dir();
+		if ( ! is_wp_error( $ensured ) ) {
+			self::write_file( self::manifest_path(), (string) wp_json_encode( $entries ) );
+		}
+	}
+
+	/**
+	 * Read the manifest.
+	 *
+	 * @return array<int,array>
+	 */
+	public static function read_manifest(): array {
+		$path = self::manifest_path();
+		if ( ! file_exists( $path ) ) {
+			return array();
+		}
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
+		$data = json_decode( (string) file_get_contents( $path ), true );
+		return is_array( $data ) ? $data : array();
+	}
+
+	/**
+	 * Fatal-recovery target: record the error + decompile so the next request
+	 * falls back to builder content.
+	 *
+	 * @param int    $id    Template id.
+	 * @param string $error Captured error.
+	 */
+	public static function mark_error( int $id, string $error ): void {
+		update_post_meta( $id, self::META_ERROR, sanitize_text_field( $error ) );
+		self::decompile( $id );
+	}
 }
