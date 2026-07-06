@@ -136,14 +136,20 @@ class EMCP_Tools_Themer_Metabox {
 			'404'     => __( '404 (not found)', 'emcp-tools' ),
 		);
 
-		// Optional PHP-template override, shown first (before the type selector).
-		if ( class_exists( 'EMCP_Tools_Themer_PHP' ) && EMCP_Tools_Themer_PHP::enabled() ) {
+		$php_enabled = class_exists( 'EMCP_Tools_Themer_PHP' ) && EMCP_Tools_Themer_PHP::enabled();
+
+		// Template type + (optional) PHP-template override, side by side in one row.
+		echo '<div class="emcp-themer-field-row" style="display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start;margin:0 0 4px;">';
+
+		// Optional PHP-template override (left column).
+		if ( $php_enabled ) {
 			$attached = (int) get_post_meta( $post->ID, '_emcp_themer_php_template', true );
-			echo '<p><label for="emcp-themer-php"><strong>' . esc_html__( 'Render with PHP template', 'emcp-tools' ) . '</strong></label><br>';
+			echo '<div class="emcp-themer-field" style="flex:1 1 260px;min-width:240px;">';
+			echo '<p style="margin-top:0;"><label for="emcp-themer-php"><strong>' . esc_html__( 'Render with PHP template', 'emcp-tools' ) . '</strong></label><br>';
 			if ( '' === $type ) {
-				echo '<span class="description">' . esc_html__( 'Choose a template type below first to list matching PHP templates.', 'emcp-tools' ) . '</span></p>';
+				echo '<span class="description">' . esc_html__( 'Choose a template type first to list matching PHP templates.', 'emcp-tools' ) . '</span></p>';
 			} else {
-				echo '<select id="emcp-themer-php" name="emcp_themer_php_template">';
+				echo '<select id="emcp-themer-php" name="emcp_themer_php_template" style="width:100%;max-width:340px;">';
 				printf( '<option value="0">%s</option>', esc_html__( '— None (use builder content) —', 'emcp-tools' ) );
 				foreach ( self::eligible_templates( $type ) as $tpl ) {
 					printf(
@@ -156,17 +162,22 @@ class EMCP_Tools_Themer_Metabox {
 				echo '</select>';
 				echo '<br><span class="description">' . esc_html__( 'If selected, this PHP template renders this region instead of the builder content.', 'emcp-tools' ) . '</span></p>';
 			}
-			echo '<hr>';
+			echo '</div>';
 		}
 
-		echo '<p><label for="emcp-themer-type"><strong>' . esc_html__( 'Template type', 'emcp-tools' ) . '</strong> <span style="color:#d63638">*</span></label><br>';
-		echo '<select id="emcp-themer-type" name="emcp_themer_type" class="emcp-themer-type-select" required>';
+		// Template type (right column, or full width when the PHP field is hidden).
+		echo '<div class="emcp-themer-field" style="flex:1 1 260px;min-width:240px;">';
+		echo '<p style="margin-top:0;"><label for="emcp-themer-type"><strong>' . esc_html__( 'Template type', 'emcp-tools' ) . '</strong> <span style="color:#d63638">*</span></label><br>';
+		echo '<select id="emcp-themer-type" name="emcp_themer_type" class="emcp-themer-type-select" required style="width:100%;max-width:340px;">';
 		printf( '<option value="" %s>%s</option>', selected( $type, '', false ), esc_html__( '— Choose a template type —', 'emcp-tools' ) );
 		foreach ( EMCP_Tools_Themer_CPT::TYPES as $t ) {
 			printf( '<option value="%1$s" %2$s>%3$s</option>', esc_attr( $t ), selected( $type, $t, false ), esc_html( $type_labels[ $t ] ?? ucfirst( $t ) ) );
 		}
 		echo '</select>';
 		echo '<br><span class="description">' . esc_html__( 'What this template replaces on the front end. A Single template renders in the content area (keeping your theme header/footer); a Header/Footer template replaces the theme\'s header/footer.', 'emcp-tools' ) . '</span></p>';
+		echo '</div>';
+
+		echo '</div>'; // .emcp-themer-field-row
 
 		// Conflict notice: another template of the same type already targets an
 		// overlapping condition. Only one can render a given slot, so warn the admin.
