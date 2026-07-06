@@ -345,8 +345,12 @@ class EMCP_Tools_Themer_Dynamic {
 	}
 
 	/**
-	 * Archive posts loop (list / grid) with optional pagination. Loops the MAIN
-	 * query (the current archive) so it shows the archive's posts.
+	 * Archive posts loop (list / grid) with optional pagination.
+	 *
+	 * On a real front-end archive it loops the MAIN query (that archive's posts).
+	 * In the editor / a block or Elementor preview (or any non-archive context)
+	 * there is no archive query, so it shows a SAMPLE of recent posts instead —
+	 * otherwise the widget would just say "No posts found." while you design it.
 	 *
 	 * @param array $args layout (grid|list), columns, show_image, show_title,
 	 *                    show_excerpt, show_meta, show_more, more_text, pagination.
@@ -355,8 +359,8 @@ class EMCP_Tools_Themer_Dynamic {
 	public static function archive_loop( array $args = array() ): string {
 		global $wp_query;
 
-		$layout  = 'list' === ( $args['layout'] ?? 'grid' ) ? 'list' : 'grid';
-		$columns = max( 1, min( 6, (int) ( $args['columns'] ?? 3 ) ) );
+		$layout   = 'list' === ( $args['layout'] ?? 'grid' ) ? 'list' : 'grid';
+		$columns  = max( 1, min( 6, (int) ( $args['columns'] ?? 3 ) ) );
 		$defaults = array(
 			'show_image'   => true,
 			'show_title'   => true,
@@ -367,41 +371,46 @@ class EMCP_Tools_Themer_Dynamic {
 		$args      = array_merge( $defaults, $args );
 		$more_text = isset( $args['more_text'] ) && '' !== $args['more_text'] ? (string) $args['more_text'] : __( 'Read more', 'emcp-tools' );
 
-		if ( ! $wp_query instanceof WP_Query || ! $wp_query->have_posts() ) {
+		// Real archive front-end → the main query. Editor/preview or anything that
+		// isn't an archive → a sample recent-posts query so the preview isn't empty.
+		$main_is_archive = ( $wp_query instanceof WP_Query ) && ( is_archive() || is_home() || is_search() );
+		if ( $main_is_archive && ! self::is_preview_context() ) {
+			$query    = $wp_query;
+			$own      = false;
+			$paginate = ! empty( $args['pagination'] );
+		} else {
+			$query = new WP_Query(
+				array(
+					'post_type'           => 'post',
+					'posts_per_page'      => max( 3, $columns * 2 ),
+					'ignore_sticky_posts' => true,
+					'no_found_rows'       => true,
+				)
+			);
+			$own      = true;
+			$paginate = false;
+		}
+
+		if ( ! $query->have_posts() ) {
+			if ( $own ) {
+				wp_reset_postdata();
+			}
 			return '<div class="emcp-dyn emcp-dyn-archive-loop"><p class="emcp-dyn-empty">' . esc_html__( 'No posts found.', 'emcp-tools' ) . '</p></div>';
 		}
 
 		$cards = array();
-		while ( $wp_query->have_posts() ) {
-			$wp_query->the_post();
-			$card = '<article class="emcp-dyn-card">';
-			if ( ! empty( $args['show_image'] ) && has_post_thumbnail() ) {
-				$card .= '<a class="emcp-dyn-card-media" href="' . esc_url( (string) get_permalink() ) . '">' . get_the_post_thumbnail( null, 'medium_large' ) . '</a>';
-			}
-			$card .= '<div class="emcp-dyn-card-body">';
-			if ( ! empty( $args['show_meta'] ) ) {
-				$card .= '<div class="emcp-dyn-card-meta">' . esc_html( (string) get_the_date() ) . '</div>';
-			}
-			if ( ! empty( $args['show_title'] ) ) {
-				$card .= '<h3 class="emcp-dyn-card-title"><a href="' . esc_url( (string) get_permalink() ) . '">' . esc_html( (string) get_the_title() ) . '</a></h3>';
-			}
-			if ( ! empty( $args['show_excerpt'] ) ) {
-				$card .= '<div class="emcp-dyn-card-excerpt">' . esc_html( wp_trim_words( (string) get_the_excerpt(), 24, '&hellip;' ) ) . '</div>';
-			}
-			if ( ! empty( $args['show_more'] ) ) {
-				$card .= '<a class="emcp-dyn-card-more" href="' . esc_url( (string) get_permalink() ) . '">' . esc_html( $more_text ) . '</a>';
-			}
-			$card   .= '</div></article>';
-			$cards[] = $card;
+		while ( $query->have_posts() ) {
+			$query->the_post();
+			$cards[] = self::loop_card( $args, $more_text );
 		}
 
 		$grid_style = 'grid' === $layout ? ' style="--emcp-cols:' . $columns . ';"' : '';
 		$html       = '<div class="emcp-dyn emcp-dyn-archive-loop emcp-dyn-archive-loop--' . $layout . '"' . $grid_style . '>' . implode( '', $cards ) . '</div>';
 
-		if ( ! empty( $args['pagination'] ) ) {
+		if ( $paginate ) {
 			$links = paginate_links(
 				array(
-					'total'   => (int) $wp_query->max_num_pages,
+					'total'   => (int) $query->max_num_pages,
 					'current' => max( 1, (int) get_query_var( 'paged' ) ),
 					'type'    => 'list',
 				)
@@ -413,6 +422,61 @@ class EMCP_Tools_Themer_Dynamic {
 
 		wp_reset_postdata();
 		return $html;
+	}
+
+	/**
+	 * One archive-loop card for the post currently in the loop.
+	 *
+	 * @param array  $args      Loop args.
+	 * @param string $more_text Read-more label.
+	 * @return string
+	 */
+	private static function loop_card( array $args, string $more_text ): string {
+		$card = '<article class="emcp-dyn-card">';
+		if ( ! empty( $args['show_image'] ) && has_post_thumbnail() ) {
+			$card .= '<a class="emcp-dyn-card-media" href="' . esc_url( (string) get_permalink() ) . '">' . get_the_post_thumbnail( null, 'medium_large' ) . '</a>';
+		}
+		$card .= '<div class="emcp-dyn-card-body">';
+		if ( ! empty( $args['show_meta'] ) ) {
+			$card .= '<div class="emcp-dyn-card-meta">' . esc_html( (string) get_the_date() ) . '</div>';
+		}
+		if ( ! empty( $args['show_title'] ) ) {
+			$card .= '<h3 class="emcp-dyn-card-title"><a href="' . esc_url( (string) get_permalink() ) . '">' . esc_html( (string) get_the_title() ) . '</a></h3>';
+		}
+		if ( ! empty( $args['show_excerpt'] ) ) {
+			$card .= '<div class="emcp-dyn-card-excerpt">' . esc_html( wp_trim_words( (string) get_the_excerpt(), 24, '&hellip;' ) ) . '</div>';
+		}
+		if ( ! empty( $args['show_more'] ) ) {
+			$card .= '<a class="emcp-dyn-card-more" href="' . esc_url( (string) get_permalink() ) . '">' . esc_html( $more_text ) . '</a>';
+		}
+		return $card . '</div></article>';
+	}
+
+	/**
+	 * Whether we're rendering in an editor / preview context (Elementor editor or
+	 * preview, the block editor's ServerSideRender REST call, or wp-admin) rather
+	 * than a live front-end request. Dynamic elements that depend on the main
+	 * query fall back to sample content here so the preview isn't empty.
+	 *
+	 * @return bool
+	 */
+	public static function is_preview_context(): bool {
+		if ( defined( 'REST_REQUEST' ) && REST_REQUEST ) {
+			return true;
+		}
+		if ( is_admin() ) {
+			return true;
+		}
+		if ( class_exists( '\\Elementor\\Plugin' ) ) {
+			$plugin = \Elementor\Plugin::$instance;
+			if ( isset( $plugin->editor ) && $plugin->editor->is_edit_mode() ) {
+				return true;
+			}
+			if ( isset( $plugin->preview ) && $plugin->preview->is_preview_mode() ) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	/**
