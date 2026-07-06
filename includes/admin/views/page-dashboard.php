@@ -218,6 +218,13 @@ $emcp_videos = array(
 					</span>
 				</a>
 			<?php endforeach; ?>
+			<a class="emcp-dash-video emcp-dash-video--more" href="https://emcptools.com/tutorials" target="_blank" rel="noopener noreferrer">
+				<span class="emcp-dash-more-inner">
+					<span class="emcp-dash-more-icon"><span class="dashicons dashicons-playlist-video" aria-hidden="true"></span></span>
+					<span class="emcp-dash-more-title"><?php esc_html_e( 'Watch More', 'emcp-tools' ); ?></span>
+					<span class="emcp-dash-more-sub"><?php esc_html_e( 'See all tutorials', 'emcp-tools' ); ?><span class="dashicons dashicons-arrow-right-alt2" aria-hidden="true"></span></span>
+				</span>
+			</a>
 		</div>
 	</section>
 
@@ -225,6 +232,7 @@ $emcp_videos = array(
 	<section class="emcp-dash-section emcp-dash-section--help" aria-labelledby="emcp-dash-help-h">
 		<div class="emcp-dash-section-head">
 			<h2 id="emcp-dash-help-h" class="emcp-dash-section-title"><?php esc_html_e( 'Help &amp; resources', 'emcp-tools' ); ?></h2>
+			<p class="emcp-dash-section-sub"><?php esc_html_e( 'Quick links to the free and premium support channels.', 'emcp-tools' ); ?></p>
 		</div>
 		<div class="emcp-dash-help">
 			<a class="emcp-dash-help-link" href="https://emcptools.com/docs" target="_blank" rel="noopener noreferrer">

@@ -3406,6 +3406,79 @@ body.emcp-modal-open { overflow: hidden; }
 	height: 15px;
 }
 
+/* "Watch More" CTA card — last item in the video grid. */
+.emcp-dash-video--more {
+	align-items: center;
+	justify-content: center;
+	min-height: 180px;
+	padding: 24px;
+	background: var(--mcp-primary-light);
+	border-style: dashed;
+	border-color: var(--mcp-primary);
+	text-align: center;
+}
+
+.emcp-dash-video--more:hover,
+.emcp-dash-video--more:focus {
+	background: var(--mcp-white);
+	border-style: solid;
+}
+
+.emcp-dash-more-inner {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 6px;
+	color: var(--mcp-primary);
+}
+
+.emcp-dash-more-icon {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 48px;
+	height: 48px;
+	margin-bottom: 2px;
+	border-radius: 50%;
+	background: var(--mcp-white);
+	color: var(--mcp-primary);
+	transition: background var(--mcp-transition), color var(--mcp-transition);
+}
+
+.emcp-dash-video--more:hover .emcp-dash-more-icon,
+.emcp-dash-video--more:focus .emcp-dash-more-icon {
+	background: var(--mcp-primary);
+	color: var(--mcp-white);
+}
+
+.emcp-dash-more-icon .dashicons {
+	font-size: 26px;
+	width: 26px;
+	height: 26px;
+}
+
+.emcp-dash-more-title {
+	font-family: var(--mcp-font-heading);
+	font-size: 15px;
+	font-weight: 700;
+	letter-spacing: -0.01em;
+	color: var(--mcp-primary);
+}
+
+.emcp-dash-more-sub {
+	display: inline-flex;
+	align-items: center;
+	gap: 2px;
+	font-size: 12px;
+	color: var(--mcp-gray-500);
+}
+
+.emcp-dash-more-sub .dashicons {
+	font-size: 15px;
+	width: 15px;
+	height: 15px;
+}
+
 /* ---- Help & resources ---------------------------------------------------- */
 
 .emcp-dash-help {
