@@ -106,6 +106,7 @@ class EMCP_Tools_Bootstrap {
 		require_once EMCP_TOOLS_DIR . 'includes/class-block-tree.php';
 		require_once EMCP_TOOLS_DIR . 'includes/abilities/class-gutenberg-abilities.php';
 		require_once EMCP_TOOLS_DIR . 'includes/class-admin-bar.php';
+		require_once EMCP_TOOLS_DIR . 'includes/class-github-updater.php';
 		require_once EMCP_TOOLS_DIR . 'includes/abilities/class-content-abilities.php';
 		require_once EMCP_TOOLS_DIR . 'includes/abilities/class-settings-abilities.php';
 		require_once EMCP_TOOLS_DIR . 'includes/class-package-guard.php';
@@ -235,6 +236,10 @@ class EMCP_Tools_Bootstrap {
 		// Admin-bar MCP status + exposure toggle (front-end + wp-admin; the class
 		// self-gates on capability + is_admin_bar_showing()).
 		( new EMCP_Tools_Admin_Bar() )->init();
+
+		// Free-tier updates from GitHub releases (self-disables on premium builds,
+		// where Freemius owns updates).
+		( new EMCP_Tools_GitHub_Updater() )->init();
 	}
 
 	/**
