@@ -85,6 +85,32 @@ $emcp_tools_badge_labels = array(
 		</label>
 	</div>
 
+	<?php if ( class_exists( 'EMCP_Tools_Themer_Module' ) && EMCP_Tools_Themer_Module::is_enabled() ) : ?>
+		<?php $emcp_tools_themer_php_on = '1' === (string) get_option( EMCP_Tools_Themer_PHP::OPTION_ENABLED, '0' ); ?>
+		<div class="elementor-mcp-low-mode-card">
+			<label class="elementor-mcp-low-mode-toggle">
+				<input type="hidden" name="<?php echo esc_attr( EMCP_Tools_Themer_PHP::OPTION_ENABLED ); ?>" value="0" />
+				<input
+					type="checkbox"
+					name="<?php echo esc_attr( EMCP_Tools_Themer_PHP::OPTION_ENABLED ); ?>"
+					value="1"
+					<?php checked( $emcp_tools_themer_php_on ); ?>
+				/>
+				<span class="elementor-mcp-toggle" aria-hidden="true">
+					<span class="elementor-mcp-toggle-track"></span>
+				</span>
+				<span class="elementor-mcp-low-mode-info">
+					<span class="elementor-mcp-low-mode-title">
+						<?php esc_html_e( 'Themer PHP Templates (advanced)', 'emcp-tools' ); ?>
+					</span>
+					<span class="elementor-mcp-low-mode-desc">
+						<?php esc_html_e( 'Lets AI agents author raw PHP region templates (header/footer/single/archive) into a validated sandbox, which you then select on a template to take over its render. Off by default — enabling it also reveals the “PHP Templates” screen under the EMCP Themer menu and the per-template selector. The 5 MCP tools below still ship disabled until you enable them.', 'emcp-tools' ); ?>
+					</span>
+				</span>
+			</label>
+		</div>
+	<?php endif; ?>
+
 	<?php if ( $emcp_tools_low_mode ) : ?>
 		<div class="elementor-mcp-lowmode-banner">
 			<p>

@@ -254,7 +254,7 @@ class EMCP_Tools_Admin {
 	 *
 	 * @since 1.8.0
 	 */
-	const DEFAULTS_VERSION = 10;
+	const DEFAULTS_VERSION = 11;
 
 	/**
 	 * SEO/A11y Pro MCP tool slugs that ship disabled-by-default (v2 defaults).
@@ -311,6 +311,25 @@ class EMCP_Tools_Admin {
 			'emcp-tools/get-php-snippet',
 			'emcp-tools/list-php-snippets',
 			'emcp-tools/delete-php-snippet',
+		);
+	}
+
+	/**
+	 * Themer PHP-template tool slugs. The whole feature is gated behind a master
+	 * switch (off by default), and even once enabled these 5 tools ship
+	 * disabled-by-default like the PHP Snippets — the admin opts in on the Tools tab.
+	 *
+	 * @since 3.2.0
+	 *
+	 * @return string[]
+	 */
+	public static function themer_php_tool_slugs(): array {
+		return array(
+			'emcp-tools/create-theme-php-template',
+			'emcp-tools/list-theme-php-templates',
+			'emcp-tools/get-theme-php-template',
+			'emcp-tools/update-theme-php-template',
+			'emcp-tools/delete-theme-php-template',
 		);
 	}
 
@@ -466,6 +485,12 @@ class EMCP_Tools_Admin {
 			$add = array_merge( $add, self::database_write_tool_slugs() );
 		}
 
+		// v11 — Themer PHP-template tools ship disabled-by-default (raw PHP; gated
+		// behind the master switch too). The admin opts in on the Tools tab.
+		if ( $applied < 11 ) {
+			$add = array_merge( $add, self::themer_php_tool_slugs() );
+		}
+
 		$merged = array_values( array_unique( array_merge( $existing, $add ) ) );
 		update_option( self::OPTION_DISABLED_TOOLS, $merged );
 		update_option( self::OPTION_DEFAULTS_APPLIED, (string) self::DEFAULTS_VERSION );
@@ -584,6 +609,20 @@ class EMCP_Tools_Admin {
 		register_setting(
 			self::SETTINGS_GROUP,
 			self::OPTION_LOW_TOOL_MODE,
+			array(
+				'type'              => 'string',
+				'default'           => '0',
+				'sanitize_callback' => static function ( $value ) {
+					return '1' === (string) $value ? '1' : '0';
+				},
+			)
+		);
+
+		// Themer PHP Templates master switch (Tools tab). Off by default — the
+		// feature lets AI author raw PHP region templates, so the admin opts in.
+		register_setting(
+			self::SETTINGS_GROUP,
+			EMCP_Tools_Themer_PHP::OPTION_ENABLED,
 			array(
 				'type'              => 'string',
 				'default'           => '0',
@@ -2333,6 +2372,44 @@ class EMCP_Tools_Admin {
 				),
 			),
 		);
+
+		// Themer PHP Templates — free, capability-gated + master-switch-gated;
+		// disabled by default. AI authors DRAFTS; a human attaches one in a
+		// template metabox (the execution gate). Registered only when the Themer
+		// module is active, alongside where the feature actually lives.
+		if ( class_exists( 'EMCP_Tools_Themer_Module' ) && EMCP_Tools_Themer_Module::is_enabled() ) {
+			$tools['themer_php'] = array(
+				'platform' => 'wordpress',
+				'label'    => __( 'Themer PHP Templates', 'emcp-tools' ),
+				'tools'    => array(
+					'emcp-tools/create-theme-php-template' => array(
+						'label'       => __( 'Create Theme PHP Template', 'emcp-tools' ),
+						'description' => __( 'Create a validated DRAFT PHP region template (never runs until a human attaches it).', 'emcp-tools' ),
+						'badges'      => array(),
+					),
+					'emcp-tools/list-theme-php-templates'  => array(
+						'label'       => __( 'List Theme PHP Templates', 'emcp-tools' ),
+						'description' => __( 'List draft PHP templates.', 'emcp-tools' ),
+						'badges'      => array( 'read-only' ),
+					),
+					'emcp-tools/get-theme-php-template'    => array(
+						'label'       => __( 'Get Theme PHP Template', 'emcp-tools' ),
+						'description' => __( 'Return one PHP template with its validation report.', 'emcp-tools' ),
+						'badges'      => array( 'read-only' ),
+					),
+					'emcp-tools/update-theme-php-template' => array(
+						'label'       => __( 'Update Theme PHP Template', 'emcp-tools' ),
+						'description' => __( 'Update a PHP template and re-validate.', 'emcp-tools' ),
+						'badges'      => array(),
+					),
+					'emcp-tools/delete-theme-php-template' => array(
+						'label'       => __( 'Delete Theme PHP Template', 'emcp-tools' ),
+						'description' => __( 'Delete a PHP template and its sandbox file.', 'emcp-tools' ),
+						'badges'      => array( 'destructive' ),
+					),
+				),
+			);
+		}
 
 		// SEO & Accessibility toolkit (Pro). Shown to licensed sites only —
 		// matching the ability gate. Carries the 'pro' badge so they ship
