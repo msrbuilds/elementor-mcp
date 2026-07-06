@@ -116,29 +116,25 @@ $emcp_features = array(
 );
 
 /**
- * Featured video guides. Curated placeholders — swap the `url` values for real
- * tutorial links as they publish. `duration` is display-only.
+ * Featured video guides. Real YouTube tutorials — `id` is the video ID (used
+ * for the thumbnail + watch link), `channel` is the creator. To feature a
+ * different video, swap `id`/`title`/`channel` and the `watch?v=` URL.
  */
 $emcp_videos = array(
 	array(
-		'title'    => __( 'Getting started: connect your first AI client', 'emcp-tools' ),
-		'duration' => '4:12',
-		'url'      => 'https://emcptools.com/tutorials',
+		'title'   => 'Create Elementor Landing Pages FAST with Claude and MCP Server',
+		'channel' => 'WP Academy',
+		'id'      => 'tXCpGa-hqxk',
 	),
 	array(
-		'title'    => __( 'Build a landing page with AI, start to finish', 'emcp-tools' ),
-		'duration' => '8:47',
-		'url'      => 'https://emcptools.com/tutorials',
+		'title'   => 'How to Use Elementor MCP with Open Models (DeepSeek, Kimi, MiniMax)',
+		'channel' => 'WP Academy',
+		'id'      => 'wAEJORy5eek',
 	),
 	array(
-		'title'    => __( 'Editing pages with the in-editor AI Chat', 'emcp-tools' ),
-		'duration' => '5:30',
-		'url'      => 'https://emcptools.com/tutorials',
-	),
-	array(
-		'title'    => __( 'Theme building with EMCP Themer', 'emcp-tools' ),
-		'duration' => '6:58',
-		'url'      => 'https://emcptools.com/tutorials',
+		'title'   => 'How I Use Elementor MCP + Claude Code to Create Custom Websites',
+		'channel' => 'WPDev',
+		'id'      => 'tCRt5m4jsY8',
 	),
 );
 ?>
@@ -198,13 +194,20 @@ $emcp_videos = array(
 			<p class="emcp-dash-section-sub"><?php esc_html_e( 'Watch and learn — from first connection to full-page builds.', 'emcp-tools' ); ?></p>
 		</div>
 		<div class="emcp-dash-videos">
-			<?php foreach ( $emcp_videos as $emcp_video ) : ?>
-				<a class="emcp-dash-video" href="<?php echo esc_url( $emcp_video['url'] ); ?>" target="_blank" rel="noopener noreferrer">
+			<?php
+			foreach ( $emcp_videos as $emcp_video ) :
+				$emcp_video_url = 'https://www.youtube.com/watch?v=' . rawurlencode( $emcp_video['id'] );
+				$emcp_video_img = 'https://i.ytimg.com/vi/' . rawurlencode( $emcp_video['id'] ) . '/hqdefault.jpg';
+				?>
+				<a class="emcp-dash-video" href="<?php echo esc_url( $emcp_video_url ); ?>" target="_blank" rel="noopener noreferrer">
 					<span class="emcp-dash-video-thumb">
-						<span class="dashicons dashicons-controls-play" aria-hidden="true"></span>
-						<span class="emcp-dash-video-duration"><?php echo esc_html( $emcp_video['duration'] ); ?></span>
+						<img class="emcp-dash-video-img" src="<?php echo esc_url( $emcp_video_img ); ?>" alt="" loading="lazy" />
+						<span class="emcp-dash-video-play" aria-hidden="true"><span class="dashicons dashicons-controls-play"></span></span>
 					</span>
-					<span class="emcp-dash-video-title"><?php echo esc_html( $emcp_video['title'] ); ?></span>
+					<span class="emcp-dash-video-meta">
+						<span class="emcp-dash-video-title"><?php echo esc_html( $emcp_video['title'] ); ?></span>
+						<span class="emcp-dash-video-channel"><span class="dashicons dashicons-video-alt3" aria-hidden="true"></span><?php echo esc_html( $emcp_video['channel'] ); ?></span>
+					</span>
 				</a>
 			<?php endforeach; ?>
 		</div>

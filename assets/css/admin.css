@@ -3266,44 +3266,77 @@ body.emcp-modal-open { overflow: hidden; }
 
 .emcp-dash-video-thumb {
 	position: relative;
+	display: block;
+	aspect-ratio: 16 / 9;
+	background: var(--mcp-gray-100);
+	overflow: hidden;
+}
+
+.emcp-dash-video-img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	display: block;
+	transition: transform var(--mcp-transition);
+}
+
+.emcp-dash-video:hover .emcp-dash-video-img {
+	transform: scale(1.04);
+}
+
+.emcp-dash-video-play {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	height: 120px;
-	background: var(--mcp-gray-100);
-	color: var(--mcp-gray-400);
-}
-
-.emcp-dash-video:hover .emcp-dash-video-thumb {
-	background: var(--mcp-primary-light);
-	color: var(--mcp-primary);
-}
-
-.emcp-dash-video-thumb .dashicons {
-	font-size: 44px;
-	width: 44px;
-	height: 44px;
-}
-
-.emcp-dash-video-duration {
-	position: absolute;
-	right: 8px;
-	bottom: 8px;
-	font-size: 11px;
-	font-weight: 600;
+	width: 46px;
+	height: 46px;
+	border-radius: 50%;
+	background: rgba(17, 24, 39, 0.72);
 	color: var(--mcp-white);
-	background: rgba(17, 24, 39, 0.78);
-	padding: 2px 6px;
-	border-radius: 4px;
+	transition: background var(--mcp-transition);
+}
+
+.emcp-dash-video:hover .emcp-dash-video-play {
+	background: var(--mcp-primary);
+}
+
+.emcp-dash-video-play .dashicons {
+	font-size: 26px;
+	width: 26px;
+	height: 26px;
+	margin-left: 2px;
+}
+
+.emcp-dash-video-meta {
+	display: block;
+	padding: 12px 14px;
 }
 
 .emcp-dash-video-title {
 	display: block;
-	padding: 12px 14px;
 	font-size: 13px;
 	font-weight: 600;
 	color: var(--mcp-gray-800);
 	line-height: 1.4;
+}
+
+.emcp-dash-video-channel {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+	margin-top: 5px;
+	font-size: 12px;
+	color: var(--mcp-gray-500);
+}
+
+.emcp-dash-video-channel .dashicons {
+	font-size: 15px;
+	width: 15px;
+	height: 15px;
 }
 
 /* ---- Help & resources ---------------------------------------------------- */
