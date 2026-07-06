@@ -3010,7 +3010,7 @@ body.emcp-modal-open { overflow: hidden; }
 .emcp-appnav.is-dragging .emcp-appnav-item { cursor: grabbing; }
 /* Header nav overflow arrows (small desktops). Wrapper carries the full-bleed;
    arrows overlay the edges and only show when the tabs overflow. */
-.emcp-appnav-wrap { position: relative; margin: 0 -20px 0 -22px; }
+.emcp-appnav-wrap { position: relative; margin: 0 -20px 20px -22px; }
 .emcp-appnav-arrow { position: absolute; top: 0; bottom: 0; width: 44px; display: flex; align-items: center; justify-content: center; padding: 0; border: none; border-bottom: 1px solid var(--mcp-gray-200); background: var(--mcp-white); color: var(--mcp-gray-600, #50575e); cursor: pointer; z-index: 3; }
 .emcp-appnav-arrow[hidden] { display: none !important; }
 .emcp-appnav-arrow:hover { color: var(--mcp-primary); }
@@ -3035,36 +3035,48 @@ body.emcp-modal-open { overflow: hidden; }
  * Dashboard tab
  * ========================================================================= */
 
+/* On the Dashboard the shared content box goes flush so each section can be
+   its own card panel instead of everything sharing one big container. */
+.elementor-mcp-admin .tab-content--flush {
+	background: transparent;
+	border: none;
+	padding: 0;
+}
+
 .emcp-dash {
 	display: flex;
 	flex-direction: column;
-	gap: 28px;
-	padding: 24px;
+	gap: 20px;
+}
+
+/* Each dashboard section is a standalone white card panel. */
+.emcp-dash-stats,
+.emcp-dash-section {
+	background: var(--mcp-white);
+	border: 1px solid var(--mcp-gray-200);
+	border-radius: var(--mcp-radius-lg);
+	box-shadow: var(--mcp-shadow-sm);
+	padding: 22px 24px;
 }
 
 /* ---- Headline stats ------------------------------------------------------ */
 
 .emcp-dash-stats {
 	display: grid;
-	grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-	gap: 16px;
+	grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+	gap: 8px;
 }
 
+/* Stat tiles sit flat inside the stats panel (the panel is the container). */
 .emcp-dash-stat {
 	display: flex;
 	align-items: center;
-	gap: 16px;
-	padding: 20px 22px;
-	background: var(--mcp-white);
-	border: 1px solid var(--mcp-gray-200);
-	border-radius: var(--mcp-radius);
-	box-shadow: var(--mcp-shadow-sm);
-	transition: box-shadow var(--mcp-transition), transform var(--mcp-transition);
+	gap: 14px;
+	padding: 8px 12px;
 }
 
-.emcp-dash-stat:hover {
-	box-shadow: var(--mcp-shadow-md);
-	transform: translateY(-1px);
+.emcp-dash-stat + .emcp-dash-stat {
+	border-left: 1px solid var(--mcp-gray-200);
 }
 
 .emcp-dash-stat-icon {
@@ -3142,16 +3154,16 @@ body.emcp-modal-open { overflow: hidden; }
 	align-items: flex-start;
 	gap: 14px;
 	padding: 18px;
-	background: var(--mcp-white);
+	background: var(--mcp-gray-50);
 	border: 1px solid var(--mcp-gray-200);
 	border-radius: var(--mcp-radius);
 	text-decoration: none;
-	box-shadow: var(--mcp-shadow-sm);
-	transition: box-shadow var(--mcp-transition), border-color var(--mcp-transition), transform var(--mcp-transition);
+	transition: box-shadow var(--mcp-transition), border-color var(--mcp-transition), background var(--mcp-transition), transform var(--mcp-transition);
 }
 
 .emcp-dash-card:hover,
 .emcp-dash-card:focus {
+	background: var(--mcp-white);
 	border-color: var(--mcp-primary);
 	box-shadow: var(--mcp-shadow-md);
 	transform: translateY(-1px);
@@ -3237,12 +3249,11 @@ body.emcp-modal-open { overflow: hidden; }
 .emcp-dash-video {
 	display: flex;
 	flex-direction: column;
-	background: var(--mcp-white);
+	background: var(--mcp-gray-50);
 	border: 1px solid var(--mcp-gray-200);
 	border-radius: var(--mcp-radius);
 	overflow: hidden;
 	text-decoration: none;
-	box-shadow: var(--mcp-shadow-sm);
 	transition: box-shadow var(--mcp-transition), border-color var(--mcp-transition), transform var(--mcp-transition);
 }
 
@@ -3308,16 +3319,16 @@ body.emcp-modal-open { overflow: hidden; }
 	align-items: flex-start;
 	gap: 12px;
 	padding: 16px 18px;
-	background: var(--mcp-white);
+	background: var(--mcp-gray-50);
 	border: 1px solid var(--mcp-gray-200);
 	border-radius: var(--mcp-radius);
 	text-decoration: none;
-	box-shadow: var(--mcp-shadow-sm);
-	transition: box-shadow var(--mcp-transition), border-color var(--mcp-transition);
+	transition: box-shadow var(--mcp-transition), border-color var(--mcp-transition), background var(--mcp-transition);
 }
 
 .emcp-dash-help-link:hover,
 .emcp-dash-help-link:focus {
+	background: var(--mcp-white);
 	border-color: var(--mcp-primary);
 	box-shadow: var(--mcp-shadow-md);
 }
@@ -3347,12 +3358,12 @@ body.emcp-modal-open { overflow: hidden; }
 }
 
 @media screen and (max-width: 782px) {
-	.emcp-dash {
-		padding: 16px;
-		gap: 22px;
-	}
-
 	.emcp-dash-stat-value {
 		font-size: 26px;
+	}
+
+	/* Stat tiles stack — drop the vertical dividers. */
+	.emcp-dash-stat + .emcp-dash-stat {
+		border-left: none;
 	}
 }

@@ -1355,7 +1355,7 @@ class EMCP_Tools_Admin {
 <nav class="emcp-appnav" aria-label="<?php esc_attr_e( 'EMCP Tools sections', 'emcp-tools' ); ?>">
 				<?php
 				foreach ( $this->get_submenus() as $emcp_slug => $emcp_label ) :
-					$emcp_tab_id = ( self::PAGE_SLUG === $emcp_slug ) ? 'tools' : substr( $emcp_slug, strlen( self::PAGE_SLUG . '-' ) );
+					$emcp_tab_id = ( self::PAGE_SLUG === $emcp_slug ) ? 'dashboard' : substr( $emcp_slug, strlen( self::PAGE_SLUG . '-' ) );
 					// Changelog lives in the app-bar top-right, not the tab nav.
 					if ( 'changelog' === $emcp_tab_id ) {
 						continue;
@@ -1374,7 +1374,7 @@ class EMCP_Tools_Admin {
 			</div>
 
 			<!-- Content -->
-			<div class="tab-content">
+			<div class="tab-content<?php echo 'dashboard' === $active_tab ? ' tab-content--flush' : ''; ?>">
 				<?php
 				if ( 'dashboard' === $active_tab ) {
 					include EMCP_TOOLS_DIR . 'includes/admin/views/page-dashboard.php';
