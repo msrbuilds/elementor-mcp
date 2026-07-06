@@ -437,6 +437,56 @@ class EMCP_Tools_Themer_Dynamic {
 	}
 
 	/**
+	 * Translate a builder's attributes/settings into provider args. Shared by the
+	 * Gutenberg blocks and the Elementor widgets — both use the same attribute
+	 * keys (`tag`, `link`, `showPrefix`, `showDate`, …). Truthy values from either
+	 * builder (block `true`/`false` or Elementor `'yes'`/`''`) normalize correctly.
+	 *
+	 * @param string $key Catalog key.
+	 * @param array  $a   Raw attributes/settings.
+	 * @return array
+	 */
+	public static function args_from( string $key, array $a ): array {
+		switch ( $key ) {
+			case 'post-title':
+				return array( 'tag' => (string) ( $a['tag'] ?? 'h1' ), 'link' => ! empty( $a['link'] ) );
+			case 'archive-title':
+				return array( 'tag' => (string) ( $a['tag'] ?? 'h1' ), 'show_prefix' => ! empty( $a['showPrefix'] ) );
+			case 'breadcrumbs':
+				return array( 'separator' => (string) ( $a['separator'] ?? '/' ), 'home_label' => (string) ( $a['homeLabel'] ?? '' ) );
+			case 'post-meta':
+				$items = array();
+				if ( ! empty( $a['showDate'] ) ) { $items[] = 'date'; }
+				if ( ! empty( $a['showAuthor'] ) ) { $items[] = 'author'; }
+				if ( ! empty( $a['showCategories'] ) ) { $items[] = 'categories'; }
+				if ( ! empty( $a['showTags'] ) ) { $items[] = 'tags'; }
+				if ( ! empty( $a['showComments'] ) ) { $items[] = 'comments'; }
+				return array( 'items' => $items );
+			case 'site-logo':
+				return array( 'max_width' => (int) ( $a['maxWidth'] ?? 0 ) );
+			case 'site-title':
+				return array( 'tag' => (string) ( $a['tag'] ?? 'span' ), 'show_tagline' => ! empty( $a['showTagline'] ) );
+			case 'nav-menu':
+				return array( 'menu' => (int) ( $a['menuId'] ?? 0 ) );
+			case 'description':
+				return array( 'length' => (int) ( $a['length'] ?? 0 ) );
+			case 'archive-loop':
+				return array(
+					'layout'       => (string) ( $a['layout'] ?? 'grid' ),
+					'columns'      => (int) ( $a['columns'] ?? 3 ),
+					'show_image'   => ! empty( $a['showImage'] ),
+					'show_title'   => ! empty( $a['showTitle'] ),
+					'show_excerpt' => ! empty( $a['showExcerpt'] ),
+					'show_meta'    => ! empty( $a['showMeta'] ),
+					'show_more'    => ! empty( $a['showMore'] ),
+					'more_text'    => (string) ( $a['moreText'] ?? '' ),
+					'pagination'   => ! empty( $a['pagination'] ),
+				);
+		}
+		return array();
+	}
+
+	/**
 	 * Dispatch a catalog key to its provider method (shared by both builders).
 	 *
 	 * @param string $key  Catalog key.

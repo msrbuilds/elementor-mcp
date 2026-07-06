@@ -293,7 +293,7 @@ class EMCP_Tools_Themer_Blocks {
 	 * @return string
 	 */
 	public static function render_block( string $key, array $attributes ): string {
-		$args  = self::map_args( $key, $attributes );
+		$args  = EMCP_Tools_Themer_Dynamic::args_from( $key, $attributes );
 		$inner = EMCP_Tools_Themer_Dynamic::render( $key, $args );
 		if ( '' === $inner ) {
 			// In the editor preview, show the block name so it isn't invisible;
@@ -307,53 +307,6 @@ class EMCP_Tools_Themer_Blocks {
 		}
 		$wrapper = function_exists( 'get_block_wrapper_attributes' ) ? get_block_wrapper_attributes() : '';
 		return '<div ' . $wrapper . '>' . $inner . '</div>';
-	}
-
-	/**
-	 * Translate block attributes into EMCP_Tools_Themer_Dynamic args.
-	 *
-	 * @param string $key Block key.
-	 * @param array  $a   Attributes.
-	 * @return array
-	 */
-	private static function map_args( string $key, array $a ): array {
-		switch ( $key ) {
-			case 'post-title':
-				return array( 'tag' => (string) ( $a['tag'] ?? 'h1' ), 'link' => ! empty( $a['link'] ) );
-			case 'archive-title':
-				return array( 'tag' => (string) ( $a['tag'] ?? 'h1' ), 'show_prefix' => ! empty( $a['showPrefix'] ) );
-			case 'breadcrumbs':
-				return array( 'separator' => (string) ( $a['separator'] ?? '/' ), 'home_label' => (string) ( $a['homeLabel'] ?? '' ) );
-			case 'post-meta':
-				$items = array();
-				if ( ! empty( $a['showDate'] ) ) { $items[] = 'date'; }
-				if ( ! empty( $a['showAuthor'] ) ) { $items[] = 'author'; }
-				if ( ! empty( $a['showCategories'] ) ) { $items[] = 'categories'; }
-				if ( ! empty( $a['showTags'] ) ) { $items[] = 'tags'; }
-				if ( ! empty( $a['showComments'] ) ) { $items[] = 'comments'; }
-				return array( 'items' => $items );
-			case 'site-logo':
-				return array( 'max_width' => (int) ( $a['maxWidth'] ?? 0 ) );
-			case 'site-title':
-				return array( 'tag' => (string) ( $a['tag'] ?? 'span' ), 'show_tagline' => ! empty( $a['showTagline'] ) );
-			case 'nav-menu':
-				return array( 'menu' => (int) ( $a['menuId'] ?? 0 ) );
-			case 'description':
-				return array( 'length' => (int) ( $a['length'] ?? 0 ) );
-			case 'archive-loop':
-				return array(
-					'layout'       => (string) ( $a['layout'] ?? 'grid' ),
-					'columns'      => (int) ( $a['columns'] ?? 3 ),
-					'show_image'   => ! empty( $a['showImage'] ),
-					'show_title'   => ! empty( $a['showTitle'] ),
-					'show_excerpt' => ! empty( $a['showExcerpt'] ),
-					'show_meta'    => ! empty( $a['showMeta'] ),
-					'show_more'    => ! empty( $a['showMore'] ),
-					'more_text'    => (string) ( $a['moreText'] ?? '' ),
-					'pagination'   => ! empty( $a['pagination'] ),
-				);
-		}
-		return array();
 	}
 
 	/**
