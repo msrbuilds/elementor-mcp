@@ -6,10 +6,25 @@
  */
 
 /* =========================================================================
+ * Fonts — Geist (self-hosted, SIL OFL). Used for headings + accents to match
+ * the marketing site; body text stays on the WP system stack. Variable font,
+ * one file covers all weights.
+ * ========================================================================= */
+
+@font-face {
+	font-family: "Geist";
+	src: url("../fonts/Geist-Variable.woff2") format("woff2");
+	font-weight: 100 900;
+	font-style: normal;
+	font-display: swap;
+}
+
+/* =========================================================================
  * CSS Custom Properties
  * ========================================================================= */
 
 .elementor-mcp-admin {
+	--mcp-font-heading: "Geist", system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 	--mcp-primary: #6366f1;
 	--mcp-primary-hover: #4f46e5;
 	--mcp-primary-light: #eef2ff;
@@ -39,6 +54,24 @@
 	--mcp-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
 	--mcp-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
 	--mcp-transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Geist on headings + accent text (matches the marketing site); body copy
+   stays on the WP system stack for legibility. */
+.elementor-mcp-admin h1,
+.elementor-mcp-admin h2,
+.elementor-mcp-admin h3,
+.elementor-mcp-admin .emcp-appbar-title,
+.elementor-mcp-admin .elementor-mcp-header-title,
+.elementor-mcp-admin .elementor-mcp-section > h2,
+.elementor-mcp-admin .elementor-mcp-stat-value,
+.elementor-mcp-admin .emcp-dash-section-title,
+.elementor-mcp-admin .emcp-dash-stat-value,
+.elementor-mcp-admin .emcp-dash-card-title,
+.elementor-mcp-admin .emcp-dash-video-title,
+.elementor-mcp-admin .emcp-dash-help-title {
+	font-family: var(--mcp-font-heading);
+	letter-spacing: -0.01em;
 }
 
 /* =========================================================================
@@ -3078,7 +3111,7 @@ body.emcp-modal-open { overflow: hidden; }
 
 /* Two videos per row inside the 70% column. */
 .emcp-dash-section--videos .emcp-dash-videos {
-	grid-template-columns: repeat(2, minmax(0, 1fr));
+	grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 /* Help links stack in a single column inside the 30% column. */
