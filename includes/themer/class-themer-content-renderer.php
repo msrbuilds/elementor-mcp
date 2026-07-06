@@ -51,6 +51,18 @@ class EMCP_Tools_Themer_Content_Renderer {
 	 * @return string HTML.
 	 */
 	public static function render( int $post_id ): string {
+		// A PHP template attached to this Themer post takes over the region's render
+		// (feature-gated + human-attached). Empty/error output falls back to builder.
+		if ( class_exists( 'EMCP_Tools_Themer_PHP' ) && EMCP_Tools_Themer_PHP::enabled() ) {
+			$php_id = (int) get_post_meta( $post_id, '_emcp_themer_php_template', true );
+			if ( $php_id > 0 && class_exists( 'EMCP_Tools_Themer_PHP_Renderer' ) ) {
+				$php_out = EMCP_Tools_Themer_PHP_Renderer::render( $php_id );
+				if ( '' !== $php_out ) {
+					return $php_out;
+				}
+			}
+		}
+
 		$builder = self::detect_builder( $post_id );
 
 		if ( 'elementor' === $builder && class_exists( '\\Elementor\\Plugin' ) ) {
