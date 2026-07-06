@@ -357,4 +357,218 @@ class EMCP_Tools_Themer_Abilities {
 			)
 		);
 	}
+
+	// ---- create ------------------------------------------------------------
+
+	/** @param array $input @return array */
+	public function execute_create( $input ): array {
+		$type = isset( $input['type'] ) ? (string) $input['type'] : '';
+		if ( ! in_array( $type, EMCP_Tools_Themer_CPT::TYPES, true ) ) {
+			return array( 'error' => __( 'Invalid template type.', 'emcp-tools' ) );
+		}
+		$existing = EMCP_Tools_Themer_CPT::count_of_type( $type );
+		if ( ! EMCP_Tools_Themer_CPT::can_create( $type, $existing ) ) {
+			return array(
+				'error' => sprintf(
+					/* translators: %s: template type */
+					__( 'Free quota reached: only one %s template is allowed. Upgrade to EMCP Pro for unlimited templates per type.', 'emcp-tools' ),
+					$type
+				),
+			);
+		}
+
+		$title   = isset( $input['title'] ) && '' !== $input['title'] ? sanitize_text_field( (string) $input['title'] ) : ucfirst( $type ) . ' Template';
+		$post_id = wp_insert_post(
+			array(
+				'post_type'    => self::POST_TYPE,
+				'post_status'  => 'publish',
+				'post_title'   => $title,
+				'post_content' => isset( $input['content'] ) ? (string) $input['content'] : '',
+				'post_author'  => get_current_user_id(),
+			),
+			true
+		);
+		if ( is_wp_error( $post_id ) ) {
+			return array( 'error' => $post_id->get_error_message() );
+		}
+		$post_id = (int) $post_id;
+		update_post_meta( $post_id, '_emcp_themer_type', $type );
+
+		// Seed a broad scope for header/footer/single/archive; search/404 need no rule.
+		$scope = isset( $input['scope'] ) ? (string) $input['scope'] : '';
+		if ( '' === $scope && in_array( $type, array( 'header', 'footer' ), true ) ) {
+			$scope = 'entire-site';
+		} elseif ( '' === $scope && 'single' === $type ) {
+			$scope = 'all-singular';
+		} elseif ( '' === $scope && 'archive' === $type ) {
+			$scope = 'all-archives';
+		}
+		$conditions = array( 'include' => array(), 'exclude' => array(), 'priority' => 0 );
+		if ( '' !== $scope ) {
+			$err = $this->validate_selector( $scope );
+			if ( ! $err ) {
+				$conditions['include'] = array( array( 'object' => $scope ) );
+			}
+			// Scope invalid on free: keep the template but leave it unconditioned.
+		}
+		update_post_meta( $post_id, '_emcp_themer_conditions', $conditions );
+		EMCP_Tools_Themer_Index::rebuild();
+
+		return array( 'template_id' => $post_id, 'type' => $type, 'edit_url' => get_edit_post_link( $post_id, 'raw' ) );
+	}
+
+	/**
+	 * Validate a selector key against the registered set. Returns an error string
+	 * or '' when valid. (`post-type:page` validates on the `post-type` key.)
+	 *
+	 * @param string $object Selector object string.
+	 * @return string
+	 */
+	private function validate_selector( string $object ): string {
+		$key   = false === strpos( $object, ':' ) ? $object : substr( $object, 0, strpos( $object, ':' ) );
+		$valid = $this->valid_selectors();
+		if ( ! in_array( $key, $valid, true ) ) {
+			return sprintf(
+				/* translators: %s: selector key */
+				__( 'Selector "%s" is not available. Granular selectors require EMCP Pro; see list-condition-targets for valid keys.', 'emcp-tools' ),
+				$key
+			);
+		}
+		return '';
+	}
+
+	// ---- update ------------------------------------------------------------
+
+	/** @param array $input @return array */
+	public function execute_update( $input ): array {
+		$id   = absint( $input['template_id'] ?? 0 );
+		$post = $id ? get_post( $id ) : null;
+		if ( ! $post || self::POST_TYPE !== $post->post_type ) {
+			return array( 'error' => __( 'Template not found.', 'emcp-tools' ) );
+		}
+		$data = array( 'ID' => $id );
+		if ( isset( $input['title'] ) ) {
+			$data['post_title'] = sanitize_text_field( (string) $input['title'] );
+		}
+		if ( isset( $input['content'] ) ) {
+			$data['post_content'] = wp_slash( (string) $input['content'] );
+		}
+		wp_update_post( $data, true );
+		return array( 'success' => true, 'template_id' => $id );
+	}
+
+	// ---- set-conditions ----------------------------------------------------
+
+	/** @param array $input @return array */
+	public function execute_set_conditions( $input ): array {
+		$id   = absint( $input['template_id'] ?? 0 );
+		$post = $id ? get_post( $id ) : null;
+		if ( ! $post || self::POST_TYPE !== $post->post_type ) {
+			return array( 'error' => __( 'Template not found.', 'emcp-tools' ) );
+		}
+		$include = isset( $input['include'] ) && is_array( $input['include'] ) ? $input['include'] : array();
+		$exclude = isset( $input['exclude'] ) && is_array( $input['exclude'] ) ? $input['exclude'] : array();
+
+		// Exclude rules are Pro; reject on free (no exclude selectors registered means
+		// they'd never evaluate — fail loudly instead of silently no-op'ing).
+		if ( $exclude && ! $this->pro_conditions_available() ) {
+			return array( 'error' => __( 'Exclude rules require EMCP Pro.', 'emcp-tools' ) );
+		}
+
+		foreach ( array_merge( $include, $exclude ) as $rule ) {
+			$object = is_array( $rule ) ? (string) ( $rule['object'] ?? '' ) : '';
+			$err    = $this->validate_selector( $object );
+			if ( $err ) {
+				return array( 'error' => $err );
+			}
+		}
+
+		$priority = isset( $input['priority'] ) ? (int) $input['priority'] : 0;
+		if ( 0 !== $priority && ! $this->pro_conditions_available() ) {
+			$priority = 0; // priority is a Pro tie-break; ignore silently on free.
+		}
+
+		$conditions = array(
+			'include'  => array_values( $include ),
+			'exclude'  => array_values( $exclude ),
+			'priority' => $priority,
+		);
+		update_post_meta( $id, '_emcp_themer_conditions', $conditions );
+		EMCP_Tools_Themer_Index::rebuild();
+
+		return array( 'success' => true, 'template_id' => $id, 'conditions' => $conditions );
+	}
+
+	/**
+	 * Whether the Pro condition layer is present (a granular selector is registered).
+	 *
+	 * @return bool
+	 */
+	private function pro_conditions_available(): bool {
+		return in_array( 'post', $this->valid_selectors(), true );
+	}
+
+	// ---- delete ------------------------------------------------------------
+
+	/** @param array $input @return array */
+	public function execute_delete( $input ): array {
+		$id   = absint( $input['template_id'] ?? 0 );
+		$post = $id ? get_post( $id ) : null;
+		if ( ! $post || self::POST_TYPE !== $post->post_type ) {
+			return array( 'error' => __( 'Template not found.', 'emcp-tools' ) );
+		}
+		$force = ! empty( $input['force'] );
+		$res   = wp_delete_post( $id, $force );
+		if ( ! $res ) {
+			return array( 'error' => __( 'Delete failed.', 'emcp-tools' ) );
+		}
+		EMCP_Tools_Themer_Index::rebuild();
+		return array( 'success' => true, 'template_id' => $id, 'forced' => $force );
+	}
+
+	// ---- resolve -----------------------------------------------------------
+
+	/** @param array $input @return array */
+	public function execute_resolve( $input ): array {
+		$ctx  = $this->resolve_context( $input );
+		$reg  = EMCP_Tools_Themer_Matcher_Registry::fresh();
+		$rank = apply_filters(
+			'emcp_themer_rank',
+			static function ( array $row ): int {
+				return 0;
+			}
+		);
+		$slots = EMCP_Tools_Themer_Resolver::resolve( EMCP_Tools_Themer_Index::get(), $ctx, $reg, $rank );
+		return array( 'slots' => $slots, 'context' => $ctx );
+	}
+
+	/**
+	 * Build a resolution context from resolve() input.
+	 *
+	 * @param array $input Ability input.
+	 * @return array
+	 */
+	private function resolve_context( array $input ): array {
+		if ( ! empty( $input['post_id'] ) ) {
+			$id    = absint( $input['post_id'] );
+			$post  = get_post( $id );
+			$parts = array( 'is_singular' => true, 'post_id' => $id );
+			if ( $post ) {
+				$parts['post_type'] = $post->post_type;
+				$parts['author_id'] = (int) $post->post_author;
+			}
+			return EMCP_Tools_Themer_Context::from_parts( $parts );
+		}
+		$context = isset( $input['context'] ) ? (string) $input['context'] : '';
+		if ( 'search' === $context ) {
+			return EMCP_Tools_Themer_Context::from_parts( array( 'is_search' => true, 'is_archive' => true ) );
+		}
+		if ( '404' === $context ) {
+			return EMCP_Tools_Themer_Context::from_parts( array( 'is_404' => true ) );
+		}
+		if ( 'front-page' === $context ) {
+			return EMCP_Tools_Themer_Context::from_parts( array( 'is_front_page' => true, 'is_singular' => true ) );
+		}
+		return EMCP_Tools_Themer_Context::from_parts( array() );
+	}
 }
