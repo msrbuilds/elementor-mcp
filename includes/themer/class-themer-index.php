@@ -94,4 +94,25 @@ class EMCP_Tools_Themer_Index {
 		update_option( self::OPTION, $index, true );
 		return $index;
 	}
+
+	/**
+	 * Rebuild the index whenever a template is saved, trashed, or deleted.
+	 */
+	public static function register_hooks(): void {
+		add_action( 'save_post_' . self::POST_TYPE, array( __CLASS__, 'rebuild' ) );
+		add_action( 'deleted_post', array( __CLASS__, 'on_deleted_post' ) );
+		add_action( 'trashed_post', array( __CLASS__, 'on_deleted_post' ) );
+		add_action( 'untrashed_post', array( __CLASS__, 'on_deleted_post' ) );
+	}
+
+	/**
+	 * Rebuild only when the affected post is one of ours.
+	 *
+	 * @param int $post_id Post id.
+	 */
+	public static function on_deleted_post( $post_id ): void {
+		if ( self::POST_TYPE === get_post_type( (int) $post_id ) ) {
+			self::rebuild();
+		}
+	}
 }
