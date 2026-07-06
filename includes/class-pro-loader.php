@@ -37,6 +37,9 @@ final class EMCP_Tools_Pro_Loader {
 		'includes/ai-chat/class-ai-chat-tool-groups.php',
 		'includes/ai-chat/class-ai-chat-prompt.php',
 		'includes/ai-chat/class-ai-chat-controller.php',
+		'includes/themer/class-themer-pro-matchers.php',
+		'includes/themer/class-themer-pro-conditions.php',
+		'includes/themer/class-themer-pro.php',
 	);
 
 	/** Pro admin class files, in load order. Relative to the Pro root. */
@@ -112,6 +115,12 @@ final class EMCP_Tools_Pro_Loader {
 	public static function wire_runtime_hooks(): void {
 		// AI Chat runtime wiring now lives in EMCP_Tools_AI_Chat_Module::register(),
 		// booted by the modules registry only when the module is active.
+
+		// EMCP Themer Pro power-ups: attach granular matchers, priority ranking,
+		// unlimited quota, and granular selectors to the free seams (license-gated).
+		if ( class_exists( 'EMCP_Tools_Themer_Pro' ) ) {
+			EMCP_Tools_Themer_Pro::init();
+		}
 	}
 
 	/** Wire Pro admin hooks, each guarded by class_exists. */
