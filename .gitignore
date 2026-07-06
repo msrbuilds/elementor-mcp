@@ -56,3 +56,8 @@ docs/
 /assets/css/ai-chat.css
 /tests/
 /tools/
+
+# Playwright MCP + local test artifacts (never committed)
+.playwright-mcp/
+/services-final.png
+/services-page.png
