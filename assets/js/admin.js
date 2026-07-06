@@ -1262,6 +1262,15 @@
 		var html = '';
 		var m = client.methods;
 
+		// 0) Client-specific setup guide (e.g. Codex's custom-MCP form mapping).
+		//    %ENDPOINT%/%B64% are filled with the live, escaped values.
+		if ( client.guide ) {
+			var guide = client.guide
+				.replace( /%ENDPOINT%/g, emcpEscapeHtml( window.emcpConn.endpoint ) )
+				.replace( /%B64%/g, emcpEscapeHtml( window.emcpConn.b64 ) );
+			html += emcpBlock( client.guide_title || 'Setup guide', guide );
+		}
+
 		// 1) Bundle (.mcpb)
 		if ( m.bundle ) {
 			html += emcpBlock( 'One-click bundle (.mcpb)',

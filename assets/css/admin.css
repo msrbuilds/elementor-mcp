@@ -1068,6 +1068,34 @@
 	overflow: hidden;
 }
 
+/* Client-specific setup guide (e.g. Codex custom-MCP form field mapping). */
+.emcp-conn-guide {
+	width: 100%;
+	border-collapse: collapse;
+	font-size: 13px;
+	margin: 6px 0 2px;
+}
+.emcp-conn-guide th {
+	text-align: left;
+	white-space: nowrap;
+	padding: 6px 14px 6px 0;
+	color: var(--mcp-gray-800, #1d2327);
+	font-weight: 600;
+	vertical-align: top;
+	width: 1%;
+}
+.emcp-conn-guide td {
+	padding: 6px 0;
+	color: var(--mcp-gray-600, #50575e);
+	vertical-align: top;
+}
+.emcp-conn-guide code {
+	background: var(--mcp-gray-100, #f0f0f1);
+	padding: 1px 6px;
+	border-radius: 4px;
+	font-size: 12px;
+}
+
 .elementor-mcp-config-card-header {
 	display: flex;
 	align-items: center;
