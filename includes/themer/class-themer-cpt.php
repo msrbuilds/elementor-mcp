@@ -39,7 +39,7 @@ class EMCP_Tools_Themer_CPT {
 				// Its own top-level dashboard menu (not buried in the EMCP Tools page).
 				'show_in_menu'        => true,
 				'menu_icon'           => 'dashicons-layout',
-				'menu_position'       => 59, // just above Appearance.
+				'menu_position'       => 21, // just below Pages, in the content cluster.
 				'show_in_admin_bar'   => true,
 				'show_in_rest'        => true,
 				'exclude_from_search' => true,
