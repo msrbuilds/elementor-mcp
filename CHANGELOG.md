@@ -2,6 +2,23 @@
 
 All notable changes to MCP Tools for Elementor are documented in this file.
 
+## [3.1.0]
+
+> A big feature release: a builder-agnostic **theme builder (EMCP Themer)**, a pluggable **Modules** framework (with **Image Optimization**), **10 always-on Gutenberg block tools**, an in-editor **AI Chat** panel for the block editor, a dedicated plugin **Dashboard**, and **in-dashboard updates for free users** via GitHub releases.
+
+### Added
+- **EMCP Themer — a builder-agnostic theme builder (free, on by default).** Design **Header / Footer / Single / Archive / Search / 404** layouts with any page builder (Gutenberg, Elementor, …), attach display conditions, and the plugin injects them on the front end. One CPT `emcp_theme_template` with its own top-level dashboard menu; a slot-based resolver (header/body/footer) picks one winner per slot by condition specificity → priority → newest. An Elementor-style **step-wise condition builder** (Relation → Group → Sub-type → Object) drives the metabox. Free = the whole engine + 1 template per type + broad scope selectors + all **8 MCP tools** (`create-/list-/get-/update-/delete-theme-template`, `set-template-conditions`, `resolve-template`, `list-condition-targets`). Loops are out of scope. Per-theme header/footer injection adapters for Astra/GeneratePress/Kadence/OceanWP/Blocksy/Neve/Hello, with a template-tag + force-render fallback for other themes.
+- **Gutenberg block tools (10, always-on).** A block-editor counterpart to the Elementor family, pure WordPress core (no Elementor dependency): `list-blocks`, `get-block-schema`, `get-post-blocks`, `list-patterns`, `add-block`, `update-block`, `remove-block`, `move-block`, `duplicate-block`, `insert-pattern`. Existing blocks are addressed by an index path from `get-post-blocks`; raw block markup in/out. Surfaced under a new **Gutenberg** tab on the Tools screen. All enabled by default (only `remove-block` badged destructive).
+- **Modules framework.** A pluggable feature system — substantial features an admin turns on/off from a new **Modules** tab. Ships with an **Image Optimization** module (free, opt-in): compresses generated image sub-sizes on upload and generates `.webp` siblings (via `WP_Image_Editor`, no external binaries), serves WebP in REST/CLI (so the MCP media tools resolve to WebP) and optionally on the front end, preserves full-size originals (reversible), plus a resumable bulk optimizer + restore. **Prompts**, **Brand Kits**, and **Templates** are now modules too.
+- **AI Chat in the block editor (Pro).** The AI Chat editor panel now runs in the WordPress block (Gutenberg) editor as well as the Elementor editor — a floating chat that edits the current post's block content through the WordPress Content tools. AI Chat is now a proper **module** (a true on/off kill switch).
+- **Plugin Dashboard.** A dedicated landing screen for EMCP Tools: large headline stat cards, an "Explore your toolkit" feature grid, featured video guides, and a Help & resources panel — with an at-a-glance **version / update-available** indicator.
+- **In-dashboard updates for free users (via GitHub releases).** Free installs now receive native "update available" prompts on the Plugins / Updates screens (and support auto-updates), sourced from the project's GitHub releases — no more manual re-install to get the latest free version. Premium builds continue to update via Freemius.
+- **Admin-bar MCP status.** A status node in the WordPress admin bar (green/grey/red) with a one-click toggle to enable/disable MCP exposure.
+- **Self-hosted Geist font** for the plugin admin headings and accents (SIL OFL, no third-party font CDN).
+
+### Changed
+- The admin now opens on the new **Dashboard** tab; **Tools** moves to its own tab. The stat cards were removed from every other tab (they live on the Dashboard).
+
 ## [3.0.0]
 
 > The first major release of the rebranded **EMCP Tools** — the toolset's step beyond Elementor into general WordPress management, alongside a leaner, catalog-backed widget surface. This single 3.0.0 release bundles the MCP namespace rename, the widget consolidation, the WordPress **Content** tools (domain 1), the WordPress **Settings** tools (domain 2), the WordPress **Plugins & Themes** tools (domain 3), the WordPress **Media Library** tools (domain 4), the WordPress **Users** tools (domain 5), and — alongside the Performance Analyzer — a new **Security & Malware Scanner**. (Previous release: 2.2.0.)
