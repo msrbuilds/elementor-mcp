@@ -80,6 +80,7 @@ class EMCP_Tools_Themer_CPT {
 		add_filter( 'manage_' . self::POST_TYPE . '_posts_columns', array( $this, 'admin_columns' ) );
 		add_action( 'manage_' . self::POST_TYPE . '_posts_custom_column', array( $this, 'render_admin_column' ), 10, 2 );
 		add_action( 'admin_notices', array( $this, 'render_adapter_notice' ) );
+		add_action( 'admin_notices', array( $this, 'render_type_mismatch_notice' ) );
 
 		// Let Elementor offer "Edit with Elementor" on our CPT.
 		add_filter(
@@ -150,6 +151,131 @@ class EMCP_Tools_Themer_CPT {
 		} else {
 			echo '<div class="notice notice-warning"><p>' . esc_html__( 'EMCP Themer: body templates (single/archive/search/404) work on every theme. For standalone header/footer replacement your theme is not directly supported — add emcp_themer_location( \'header\' ) / emcp_themer_location( \'footer\' ) to your theme, or enable the full-page-takeover fallback (set the emcp_tools_module_themer_force_render option to 1).', 'emcp-tools' ) . '</p></div>';
 		}
+	}
+
+	/**
+	 * Flag templates whose assigned type looks wrong, on the list screen. The
+	 * common trap: a Header/Footer template that actually holds post/archive
+	 * content (so it renders in the header instead of the body), or a template
+	 * whose NAME names a different type than the one it's set to. Also flags
+	 * templates with no type (which never render).
+	 */
+	public function render_type_mismatch_notice(): void {
+		$screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
+		if ( ! $screen || 'edit-' . self::POST_TYPE !== $screen->id || ! current_user_can( 'edit_posts' ) ) {
+			return;
+		}
+
+		$query = new WP_Query(
+			array(
+				'post_type'      => self::POST_TYPE,
+				'post_status'    => array( 'publish', 'draft' ),
+				'posts_per_page' => 200,
+				'no_found_rows'  => true,
+				'fields'         => 'ids',
+			)
+		);
+
+		$flagged = array();
+		foreach ( $query->posts as $id ) {
+			$id     = (int) $id;
+			$type   = (string) get_post_meta( $id, EMCP_Tools_Themer_Index::META_TYPE, true );
+			$reason = self::type_mismatch_reason( $id, $type );
+			if ( null !== $reason ) {
+				$title             = get_the_title( $id );
+				$flagged[ $id ]    = array(
+					'title'  => '' !== $title ? $title : ( '#' . $id ),
+					'reason' => $reason,
+				);
+			}
+		}
+		if ( empty( $flagged ) ) {
+			return;
+		}
+
+		echo '<div class="notice notice-warning"><p><strong>' . esc_html__( 'EMCP Themer: some templates may have the wrong type', 'emcp-tools' ) . '</strong></p><ul style="list-style:disc;margin-left:22px;">';
+		foreach ( $flagged as $id => $f ) {
+			printf(
+				'<li><a href="%1$s"><strong>%2$s</strong></a> — %3$s</li>',
+				esc_url( (string) get_edit_post_link( $id ) ),
+				esc_html( $f['title'] ),
+				esc_html( $f['reason'] )
+			);
+		}
+		echo '</ul><p class="description">' . esc_html__( 'A template\'s "Template type" controls where it renders: a Single/Archive template fills the content area (keeping your theme header/footer), while a Header/Footer template replaces the theme\'s header/footer. Open the template to fix its type.', 'emcp-tools' ) . '</p></div>';
+	}
+
+	/**
+	 * Why a template's type looks wrong, or null when it looks fine.
+	 *
+	 * @param int    $id   Template id.
+	 * @param string $type Assigned type ('' when unset).
+	 * @return string|null
+	 */
+	private static function type_mismatch_reason( int $id, string $type ): ?string {
+		if ( '' === $type ) {
+			return __( 'no template type is set, so it will not render — open it and choose a type', 'emcp-tools' );
+		}
+		// Content signal: a header/footer holding body-only dynamic elements.
+		if ( in_array( $type, array( 'header', 'footer' ), true ) && self::has_body_elements( $id ) ) {
+			/* translators: %s: template type label (Header / Footer) */
+			return sprintf( __( 'this %s template contains post/archive content elements (title, content, or a posts loop) — those belong in a Single or Archive template', 'emcp-tools' ), ucfirst( $type ) );
+		}
+		// Title signal: the name names a different type than the one assigned.
+		$expected = self::type_hint_from_title( (string) get_the_title( $id ) );
+		if ( null !== $expected && $expected !== $type ) {
+			/* translators: 1: type suggested by the name, 2: assigned type */
+			return sprintf( __( 'its name suggests a "%1$s" template, but the type is set to "%2$s"', 'emcp-tools' ), $expected, $type );
+		}
+		return null;
+	}
+
+	/**
+	 * Whether a template's built content (Gutenberg markup or Elementor data)
+	 * contains a body-only dynamic element.
+	 *
+	 * @param int $id Template id.
+	 * @return bool
+	 */
+	private static function has_body_elements( int $id ): bool {
+		$post = get_post( $id );
+		$hay  = ( $post ? (string) $post->post_content : '' ) . ' ' . (string) get_post_meta( $id, '_elementor_data', true );
+		foreach ( array( 'post-title', 'post-content', 'archive-title', 'archive-loop', 'post-meta', 'description' ) as $el ) {
+			if ( false !== strpos( $hay, 'emcp/' . $el ) || false !== strpos( $hay, 'emcp-' . $el ) ) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * The template type a title's wording implies, or null when unclear. Kept
+	 * conservative (only unambiguous keywords) to avoid false positives.
+	 *
+	 * @param string $title Template title.
+	 * @return string|null
+	 */
+	private static function type_hint_from_title( string $title ): ?string {
+		$t = strtolower( $title );
+		if ( false !== strpos( $t, 'header' ) ) {
+			return 'header';
+		}
+		if ( false !== strpos( $t, 'footer' ) ) {
+			return 'footer';
+		}
+		if ( false !== strpos( $t, '404' ) || false !== strpos( $t, 'not found' ) ) {
+			return '404';
+		}
+		if ( false !== strpos( $t, 'search' ) ) {
+			return 'search';
+		}
+		if ( preg_match( '/\b(archive|blog|category|categories|tag|tags|author)\b/', $t ) ) {
+			return 'archive';
+		}
+		if ( preg_match( '/\bsingle\b/', $t ) ) {
+			return 'single';
+		}
+		return null;
 	}
 
 	/**
