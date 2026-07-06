@@ -1,0 +1,191 @@
+/**
+ * EMCP Themer — dynamic block front-end + editor styles.
+ *
+ * Intentionally light: layout + sensible defaults only, so the active theme and
+ * each block's own supports (color/typography/spacing/border) drive the look.
+ * No gradients.
+ */
+
+/* Breadcrumbs */
+.emcp-dyn-breadcrumbs {
+	font-size: 0.875em;
+}
+.emcp-dyn-breadcrumbs a {
+	text-decoration: none;
+}
+.emcp-dyn-breadcrumbs a:hover {
+	text-decoration: underline;
+}
+.emcp-dyn-breadcrumbs .emcp-dyn-sep {
+	opacity: 0.5;
+	margin: 0 0.25em;
+}
+
+/* Post meta */
+.emcp-dyn-post-meta {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.25em 1em;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+	font-size: 0.875em;
+}
+.emcp-dyn-post-meta > li {
+	margin: 0;
+	padding: 0;
+}
+.emcp-dyn-post-meta a {
+	text-decoration: none;
+}
+
+/* Site title / logo */
+.emcp-dyn-site-title a,
+.emcp-dyn-site-logo {
+	text-decoration: none;
+}
+.emcp-dyn-site-title {
+	font-weight: 700;
+}
+.emcp-dyn-site-tagline {
+	display: block;
+	font-size: 0.8125em;
+	opacity: 0.7;
+}
+.emcp-dyn-site-logo-img,
+.emcp-dyn-site-logo img {
+	display: block;
+	height: auto;
+}
+
+/* Nav menu */
+.emcp-dyn-nav-menu .emcp-dyn-menu {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 1.25em;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+	align-items: center;
+}
+.emcp-dyn-nav-menu .emcp-dyn-menu a {
+	text-decoration: none;
+	display: inline-block;
+}
+.emcp-dyn-nav-menu .sub-menu {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+
+/* Description */
+.emcp-dyn-description {
+	line-height: 1.6;
+}
+
+/* Archive loop */
+.emcp-dyn-archive-loop--grid {
+	display: grid;
+	grid-template-columns: repeat(var(--emcp-cols, 3), minmax(0, 1fr));
+	gap: 28px;
+}
+.emcp-dyn-archive-loop--list {
+	display: flex;
+	flex-direction: column;
+	gap: 28px;
+}
+.emcp-dyn-archive-loop--list .emcp-dyn-card {
+	display: grid;
+	grid-template-columns: 240px 1fr;
+	gap: 20px;
+	align-items: start;
+}
+.emcp-dyn-card-media {
+	display: block;
+}
+.emcp-dyn-card-media img {
+	display: block;
+	width: 100%;
+	height: auto;
+	border-radius: 8px;
+}
+.emcp-dyn-card-body {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+.emcp-dyn-card-meta {
+	font-size: 0.8125em;
+	opacity: 0.7;
+}
+.emcp-dyn-card-title {
+	margin: 0;
+	font-size: 1.125em;
+	line-height: 1.3;
+}
+.emcp-dyn-card-title a {
+	text-decoration: none;
+}
+.emcp-dyn-card-excerpt {
+	line-height: 1.6;
+	opacity: 0.9;
+}
+.emcp-dyn-card-more {
+	align-self: flex-start;
+	text-decoration: none;
+	font-weight: 600;
+}
+
+/* Pagination */
+.emcp-dyn-pagination {
+	margin-top: 32px;
+}
+.emcp-dyn-pagination .page-numbers {
+	display: inline-flex;
+	flex-wrap: wrap;
+	gap: 6px;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.emcp-dyn-pagination .page-numbers li {
+	margin: 0;
+}
+.emcp-dyn-pagination .page-numbers a,
+.emcp-dyn-pagination .page-numbers span {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 38px;
+	height: 38px;
+	padding: 0 10px;
+	border: 1px solid rgba(0, 0, 0, 0.12);
+	border-radius: 6px;
+	text-decoration: none;
+	line-height: 1;
+}
+.emcp-dyn-pagination .page-numbers .current {
+	background: currentColor;
+	color: #fff;
+	border-color: transparent;
+}
+
+/* Editor: placeholder for elements with no data in the current context */
+.emcp-dyn-placeholder {
+	display: inline-block;
+	padding: 6px 12px;
+	border: 1px dashed rgba(0, 0, 0, 0.25);
+	border-radius: 6px;
+	font-size: 0.875em;
+	opacity: 0.7;
+}
+
+/* Small screens */
+@media (max-width: 782px) {
+	.emcp-dyn-archive-loop--grid {
+		grid-template-columns: 1fr;
+	}
+	.emcp-dyn-archive-loop--list .emcp-dyn-card {
+		grid-template-columns: 1fr;
+	}
+}

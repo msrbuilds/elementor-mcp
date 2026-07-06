@@ -86,5 +86,14 @@ class EMCP_Tools_Themer_Module extends EMCP_Tools_Module {
 		if ( is_admin() && class_exists( 'EMCP_Tools_Themer_Metabox' ) ) {
 			( new EMCP_Tools_Themer_Metabox() )->init();
 		}
+
+		// Dynamic content blocks (Gutenberg) — register on both front end (render)
+		// and admin (editor). Elementor dynamic widgets self-gate on Elementor.
+		if ( class_exists( 'EMCP_Tools_Themer_Blocks' ) ) {
+			( new EMCP_Tools_Themer_Blocks() )->init();
+		}
+		if ( class_exists( 'EMCP_Tools_Themer_Widgets' ) ) {
+			( new EMCP_Tools_Themer_Widgets() )->init();
+		}
 	}
 }
