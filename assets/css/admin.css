@@ -3002,7 +3002,7 @@ body.emcp-modal-open { overflow: hidden; }
 .emcp-appbar-upgrade .dashicons { font-size: 15px; width: 15px; height: 15px; }
 
 .emcp-appnav { display: flex; align-items: stretch; gap: 2px; background: var(--mcp-white); border-bottom: 1px solid var(--mcp-gray-200); padding: 0 14px; overflow-x: auto; overflow-y: hidden; margin: 0; }
-.emcp-appnav-item { display: inline-flex; align-items: center; gap: 7px; padding: 12px 13px; margin-bottom: -1px; white-space: nowrap; color: var(--mcp-gray-600, #50575e); text-decoration: none; font-size: 14px; font-weight: 600; border-bottom: 2px solid transparent; }
+.emcp-appnav-item { display: inline-flex; align-items: center; gap: 7px; padding: 14px 16px; margin-bottom: -1px; white-space: nowrap; color: var(--mcp-gray-600, #50575e); text-decoration: none; font-size: 14px; font-weight: 600; border-bottom: 2px solid transparent; flex: 1; justify-content: center; text-align: center; }
 .emcp-appnav-item:hover { color: var(--mcp-gray-800, #1d2327); background: var(--mcp-gray-50); }
 .emcp-appnav-item.is-active { color: var(--mcp-primary); border-bottom-color: var(--mcp-primary); }
 .emcp-appnav-item .dashicons { font-size: 16px; width: 16px; height: 16px; }
@@ -3480,6 +3480,100 @@ body.emcp-modal-open { overflow: hidden; }
 }
 
 /* ---- Help & resources ---------------------------------------------------- */
+
+/* Version / update-status indicator (top of the Help panel). */
+.emcp-dash-version {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	padding: 14px 16px;
+	margin-bottom: 14px;
+	border: 1px solid var(--mcp-gray-200);
+	border-radius: var(--mcp-radius);
+	text-decoration: none;
+}
+
+.emcp-dash-version--ok {
+	background: var(--mcp-success-light);
+	border-color: #a7f3d0;
+}
+
+.emcp-dash-version--update {
+	background: #fffbeb;
+	border-color: #fde68a;
+	transition: box-shadow var(--mcp-transition), border-color var(--mcp-transition);
+}
+
+.emcp-dash-version--update:hover,
+.emcp-dash-version--update:focus {
+	border-color: var(--mcp-warning);
+	box-shadow: var(--mcp-shadow-md);
+}
+
+.emcp-dash-version-dot {
+	flex-shrink: 0;
+	width: 10px;
+	height: 10px;
+	border-radius: 50%;
+}
+
+.emcp-dash-version--ok .emcp-dash-version-dot {
+	background: var(--mcp-success);
+}
+
+.emcp-dash-version--update .emcp-dash-version-dot {
+	background: var(--mcp-warning);
+	box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.18);
+}
+
+.emcp-dash-version-text {
+	flex: 1;
+	min-width: 0;
+	line-height: 1.35;
+}
+
+.emcp-dash-version-title {
+	display: block;
+	font-size: 13px;
+	font-weight: 600;
+	color: var(--mcp-gray-900);
+}
+
+.emcp-dash-version--ok .emcp-dash-version-title {
+	color: #065f46;
+}
+
+.emcp-dash-version--update .emcp-dash-version-title {
+	color: #92400e;
+}
+
+.emcp-dash-version-sub {
+	display: block;
+	font-size: 12px;
+	color: var(--mcp-gray-500);
+	margin-top: 1px;
+}
+
+.emcp-dash-version-cta {
+	display: inline-flex;
+	align-items: center;
+	gap: 2px;
+	flex-shrink: 0;
+	font-size: 12px;
+	font-weight: 600;
+	color: #92400e;
+}
+
+.emcp-dash-version-cta .dashicons {
+	font-size: 15px;
+	width: 15px;
+	height: 15px;
+	transition: transform var(--mcp-transition);
+}
+
+.emcp-dash-version--update:hover .emcp-dash-version-cta .dashicons {
+	transform: translateX(2px);
+}
 
 .emcp-dash-help {
 	display: grid;

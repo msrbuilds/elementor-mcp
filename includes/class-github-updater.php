@@ -73,6 +73,37 @@ class EMCP_Tools_GitHub_Updater {
 	}
 
 	/**
+	 * The current version/update status for the plugin, read from WordPress's own
+	 * `update_plugins` transient. Build-agnostic: on free installs that transient
+	 * is populated by this updater, on premium installs by Freemius — so the same
+	 * call powers the Dashboard indicator either way. Does NOT hit the network.
+	 *
+	 * @since 3.2.0
+	 * @return array{current:string,latest:string,update_available:bool,update_url:string}
+	 */
+	public static function current_update_status(): array {
+		$current = EMCP_TOOLS_VERSION;
+		$latest  = $current;
+		$update  = false;
+
+		$transient = get_site_transient( 'update_plugins' );
+		if ( is_object( $transient ) && ! empty( $transient->response[ EMCP_TOOLS_BASENAME ]->new_version ) ) {
+			$candidate = (string) $transient->response[ EMCP_TOOLS_BASENAME ]->new_version;
+			if ( version_compare( $candidate, $current, '>' ) ) {
+				$latest = $candidate;
+				$update = true;
+			}
+		}
+
+		return array(
+			'current'          => $current,
+			'latest'           => $latest,
+			'update_available' => $update,
+			'update_url'       => self_admin_url( 'plugins.php' ),
+		);
+	}
+
+	/**
 	 * Whether this is the premium build (Freemius handles those updates).
 	 *
 	 * @return bool

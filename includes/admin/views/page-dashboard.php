@@ -234,6 +234,46 @@ $emcp_videos = array(
 			<h2 id="emcp-dash-help-h" class="emcp-dash-section-title"><?php esc_html_e( 'Help &amp; resources', 'emcp-tools' ); ?></h2>
 			<p class="emcp-dash-section-sub"><?php esc_html_e( 'Quick links to the free and premium support channels.', 'emcp-tools' ); ?></p>
 		</div>
+		<?php
+		$emcp_ver = class_exists( 'EMCP_Tools_GitHub_Updater' )
+			? EMCP_Tools_GitHub_Updater::current_update_status()
+			: array( 'current' => EMCP_TOOLS_VERSION, 'latest' => EMCP_TOOLS_VERSION, 'update_available' => false, 'update_url' => admin_url( 'plugins.php' ) );
+		?>
+		<?php if ( ! empty( $emcp_ver['update_available'] ) ) : ?>
+			<a class="emcp-dash-version emcp-dash-version--update" href="<?php echo esc_url( $emcp_ver['update_url'] ); ?>">
+				<span class="emcp-dash-version-dot" aria-hidden="true"></span>
+				<span class="emcp-dash-version-text">
+					<span class="emcp-dash-version-title"><?php esc_html_e( 'Update available', 'emcp-tools' ); ?></span>
+					<span class="emcp-dash-version-sub">
+						<?php
+						printf(
+							/* translators: 1: installed version, 2: available version */
+							esc_html__( 'You have v%1$s — v%2$s is ready to install.', 'emcp-tools' ),
+							esc_html( $emcp_ver['current'] ),
+							esc_html( $emcp_ver['latest'] )
+						);
+						?>
+					</span>
+				</span>
+				<span class="emcp-dash-version-cta"><?php esc_html_e( 'Update now', 'emcp-tools' ); ?><span class="dashicons dashicons-arrow-right-alt2" aria-hidden="true"></span></span>
+			</a>
+		<?php else : ?>
+			<div class="emcp-dash-version emcp-dash-version--ok">
+				<span class="emcp-dash-version-dot" aria-hidden="true"></span>
+				<span class="emcp-dash-version-text">
+					<span class="emcp-dash-version-title"><?php esc_html_e( 'You\'re on the latest version', 'emcp-tools' ); ?></span>
+					<span class="emcp-dash-version-sub">
+						<?php
+						printf(
+							/* translators: %s: installed version number */
+							esc_html__( 'EMCP Tools v%s', 'emcp-tools' ),
+							esc_html( $emcp_ver['current'] )
+						);
+						?>
+					</span>
+				</span>
+			</div>
+		<?php endif; ?>
 		<div class="emcp-dash-help">
 			<a class="emcp-dash-help-link" href="https://emcptools.com/docs" target="_blank" rel="noopener noreferrer">
 				<span class="dashicons dashicons-book" aria-hidden="true"></span>
