@@ -227,6 +227,121 @@ abstract class EMCP_Tools_Themer_Widget_Base extends \Elementor\Widget_Base {
 		}
 
 		$this->end_controls_section();
+
+		if ( 'archive-loop' === $this->emcp_key() ) {
+			$this->register_archive_loop_style();
+		}
+	}
+
+	/** A "Cards" style section for the Archive Posts widget. */
+	private function register_archive_loop_style(): void {
+		$this->start_controls_section(
+			'emcp_cards',
+			array( 'label' => __( 'Cards', 'emcp-tools' ), 'tab' => \Elementor\Controls_Manager::TAB_STYLE )
+		);
+
+		$this->add_responsive_control(
+			'emcp_gap',
+			array(
+				'label'      => __( 'Gap between cards', 'emcp-tools' ),
+				'type'       => \Elementor\Controls_Manager::SLIDER,
+				'size_units' => array( 'px' ),
+				'range'      => array( 'px' => array( 'min' => 0, 'max' => 80 ) ),
+				'selectors'  => array( '{{WRAPPER}} .emcp-dyn-archive-loop' => '--emcp-card-gap: {{SIZE}}{{UNIT}};' ),
+			)
+		);
+		$this->add_responsive_control(
+			'emcp_media_width',
+			array(
+				'label'       => __( 'Image width (list)', 'emcp-tools' ),
+				'type'        => \Elementor\Controls_Manager::SLIDER,
+				'size_units'  => array( '%', 'px' ),
+				'range'       => array( '%' => array( 'min' => 15, 'max' => 60 ), 'px' => array( 'min' => 120, 'max' => 480 ) ),
+				'selectors'   => array( '{{WRAPPER}} .emcp-dyn-archive-loop--list .emcp-dyn-card-media' => 'flex-basis: {{SIZE}}{{UNIT}}; max-width: {{SIZE}}{{UNIT}};' ),
+				'description' => __( 'Only affects the List layout.', 'emcp-tools' ),
+			)
+		);
+
+		$this->add_control(
+			'emcp_card_bg',
+			array(
+				'label'     => __( 'Card background', 'emcp-tools' ),
+				'type'      => \Elementor\Controls_Manager::COLOR,
+				'selectors' => array( '{{WRAPPER}} .emcp-dyn-card' => 'background: {{VALUE}};' ),
+			)
+		);
+		if ( class_exists( '\\Elementor\\Group_Control_Border' ) ) {
+			$this->add_group_control(
+				\Elementor\Group_Control_Border::get_type(),
+				array(
+					'name'     => 'emcp_card_border',
+					'selector' => '{{WRAPPER}} .emcp-dyn-card',
+				)
+			);
+		}
+		$this->add_responsive_control(
+			'emcp_card_radius',
+			array(
+				'label'      => __( 'Border radius', 'emcp-tools' ),
+				'type'       => \Elementor\Controls_Manager::DIMENSIONS,
+				'size_units' => array( 'px', '%' ),
+				'selectors'  => array( '{{WRAPPER}} .emcp-dyn-card' => 'border-radius: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}}; overflow: hidden;' ),
+			)
+		);
+		$this->add_responsive_control(
+			'emcp_card_padding',
+			array(
+				'label'      => __( 'Content padding', 'emcp-tools' ),
+				'type'       => \Elementor\Controls_Manager::DIMENSIONS,
+				'size_units' => array( 'px', 'em' ),
+				'selectors'  => array( '{{WRAPPER}} .emcp-dyn-card-body' => 'padding: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ),
+			)
+		);
+		if ( class_exists( '\\Elementor\\Group_Control_Box_Shadow' ) ) {
+			$this->add_group_control(
+				\Elementor\Group_Control_Box_Shadow::get_type(),
+				array(
+					'name'     => 'emcp_card_shadow',
+					'selector' => '{{WRAPPER}} .emcp-dyn-card',
+				)
+			);
+		}
+
+		$this->add_control(
+			'emcp_title_color',
+			array(
+				'label'     => __( 'Title color', 'emcp-tools' ),
+				'type'      => \Elementor\Controls_Manager::COLOR,
+				'separator' => 'before',
+				'selectors' => array( '{{WRAPPER}} .emcp-dyn-card-title, {{WRAPPER}} .emcp-dyn-card-title a' => 'color: {{VALUE}};' ),
+			)
+		);
+		$this->add_control(
+			'emcp_meta_color',
+			array(
+				'label'     => __( 'Meta color', 'emcp-tools' ),
+				'type'      => \Elementor\Controls_Manager::COLOR,
+				'selectors' => array( '{{WRAPPER}} .emcp-dyn-card-meta' => 'color: {{VALUE}}; opacity: 1;' ),
+			)
+		);
+		$this->add_control(
+			'emcp_excerpt_color',
+			array(
+				'label'     => __( 'Excerpt color', 'emcp-tools' ),
+				'type'      => \Elementor\Controls_Manager::COLOR,
+				'selectors' => array( '{{WRAPPER}} .emcp-dyn-card-excerpt' => 'color: {{VALUE}}; opacity: 1;' ),
+			)
+		);
+		$this->add_control(
+			'emcp_more_color',
+			array(
+				'label'     => __( 'Read-more color', 'emcp-tools' ),
+				'type'      => \Elementor\Controls_Manager::COLOR,
+				'selectors' => array( '{{WRAPPER}} .emcp-dyn-card-more' => 'color: {{VALUE}};' ),
+			)
+		);
+
+		$this->end_controls_section();
 	}
 
 	/** Render via the shared provider (output already escaped in the provider). */

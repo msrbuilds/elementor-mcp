@@ -83,36 +83,102 @@
 	line-height: 1.6;
 }
 
-/* Archive loop */
+/* Archive loop.
+   Card look is driven by CSS variables so the Elementor/Gutenberg controls can
+   override them (background, border, radius, padding, gap). Defaults are clean:
+   grid = carded, list = borderless magazine rows. */
+.emcp-dyn-archive-loop {
+	--emcp-card-gap: 28px;
+	--emcp-card-bg: transparent;
+	--emcp-card-border-color: rgba(0, 0, 0, 0.1);
+	--emcp-card-border-width: 0px;
+	--emcp-card-radius: 12px;
+	--emcp-card-pad: 0px;
+	--emcp-card-media: clamp(180px, 32%, 320px);
+}
 .emcp-dyn-archive-loop--grid {
 	display: grid;
 	grid-template-columns: repeat(var(--emcp-cols, 3), minmax(0, 1fr));
-	gap: 28px;
+	gap: var(--emcp-card-gap);
 }
 .emcp-dyn-archive-loop--list {
 	display: flex;
 	flex-direction: column;
-	gap: 28px;
+	gap: var(--emcp-card-gap);
 }
+
+/* Card */
+.emcp-dyn-card {
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+	background: var(--emcp-card-bg);
+	border: var(--emcp-card-border-width) solid var(--emcp-card-border-color);
+	border-radius: var(--emcp-card-radius);
+	overflow: hidden;
+	transition: box-shadow 0.2s ease, transform 0.2s ease, border-color 0.2s ease;
+}
+/* Grid cards read as cards by default (subtle border + hover lift). */
+.emcp-dyn-archive-loop--grid {
+	--emcp-card-border-width: 1px;
+	--emcp-card-pad: 18px;
+}
+.emcp-dyn-archive-loop--grid .emcp-dyn-card:hover {
+	box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+	transform: translateY(-2px);
+	border-color: rgba(0, 0, 0, 0.16);
+}
+
+/* List rows: image left, content right; collapses to full-width text with no
+   image (flexbox, so the empty column that used to cramp the text is gone). */
 .emcp-dyn-archive-loop--list .emcp-dyn-card {
-	display: grid;
-	grid-template-columns: 240px 1fr;
-	gap: 20px;
-	align-items: start;
+	flex-direction: row;
+	gap: 24px;
+	align-items: stretch;
 }
+.emcp-dyn-archive-loop--list .emcp-dyn-card-media {
+	flex: 0 0 var(--emcp-card-media);
+	max-width: 340px;
+}
+.emcp-dyn-archive-loop--list .emcp-dyn-card-body {
+	flex: 1 1 auto;
+	justify-content: center;
+}
+
+/* Media */
 .emcp-dyn-card-media {
 	display: block;
+	overflow: hidden;
+	background: rgba(0, 0, 0, 0.04);
 }
 .emcp-dyn-card-media img {
 	display: block;
 	width: 100%;
-	height: auto;
+	height: 100%;
+	object-fit: cover;
+}
+.emcp-dyn-archive-loop--grid .emcp-dyn-card-media img {
+	aspect-ratio: 16 / 10;
+}
+.emcp-dyn-archive-loop--list .emcp-dyn-card-media img {
+	min-height: 100%;
 	border-radius: 8px;
 }
+.emcp-dyn-card:hover .emcp-dyn-card-media img {
+	transform: scale(1.03);
+}
+.emcp-dyn-card-media img {
+	transition: transform 0.3s ease;
+}
+
+/* Body */
 .emcp-dyn-card-body {
 	display: flex;
 	flex-direction: column;
 	gap: 8px;
+	min-width: 0;
+	padding: var(--emcp-card-pad);
+	flex: 1 1 auto;
 }
 .emcp-dyn-card-meta {
 	font-size: 0.8125em;
@@ -120,11 +186,15 @@
 }
 .emcp-dyn-card-title {
 	margin: 0;
-	font-size: 1.125em;
+	font-size: 1.15em;
 	line-height: 1.3;
 }
 .emcp-dyn-card-title a {
 	text-decoration: none;
+	color: inherit;
+}
+.emcp-dyn-card-title a:hover {
+	text-decoration: underline;
 }
 .emcp-dyn-card-excerpt {
 	line-height: 1.6;
@@ -132,6 +202,7 @@
 }
 .emcp-dyn-card-more {
 	align-self: flex-start;
+	margin-top: 4px;
 	text-decoration: none;
 	font-weight: 600;
 }
@@ -185,7 +256,15 @@
 	.emcp-dyn-archive-loop--grid {
 		grid-template-columns: 1fr;
 	}
+	/* Stack list rows on small screens: image on top, text below. */
 	.emcp-dyn-archive-loop--list .emcp-dyn-card {
-		grid-template-columns: 1fr;
+		flex-direction: column;
+	}
+	.emcp-dyn-archive-loop--list .emcp-dyn-card-media {
+		flex-basis: auto;
+		max-width: none;
+	}
+	.emcp-dyn-archive-loop--list .emcp-dyn-card-media img {
+		aspect-ratio: 16 / 9;
 	}
 }
