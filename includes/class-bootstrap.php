@@ -190,6 +190,7 @@ class EMCP_Tools_Bootstrap {
 		require_once EMCP_TOOLS_DIR . 'includes/themer/blocks/class-themer-blocks.php';
 		require_once EMCP_TOOLS_DIR . 'includes/themer/widgets/class-themer-widgets.php';
 		require_once EMCP_TOOLS_DIR . 'includes/themer/class-themer-metabox.php';
+		require_once EMCP_TOOLS_DIR . 'includes/themer/php/class-themer-php-store.php';
 		require_once EMCP_TOOLS_DIR . 'includes/themer/php/class-themer-php.php';
 		require_once EMCP_TOOLS_DIR . 'includes/abilities/class-themer-abilities.php';
 		require_once EMCP_TOOLS_DIR . 'includes/modules/class-themer-module.php';

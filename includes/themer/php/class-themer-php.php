@@ -41,7 +41,7 @@ class EMCP_Tools_Themer_PHP {
 	public function init(): void {
 		// Register the CPT within an active module so existing drafts remain
 		// queryable/deletable even if the feature toggle is later switched off.
-		// TODO(Task 2): EMCP_Tools_Themer_PHP_Store::register_post_type();
+		EMCP_Tools_Themer_PHP_Store::register_post_type();
 
 		if ( ! self::enabled() ) {
 			return;
