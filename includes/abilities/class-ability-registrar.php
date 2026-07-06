@@ -106,6 +106,16 @@ class EMCP_Tools_Ability_Registrar {
 		$gutenberg->register();
 		$this->ability_names = array_merge( $this->ability_names, $gutenberg->get_ability_names() );
 
+		// EMCP Themer MCP tools — only when the (free) Themer module is active.
+		// The module boots on init:5, after this runs, so gate on the option directly.
+		if ( class_exists( 'EMCP_Tools_Themer_Abilities' )
+			&& class_exists( 'EMCP_Tools_Themer_Module' )
+			&& EMCP_Tools_Themer_Module::is_enabled() ) {
+			$themer = new EMCP_Tools_Themer_Abilities();
+			$themer->register();
+			$this->ability_names = array_merge( $this->ability_names, $themer->get_ability_names() );
+		}
+
 		// WordPress Settings abilities (curated site-settings read/update).
 		$settings = new EMCP_Tools_Settings_Abilities();
 		$settings->register();

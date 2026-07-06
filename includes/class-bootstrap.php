@@ -174,6 +174,19 @@ class EMCP_Tools_Bootstrap {
 		require_once EMCP_TOOLS_DIR . 'includes/modules/class-prompts-module.php';
 		require_once EMCP_TOOLS_DIR . 'includes/modules/class-brand-kits-module.php';
 		require_once EMCP_TOOLS_DIR . 'includes/modules/class-templates-module.php';
+		// EMCP Themer (free): builder-agnostic theme builder engine + module + MCP tools.
+		require_once EMCP_TOOLS_DIR . 'includes/themer/class-themer-matcher-registry.php';
+		require_once EMCP_TOOLS_DIR . 'includes/themer/class-themer-conditions.php';
+		require_once EMCP_TOOLS_DIR . 'includes/themer/class-themer-context.php';
+		require_once EMCP_TOOLS_DIR . 'includes/themer/class-themer-index.php';
+		require_once EMCP_TOOLS_DIR . 'includes/themer/class-themer-resolver.php';
+		require_once EMCP_TOOLS_DIR . 'includes/themer/class-themer-cpt.php';
+		require_once EMCP_TOOLS_DIR . 'includes/themer/class-themer-content-renderer.php';
+		require_once EMCP_TOOLS_DIR . 'includes/themer/class-themer-theme-adapters.php';
+		require_once EMCP_TOOLS_DIR . 'includes/themer/class-themer-render-controller.php';
+		require_once EMCP_TOOLS_DIR . 'includes/themer/class-themer-metabox.php';
+		require_once EMCP_TOOLS_DIR . 'includes/abilities/class-themer-abilities.php';
+		require_once EMCP_TOOLS_DIR . 'includes/modules/class-themer-module.php';
 		// Pro-tier units (SEO/a11y helpers + abilities, widget generator + builder
 		// abilities, system-kit abilities, Pro brand kits, AI Chat). These ship in
 		// the private Pro overlay (pro/) and are absent from the free build; the
@@ -209,6 +222,7 @@ class EMCP_Tools_Bootstrap {
 		$emcp_modules->register( new EMCP_Tools_Prompts_Module() );
 		$emcp_modules->register( new EMCP_Tools_Brand_Kits_Module() );
 		$emcp_modules->register( new EMCP_Tools_Templates_Module() );
+		$emcp_modules->register( new EMCP_Tools_Themer_Module() );
 		EMCP_Tools_Pro_Loader::register_modules( $emcp_modules );
 		do_action( 'emcp_tools_register_modules', $emcp_modules );
 		$emcp_modules->apply_defaults();
