@@ -160,7 +160,6 @@ class EMCP_Tools_Admin {
 				self::PAGE_SLUG . '-context'    => __( 'Context', 'emcp-tools' ),
 				self::PAGE_SLUG . '-prompts'    => __( 'Prompts', 'emcp-tools' ),
 				self::PAGE_SLUG . '-templates'  => __( 'Templates', 'emcp-tools' ),
-				self::PAGE_SLUG . '-themer'     => __( 'Themer', 'emcp-tools' ),
 				self::PAGE_SLUG . '-brand-kits' => __( 'Brand Kits', 'emcp-tools' ),
 				self::PAGE_SLUG . '-skills'     => __( 'Skills', 'emcp-tools' ),
 				self::PAGE_SLUG . '-widgets'    => __( 'Sandbox', 'emcp-tools' ),
@@ -170,7 +169,7 @@ class EMCP_Tools_Admin {
 				unset( $this->submenus[ self::PAGE_SLUG . '-ai-chat' ] );
 			}
 			// Module-backed tabs: drop each when its module is off/unavailable.
-			foreach ( array( 'prompts', 'templates', 'themer', 'brand-kits' ) as $emcp_mod_id ) {
+			foreach ( array( 'prompts', 'templates', 'brand-kits' ) as $emcp_mod_id ) {
 				if ( ! $this->module_tab_visible( $emcp_mod_id ) ) {
 					unset( $this->submenus[ self::PAGE_SLUG . '-' . $emcp_mod_id ] );
 				}
@@ -201,8 +200,6 @@ class EMCP_Tools_Admin {
 				return 'prompts';
 			case self::PAGE_SLUG . '-templates':
 				return 'templates';
-			case self::PAGE_SLUG . '-themer':
-				return 'themer';
 			case self::PAGE_SLUG . '-brand-kits':
 				return 'brand-kits';
 			case self::PAGE_SLUG . '-skills':
@@ -1438,8 +1435,6 @@ class EMCP_Tools_Admin {
 					include EMCP_TOOLS_DIR . 'includes/admin/views/page-prompts.php';
 				} elseif ( 'templates' === $active_tab && $this->module_tab_visible( 'templates' ) ) {
 					include EMCP_TOOLS_DIR . 'includes/admin/views/page-templates.php';
-				} elseif ( 'themer' === $active_tab && $this->module_tab_visible( 'themer' ) ) {
-					include EMCP_TOOLS_DIR . 'includes/admin/views/page-themer.php';
 				} elseif ( 'brand-kits' === $active_tab && $this->module_tab_visible( 'brand-kits' ) ) {
 					include EMCP_TOOLS_DIR . 'includes/admin/views/page-brand-kits.php';
 				} elseif ( 'skills' === $active_tab ) {

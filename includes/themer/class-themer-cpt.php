@@ -25,7 +25,9 @@ class EMCP_Tools_Themer_CPT {
 	const TYPES = array( 'header', 'footer', 'single', 'archive', 'search', '404' );
 
 	/**
-	 * Register the CPT + Elementor support. Hooked to `init`.
+	 * Register the CPT + Elementor support + its own dashboard menu. Hooked to
+	 * `init` by the module, which only boots when the module is active — so the
+	 * whole menu is gated behind module status.
 	 */
 	public function register(): void {
 		register_post_type(
@@ -34,7 +36,11 @@ class EMCP_Tools_Themer_CPT {
 				'public'              => false,
 				'publicly_queryable'  => false,
 				'show_ui'             => true,
-				'show_in_menu'        => false,
+				// Its own top-level dashboard menu (not buried in the EMCP Tools page).
+				'show_in_menu'        => true,
+				'menu_icon'           => 'dashicons-layout',
+				'menu_position'       => 59, // just above Appearance.
+				'show_in_admin_bar'   => true,
 				'show_in_rest'        => true,
 				'exclude_from_search' => true,
 				'has_archive'         => false,
@@ -44,11 +50,26 @@ class EMCP_Tools_Themer_CPT {
 				'map_meta_cap'        => true,
 				'supports'            => array( 'title', 'editor', 'author', 'custom-fields' ),
 				'labels'              => array(
-					'name'          => __( 'EMCP Theme Templates', 'emcp-tools' ),
-					'singular_name' => __( 'Theme Template', 'emcp-tools' ),
+					'name'               => __( 'EMCP Themer', 'emcp-tools' ),
+					'singular_name'      => __( 'Theme Template', 'emcp-tools' ),
+					'menu_name'          => __( 'EMCP Themer', 'emcp-tools' ),
+					'all_items'          => __( 'All Templates', 'emcp-tools' ),
+					'add_new'            => __( 'Add New', 'emcp-tools' ),
+					'add_new_item'       => __( 'Add Theme Template', 'emcp-tools' ),
+					'new_item'           => __( 'New Theme Template', 'emcp-tools' ),
+					'edit_item'          => __( 'Edit Theme Template', 'emcp-tools' ),
+					'view_item'          => __( 'View Theme Template', 'emcp-tools' ),
+					'search_items'       => __( 'Search Theme Templates', 'emcp-tools' ),
+					'not_found'          => __( 'No theme templates yet.', 'emcp-tools' ),
+					'not_found_in_trash' => __( 'No theme templates in Trash.', 'emcp-tools' ),
 				),
 			)
 		);
+
+		// Native CPT-screen niceties: a Type column + the theme-adapter status notice.
+		add_filter( 'manage_' . self::POST_TYPE . '_posts_columns', array( $this, 'admin_columns' ) );
+		add_action( 'manage_' . self::POST_TYPE . '_posts_custom_column', array( $this, 'render_admin_column' ), 10, 2 );
+		add_action( 'admin_notices', array( $this, 'render_adapter_notice' ) );
 
 		// Let Elementor offer "Edit with Elementor" on our CPT.
 		add_filter(
@@ -67,6 +88,58 @@ class EMCP_Tools_Themer_CPT {
 				return $types;
 			}
 		);
+	}
+
+	/**
+	 * Add a "Type" column to the CPT list table (after the title).
+	 *
+	 * @param array $columns Existing columns.
+	 * @return array
+	 */
+	public function admin_columns( array $columns ): array {
+		$out = array();
+		foreach ( $columns as $key => $label ) {
+			$out[ $key ] = $label;
+			if ( 'title' === $key ) {
+				$out['emcp_themer_type'] = __( 'Type', 'emcp-tools' );
+			}
+		}
+		return $out;
+	}
+
+	/**
+	 * Render the Type column value.
+	 *
+	 * @param string $column  Column key.
+	 * @param int    $post_id Post id.
+	 */
+	public function render_admin_column( $column, $post_id ): void {
+		if ( 'emcp_themer_type' !== $column ) {
+			return;
+		}
+		$type = (string) get_post_meta( (int) $post_id, EMCP_Tools_Themer_Index::META_TYPE, true );
+		echo $type ? '<strong>' . esc_html( ucfirst( $type ) ) . '</strong>' : '&mdash;';
+	}
+
+	/**
+	 * Show the detected theme-adapter status as a notice on the CPT list screen.
+	 */
+	public function render_adapter_notice(): void {
+		$screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
+		if ( ! $screen || 'edit-' . self::POST_TYPE !== $screen->id ) {
+			return;
+		}
+		$supported = class_exists( 'EMCP_Tools_Themer_Theme_Adapters' ) && null !== EMCP_Tools_Themer_Theme_Adapters::current();
+		if ( $supported ) {
+			$theme = function_exists( 'wp_get_theme' ) ? wp_get_theme()->get( 'Name' ) : '';
+			echo '<div class="notice notice-success"><p>' . sprintf(
+				/* translators: %s: theme name */
+				esc_html__( 'EMCP Themer: your theme (%s) is directly supported — standalone headers & footers inject cleanly. Body templates (single/archive/search/404) work on every theme.', 'emcp-tools' ),
+				esc_html( (string) $theme )
+			) . '</p></div>';
+		} else {
+			echo '<div class="notice notice-warning"><p>' . esc_html__( 'EMCP Themer: body templates (single/archive/search/404) work on every theme. For standalone header/footer replacement your theme is not directly supported — add emcp_themer_location( \'header\' ) / emcp_themer_location( \'footer\' ) to your theme, or enable the full-page-takeover fallback (set the emcp_tools_module_themer_force_render option to 1).', 'emcp-tools' ) . '</p></div>';
+		}
 	}
 
 	/**

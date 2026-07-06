@@ -42,9 +42,9 @@ class EMCP_Tools_Themer_Module extends EMCP_Tools_Module {
 		return true;
 	}
 
-	/** The Themer admin tab is the config surface. */
+	/** The native CPT screen (its own dashboard menu) is the config surface. */
 	public function settings_url(): string {
-		return admin_url( 'admin.php?page=emcp-tools-themer' );
+		return admin_url( 'edit.php?post_type=' . EMCP_Tools_Themer_CPT::POST_TYPE );
 	}
 
 	public function render_settings(): void {}
