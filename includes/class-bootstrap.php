@@ -194,6 +194,7 @@ class EMCP_Tools_Bootstrap {
 		require_once EMCP_TOOLS_DIR . 'includes/themer/php/class-themer-php.php';
 		require_once EMCP_TOOLS_DIR . 'includes/themer/php/class-themer-php-renderer.php';
 		require_once EMCP_TOOLS_DIR . 'includes/abilities/class-themer-php-abilities.php';
+		require_once EMCP_TOOLS_DIR . 'includes/themer/php/class-themer-php-admin.php';
 		require_once EMCP_TOOLS_DIR . 'includes/abilities/class-themer-abilities.php';
 		require_once EMCP_TOOLS_DIR . 'includes/modules/class-themer-module.php';
 		// Pro-tier units (SEO/a11y helpers + abilities, widget generator + builder
