@@ -60,12 +60,24 @@ class EMCP_Tools_Themer_Module extends EMCP_Tools_Module {
 		return in_array( 'themer', $active, true );
 	}
 
+	/** Option marker: the condition index was healed after the save-order fix. */
+	const OPTION_INDEX_HEALED = 'emcp_tools_themer_index_healed';
+
 	/** Wire everything. Booted by the registry on init:5 only when active. */
 	public function register(): void {
 		$cpt = new EMCP_Tools_Themer_CPT();
 		$cpt->register();
 
 		EMCP_Tools_Themer_Index::register_hooks();
+
+		// One-time heal: a prior build could leave the condition index empty (the
+		// rebuild raced the metabox meta writes), so existing templates silently
+		// stopped applying. Rebuild once on upgrade so they resolve again without
+		// the admin re-saving each template.
+		if ( '1' !== (string) get_option( self::OPTION_INDEX_HEALED, '' ) ) {
+			EMCP_Tools_Themer_Index::rebuild();
+			update_option( self::OPTION_INDEX_HEALED, '1', true );
+		}
 
 		if ( ! is_admin() ) {
 			( new EMCP_Tools_Themer_Render_Controller() )->init();
