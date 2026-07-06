@@ -24,7 +24,10 @@ $emcp_slots = class_exists( 'EMCP_Tools_Themer_Render_Controller' )
 get_header();
 
 if ( ! empty( $emcp_slots['body'] ) ) {
-	echo '<main class="emcp-themer-body">';
+	// width:100% + flex:1 so the body fills the theme's content column even when the
+	// theme wraps it in a flexbox container (e.g. Astra's ast-two-container). Without
+	// this the <main> only takes its intrinsic width, leaving empty space beside it.
+	echo '<main class="emcp-themer-body" style="width:100%;flex:1 1 auto;min-width:0;">';
 	echo EMCP_Tools_Themer_Content_Renderer::render( (int) $emcp_slots['body'] ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 	echo '</main>';
 }
