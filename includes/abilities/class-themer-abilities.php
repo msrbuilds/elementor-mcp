@@ -8,7 +8,7 @@
  * without the Pro overlay they are simply not accepted (no Pro logic in free).
  *
  * @package EMCP_Tools
- * @since   3.2.0
+ * @since   3.1.0
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -16,7 +16,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * @since 3.2.0
+ * @since 3.1.0
  */
 class EMCP_Tools_Themer_Abilities {
 

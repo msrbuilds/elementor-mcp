@@ -8,7 +8,7 @@
  * so `$this` is the admin instance.
  *
  * @package EMCP_Tools
- * @since   3.2.0
+ * @since   3.1.0
  *
  * @var EMCP_Tools_Admin $this
  */

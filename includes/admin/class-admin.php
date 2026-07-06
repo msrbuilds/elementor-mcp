@@ -319,7 +319,7 @@ class EMCP_Tools_Admin {
 	 * switch (off by default), and even once enabled these 5 tools ship
 	 * disabled-by-default like the PHP Snippets — the admin opts in on the Tools tab.
 	 *
-	 * @since 3.2.0
+	 * @since 3.1.0
 	 *
 	 * @return string[]
 	 */
@@ -1240,7 +1240,7 @@ class EMCP_Tools_Admin {
 	 * visibility rules. Each entry is `key`/`value`/`label`; the view maps `key`
 	 * to an icon.
 	 *
-	 * @since 3.2.0
+	 * @since 3.1.0
 	 * @return array<int,array{key:string,value:int,label:string}>
 	 */
 	public function get_dashboard_stats(): array {

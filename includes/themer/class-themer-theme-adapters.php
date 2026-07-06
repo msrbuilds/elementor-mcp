@@ -9,7 +9,7 @@
  * optional full-page-takeover toggle (handled by the render controller).
  *
  * @package EMCP_Tools
- * @since   3.2.0
+ * @since   3.1.0
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -17,7 +17,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * @since 3.2.0
+ * @since 3.1.0
  */
 class EMCP_Tools_Themer_Theme_Adapters {
 

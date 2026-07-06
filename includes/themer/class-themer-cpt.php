@@ -7,7 +7,7 @@
  * raises `emcp_themer_quota` to PHP_INT_MAX. register() runs on `init`.
  *
  * @package EMCP_Tools
- * @since   3.2.0
+ * @since   3.1.0
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -15,7 +15,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * @since 3.2.0
+ * @since 3.1.0
  */
 class EMCP_Tools_Themer_CPT {
 

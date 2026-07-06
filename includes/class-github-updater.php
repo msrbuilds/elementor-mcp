@@ -13,7 +13,7 @@
  * this updater self-disables there (see init()).
  *
  * @package EMCP_Tools
- * @since   3.2.0
+ * @since   3.1.0
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -23,7 +23,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * Serves free-tier updates from the public GitHub repo's latest release.
  *
- * @since 3.2.0
+ * @since 3.1.0
  */
 class EMCP_Tools_GitHub_Updater {
 
@@ -78,7 +78,7 @@ class EMCP_Tools_GitHub_Updater {
 	 * is populated by this updater, on premium installs by Freemius — so the same
 	 * call powers the Dashboard indicator either way. Does NOT hit the network.
 	 *
-	 * @since 3.2.0
+	 * @since 3.1.0
 	 * @return array{current:string,latest:string,update_available:bool,update_url:string}
 	 */
 	public static function current_update_status(): array {
