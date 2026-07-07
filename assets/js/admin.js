@@ -1221,8 +1221,10 @@
 
 	function emcpTomlConfig() {
 		var c = window.emcpConn;
-		return '[mcp_servers.emcp-tools]\nurl = "' + c.endpoint + '"\n' +
-			'[mcp_servers.emcp-tools.headers]\nAuthorization = "Basic ' + c.b64 + '"';
+		// Codex expects `http_headers` (inline table), not a `[…​.headers]` table.
+		return '[mcp_servers.emcp-tools]\n' +
+			'url = "' + c.endpoint + '"\n' +
+			'http_headers = { "Authorization" = "Basic ' + c.b64 + '" }';
 	}
 
 	// Render one copy/download block.
