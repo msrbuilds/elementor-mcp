@@ -161,6 +161,14 @@ class Elementor_MCP_Ability_Registrar {
 		$variables->register();
 		$this->ability_names = array_merge( $this->ability_names, $variables->get_ability_names() );
 
+		// Interactions (per-element animations) CRUD abilities (Elementor 4.0+).
+		// Same self-guard as the Variables group: no-ops when the Interactions
+		// (e_interactions) + Atomic Widgets experiments are inactive, so the four
+		// tools never surface unless a write would actually persist and render.
+		$interactions = new Elementor_MCP_Interactions_Write_Abilities( $this->data );
+		$interactions->register();
+		$this->ability_names = array_merge( $this->ability_names, $interactions->get_ability_names() );
+
 		// Performance Analyzer (analyze-performance — read-only page + server + WP
 		// audit → scored report). Independent of Elementor version; the ability's
 		// manage_options permission callback is the guard.

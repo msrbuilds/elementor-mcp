@@ -1448,6 +1448,40 @@ class Elementor_MCP_Admin {
 					),
 				);
 			}
+
+			// Interactions (per-element animations) CRUD. Registered only when the
+			// Interactions (e_interactions) + Atomic Widgets experiments are active;
+			// gate the catalog group on the same availability so it can't drift from
+			// the registry. No 'pro' badge -> enabled by default. delete is
+			// destructive; list is read-only.
+			if ( class_exists( 'Elementor_MCP_Interactions_Write_Abilities' )
+				&& Elementor_MCP_Interactions_Write_Abilities::is_available() ) {
+				$tools['interactions'] = array(
+					'label' => __( 'Interactions (Elementor 4.0+)', 'elementor-mcp' ),
+					'tools' => array(
+						'elementor-mcp/list-interactions'   => array(
+							'label'       => __( 'List Interactions', 'elementor-mcp' ),
+							'description' => __( 'Lists the per-element animations attached to an atomic element, in ergonomic shape.', 'elementor-mcp' ),
+							'badges'      => array( 'read-only' ),
+						),
+						'elementor-mcp/add-interaction'     => array(
+							'label'       => __( 'Add Interaction', 'elementor-mcp' ),
+							'description' => __( 'Adds a per-element animation (trigger + effect/type/direction/timing/easing) to an atomic element.', 'elementor-mcp' ),
+							'badges'      => array(),
+						),
+						'elementor-mcp/edit-interaction'    => array(
+							'label'       => __( 'Edit Interaction', 'elementor-mcp' ),
+							'description' => __( 'Edits an interaction in place by its interaction_id, preserving the id and untouched fields.', 'elementor-mcp' ),
+							'badges'      => array(),
+						),
+						'elementor-mcp/delete-interaction'  => array(
+							'label'       => __( 'Delete Interaction', 'elementor-mcp' ),
+							'description' => __( 'Removes an interaction from an atomic element by its interaction_id.', 'elementor-mcp' ),
+							'badges'      => array( 'destructive' ),
+						),
+					),
+				);
+			}
 		}
 
 		// System Kit writers. Fork: these act on THIS site's own Elementor kit

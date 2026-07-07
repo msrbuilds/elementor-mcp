@@ -861,6 +861,23 @@ namespace Elementor\Modules\Variables\Storage {
 }
 
 // ---------------------------------------------------------------------------
+// Elementor Interactions postmeta-cache stub
+//
+// Records process_content() calls so the interactions write tools' cache-refresh
+// (after a raw-meta save) can be asserted. State in $GLOBALS['_ix_cache'].
+// ---------------------------------------------------------------------------
+
+namespace Elementor\Modules\Interactions\Cache {
+	if ( ! class_exists( 'Elementor\\Modules\\Interactions\\Cache\\Interactions_Postmeta' ) ) {
+		class Interactions_Postmeta {
+			public function process_content( $post_id, $data ) {
+				$GLOBALS['_ix_cache'] = array( 'post_id' => $post_id, 'data' => $data );
+			}
+		}
+	}
+}
+
+// ---------------------------------------------------------------------------
 // Plugin class autoloader (back in global namespace)
 // ---------------------------------------------------------------------------
 
@@ -893,6 +910,7 @@ namespace {
 			'Elementor_MCP_Global_Classes_Abilities' => 'includes/abilities/class-global-classes-abilities.php',
 			'Elementor_MCP_Global_Classes_Write_Abilities' => 'includes/abilities/class-global-classes-write-abilities.php',
 			'Elementor_MCP_Variables_Write_Abilities' => 'includes/abilities/class-variables-write-abilities.php',
+			'Elementor_MCP_Interactions_Write_Abilities' => 'includes/abilities/class-interactions-write-abilities.php',
 			// Performance Analyzer (audit → scored report)
 			'Elementor_MCP_Performance_Finding'    => 'includes/performance/class-performance-finding.php',
 			'Elementor_MCP_Performance_Server_Audit' => 'includes/performance/class-performance-server-audit.php',
