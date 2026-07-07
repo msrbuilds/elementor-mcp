@@ -103,6 +103,7 @@ class EMCP_Tools_Bootstrap {
 		require_once EMCP_TOOLS_DIR . 'includes/class-stock-image-providers.php';
 		require_once EMCP_TOOLS_DIR . 'includes/abilities/class-stock-image-abilities.php';
 		require_once EMCP_TOOLS_DIR . 'includes/abilities/class-media-library-abilities.php';
+		require_once EMCP_TOOLS_DIR . 'includes/abilities/class-image-resize-abilities.php';
 		require_once EMCP_TOOLS_DIR . 'includes/class-block-tree.php';
 		require_once EMCP_TOOLS_DIR . 'includes/abilities/class-gutenberg-abilities.php';
 		require_once EMCP_TOOLS_DIR . 'includes/class-admin-bar.php';
@@ -171,6 +172,7 @@ class EMCP_Tools_Bootstrap {
 		require_once EMCP_TOOLS_DIR . 'includes/modules/image-optimization/class-image-optimizer.php';
 		require_once EMCP_TOOLS_DIR . 'includes/modules/image-optimization/class-webp-rewriter.php';
 		require_once EMCP_TOOLS_DIR . 'includes/modules/image-optimization/class-bulk-optimizer.php';
+		require_once EMCP_TOOLS_DIR . 'includes/modules/image-optimization/class-image-resizer.php';
 		require_once EMCP_TOOLS_DIR . 'includes/modules/image-optimization/class-image-optimization-module.php';
 		require_once EMCP_TOOLS_DIR . 'includes/modules/class-prompts-module.php';
 		require_once EMCP_TOOLS_DIR . 'includes/modules/class-brand-kits-module.php';

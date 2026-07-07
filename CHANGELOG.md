@@ -7,6 +7,7 @@ All notable changes to MCP Tools for Elementor are documented in this file.
 > A follow-up patch: a proper code editor for Themer PHP Templates, better Codex connection help (a form guide + an npx config), per-site MCP server names, and the bundled Freemius SDK bumped to 2.13.3.
 
 ### Added
+- **Resize images over MCP.** The Image Optimization module now ships an in-place image **resizer** and a `resize-media` MCP tool, so an AI agent can shrink or crop a Media Library image during a build (or any existing image): scale-to-fit by default, or `crop:true` for an exact width×height. The original is backed up (reversible), all sub-sizes + WebP are regenerated, and the attachment ID and URLs stay the same. Registers only when the Image Optimization module is enabled.
 - **Themer PHP Templates — a real editor.** The review screen is now editable: a full **CodeMirror** editor (PHP syntax highlighting, the same core WordPress uses for its theme/plugin file editor) plus **Title** and **Type** fields. Saving re-validates the code and recompiles the template if it's attached.
 - **Codex connection help.** The Connection tab's Codex option now includes a field-by-field guide for Codex's “Custom MCP” form, and a **Node-proxy (npx) `config.toml`** option (via `@msrbuilds/emcp-proxy`) alongside the streamable-HTTP config — a robust fallback when the HTTP handshake misbehaves.
 

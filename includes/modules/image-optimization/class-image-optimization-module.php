@@ -29,6 +29,17 @@ class EMCP_Tools_Image_Optimization_Module extends EMCP_Tools_Module {
 		return self::ID;
 	}
 
+	/**
+	 * Whether the module is active (static helper for the ability registrar, which
+	 * runs on wp_abilities_api_init — before the module boots on init:5).
+	 *
+	 * @return bool
+	 */
+	public static function module_is_active(): bool {
+		$active = (array) get_option( EMCP_Tools_Module::OPTION_ACTIVE, array() );
+		return in_array( self::ID, $active, true );
+	}
+
 	public function title(): string {
 		return __( 'Image Optimization', 'emcp-tools' );
 	}

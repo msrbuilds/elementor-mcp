@@ -170,6 +170,7 @@ The plugin enforces WordPress capability checks on every tool. Read operations r
 
 = 3.1.1 =
 A follow-up patch to 3.1.0.
+* Added: Resize images over MCP — the Image Optimization module adds an in-place image resizer and a resize-media tool (scale to fit, or crop:true for exact width x height); the original is backed up (reversible) and all sub-sizes + WebP are regenerated. Registers only when the Image Optimization module is enabled.
 * Added: Themer PHP Templates review screen is now a full editor — CodeMirror (PHP syntax highlighting) plus Title and Type fields; saving re-validates and recompiles an attached template.
 * Added: Codex connection help — a field-by-field guide for Codex's "Custom MCP" form, and a Node-proxy (npx) config.toml option (via @msrbuilds/emcp-proxy) alongside the streamable-HTTP config.
 * Changed: Generated MCP client configs now name the server after the site's domain (e.g. emcp-your-site-com) instead of a fixed "emcp-tools", so connecting several sites in one AI client no longer collides.

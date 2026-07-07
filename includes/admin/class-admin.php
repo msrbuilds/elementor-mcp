@@ -2164,6 +2164,11 @@ class EMCP_Tools_Admin {
 						'description' => __( 'Edit an attachment\'s alt text, title, caption, description.', 'emcp-tools' ),
 						'badges'      => array(),
 					),
+					'emcp-tools/resize-media'     => array(
+						'label'       => __( 'Resize Media', 'emcp-tools' ),
+						'description' => __( 'Resize a Media Library image in place (scale to fit or crop), reversible via backup. Registers only when the Image Optimization module is enabled.', 'emcp-tools' ),
+						'badges'      => array(),
+					),
 					'emcp-tools/delete-media'     => array(
 						'label'       => __( 'Delete Media', 'emcp-tools' ),
 						'description' => __( 'Delete an attachment (permanent; requires confirm).', 'emcp-tools' ),

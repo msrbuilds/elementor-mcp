@@ -96,6 +96,16 @@ class EMCP_Tools_Ability_Registrar {
 		$media_library->register();
 		$this->ability_names = array_merge( $this->ability_names, $media_library->get_ability_names() );
 
+		// resize-media — only when the Image Optimization module is active (it reuses
+		// that module's backup + compress + WebP machinery).
+		if ( class_exists( 'EMCP_Tools_Image_Resize_Abilities' )
+			&& class_exists( 'EMCP_Tools_Image_Optimization_Module' )
+			&& EMCP_Tools_Image_Optimization_Module::module_is_active() ) {
+			$resize = new EMCP_Tools_Image_Resize_Abilities();
+			$resize->register();
+			$this->ability_names = array_merge( $this->ability_names, $resize->get_ability_names() );
+		}
+
 		// WordPress Content abilities (posts/pages/CPT CRUD + taxonomy + meta).
 		$content = new EMCP_Tools_Content_Abilities();
 		$content->register();
