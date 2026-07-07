@@ -944,6 +944,8 @@ namespace {
 			'Elementor_MCP_Widget_Store'           => 'includes/class-widget-store.php',
 			'Elementor_MCP_Widget_Loader'          => 'includes/class-widget-loader.php',
 			'Elementor_MCP_Widget_Generator'       => 'includes/class-widget-generator.php',
+			// SiteAgent governance bridge
+			'Elementor_MCP_Governance'             => 'includes/class-governance.php',
 		];
 
 		if ( isset( $map[ $class ] ) ) {
@@ -953,5 +955,32 @@ namespace {
 			}
 		}
 	} );
+
+	// -----------------------------------------------------------------------
+	// SiteAgent snapshot-engine stub. The governance bridge soft-depends on
+	// \Aura_Worker_Snapshots; defining it here makes Governance::is_active()
+	// true so the wrap/run paths can be exercised. Tests drive outcomes and
+	// assert via $GLOBALS['_aura_snap']:
+	//   ['fail_snapshot']  => bool  force snapshot_meta() to fail
+	//   ['snapshot_calls'] => array recorded [post_id, keys]
+	//   ['restore_calls']  => array recorded snapshot ids restored
+	// -----------------------------------------------------------------------
+	if ( ! class_exists( 'Aura_Worker_Snapshots' ) ) {
+		class Aura_Worker_Snapshots {
+			public function snapshot_meta( $post_id, $keys ) {
+				$GLOBALS['_aura_snap']['snapshot_calls'][] = array( 'post_id' => (int) $post_id, 'keys' => $keys );
+				if ( ! empty( $GLOBALS['_aura_snap']['fail_snapshot'] ) ) {
+					return array( 'success' => false, 'error' => 'stub forced snapshot failure' );
+				}
+				$seq = (int) ( $GLOBALS['_aura_snap']['seq'] ?? 0 ) + 1;
+				$GLOBALS['_aura_snap']['seq'] = $seq;
+				return array( 'success' => true, 'snapshot' => array( 'id' => 'snap_stub_' . $seq ) );
+			}
+			public function restore( $id ) {
+				$GLOBALS['_aura_snap']['restore_calls'][] = $id;
+				return array( 'success' => true );
+			}
+		}
+	}
 
 }  // end namespace {}

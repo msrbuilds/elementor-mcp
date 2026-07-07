@@ -3,7 +3,7 @@
  * Plugin Name:       MCP Tools for Elementor (Digitizers fork)
  * Plugin URI:        https://github.com/Digitizers/elementor-mcp
  * Description:       A Digitizers fork of elementor-mcp (originally by Mian Shahzad Raza / msrbuilds) — extends the WordPress MCP Adapter to expose Elementor data, widgets, and page-design tools as MCP tools for AI agents. Elementor 4.x-correct; bundles the MCP Adapter.
- * Version:           1.16.0
+ * Version:           1.17.0
  * Requires at least: 6.9
  * Tested up to:      6.9
  * Requires PHP:      8.0
@@ -20,7 +20,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Plugin constants.
-define( 'ELEMENTOR_MCP_VERSION', '1.16.0' );
+define( 'ELEMENTOR_MCP_VERSION', '1.17.0' );
 define( 'ELEMENTOR_MCP_DIR', plugin_dir_path( __FILE__ ) );
 define( 'ELEMENTOR_MCP_URL', plugin_dir_url( __FILE__ ) );
 define( 'ELEMENTOR_MCP_BASENAME', plugin_basename( __FILE__ ) );
@@ -497,6 +497,11 @@ function elementor_mcp_register_ability( string $name, array $args ) {
 	if ( isset( $args['output_schema'] ) && is_array( $args['output_schema'] ) ) {
 		$args['output_schema'] = elementor_mcp_sanitize_schema( $args['output_schema'] );
 	}
+	// When SiteAgent is installed alongside us, bring destructive page writes
+	// under its capture-before-write governance. No-op when SiteAgent is absent.
+	if ( class_exists( 'Elementor_MCP_Governance' ) ) {
+		$args = Elementor_MCP_Governance::wrap_ability( $name, $args );
+	}
 	return wp_register_ability( $name, $args );
 }
 
@@ -571,6 +576,9 @@ function elementor_mcp_init(): void {
 	// Load class files.
 	require_once ELEMENTOR_MCP_DIR . 'includes/class-id-generator.php';
 	require_once ELEMENTOR_MCP_DIR . 'includes/class-elementor-data.php';
+	// SiteAgent governance bridge — must load before abilities register so
+	// elementor_mcp_register_ability() can wrap destructive page writes.
+	require_once ELEMENTOR_MCP_DIR . 'includes/class-governance.php';
 	require_once ELEMENTOR_MCP_DIR . 'includes/class-element-factory.php';
 	require_once ELEMENTOR_MCP_DIR . 'includes/schemas/class-control-mapper.php';
 	require_once ELEMENTOR_MCP_DIR . 'includes/schemas/class-schema-generator.php';

@@ -3,7 +3,7 @@ Contributors: mianshahzadraza
 Tags: elementor, mcp, ai, page-builder, automation
 Requires at least: 6.9
 Tested up to: 6.9
-Stable tag: 1.16.0
+Stable tag: 1.17.0
 Requires PHP: 8.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -155,6 +155,12 @@ The plugin enforces WordPress capability checks on every tool. Read operations r
 2. Connection configuration page with copy-paste configs.
 
 == Changelog ==
+
+= 1.17.0 =
+New: SiteAgent governance bridge — capture-before-write safety for destructive page edits, active only when the SiteAgent worker (digitizer-site-worker) is installed alongside this plugin.
+* Every destructive ability that targets a page (any tool with a post_id) is wrapped so the page's Elementor state (_elementor_data + _elementor_page_settings) is snapshotted through SiteAgent's snapshot engine before the write, and rolled back if the write fails.
+* Soft dependency: with no SiteAgent present, nothing is wrapped and behaviour is unchanged. Fail-closed: a write with no rollback point is refused; a write that errors or throws is reverted.
+* Fires elementor_mcp_governance_write / elementor_mcp_governance_rolled_back seams for the gateway. Scope: page writes only (kit/repository writes and approval grants are follow-up planks).
 
 = 1.9.1 =
 Security hardening (ported from upstream msrbuilds/elementor-mcp 4bcefc5):
