@@ -3012,11 +3012,13 @@ body.emcp-modal-open { overflow: hidden; }
 .emcp-appbar-version { font-size: 11px; font-weight: 700; color: var(--mcp-primary); background: var(--mcp-primary-light); border-radius: 10px; padding: 2px 8px; }
 .emcp-appbar-actions { display: flex; align-items: center; gap: 10px; }
 
-.emcp-help-menu { position: relative; height: 100%; }
-.emcp-help-toggle { display: inline-flex; align-items: center; gap: 12px; padding: 18px 24px; background: var(--mcp-white); border: none; border-left: 1px solid var(--mcp-gray-200); border-radius: 0; font-size: 14px; font-weight: 600; color: var(--mcp-gray-800, #1d2327); cursor: pointer; height: 100%; }
-.emcp-help-toggle:hover { color: var(--mcp-primary);}
+.emcp-help-menu { position: relative; }
+/* Match the Changelog / Affiliate Program pill buttons (.emcp-appbar-changelog). */
+.emcp-help-toggle { display: inline-flex; align-items: center; gap: 6px; padding: 12px 18px; background: var(--mcp-white); border: 1px solid var(--mcp-gray-200); border-radius: 4px; font-size: 13px; font-weight: 600; color: var(--mcp-gray-800, #1d2327); text-decoration: none; cursor: pointer; }
+.emcp-help-toggle:hover { border-color: var(--mcp-primary); color: var(--mcp-primary); }
 .emcp-help-toggle .dashicons { font-size: 16px; width: 16px; height: 16px; }
-.emcp-help-caret { font-size: 18px; width: 18px; height: 18px; line-height: 1; color: var(--mcp-gray-500, #787c82); }
+.emcp-help-caret { font-size: 16px; width: 16px; height: 16px; line-height: 1; color: var(--mcp-gray-500, #787c82); }
+.emcp-help-toggle:hover .emcp-help-caret { color: var(--mcp-primary); }
 .emcp-help-dropdown { display: none; position: absolute; right: 0; top: calc(100% + 6px); min-width: 210px; background: var(--mcp-white); border: 1px solid var(--mcp-gray-200); border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,.14); padding: 6px; z-index: 1000; }
 .emcp-help-dropdown::before { content: ''; position: absolute; top: -8px; left: 0; right: 0; height: 8px; }
 .emcp-help-menu:hover .emcp-help-dropdown, .emcp-help-menu:focus-within .emcp-help-dropdown { display: block; }
