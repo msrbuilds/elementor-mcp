@@ -1487,8 +1487,8 @@ class EMCP_Tools_Admin {
 	 * @return array<int,array<string,mixed>>
 	 */
 	public static function connection_clients(): array {
-		$claude_cli = 'claude mcp add --transport http emcp-tools "%ENDPOINT%" --header "Authorization: Basic %B64%"';
-		$codex_cli  = 'codex mcp add emcp-tools --transport http --url "%ENDPOINT%" --header "Authorization=Basic %B64%"';
+		$claude_cli = 'claude mcp add --transport http %NAME% "%ENDPOINT%" --header "Authorization: Basic %B64%"';
+		$codex_cli  = 'codex mcp add %NAME% --transport http --url "%ENDPOINT%" --header "Authorization=Basic %B64%"';
 
 		// Codex's "Connect to a custom MCP" UI form — a field-by-field mapping so
 		// users know which Connection value goes where. %ENDPOINT%/%B64% are filled
@@ -1498,13 +1498,13 @@ class EMCP_Tools_Admin {
 			. esc_html__( 'Prefer Codex\'s UI? Choose “Connect to a custom MCP” → “Streamable HTTP”, then fill the form like this:', 'emcp-tools' )
 			. '</p>'
 			. '<table class="emcp-conn-guide"><tbody>'
-			. '<tr><th>' . esc_html__( 'Name', 'emcp-tools' ) . '</th><td><code>emcp-tools</code></td></tr>'
+			. '<tr><th>' . esc_html__( 'Name', 'emcp-tools' ) . '</th><td><code>%NAME%</code></td></tr>'
 			. '<tr><th>' . esc_html__( 'Transport', 'emcp-tools' ) . '</th><td>' . esc_html__( 'Streamable HTTP', 'emcp-tools' ) . '</td></tr>'
 			. '<tr><th>' . esc_html__( 'URL', 'emcp-tools' ) . '</th><td><code>%ENDPOINT%</code></td></tr>'
 			. '<tr><th>' . esc_html__( 'Bearer token env var', 'emcp-tools' ) . '</th><td>' . esc_html__( 'Leave blank — EMCP uses a WordPress Application Password (HTTP Basic), not a bearer token.', 'emcp-tools' ) . '</td></tr>'
 			. '<tr><th>' . esc_html__( 'Headers', 'emcp-tools' ) . '</th><td>' . esc_html__( 'Key', 'emcp-tools' ) . ' <code>Authorization</code> &middot; ' . esc_html__( 'Value', 'emcp-tools' ) . ' <code>Basic %B64%</code></td></tr>'
 			. '</tbody></table>'
-			. '<p class="description">' . esc_html__( 'Then Save. The terminal command below does the exact same thing if you prefer the CLI.', 'emcp-tools' ) . '</p>';
+			. '<p class="description">' . esc_html__( 'Then Save. The config blocks below do the same thing — “direct HTTP” for the URL + header approach, or the “Node proxy / npx” config if the HTTP transport gives you handshake trouble.', 'emcp-tools' ) . '</p>';
 
 		return array(
 			array(
@@ -1535,7 +1535,7 @@ class EMCP_Tools_Admin {
 				'image'       => 'gpt.png',
 				'guide_title' => __( 'Using the Codex “Custom MCP” form', 'emcp-tools' ),
 				'guide'       => $codex_guide,
-				'methods'     => array( 'bundle' => false, 'cli' => $codex_cli, 'ai_prompt' => false, 'json' => array( 'toml' ) ),
+				'methods'     => array( 'bundle' => false, 'cli' => $codex_cli, 'ai_prompt' => false, 'json' => array( 'toml', 'toml-stdio' ) ),
 			),
 			array(
 				'id'      => 'antigravity',

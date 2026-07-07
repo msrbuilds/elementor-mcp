@@ -1202,10 +1202,19 @@
 		return null;
 	}
 
+	// Per-site MCP server name derived from the domain, so multiple connected sites
+	// don't collide in a client's config (e.g. "emcp-sociable-sylvain-z29-zipwp-dev").
+	function emcpServerName() {
+		var host = '';
+		try { host = new URL( window.emcpConn.siteUrl || window.emcpConn.endpoint ).hostname; } catch ( e ) { host = ''; }
+		host = ( host || '' ).replace( /^www\./, '' ).replace( /[^a-zA-Z0-9]+/g, '-' ).replace( /^-+|-+$/g, '' ).toLowerCase();
+		return host ? ( 'emcp-' + host ) : 'emcp-tools';
+	}
+
 	// Build the JSON config object for a given client + json-variant key.
 	function emcpJsonConfig( variant ) {
 		var c = window.emcpConn;
-		var key = 'elementor-mcp';
+		var key = emcpServerName();
 		var npx = { command: 'npx', args: [ '-y', '@msrbuilds/emcp-proxy@latest' ],
 			env: { WP_URL: c.siteUrl, WP_USERNAME: c.username, WP_APP_PASSWORD: c.appPassword, MCP_PROTOCOL_VERSION: '2024-11-05' } };
 		var http = { type: 'http', url: c.endpoint, headers: { Authorization: 'Basic ' + c.b64 } };
@@ -1219,12 +1228,26 @@
 		return { mcpServers: servers };
 	}
 
+	// Codex config.toml — streamable HTTP (expects `http_headers`, an inline table).
 	function emcpTomlConfig() {
-		var c = window.emcpConn;
-		// Codex expects `http_headers` (inline table), not a `[…​.headers]` table.
-		return '[mcp_servers.emcp-tools]\n' +
+		var c = window.emcpConn, n = emcpServerName();
+		return '[mcp_servers.' + n + ']\n' +
 			'url = "' + c.endpoint + '"\n' +
 			'http_headers = { "Authorization" = "Basic ' + c.b64 + '" }';
+	}
+
+	// Codex config.toml — Node proxy over stdio (free npx alternative; robust with
+	// clients that struggle with the streamable-HTTP session handshake).
+	function emcpTomlStdioConfig() {
+		var c = window.emcpConn, n = emcpServerName();
+		return '[mcp_servers.' + n + ']\n' +
+			'command = "npx"\n' +
+			'args = ["-y", "@msrbuilds/emcp-proxy@latest"]\n\n' +
+			'[mcp_servers.' + n + '.env]\n' +
+			'WP_URL = "' + c.siteUrl + '"\n' +
+			'WP_USERNAME = "' + c.username + '"\n' +
+			'WP_APP_PASSWORD = "' + c.appPassword + '"\n' +
+			'MCP_PROTOCOL_VERSION = "2024-11-05"';
 	}
 
 	// Render one copy/download block.
@@ -1268,6 +1291,7 @@
 		//    %ENDPOINT%/%B64% are filled with the live, escaped values.
 		if ( client.guide ) {
 			var guide = client.guide
+				.replace( /%NAME%/g, emcpEscapeHtml( emcpServerName() ) )
 				.replace( /%ENDPOINT%/g, emcpEscapeHtml( window.emcpConn.endpoint ) )
 				.replace( /%B64%/g, emcpEscapeHtml( window.emcpConn.b64 ) );
 			html += emcpBlock( client.guide_title || 'Setup guide', guide );
@@ -1282,18 +1306,19 @@
 		}
 		// 2) CLI command
 		if ( m.cli ) {
-			var cli = m.cli.replace( /%ENDPOINT%/g, window.emcpConn.endpoint ).replace( /%B64%/g, window.emcpConn.b64 );
+			var cli = m.cli.replace( /%NAME%/g, emcpServerName() ).replace( /%ENDPOINT%/g, window.emcpConn.endpoint ).replace( /%B64%/g, window.emcpConn.b64 );
 			html += emcpCopyBlock( 'Terminal command', cli );
 		}
 		// 3) AI setup prompt
 		if ( m.ai_prompt ) {
-			var prompt = 'Add an MCP server named "emcp-tools" at ' + window.emcpConn.endpoint +
+			var prompt = 'Add an MCP server named "' + emcpServerName() + '" at ' + window.emcpConn.endpoint +
 				' using the HTTP transport with header  Authorization: Basic ' + window.emcpConn.b64;
 			html += emcpCopyBlock( 'Ask your AI to set it up (paste into chat)', prompt );
 		}
 		// 4) Manual JSON / TOML
 		( m.json || [] ).forEach( function ( variant ) {
-			if ( variant === 'toml' ) { html += emcpCopyBlock( 'Manual config (config.toml)', emcpTomlConfig() ); }
+			if ( variant === 'toml' ) { html += emcpCopyBlock( 'Manual config — direct HTTP (config.toml)', emcpTomlConfig() ); }
+			else if ( variant === 'toml-stdio' ) { html += emcpCopyBlock( 'Manual config — Node proxy / npx (config.toml)', emcpTomlStdioConfig() ); }
 			else {
 				var label = variant === 'npx' ? 'Manual config — Node proxy (npx)'
 					: variant === 'http' ? 'Manual config — direct HTTP'
