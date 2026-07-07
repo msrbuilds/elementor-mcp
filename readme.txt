@@ -3,7 +3,7 @@ Contributors: mianshahzadraza
 Tags: elementor, mcp, ai, page-builder, automation
 Requires at least: 6.9
 Tested up to: 7.0
-Stable tag: 3.1.0
+Stable tag: 3.1.1
 Requires PHP: 8.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -167,6 +167,15 @@ The plugin enforces WordPress capability checks on every tool. Read operations r
 2. Connection configuration page with copy-paste configs.
 
 == Changelog ==
+
+= 3.1.1 =
+A follow-up patch to 3.1.0.
+* Added: Themer PHP Templates review screen is now a full editor — CodeMirror (PHP syntax highlighting) plus Title and Type fields; saving re-validates and recompiles an attached template.
+* Added: Codex connection help — a field-by-field guide for Codex's "Custom MCP" form, and a Node-proxy (npx) config.toml option (via @msrbuilds/emcp-proxy) alongside the streamable-HTTP config.
+* Changed: Generated MCP client configs now name the server after the site's domain (e.g. emcp-your-site-com) instead of a fixed "emcp-tools", so connecting several sites in one AI client no longer collides.
+* Changed: Bundled Freemius SDK updated 2.13.2 -> 2.13.3; optimized an oversized bundled admin logo (~700KB smaller download).
+* Fixed: Codex config.toml now uses http_headers (not headers) so the generated config connects.
+* Fixed: Themer "Render with PHP template" dropdown updates live when the template type changes (new templates no longer stay on "choose a type first").
 
 = 3.1.0 =
 A big feature release: a builder-agnostic theme builder (EMCP Themer), a pluggable Modules framework (with Image Optimization), 10 always-on Gutenberg block tools, an in-editor AI Chat panel for the block editor, a dedicated plugin Dashboard, and in-dashboard updates for free users via GitHub releases.

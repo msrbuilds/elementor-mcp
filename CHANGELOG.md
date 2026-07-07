@@ -2,6 +2,23 @@
 
 All notable changes to MCP Tools for Elementor are documented in this file.
 
+## [3.1.1]
+
+> A follow-up patch: a proper code editor for Themer PHP Templates, better Codex connection help (a form guide + an npx config), per-site MCP server names, and the bundled Freemius SDK bumped to 2.13.3.
+
+### Added
+- **Themer PHP Templates — a real editor.** The review screen is now editable: a full **CodeMirror** editor (PHP syntax highlighting, the same core WordPress uses for its theme/plugin file editor) plus **Title** and **Type** fields. Saving re-validates the code and recompiles the template if it's attached.
+- **Codex connection help.** The Connection tab's Codex option now includes a field-by-field guide for Codex's “Custom MCP” form, and a **Node-proxy (npx) `config.toml`** option (via `@msrbuilds/emcp-proxy`) alongside the streamable-HTTP config — a robust fallback when the HTTP handshake misbehaves.
+
+### Changed
+- **Per-site MCP server names.** Every generated client config now names the server after the site's domain (e.g. `emcp-your-site-com`) instead of a fixed `emcp-tools`, so connecting several sites in one AI client no longer collides.
+- **Bundled Freemius SDK** updated 2.13.2 → 2.13.3.
+- Smaller download — optimized an oversized bundled admin logo (~700 KB lighter).
+
+### Fixed
+- **Codex `config.toml`** now uses `http_headers` (not `headers`), so the generated Codex config connects.
+- **Themer:** the “Render with PHP template” dropdown now updates live when you change the template type — a new template no longer stays stuck on “choose a template type first.”
+
 ## [3.1.0]
 
 > A big feature release: a builder-agnostic **theme builder (EMCP Themer)**, a pluggable **Modules** framework (with **Image Optimization**), **10 always-on Gutenberg block tools**, an in-editor **AI Chat** panel for the block editor, a dedicated plugin **Dashboard**, and **in-dashboard updates for free users** via GitHub releases.
