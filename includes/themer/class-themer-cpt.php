@@ -79,6 +79,7 @@ class EMCP_Tools_Themer_CPT {
 		// Native CPT-screen niceties: a Type column + the theme-adapter status notice.
 		add_filter( 'manage_' . self::POST_TYPE . '_posts_columns', array( $this, 'admin_columns' ) );
 		add_action( 'manage_' . self::POST_TYPE . '_posts_custom_column', array( $this, 'render_admin_column' ), 10, 2 );
+		add_action( 'admin_notices', array( $this, 'render_free_limits_notice' ) );
 		add_action( 'admin_notices', array( $this, 'render_adapter_notice' ) );
 		add_action( 'admin_notices', array( $this, 'render_type_mismatch_notice' ) );
 
@@ -130,6 +131,84 @@ class EMCP_Tools_Themer_CPT {
 		}
 		$type = (string) get_post_meta( (int) $post_id, EMCP_Tools_Themer_Index::META_TYPE, true );
 		echo $type ? '<strong>' . esc_html( ucfirst( $type ) ) . '</strong>' : '&mdash;';
+	}
+
+	/**
+	 * Whether this install can use Pro code (Themer unlimited templates + granular
+	 * conditions). Free installs get the quota gate and the upsell banner.
+	 *
+	 * @return bool
+	 */
+	private static function is_premium(): bool {
+		return function_exists( 'emcp_tools_fs' ) && emcp_tools_fs()->can_use_premium_code();
+	}
+
+	/**
+	 * Show the Free-tier limits and a Pro upsell banner on the CPT list screen.
+	 * Renders only for free installs; premium hides it entirely. Lists per-type
+	 * usage (used / cap) so the 1-per-type quota is visible before the user hits
+	 * the "Add New" wall, and states exactly what Pro unlocks.
+	 */
+	public function render_free_limits_notice(): void {
+		$screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
+		if ( ! $screen || 'edit-' . self::POST_TYPE !== $screen->id ) {
+			return;
+		}
+		if ( self::is_premium() || ! current_user_can( 'edit_posts' ) ) {
+			return;
+		}
+
+		// Human labels for each slot type, in display order.
+		$labels = array(
+			'header'  => __( 'Header', 'emcp-tools' ),
+			'footer'  => __( 'Footer', 'emcp-tools' ),
+			'single'  => __( 'Single', 'emcp-tools' ),
+			'archive' => __( 'Archive', 'emcp-tools' ),
+			'search'  => __( 'Search', 'emcp-tools' ),
+			'404'     => __( '404', 'emcp-tools' ),
+		);
+
+		$purple = '#8b5cf6';
+		$chips  = '';
+		foreach ( self::TYPES as $type ) {
+			$cap   = self::quota( $type );
+			$used  = self::count_of_type( $type );
+			$full  = $used >= $cap;
+			$label = isset( $labels[ $type ] ) ? $labels[ $type ] : ucfirst( $type );
+			// A chip per type: grey when room remains, purple-outlined when at cap.
+			$chips .= sprintf(
+				'<span style="display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:600;border:1px solid %1$s;background:%2$s;color:%3$s;">%4$s <span style="opacity:.8;font-weight:500;">%5$d/%6$d</span></span>',
+				$full ? $purple : '#dcdcde',
+				$full ? '#f5f3ff' : '#fff',
+				$full ? '#6d28d9' : '#3c434a',
+				esc_html( $label ),
+				(int) $used,
+				(int) $cap
+			);
+		}
+
+		printf(
+			'<div class="notice" style="border-left:4px solid %1$s;padding:14px 16px;background:#fff;">'
+				. '<div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:14px;">'
+					. '<div style="flex:1 1 420px;min-width:280px;">'
+						. '<p style="margin:0 0 6px;font-size:14px;font-weight:700;color:#1d2327;">%2$s</p>'
+						. '<p style="margin:0 0 10px;color:#50575e;">%3$s</p>'
+						. '<div style="display:flex;flex-wrap:wrap;gap:6px;">%4$s</div>'
+					. '</div>'
+					. '<div style="flex:0 0 auto;text-align:right;">'
+						. '<a href="%5$s" target="_blank" rel="noopener noreferrer" style="display:inline-flex;align-items:center;gap:6px;padding:8px 18px;background:%1$s;color:#fff;border-radius:6px;font-size:13px;font-weight:600;text-decoration:none;"><span class="dashicons dashicons-star-filled" style="font-size:15px;width:15px;height:15px;"></span>%6$s</a>'
+						. '<p style="margin:8px 0 0;font-size:12px;color:#787c82;">%7$s</p>'
+					. '</div>'
+				. '</div>'
+			. '</div>',
+			$purple,
+			esc_html__( 'You\'re on EMCP Themer Free', 'emcp-tools' ),
+			esc_html__( 'Free includes 1 template per type with site-wide / post-type / archive conditions. Upgrade to Pro for unlimited templates per type, granular display conditions (specific pages, terms, authors, dates), Exclude rules, and priority ordering.', 'emcp-tools' ),
+			$chips, // Already escaped above.
+			esc_url( function_exists( 'emcp_tools_upgrade_url' ) ? emcp_tools_upgrade_url() : 'https://emcptools.com/pricing' ),
+			esc_html__( 'Upgrade to Pro', 'emcp-tools' ),
+			esc_html__( 'Unlimited templates + conditions', 'emcp-tools' )
+		);
 	}
 
 	/**

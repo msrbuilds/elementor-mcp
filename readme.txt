@@ -173,6 +173,7 @@ A follow-up patch to 3.1.0.
 * Added: Resize images over MCP — the Image Optimization module adds an in-place image resizer and a resize-media tool (scale to fit, or crop:true for exact width x height); the original is backed up (reversible) and all sub-sizes + WebP are regenerated. Registers only when the Image Optimization module is enabled.
 * Added: Themer PHP Templates review screen is now a full editor — CodeMirror (PHP syntax highlighting) plus Title and Type fields; saving re-validates and recompiles an attached template.
 * Added: Codex connection help — a field-by-field guide for Codex's "Custom MCP" form, and a Node-proxy (npx) config.toml option (via @msrbuilds/emcp-proxy) alongside the streamable-HTTP config.
+* Added: EMCP Themer now shows a Free-limits banner (free installs only) on the templates screen — a per-type usage chip for each slot (Header/Footer/Single/Archive/Search/404, used/cap) so the 1-per-type limit is visible before you hit it, with a one-click Upgrade to Pro for unlimited templates and granular conditions.
 * Changed: Generated MCP client configs now name the server after the site's domain (e.g. emcp-your-site-com) instead of a fixed "emcp-tools", so connecting several sites in one AI client no longer collides.
 * Changed: Bundled Freemius SDK updated 2.13.2 -> 2.13.3; optimized an oversized bundled admin logo (~700KB smaller download).
 * Fixed: Codex config.toml now uses http_headers (not headers) so the generated config connects.
