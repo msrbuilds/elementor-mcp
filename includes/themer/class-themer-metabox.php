@@ -105,6 +105,62 @@ class EMCP_Tools_Themer_Metabox {
 				),
 			)
 		);
+
+		// PHP-template picker: rebuild its option list client-side whenever the type
+		// select changes (server-side it's only correct for the saved type — a new
+		// template starts with no type, so the dropdown must react live).
+		if ( class_exists( 'EMCP_Tools_Themer_PHP' ) && EMCP_Tools_Themer_PHP::enabled() ) {
+			$templates = array();
+			foreach ( EMCP_Tools_Themer_PHP_Store::list_templates() as $tpl ) {
+				$templates[] = array( 'id' => (int) $tpl['template_id'], 'title' => (string) $tpl['title'], 'type' => (string) $tpl['type'] );
+			}
+			wp_localize_script(
+				'emcp-themer-conditions',
+				'emcpThemerPhp',
+				array(
+					'templates' => $templates,
+					'i18n'      => array(
+						'none'       => __( '— None (use builder content) —', 'emcp-tools' ),
+						'chooseType' => __( 'Choose a template type first to list matching PHP templates.', 'emcp-tools' ),
+						'noMatch'    => __( 'No PHP templates match this type yet. Ask your AI agent to create one.', 'emcp-tools' ),
+					),
+				)
+			);
+			wp_add_inline_script( 'emcp-themer-conditions', self::php_picker_script() );
+		}
+	}
+
+	/** Inline JS that keeps the "Render with PHP template" select in sync with the type. */
+	private static function php_picker_script(): string {
+		return <<<'JS'
+(function(){
+	var data = window.emcpThemerPhp; if (!data) return;
+	function init(){
+		var typeSel = document.getElementById('emcp-themer-type');
+		var phpSel  = document.getElementById('emcp-themer-php');
+		var msg     = document.getElementById('emcp-themer-php-msg');
+		if (!typeSel || !phpSel) return;
+		var attached = phpSel.getAttribute('data-attached') || '0';
+		function rebuild(){
+			var type = typeSel.value;
+			while (phpSel.firstChild) phpSel.removeChild(phpSel.firstChild);
+			var none = document.createElement('option'); none.value='0'; none.textContent=data.i18n.none; phpSel.appendChild(none);
+			if (!type){ phpSel.style.display='none'; if(msg){ msg.textContent=data.i18n.chooseType; msg.style.display=''; } return; }
+			var matches = (data.templates||[]).filter(function(t){ return t.type===type || t.type==='any'; });
+			matches.forEach(function(t){
+				var o=document.createElement('option'); o.value=String(t.id); o.textContent=t.title+' ('+t.type+')';
+				if (String(t.id)===String(attached)) o.selected=true;
+				phpSel.appendChild(o);
+			});
+			phpSel.style.display='';
+			if (msg){ msg.textContent = matches.length ? '' : data.i18n.noMatch; msg.style.display = matches.length ? 'none' : ''; }
+		}
+		typeSel.addEventListener('change', rebuild);
+		rebuild();
+	}
+	if (document.readyState==='loading') document.addEventListener('DOMContentLoaded', init); else init();
+})();
+JS;
 	}
 
 	/**
@@ -153,16 +209,21 @@ class EMCP_Tools_Themer_Metabox {
 		echo '<br><span class="description">' . esc_html__( 'What this template replaces on the front end. A Single template renders in the content area (keeping your theme header/footer); a Header/Footer template replaces the theme\'s header/footer.', 'emcp-tools' ) . '</span></p>';
 		echo '</div>';
 
-		// Optional PHP-template override (right column).
+		// Optional PHP-template override (right column). The <select> + message are
+		// always rendered; php_picker_script() (re)builds the options client-side to
+		// match the chosen type — a new template starts with no saved type.
 		if ( $php_enabled ) {
-			$attached = (int) get_post_meta( $post->ID, '_emcp_themer_php_template', true );
+			$attached  = (int) get_post_meta( $post->ID, '_emcp_themer_php_template', true );
+			$has_type  = ( '' !== $type );
 			echo '<div class="emcp-themer-field" style="flex:1 1 260px;min-width:240px;">';
 			echo '<p style="margin-top:0;"><label for="emcp-themer-php"><strong>' . esc_html__( 'Render with PHP template', 'emcp-tools' ) . '</strong></label><br>';
-			if ( '' === $type ) {
-				echo '<span class="description">' . esc_html__( 'Choose a template type first to list matching PHP templates.', 'emcp-tools' ) . '</span></p>';
-			} else {
-				echo '<select id="emcp-themer-php" name="emcp_themer_php_template" style="width:100%;max-width:340px;">';
-				printf( '<option value="0">%s</option>', esc_html__( '— None (use builder content) —', 'emcp-tools' ) );
+			printf(
+				'<select id="emcp-themer-php" name="emcp_themer_php_template" data-attached="%d" style="width:100%%;max-width:340px;%s">',
+				$attached,
+				$has_type ? '' : 'display:none;'
+			);
+			printf( '<option value="0">%s</option>', esc_html__( '— None (use builder content) —', 'emcp-tools' ) );
+			if ( $has_type ) {
 				foreach ( self::eligible_templates( $type ) as $tpl ) {
 					printf(
 						'<option value="%1$d" %2$s>%3$s</option>',
@@ -171,9 +232,14 @@ class EMCP_Tools_Themer_Metabox {
 						esc_html( $tpl['title'] . ' (' . $tpl['type'] . ')' )
 					);
 				}
-				echo '</select>';
-				echo '<br><span class="description">' . esc_html__( 'If selected, this PHP template renders this region instead of the builder content.', 'emcp-tools' ) . '</span></p>';
 			}
+			echo '</select>';
+			printf(
+				'<span id="emcp-themer-php-msg" class="description"%s>%s</span>',
+				$has_type ? ' style="display:none;"' : '',
+				$has_type ? '' : esc_html__( 'Choose a template type first to list matching PHP templates.', 'emcp-tools' )
+			);
+			echo '<br><span class="description">' . esc_html__( 'If selected, this PHP template renders this region instead of the builder content.', 'emcp-tools' ) . '</span></p>';
 			echo '</div>';
 		}
 
