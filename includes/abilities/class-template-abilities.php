@@ -56,8 +56,8 @@ class EMCP_Tools_Template_Abilities {
 		);
 
 		if ( defined( 'ELEMENTOR_PRO_VERSION' ) ) {
-			$names[] = 'emcp-tools/create-theme-template';
-			$names[] = 'emcp-tools/set-template-conditions';
+			$names[] = 'emcp-tools/create-elementor-theme-template';
+			$names[] = 'emcp-tools/set-elementor-template-conditions';
 			$names[] = 'emcp-tools/list-dynamic-tags';
 			$names[] = 'emcp-tools/set-dynamic-tag';
 			$names[] = 'emcp-tools/create-popup';
@@ -368,7 +368,7 @@ class EMCP_Tools_Template_Abilities {
 
 	private function register_create_theme_template(): void {
 		emcp_tools_register_ability(
-			'emcp-tools/create-theme-template',
+			'emcp-tools/create-elementor-theme-template',
 			array(
 				'label'               => __( 'Create Theme Template', 'emcp-tools' ),
 				'description'         => __( 'Creates a new Elementor Pro theme builder template (header, footer, single, archive, 404, etc.).', 'emcp-tools' ),
@@ -446,7 +446,7 @@ class EMCP_Tools_Template_Abilities {
 
 	private function register_set_template_conditions(): void {
 		emcp_tools_register_ability(
-			'emcp-tools/set-template-conditions',
+			'emcp-tools/set-elementor-template-conditions',
 			array(
 				'label'               => __( 'Set Template Conditions', 'emcp-tools' ),
 				'description'         => __( 'Sets display conditions for a theme builder template (e.g., Entire Site, specific pages, post types).', 'emcp-tools' ),
@@ -816,7 +816,7 @@ class EMCP_Tools_Template_Abilities {
 						),
 						'conditions' => array(
 							'type'        => 'array',
-							'description' => __( 'Display conditions, same format as set-template-conditions.', 'emcp-tools' ),
+							'description' => __( 'Display conditions, same format as set-elementor-template-conditions.', 'emcp-tools' ),
 							'items'       => array( 'type' => 'array', 'items' => array( 'type' => 'string' ) ),
 						),
 						'timing'     => array(
@@ -856,7 +856,7 @@ class EMCP_Tools_Template_Abilities {
 		}
 
 		if ( null !== $conditions && is_array( $conditions ) ) {
-			// Same conditions-cache-safe path as set-template-conditions (#38).
+			// Same conditions-cache-safe path as set-elementor-template-conditions (#38).
 			$result = $this->save_elementor_conditions( $post_id, $conditions );
 			if ( is_wp_error( $result ) ) {
 				return $result;

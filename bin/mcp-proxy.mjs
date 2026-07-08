@@ -120,9 +120,14 @@ function doHttpRequest(options, payload) {
     }
 
     const req = doRequest(options, (res) => {
-      let body = '';
-      res.on('data', (chunk) => { body += chunk; });
+      // Collect raw Buffer chunks and decode ONCE at the end. Doing `body += chunk`
+      // decodes each network chunk as an independent UTF-8 string, which corrupts
+      // any multi-byte character that straddles a chunk boundary (→ U+FFFD). That
+      // silently mangles non-ASCII tool output on larger (multi-chunk) responses.
+      const chunks = [];
+      res.on('data', (chunk) => { chunks.push(chunk); });
       res.on('end', () => {
+        const body = Buffer.concat(chunks).toString('utf8');
         resolve({ body, headers: res.headers, statusCode: res.statusCode });
       });
     });

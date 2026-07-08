@@ -1,6 +1,6 @@
 {
   "name": "@msrbuilds/emcp-proxy",
-  "version": "1.8.3",
+  "version": "1.8.4",
   "description": "stdio↔HTTP proxy that connects MCP clients (Claude Desktop, Claude Code, etc.) to a remote WordPress site running the MCP Tools for Elementor (EMCP) plugin.",
   "type": "module",
   "bin": {

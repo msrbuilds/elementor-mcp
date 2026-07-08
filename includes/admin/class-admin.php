@@ -1652,10 +1652,22 @@ class EMCP_Tools_Admin {
 		// stays curated rather than derived. To stop it drifting, cross-check
 		// each catalog slug against the live registry and log any that isn't a
 		// registered ability (a renamed/removed tool, or env-gated).
-		if ( defined( 'WP_DEBUG' ) && WP_DEBUG && function_exists( 'wp_get_ability' ) ) {
+		if ( defined( 'WP_DEBUG' ) && WP_DEBUG && class_exists( 'WP_Abilities_Registry' ) ) {
+			$emcp_registry = WP_Abilities_Registry::get_instance();
+			// Tools that only register when their module/feature/flag is on are
+			// legitimately absent — skip them so the guard flags genuine drift
+			// (renamed/removed tools) and not expected environment-gating.
+			$emcp_conditional = array_merge(
+				self::themer_php_tool_slugs(),
+				array( 'emcp-tools/resize-media' )
+			);
 			foreach ( $catalog as $emcp_group ) {
 				foreach ( array_keys( $emcp_group['tools'] ?? array() ) as $emcp_slug ) {
-					if ( ! wp_get_ability( $emcp_slug ) ) {
+					// is_registered() is a silent isset() check — unlike wp_get_ability()
+					// / get_registered(), it does not _doing_it_wrong() "Ability not
+					// found" for env-gated tools, which was flooding debug.log (#71).
+					if ( ! $emcp_registry->is_registered( $emcp_slug )
+						&& ! in_array( $emcp_slug, $emcp_conditional, true ) ) {
 						// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
 						error_log( '[EMCP Tools] get_all_tools: catalog tool "' . $emcp_slug . '" is not in the ability registry (drift or environment-gated).' );
 					}
@@ -2098,14 +2110,14 @@ class EMCP_Tools_Admin {
 						'description' => __( 'Applies a saved template to a target page.', 'emcp-tools' ),
 						'badges'      => array(),
 					),
-					'emcp-tools/create-theme-template' => array(
-						'label'       => __( 'Create Theme Template', 'emcp-tools' ),
-						'description' => __( 'Creates a theme builder template (header, footer, single, archive, etc).', 'emcp-tools' ),
+					'emcp-tools/create-elementor-theme-template' => array(
+						'label'       => __( 'Create Elementor Theme Template', 'emcp-tools' ),
+						'description' => __( 'Creates a native Elementor Pro theme builder template (header, footer, single, archive, etc). For the builder-agnostic EMCP Themer, use create-theme-template.', 'emcp-tools' ),
 						'badges'      => array( 'elementor-pro' ),
 					),
-					'emcp-tools/set-template-conditions' => array(
-						'label'       => __( 'Set Template Conditions', 'emcp-tools' ),
-						'description' => __( 'Sets display conditions on a theme builder template.', 'emcp-tools' ),
+					'emcp-tools/set-elementor-template-conditions' => array(
+						'label'       => __( 'Set Elementor Template Conditions', 'emcp-tools' ),
+						'description' => __( 'Sets display conditions on a native Elementor Pro theme builder template.', 'emcp-tools' ),
 						'badges'      => array( 'elementor-pro' ),
 					),
 					'emcp-tools/list-dynamic-tags'    => array(
