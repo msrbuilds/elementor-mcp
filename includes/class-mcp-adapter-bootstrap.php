@@ -53,9 +53,28 @@ final class EMCP_Tools_Adapter_Bootstrap {
 	 * @since 1.7.4
 	 */
 	public static function ensure(): void {
-		// A standalone MCP Adapter plugin is already active — defer to it.
+		// A copy of the MCP Adapter is already loadable. That can be a standalone
+		// MCP Adapter plugin (which boots it) OR another plugin that merely bundles
+		// and autoloads the WP\MCP classes without booting a server. WooCommerce
+		// 10.5+ does the latter: it registers the WP\MCP autoloader (so the
+		// class_exists() check below is true) but only instantiates the adapter
+		// when its experimental "MCP Integration" feature flag is enabled, which is
+		// off by default. "Loadable" is not "booted": if nobody boots the adapter,
+		// mcp_adapter_init never fires, our MCP server route is never created, and
+		// the endpoint 404s. So ensure the adapter is booted instead of deferring
+		// to a no-op.
 		if ( class_exists( '\WP\MCP\Core\McpAdapter' ) ) {
 			self::$source = 'external';
+
+			// Idempotent singleton: a no-op if the external owner already booted
+			// the adapter, and the safety net when it only autoloaded the classes
+			// (e.g. WooCommerce with its MCP feature flag off). This only fires
+			// mcp_adapter_init; it does not register any other plugin's tools —
+			// those are added on that hook by each plugin's own (gated) code.
+			if ( class_exists( '\WP\MCP\Plugin' ) ) {
+				\WP\MCP\Plugin::instance();
+			}
+
 			return;
 		}
 
