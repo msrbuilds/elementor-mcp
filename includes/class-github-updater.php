@@ -133,6 +133,18 @@ class EMCP_Tools_GitHub_Updater {
 			return $transient;
 		}
 
+		// Compare against the version WordPress freshly parsed from the plugin
+		// header ($transient->checked), NOT the EMCP_TOOLS_VERSION constant. Right
+		// after a self-update the old plugin file is still loaded in this request
+		// (and may be OPcache-cached), so the constant still reads the OLD version
+		// and we'd wrongly keep offering the update the user just installed. The
+		// `checked` map is rebuilt from the on-disk headers after the update, so
+		// it reflects the true installed version. Fall back to the constant when
+		// WordPress hasn't populated `checked` (e.g. a bare transient).
+		$installed = ( isset( $transient->checked ) && is_array( $transient->checked ) && ! empty( $transient->checked[ EMCP_TOOLS_BASENAME ] ) )
+			? (string) $transient->checked[ EMCP_TOOLS_BASENAME ]
+			: EMCP_TOOLS_VERSION;
+
 		$item = (object) array(
 			'id'            => 'github.com/' . self::REPO,
 			'slug'          => $this->slug,
@@ -150,7 +162,7 @@ class EMCP_Tools_GitHub_Updater {
 
 		if (
 			'' !== $release['package']
-			&& version_compare( $release['version'], EMCP_TOOLS_VERSION, '>' )
+			&& version_compare( $release['version'], $installed, '>' )
 		) {
 			if ( ! isset( $transient->response ) || ! is_array( $transient->response ) ) {
 				$transient->response = array();
@@ -260,8 +272,20 @@ class EMCP_Tools_GitHub_Updater {
 			return;
 		}
 		$plugins = (array) ( $data['plugins'] ?? array() );
-		if ( in_array( EMCP_TOOLS_BASENAME, $plugins, true ) ) {
-			delete_transient( self::TRANSIENT );
+		if ( ! in_array( EMCP_TOOLS_BASENAME, $plugins, true ) ) {
+			return;
+		}
+
+		// Drop our cached GitHub release so the next check re-fetches.
+		delete_transient( self::TRANSIENT );
+
+		// Also remove our now-satisfied entry from the update_plugins transient so
+		// the "update available" notice clears immediately, without waiting for the
+		// next scheduled check. (WP rebuilds the rest on the next request.)
+		$updates = get_site_transient( 'update_plugins' );
+		if ( is_object( $updates ) ) {
+			unset( $updates->response[ EMCP_TOOLS_BASENAME ] );
+			set_site_transient( 'update_plugins', $updates );
 		}
 	}
 
