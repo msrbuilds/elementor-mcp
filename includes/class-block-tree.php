@@ -194,14 +194,24 @@ class EMCP_Tools_Block_Tree {
 			return $blocks;
 		}
 
-		// Adjust the target index when source and target share the same parent and
-		// the source sits before the insertion point (removal shifts it left by 1).
-		if ( in_array( $mode, array( 'before', 'after' ), true )
-			&& count( $from ) === count( $to )
-			&& array_slice( $from, 0, -1 ) === array_slice( $to, 0, -1 )
-			&& (int) end( $from ) < (int) end( $to ) ) {
-			$to[ count( $to ) - 1 ] = (int) $to[ count( $to ) - 1 ] - 1;
-			$position['path']       = $to;
+		// A move whose target lies inside the moved node's own subtree would remove the
+		// node and then fail to re-insert it (its path no longer resolves), losing the
+		// block. Reject it as a no-op.
+		$depth = count( $from );
+		if ( count( $to ) >= $depth && array_slice( $to, 0, $depth ) === $from ) {
+			return $blocks;
+		}
+
+		// remove() shifts every later sibling under $from's parent left by one. When the
+		// target path passes through that parent at a position after $from, the index there
+		// is now stale — decrement it so insert() still lands correctly. Applies to every
+		// mode (before/after siblings AND inside a later container) at any depth.
+		$shift = $depth - 1;
+		if ( count( $to ) > $shift
+			&& array_slice( $from, 0, $shift ) === array_slice( $to, 0, $shift )
+			&& (int) $to[ $shift ] > (int) $from[ $shift ] ) {
+			$to[ $shift ]     = (int) $to[ $shift ] - 1;
+			$position['path'] = $to;
 		}
 
 		$without = self::remove( $blocks, $from );
