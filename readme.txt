@@ -3,7 +3,7 @@ Contributors: mianshahzadraza
 Tags: elementor, mcp, ai, page-builder, automation
 Requires at least: 6.9
 Tested up to: 7.0
-Stable tag: 3.1.2
+Stable tag: 3.1.3
 Requires PHP: 8.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -167,6 +167,13 @@ The plugin enforces WordPress capability checks on every tool. Read operations r
 2. Connection configuration page with copy-paste configs.
 
 == Changelog ==
+
+= 3.1.3 =
+A bug-fix patch (thanks @gthibo for two detailed reports).
+* Fixed: the "update available" notice no longer persists after you update the plugin. The free GitHub updater compared against the compiled version constant, which is stale in the same request right after a self-update; it now uses the version WordPress parsed from the plugin header and clears the update transient immediately.
+* Fixed: MCP tool-name collision — the EMCP Themer and Elementor Pro Theme Builder tools both claimed create-theme-template / set-template-conditions, so one was silently dropped. The Elementor Pro tools are renamed to create-elementor-theme-template / set-elementor-template-conditions; the Themer keeps the originals. (#71)
+* Fixed: debug-log noise ("Ability ... not found") from the admin tool-catalog drift check on environment-gated tools (resize-media, Themer PHP). Now uses a silent registry check. (#71)
+* Fixed: the Node proxy (@msrbuilds/emcp-proxy) corrupted non-ASCII text on large responses (multi-byte characters split across network chunks). Now buffers and decodes once. Update with npx @msrbuilds/emcp-proxy@latest (>= 1.8.4). (#70)
 
 = 3.1.2 =
 A bug-fix patch for three community-reported issues (thanks @Mrshahidali420).

@@ -2,6 +2,16 @@
 
 All notable changes to MCP Tools for Elementor are documented in this file.
 
+## [3.1.3]
+
+> A bug-fix patch: resolves a plugin-update notice that lingered after updating, an MCP tool-name collision, debug-log noise, and a proxy text-corruption bug. Thanks to @gthibo for two detailed reports.
+
+### Fixed
+- **"Update available" notice persisted after updating.** The free GitHub updater compared the latest release against the compiled `EMCP_TOOLS_VERSION` constant, which is stale in the same request right after a self-update (the old file is still loaded, and can be OPcache-cached) — so it kept offering the version you just installed. It now compares against the version WordPress freshly parsed from the plugin header, and clears its entry from the update transient immediately after updating.
+- **MCP tool-name collision (`create-theme-template` / `set-template-conditions`).** The EMCP Themer tools and the Elementor Pro Theme Builder tools claimed the same two ability names; with both active, one was silently dropped (and logged "already registered"). The Elementor Pro Theme Builder tools are renamed to `create-elementor-theme-template` / `set-elementor-template-conditions`; the Themer keeps the original names. Both now coexist. ([#71](https://github.com/msrbuilds/elementor-mcp/issues/71))
+- **Debug-log noise ("Ability … not found").** The admin tool-catalog drift check used a logging registry lookup for environment-gated tools (e.g. `resize-media`, the Themer PHP tools). It now uses a silent registry check and skips legitimately conditional tools, so it flags real drift only. ([#71](https://github.com/msrbuilds/elementor-mcp/issues/71))
+- **Proxy corrupted non-ASCII on large responses.** `@msrbuilds/emcp-proxy` decoded each network chunk independently, mangling any multi-byte character split across a chunk boundary. It now buffers and decodes once (`Buffer.concat`). Update with `npx @msrbuilds/emcp-proxy@latest` (≥ 1.8.4). ([#70](https://github.com/msrbuilds/elementor-mcp/issues/70))
+
 ## [3.1.2]
 
 > A bug-fix patch resolving three community-reported issues (thanks @Mrshahidali420): the MCP endpoint 404ing when WooCommerce 10.5+ is active, `move-block` silently dropping a block, and filesystem writes not taking effect under OPcache.
