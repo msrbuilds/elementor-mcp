@@ -315,6 +315,7 @@ class EMCP_Tools_Filesystem_Abilities {
 		if ( false === $bytes ) {
 			return new \WP_Error( 'write_failed', __( 'Could not write the file (check permissions).', 'emcp-tools' ) );
 		}
+		self::invalidate_php_opcache( $abs );
 		EMCP_Tools_Filesystem_Guard::log( 'write', $abs );
 		return array(
 			'path'   => EMCP_Tools_Filesystem_Guard::to_relative( $abs ),
@@ -401,6 +402,7 @@ class EMCP_Tools_Filesystem_Abilities {
 		if ( false === file_put_contents( $abs, $updated ) ) {
 			return new \WP_Error( 'write_failed', __( 'Could not write the file (check permissions).', 'emcp-tools' ) );
 		}
+		self::invalidate_php_opcache( $abs );
 		EMCP_Tools_Filesystem_Guard::log( 'edit', $abs );
 		return array(
 			'path'         => EMCP_Tools_Filesystem_Guard::to_relative( $abs ),
@@ -464,11 +466,24 @@ class EMCP_Tools_Filesystem_Abilities {
 		if ( ! unlink( $abs ) ) {
 			return new \WP_Error( 'delete_failed', __( 'Could not delete the file (check permissions).', 'emcp-tools' ) );
 		}
+		self::invalidate_php_opcache( $abs );
 		EMCP_Tools_Filesystem_Guard::log( 'delete', $abs );
 		return array(
 			'path'    => EMCP_Tools_Filesystem_Guard::to_relative( $abs ),
 			'deleted' => true,
 			'backup'  => $backup ? EMCP_Tools_Filesystem_Guard::to_relative( $backup ) : null,
 		);
+	}
+
+	/**
+	 * Invalidate the OPcache entry for a freshly written or removed PHP file so the
+	 * change takes effect on the next request instead of executing stale bytecode.
+	 * Mirrors the guard already used in class-php-snippet-store / class-widget-store /
+	 * themer/php/class-themer-php-store.
+	 */
+	private static function invalidate_php_opcache( string $abs ): void {
+		if ( function_exists( 'opcache_invalidate' ) && '.php' === strtolower( substr( $abs, -4 ) ) ) {
+			opcache_invalidate( $abs, true );
+		}
 	}
 }
