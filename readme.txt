@@ -3,7 +3,7 @@ Contributors: mianshahzadraza
 Tags: elementor, mcp, ai, page-builder, automation
 Requires at least: 6.9
 Tested up to: 7.0
-Stable tag: 3.1.1
+Stable tag: 3.1.2
 Requires PHP: 8.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -167,6 +167,12 @@ The plugin enforces WordPress capability checks on every tool. Read operations r
 2. Connection configuration page with copy-paste configs.
 
 == Changelog ==
+
+= 3.1.2 =
+A bug-fix patch for three community-reported issues (thanks @Mrshahidali420).
+* Fixed: MCP endpoint 404 when WooCommerce 10.5+ is active — WooCommerce autoloads the same MCP Adapter but only boots it behind its own off-by-default flag; EMCP now boots the already-loaded adapter itself so /wp-json/mcp/emcp-tools-server works regardless. (#64)
+* Fixed: move-block could silently delete a block when moving it inside a later container or across levels (the target index shifted on removal). The index compensation now covers every mode/depth, and a move into the block's own subtree is a no-op. (#67)
+* Fixed: write-file/edit-file/delete-file now invalidate OPcache after writing PHP, so edits take effect immediately on hosts with opcache.validate_timestamps=0 instead of running stale bytecode. (#66)
 
 = 3.1.1 =
 A follow-up patch to 3.1.0.

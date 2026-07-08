@@ -2,6 +2,15 @@
 
 All notable changes to MCP Tools for Elementor are documented in this file.
 
+## [3.1.2]
+
+> A bug-fix patch resolving three community-reported issues (thanks @Mrshahidali420): the MCP endpoint 404ing when WooCommerce 10.5+ is active, `move-block` silently dropping a block, and filesystem writes not taking effect under OPcache.
+
+### Fixed
+- **MCP endpoint 404 with WooCommerce 10.5+ active.** WooCommerce 10.5+ bundles and autoloads the same MCP Adapter classes but only *boots* the adapter when its own (off-by-default) "MCP Integration" feature flag is on. EMCP treated "classes loadable" as "adapter booted" and deferred, so `mcp_adapter_init` never fired and `/wp-json/mcp/emcp-tools-server` returned 404. EMCP now boots the already-loaded adapter itself (idempotent), so its endpoint no longer depends on an unrelated WooCommerce flag. ([#64](https://github.com/msrbuilds/elementor-mcp/issues/64))
+- **`move-block` could silently delete a block.** Moving a block *inside* a later container, or across levels, shifted the target path when the source was removed — losing the block (or dropping it in the wrong container) while reporting success. The index-shift compensation is now generalized to every mode and depth, and a move whose target is inside the moved node's own subtree is rejected as a no-op. ([#67](https://github.com/msrbuilds/elementor-mcp/issues/67))
+- **Filesystem writes didn't take effect under OPcache.** `write-file` / `edit-file` / `delete-file` didn't invalidate the OPcache entry for a PHP file, so on hosts with `opcache.validate_timestamps=0` the old bytecode kept running and an agent's edit appeared to do nothing. They now invalidate OPcache after each `.php` write, matching the plugin's other PHP-writing paths. ([#66](https://github.com/msrbuilds/elementor-mcp/issues/66))
+
 ## [3.1.1]
 
 > A follow-up patch: a proper code editor for Themer PHP Templates, better Codex connection help (a form guide + an npx config), per-site MCP server names, and the bundled Freemius SDK bumped to 2.13.3.
