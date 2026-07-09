@@ -116,6 +116,13 @@ class EMCP_Tools_Ability_Registrar {
 		$gutenberg->register();
 		$this->ability_names = array_merge( $this->ability_names, $gutenberg->get_ability_names() );
 
+		// Compact tool mode dispatcher (list-tools/get-tool-schema/call-tool).
+		// Registered ALWAYS so wp_get_ability() resolves them, but deliberately
+		// NOT added to $this->ability_names — register_mcp_server() surfaces them
+		// only when dispatcher mode is on (otherwise they'd double the surface).
+		$dispatcher = new EMCP_Tools_Dispatcher_Abilities();
+		$dispatcher->register();
+
 		// EMCP Themer MCP tools — only when the (free) Themer module is active.
 		// The module boots on init:5, after this runs, so gate on the option directly.
 		if ( class_exists( 'EMCP_Tools_Themer_Abilities' )
