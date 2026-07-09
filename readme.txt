@@ -170,10 +170,13 @@ The plugin enforces WordPress capability checks on every tool. Read operations r
 
 = 3.2.0 =
 A core-engine release.
-* Added: Compact tool mode (opt-in Connection-tab toggle) — surfaces 3 dispatcher meta-tools (list-tools / get-tool-schema / call-tool) instead of ~140 individual tools, so clients that cap tool counts can still reach the whole surface. call-tool delegates each tool's own permission check. Obsoletes Low-tools mode.
+* Added: Compact tool mode (opt-in Tools-tab toggle) — surfaces 3 dispatcher meta-tools (list-tools / get-tool-schema / call-tool) instead of ~140 individual tools, so clients that cap tool counts can still reach the whole surface. call-tool delegates each tool's own permission check; your per-tool toggles still apply. Replaces the old Low-tools mode.
 * Added: richer discovery context — the server description now includes a compact environment summary (WordPress/PHP/Elementor versions, atomic-element support, notable active plugins) so agents orient without extra calls.
-* Added (Pro): Agent-facing Skills — the bundled Agent Skills are now discoverable and loadable by any connected MCP agent at runtime via two read-only tools, list-skills and get-skill, plus a Skills catalog in the discovery context.
+* Added (Pro): Agent-facing Skills — the bundled Agent Skills are now discoverable and loadable by any connected MCP agent at runtime via two read-only tools, list-skills and get-skill, plus a Skills catalog in the discovery context. The bundle grows to 7 skills (Elementor page building, Gutenberg, EMCP Themer, performance, security, SEO & accessibility, PHP snippets). The Skills page now shows two ways to use them — install locally or load at runtime.
+* Added (Pro): Agent Skills module (Modules tab, on by default) — the on/off switch for that runtime exposure; turn it off to remove the injection (the local Skills download is unaffected).
 * Changed: the bundled MCP Adapter is now a Composer dependency loaded via the Automattic Jetpack Autoloader, which arbitrates the highest adapter version process-wide when multiple active plugins bundle it (WooCommerce, Automattic MCP) — no "class already declared" clashes regardless of load order.
+* Changed: removed Low-tools mode (superseded by Compact tool mode).
+* Fixed: a clean install no longer emits a "Failed to open stream" notice from the autoloader's file map (regenerated without dev dependencies); trimmed non-runtime files from the shipped vendor bundle.
 
 = 3.1.3 =
 A bug-fix patch (thanks @gthibo for two detailed reports).
