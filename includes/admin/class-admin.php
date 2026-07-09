@@ -658,6 +658,20 @@ class EMCP_Tools_Admin {
 			)
 		);
 
+		// Compact tool mode (dispatcher). OFF by default; surfaces 3 meta-tools
+		// instead of every individual tool for clients that cap the tool count.
+		register_setting(
+			self::SETTINGS_GROUP_SERVER,
+			EMCP_Tools_Plugin::OPTION_DISPATCHER_MODE,
+			array(
+				'type'              => 'string',
+				'default'           => '0',
+				'sanitize_callback' => static function ( $value ) {
+					return '1' === (string) $value ? '1' : '0';
+				},
+			)
+		);
+
 		// OpenAI-strict tool schemas (Connection tab). OFF by default — it's only
 		// for OpenAI-compatible strict function-calling clients (CrewAI, etc.) and
 		// would otherwise break Gemini/Antigravity. (GitHub #42)

@@ -188,6 +188,26 @@ $emcp_tools_server_enabled = class_exists( 'EMCP_Tools_Plugin' )
 					</p>
 				</div>
 
+				<?php // Card C: compact tool mode (dispatcher). ?>
+				<div class="emcp-conn-card">
+					<h2 class="emcp-conn-card-title"><?php esc_html_e( 'Compact tool mode', 'emcp-tools' ); ?></h2>
+
+					<label class="emcp-switch emcp-conn-toggle">
+						<input
+							type="checkbox"
+							name="<?php echo esc_attr( EMCP_Tools_Plugin::OPTION_DISPATCHER_MODE ); ?>"
+							value="1"
+							<?php checked( '1' === (string) get_option( EMCP_Tools_Plugin::OPTION_DISPATCHER_MODE, '0' ) ); ?>
+						/>
+						<span class="elementor-mcp-toggle" aria-hidden="true"><span class="elementor-mcp-toggle-track"></span></span>
+						<span class="emcp-switch-label"><?php esc_html_e( 'Expose 3 dispatcher tools instead of every individual tool', 'emcp-tools' ); ?></span>
+					</label>
+
+					<p class="elementor-mcp-activate-note">
+						<?php esc_html_e( 'Turn this on if your MCP client caps the number of tools (e.g. some Claude Desktop builds). The server then exposes just list-tools, get-tool-schema, and call-tool: the AI discovers tools, fetches a tool\'s inputs, then runs it by name. Every tool\'s own permission still applies. Leave OFF for the full one-tool-per-ability surface.', 'emcp-tools' ); ?>
+					</p>
+				</div>
+
 			</div>
 		</form>
 
