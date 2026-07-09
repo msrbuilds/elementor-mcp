@@ -30,5 +30,6 @@ assets/js/editor-elementor.js
 assets/js/editor-gutenberg.js
 assets/css/ai-chat.css
 assets/css/editor.css
+assets/emcp-prompts-v1.zip
 tests
 tools

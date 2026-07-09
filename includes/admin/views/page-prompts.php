@@ -247,4 +247,33 @@ $emcp_tools_upgrade_url = emcp_tools_upgrade_url();
 
 	<?php endif; ?>
 
+	<?php // -------------------------------------------------------------------
+	// Legacy (v1) prompt library. Bundled with premium builds only, and served
+	// through a capability + nonce + license gated admin-post handler.
+	// ------------------------------------------------------------------- ?>
+
+	<?php
+	$emcp_tools_v1_available = class_exists( 'EMCP_Tools_Pro_Prompts' )
+		&& method_exists( 'EMCP_Tools_Pro_Prompts', 'v1_zip_available' )
+		&& EMCP_Tools_Pro_Prompts::v1_zip_available();
+	?>
+
+	<?php if ( $emcp_tools_v1_available ) : ?>
+		<div class="elementor-mcp-prompts-legacy">
+			<div class="elementor-mcp-prompts-legacy-content">
+				<h3>
+					<?php esc_html_e( 'Prompts v1 (legacy)', 'emcp-tools' ); ?>
+					<span class="elementor-mcp-badge elementor-mcp-badge--pro">PRO</span>
+				</h3>
+				<p class="description">
+					<?php esc_html_e( 'The original blueprints, which prescribe an explicit section-by-section Elementor layout. The current prompts instead hand the AI a style guide, section intents, and hard standards, then let it design the layout — and they work with any page builder. Download the v1 set if you prefer the older, more prescriptive style.', 'emcp-tools' ); ?>
+				</p>
+			</div>
+			<a href="<?php echo esc_url( EMCP_Tools_Pro_Prompts::v1_download_url() ); ?>" class="button elementor-mcp-prompts-legacy-btn">
+				<span class="dashicons dashicons-download" aria-hidden="true"></span>
+				<?php esc_html_e( 'Download Prompts v1 (.zip)', 'emcp-tools' ); ?>
+			</a>
+		</div>
+	<?php endif; ?>
+
 </div>

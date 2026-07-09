@@ -1,137 +1,82 @@
-Create a chic, modern landing page for "Velvet & Co." — an upscale hair salon and styling studio.
+**Page builder:** Elementor
 
-## CRITICAL LAYOUT RULES
-- For side-by-side columns, use a parent container with flex_direction=row. Children will auto-get content_width=full with equal percentage widths.
-- NEVER set flex_wrap or _flex_size in any container settings — these are stripped automatically and cause layout issues.
-- NEVER set _flex_size: 'grow' on any element.
-- Top-level containers should use content_width=boxed (default).
-- Do NOT manually set content_width or width on row children — the build-page tool calculates these automatically.
+# Velvet & Co. — upscale hair salon landing page
 
-## DESIGN SYSTEM
+Design and build a **complete, production-quality landing page** for "Velvet & Co.", an upscale hair salon and styling studio. **You own the design.** If web search is available, research 2–3 genuinely well-designed salon/beauty-studio sites first and form a point of view; then decide the layout, composition, and section design yourself. Do not fall back to a generic centered-hero + three-identical-cards template — bring editorial composition, asymmetry, scale contrast, and rhythm. **Vary your hero composition to fit this brand specifically — in particular, do not reach for the overused "one large photo with a smaller photo card overlapping its corner" hero unless it genuinely serves this design; choose an opener you would not use for a coffee shop or a law firm.** The sections below define **what the page must communicate, not how it must look.**
 
-### Color Palette
-- Primary: #2D2D2D (soft black)
-- Accent: #D4A373 (warm bronze/caramel)
-- Accent Light: #EADBC8 (champagne blush)
-- Pink: #E8B4B8 (dusty rose)
-- Dark: #1A1A1A (deep black)
-- Light Text: #FFFFFF
-- Body Text: #6B6B6B (warm gray)
-- Light BG: #FAF7F4 (warm cream)
-- Card BG: #FFFFFF
-- Border: #E8E0D8
+## Style guide (constraints, not layout)
 
-### Typography
-- Headings: weight 400-600 (elegant, not heavy), title case
-- Section subtitles: uppercase, letter-spacing=4px, size=11px, color=#D4A373
-- Body text: size 16px, color=#6B6B6B, line-height 1.8
+**Palette — flat colors only, no gradients:**
 
-## IMAGE SOURCING — DO THIS FIRST
-1. "luxury hair salon interior modern" — hero background
-2. "hair stylist cutting professional" — services
-3. "hair coloring highlights professional" — services
-4. "beautiful hairstyle woman salon" — results
-5. "hair salon wash station luxury" — experience
-6. "hair products professional display" — retail
-7. "hair salon team portrait" — team
-8. "bridal hairstyle updo elegant" — services
+| Role | Value |
+|---|---|
+| Surface, light | `#F7F1EE` (ivory blush) |
+| Surface, dark bands | `#171215` (noir) |
+| Ink / headings | `#1E181B` |
+| Accent — use sparingly: one word, prices, buttons, icons | `#B34A5E` (deep rose) |
+| Muted body text | `#8A7A7E` |
+| Hairlines / dividers | `#E8DCD6` |
 
-## SVG ICONS
-Elegant, thin-line icons: Scissors, Hair dryer, Comb, Mirror, Sparkle, Calendar, Clock, Crown, Heart, Star.
+**Typography:** Display = **Libre Caslon Display** (fallback: Cormorant Garamond) — refined, editorial serif with fashion-magazine poise; elegant weight, never heavy. Body = **Inter**, 16–18px, relaxed line-height (~1.7–1.8). Slim uppercase eyebrows with very wide letter-spacing read like a masthead.
 
-## PAGE STRUCTURE
+**Feel:** chic, glossy, fashion-editorial. Polished portraiture and salon photography carry the glamour; the ivory-blush surface stays quiet so hair is the hero. Refined hairline dividers over box shadows; restrained radii; luxury lives in whitespace and typographic precision.
 
-### 1. HERO SECTION (2-column: text left, booking on right)
-- Background: sideloaded salon interior, background_size='cover'
-- Overlay: background_overlay_color='#1A1A1A', background_overlay_opacity={size:0.6,unit:'px'}
-- Min-height: {size:650,unit:'px'}
-- Row:
-  - Left: "WELCOME TO VELVET & CO." label (#D4A373), "Where Beauty Meets Artistry" heading (#FFFFFF, 50px, weight=400), subtext (#EADBC8), "Book Appointment" + "Our Services" buttons
-  - Right: Booking card — white bg, "Book Your Visit" heading, form (Name, Phone, Service select [Cut & Style, Color, Highlights, Balayage, Keratin Treatment, Bridal, Blowout], Preferred Date, "Book Now" button — #D4A373 bg)
+**Motion:** graceful and understated — soft entrance reveals and image hovers. Use only what the chosen builder provides natively; **no custom JavaScript and no hand-rolled motion CSS.**
 
-### 2. SERVICES (6 cards in 3x2)
-- Background: background_color='#FAF7F4'
-- "OUR SERVICES" subtitle + "Crafted for You" heading
-- 6 cards: icon, service name, description, starting price (#D4A373)
-  - Cut & Style (from $65) | Color & Highlights (from $120) | Balayage & Ombré (from $180) | Keratin Treatment (from $250) | Bridal & Special Occasion (from $150) | Blowout & Styling (from $45)
+## Design signature (make this page distinct — adapt as you see fit)
+These are compositional cues, not layout mechanics. Use them to give this hair salon its own look rather than a generic template:
+- **Hero:** treat the opener as a stacked editorial masthead — the salon name set huge like a fashion-magazine cover title, a thin rule, the "Where Beauty Meets Artistry" promise beneath, with a single polished portrait held to one side; a cover, not a photo with a smaller photo card on its corner.
+- **Services:** compose the six services as a designed price menu — an elegant column with hairline dividers and right-aligned starting prices — rather than a card grid.
+- **Masthead rules:** carry slim uppercase eyebrows and hairline rules through every section like a running magazine masthead.
+- **Shape language:** restrained radii, quiet ivory-blush whitespace, and deep rose reserved for one word, prices, and actions.
 
-### 3. ABOUT (2-column: image left, text right)
-- Background: background_color='#FFFFFF'
-- Left: Image, Right: "ABOUT US" subtitle, "Passion for Perfect Hair" heading, story, stats: "12+" years | "25K+" clients | "8" expert stylists
+## Sections — what each must communicate (design them your way)
 
-### 4. TEAM (4 stylist cards)
-- Background: background_color='#FAF7F4'
-- Row 4: image, name (#2D2D2D), specialty (#D4A373), "Book with [Name]" link
-  - "Mia Chen — Color Specialist" | "James Hart — Creative Director" | "Sofia Reyes — Bridal Expert" | "Aisha Patel — Texture & Curls"
+1. **Hero** — instant editorial glamour; the brand name, the "Where Beauty Meets Artistry" promise, a supporting line, primary + secondary actions (book appointment / view services).
+2. **Services** — all 6 services below with descriptions and starting prices; treat the service list as a designed price menu, not a card dump.
+3. **About** — the salon's story and craft philosophy, anchored by the three proof stats: 12+ years · 25K+ clients · 8 expert stylists.
+4. **The team** — the four stylists below with their specialties; each should feel individually bookable.
+5. **Portfolio** — a curated gallery of finished work that proves the craft; consistency of grade matters more than quantity.
+6. **Retail** — the salon carries professional product lines below; convey take-the-salon-home quality.
+7. **Testimonials** — three distinct, believable client quotes with names; write them yourself.
+8. **Call to action** — one strong closing moment: your best hair day awaits, book the transformation.
+9. **Book an appointment** — a working appointment-request form (name, phone, email, service, preferred stylist, preferred date/time) built with the builder's native form element, with the phone number given equal prominence as an alternative. If the builder has no form element available, use a clearly labeled call/email call-to-action instead of omitting this.
+10. **Visit + Footer** — address, hours, phone, email, a map if the builder supports one; then brand + tagline, quick links, contact, copyright.
 
-### 5. GALLERY (3x2 image grid)
-- Background: background_color='#FFFFFF'
-- "PORTFOLIO" subtitle + "Our Latest Work" heading
-- 6 images in 2 rows of 3
+## Content facts (use these verbatim)
 
-### 6. PRODUCTS SECTION
-- Background: background_color='#2D2D2D'
-- "RETAIL" subtitle (#D4A373) + "Shop Our Favorites" heading (#FFFFFF)
-- Row 3 product cards: product image, name, price, "Shop" link — dark card bg
+**Services:** Cut & Style — precision cut with consultation, wash, and finish — from $65 · Color & Highlights — full color or dimensional highlights — from $120 · Balayage & Ombré — hand-painted, lived-in color — from $180 · Keratin Treatment — smoothing treatment for frizz-free weeks — from $250 · Bridal & Special Occasion — trials, updos, and day-of styling — from $150 · Blowout & Styling — wash, blowout, and finish — from $45
 
-### 7. TESTIMONIALS (3 cards)
-- Background: background_color='#FAF7F4'
-- Stars (#D4A373), quote, name
+**Team:** Mia Chen — Color Specialist · James Hart — Creative Director · Sofia Reyes — Bridal Expert · Aisha Patel — Texture & Curls
 
-### 8. CTA
-- Background: background_color='#D4A373'
-- "Your Best Hair Day Awaits" heading (#FFFFFF), "Book Your Transformation" button (#2D2D2D bg)
+**Stats:** 12+ years · 25K+ happy clients · 8 expert stylists
 
-### 9. FOOTER
-- Background: background_color='#1A1A1A'
-- 4 columns: Brand | Services | Info | Contact — color=#8B8B8B/#FFFFFF
-- Copyright
+**Retail lines:** Oribe · Olaplex · Kérastase
 
-## CUSTOM CSS
+**Tagline:** "Where Beauty Meets Artistry"
 
-### Page-Level:
-```css
-html { scroll-behavior: smooth; }
-.elementor-button { transition: all 0.4s ease !important; letter-spacing: 1.5px !important; }
-.elementor-button:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(212, 163, 115, 0.25); }
-.elementor-image img { transition: transform 0.6s ease; }
-.elementor-image:hover img { transform: scale(1.04); }
-.elementor-field-group input:focus, .elementor-field-group select:focus { border-color: #D4A373 !important; box-shadow: 0 0 0 3px rgba(212, 163, 115, 0.15) !important; }
-::selection { background: #D4A373; color: #FFFFFF; }
-```
+**Visit:** 42 Mercer St, New York, NY · Tue–Sat 9AM–7PM, Sun 10AM–4PM, Mon closed · (555) 337-8810 · book@velvetandco.com · est. 2014
 
-### Element-Level — Service Cards:
-```css
-selector { transition: transform 0.4s ease, box-shadow 0.4s ease; }
-selector:hover { transform: translateY(-8px); box-shadow: 0 20px 50px rgba(0,0,0,0.08); }
-```
+## Standards (non-negotiable)
 
-### Element-Level — Gallery Images:
-```css
-selector { overflow: hidden; }
-selector img { transition: transform 0.6s ease; }
-selector:hover img { transform: scale(1.08); }
-```
+### Accessibility — WCAG 2.1 AA
+- Text contrast ≥ 4.5:1 (≥ 3:1 for large text) against its actual background — check text over photos and dark bands.
+- Exactly one H1; headings descend logically (no skipped levels for styling reasons).
+- Descriptive alt text on every image; meaningful link/button labels (never "click here").
+- Comfortable touch targets on buttons and links; readable body size (≥ 16px); every form field has a visible, associated label.
 
-### Element-Level — Booking Form:
-```css
-selector { box-shadow: 0 25px 60px rgba(0,0,0,0.25); }
-```
+### Images — real photography in every slot
+- Source real photos from **Unsplash, Pexels, or Pixabay** (use the available stock-image search/sideload tools if present, otherwise direct source URLs). Never leave an image slot empty; never use placeholder URLs.
+- Curate for a consistent glossy, fashion-editorial grade of portraiture and salon interiors that matches the palette; pick images that share a mood, not six random salon photos.
 
-## CUSTOM JAVASCRIPT (add-custom-js, wrap_dom_ready=true):
-```javascript
-const observer = new IntersectionObserver((entries) => {
-  entries.forEach(entry => {
-    if (entry.isIntersecting) { entry.target.style.opacity = '1'; entry.target.style.transform = 'translateY(0)'; observer.unobserve(entry.target); }
-  });
-}, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
-document.querySelectorAll('.elementor-heading-title, .elementor-image, .elementor-icon-box-wrapper, .elementor-widget-text-editor').forEach(el => {
-  el.style.opacity = '0'; el.style.transform = 'translateY(25px)'; el.style.transition = 'opacity 0.7s ease, transform 0.7s ease'; observer.observe(el);
-});
-```
+### Icons — one consistent SVG set
+- Use inline SVG icons in a single consistent style — Lucide/Feather spec: `viewBox="0 0 24 24"`, `fill="none"`, `stroke="currentColor"`, `stroke-width="1.75"`, round caps/joins. Generate what you need (scissors, sparkle, calendar, clock, crown, heart, star, map-pin…).
+- Do not use the builder's bundled icon font/library, and no emoji as icons.
 
-## EXECUTION ORDER
-1. Search & sideload images → 2. Upload SVG icons → 3. Build page → 4. Page-level CSS → 5. Element-level CSS → 6. Custom JS
+### Builder-native construction
+- Build with the chosen builder's **native elements/widgets/blocks** and its native styling, spacing, and motion features. Inspect the builder's available elements and their options first if tools for that exist.
+- Raw HTML/custom code embedded inside a visual builder is a **last resort** for a micro-detail that is genuinely impossible natively — never for whole sections. (If the chosen target IS plain HTML/CSS, write clean semantic HTML with modern CSS instead.)
 
-## FINAL CHECKLIST
-- background_background + background_color on every colored container — All text colors explicit — NO flex_wrap or _flex_size — Chic/salon aesthetic: bronze accents, warm creams, elegant typography — Service cards with pricing — Booking form in hero — Publish as draft
+### Completeness — a half-built page is a failure
+- Build and **fully populate one section at a time**: real headline, real copy, every service with its starting price, every stylist named, every quote written, every image placed — then move on. Never scaffold empty containers to "fill later."
+- When finished, walk the entire page and fix any empty element, placeholder text, missing image, or contrast failure. Publish as a **draft**.

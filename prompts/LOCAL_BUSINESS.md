@@ -1,350 +1,78 @@
-Create a professional landing page for "FlowFix Plumbing" — a local plumbing service business.
+**Page builder:** Elementor
 
-## CRITICAL LAYOUT RULES
-- For side-by-side columns, use a parent container with flex_direction=row. Children will auto-get content_width=full with equal percentage widths.
-- NEVER set flex_wrap or _flex_size in any container settings — these are stripped automatically and cause layout issues.
-- NEVER set _flex_size: 'grow' on any element.
-- Top-level containers should use content_width=boxed (default).
-- Do NOT manually set content_width or width on row children — the build-page tool calculates these automatically.
+# SecureKey Locksmith & Security — local service business landing page
 
-## DESIGN SYSTEM (use consistently across ALL sections)
+Design and build a **complete, production-quality landing page** for "SecureKey Locksmith & Security", a licensed local locksmith and home-security service. This prompt is the versatile, adapt-me template — swap the business name, services, and palette to fit any local service company. **You own the design.** If web search is available, research 2–3 genuinely well-designed local-service/trades sites first and form a point of view; then decide the layout, composition, and section design yourself. Do not fall back to a generic centered-hero + three-identical-cards template — bring editorial composition, asymmetry, scale contrast, and rhythm. **Vary your hero composition to fit this brand specifically — in particular, do not reach for the overused "one large photo with a smaller photo card overlapping its corner" hero unless it genuinely serves this design; choose an opener you would not use for a coffee shop or a law firm.** The sections below define **what the page must communicate, not how it must look.**
 
-### Color Palette
-- Primary: #1B4D7A (deep navy blue)
-- Primary Dark: #0F2E4A (darker navy for hover/accents)
-- Accent: #F59E0B (warm amber/gold)
-- Accent Dark: #D97706 (darker amber for hover)
-- Dark: #111827 (near-black for text)
-- Light Text: #FFFFFF
-- Body Text: #4B5563 (gray-600)
-- Light BG: #F3F4F6 (gray-100)
-- Card BG: #FFFFFF
-- Footer BG: #0F172A (slate-900)
+## Style guide (constraints, not layout)
 
-### Typography
-- Headings: uppercase, bold (700-800 weight)
-- Section subtitles: uppercase, letter-spacing, smaller size, color=accent
-- Body text: size 16-17px, color=#4B5563, line-height 1.7
+**Palette — flat colors only, no gradients:**
 
-### Background Colors on Containers
-- Set background_background='classic' AND background_color='#hex' — both are required
-- For overlays: background_overlay_background='classic', background_overlay_color='#hex', background_overlay_opacity={size:0.75,unit:'px'}
+| Role | Value |
+|---|---|
+| Surface, light | `#FBFAF8` (warm white) |
+| Surface, dark bands | `#232830` (deep slate) |
+| Ink / headings | `#232830` |
+| Accent — use sparingly: one word, key numbers, buttons, icons | `#D97706` (warm amber) |
+| Muted body text | `#6E6A63` |
+| Hairlines / dividers | `#E8E5DF` |
 
-## IMAGE SOURCING — DO THIS FIRST
-Before building the page, use the search-images and sideload-image tools to download these images into the Media Library:
-1. "plumber working pipes professional" — for hero background
-2. "plumbing repair service professional" — for about section
-3. "modern bathroom renovation luxury" — for gallery
-4. "kitchen sink plumbing installation" — for gallery
-5. "water heater installation professional" — for gallery
-6. "pipe wrench plumbing tools closeup" — for gallery
-7. "commercial plumbing industrial" — for gallery
-8. "drain cleaning service professional" — for gallery
+**Typography:** Display = **Inter Tight** (fallback: Inter) — clean, confident grotesque; strong weights and tight leading on headlines, real scale contrast between levels. Body = **Inter**, 16–18px, relaxed line-height (~1.6–1.7). Small uppercase eyebrows with wide letter-spacing are on-brand.
 
-Use the actual sideloaded image IDs and URLs in the page structure. Do NOT use placeholder URLs.
+**Feel:** clean, confident, timeless — the least themed of designs, but never bland: editorial composition, deliberate scale contrast, generous whitespace. Hairline dividers over box shadows; modest radii (6–10px). Trust is the product — let numbers, plain language, and real work photos carry it.
 
-## SVG ICONS — USE THESE INSTEAD OF ELEMENTOR LIBRARY
-Use the upload-svg-icon tool or inline SVG in HTML widgets for icons. Do NOT use Elementor's default icon library (fa-solid, eicon, etc.). Design simple, clean SVG icons or use common SVG icon paths for:
-- Wrench/tool icon (services)
-- Water drop icon (hero/brand)
-- Shield/checkmark icon (trust/guarantee)
-- Clock icon (24/7 availability)
-- Phone icon (contact)
-- Map pin icon (location)
-- Star icon (reviews)
-- Dollar/price icon (pricing)
+**Motion:** minimal and purposeful — subtle entrance reveals only; a service business should feel steady, not showy. Use only what the chosen builder provides natively; **no custom JavaScript and no hand-rolled motion CSS.**
 
-## PAGE STRUCTURE
+## Design signature (make this page distinct — adapt as you see fit)
+These are compositional cues, not layout mechanics. Use them to give this service business its own look rather than a generic template:
+- **Hero:** a type-first opener with no photo above the fold — a trust-forward headline and the phone number as the focal element, carried by deliberate scale and a strong horizontal rule system rather than a hero image.
+- **Services:** present the six services as a plain-language problem index on hairline dividers, so a customer finds their problem in seconds, rather than six identical shadowed cards.
+- **Trust numerals:** set the four stats as oversized numerals on the deep-slate band so the proof reads instantly.
+- **Shape language:** modest 6–10px radii and generous whitespace; let the warm-amber accent appear only on actions and a few key numbers.
 
-### 1. HERO SECTION (2-column: text left, booking form right)
-Full-width container with:
-- Background: use the sideloaded plumber hero image (background_background='classic', background_image={url:'...', id:XX}, background_size='cover', background_position='center center')
-- Dark overlay: background_overlay_background='classic', background_overlay_color='#0F172A', background_overlay_opacity={size:0.75,unit:'px'}
-- Min-height: {size:650,unit:'px'}
-- Padding: {top:'80',right:'0',bottom:'80',left:'0',unit:'px'}
-- **Row container** with 2 children (will auto-split 50/50):
+## Sections — what each must communicate (design them your way)
 
-  **Left column** (text content, align_items='flex-start'):
-  - Small label text: "EMERGENCY PLUMBING? WE'RE ON IT." — color=#F59E0B, size=14px, uppercase, letter-spacing
-  - Main heading: "Expert Plumbing Solutions You Can Trust" — color=#FFFFFF, size=48px, weight=800, uppercase
-  - Subtext paragraph: 2-3 sentences about FlowFix — color=#E5E7EB, size=18px
-  - Row container with:
-    - CTA button: "Call Now: (555) 123-4567" — background_color=#F59E0B, text_color=#111827, border_radius={top:30,right:30,bottom:30,left:30,unit:'px'}, padding
-    - Small text: "5.0 ★★★★★ · 2,400+ Jobs" — color=#FFFFFF
+1. **Hero** — immediate competence and reachability; the brand name, a trust-forward headline, a line about fast licensed 24/7 lockout and security service, the phone number as a primary action plus a free-quote request, and the rating proof (5.0 ★ · 3,100+ jobs).
+2. **Trust stats** — the four numbers that close the deal: 18+ years experience · 3,100+ jobs completed · 24/7 emergency service · 100% satisfaction rate.
+3. **Services** — all 6 services below with a short plain-language description of each; a customer should find their problem in seconds.
+4. **Why SecureKey** — the company story in brief: locally owned, licensed & insured, background-checked technicians, upfront pricing, and a workmanship guarantee.
+5. **Recent work** — proof of real completed jobs across homes, cars, and commercial sites.
+6. **Pricing** — the 3 service plans below with prices and inclusions; Standard flagged as most popular.
+7. **Testimonials** — three distinct, believable customer quotes with names; write them yourself.
+8. **Request a free quote** — a working quote-request form (full name, phone, email, service needed, service address, preferred time) built with the builder's native form element, with the phone number given equal prominence as an alternative. If the builder has no form element available, use a clearly labeled call/email call-to-action instead of omitting this.
+9. **Contact** — phone, email, address, office hours, 24/7 emergency line, service area, and a map if the builder supports one.
+10. **Footer** — brand + tagline, quick links, contact, copyright.
 
-  **Right column** (booking form card):
-  - Inner container with background_background='classic', background_color='#FFFFFF', border_radius={top:16,right:16,bottom:16,left:16,unit:'px'}, padding={top:40,right:35,bottom:40,left:35,unit:'px'}
-  - Heading: "Book a Service" — color=#1B4D7A, size=24px, weight=700, align=center
-  - Small text: "Get a free estimate within 24 hours" — color=#4B5563, align=center
-  - **Form widget** (if Elementor Pro) with fields:
-    - Full Name (text, required, placeholder="Your Full Name")
-    - Phone Number (tel, required, placeholder="(555) 000-0000")
-    - Email Address (email, required, placeholder="email@example.com")
-    - Service Needed (select: Pipe Repair, Leak Detection, Drain Cleaning, Water Heater, Emergency Service, Bathroom Renovation, Other)
-    - Preferred Date (date field)
-    - Brief Description (textarea, placeholder="Describe your plumbing issue...")
-    - Submit button: "Request Free Estimate" — background_color=#F59E0B, text_color=#111827, full-width, border_radius, font-weight bold
-  - Small trust text below form: "Your information is secure. We respond within 2 hours." — color=#6B7280, size=12px, align=center
+## Content facts (use these verbatim)
 
-### 2. TRUST BAR (quick stats ribbon)
-- Background: background_background='classic', background_color='#1B4D7A'
-- Padding: {top:'25',right:'0',bottom:'25',left:'0',unit:'px'}
-- Row container with 4 children (equal width):
-  - Each child: centered column container with:
-    - Counter widget or heading: "15+" / "2,400+" / "24/7" / "100%" — color=#FFFFFF, size=28px, weight=800
-    - Small text: "Years Experience" / "Jobs Completed" / "Emergency Service" / "Satisfaction Rate" — color=#CBD5E1, size=13px, uppercase, letter-spacing
+**Services:** Emergency Lockout — home, car, or office, on-site within the hour · Lock Repair & Rekeying — worn, jammed, or post-move locks made secure · Key Cutting & Duplication — standard, high-security, and transponder car keys · Smart Lock Installation — keypad, fingerprint, and app-controlled deadbolts · Home Security Setup — cameras, sensors, and monitored alarm systems · Commercial Access Control — master-key systems, keypads, and panic hardware
 
-### 3. SERVICES SECTION (6 icon boxes in 3x2 grid)
-- Section background: background_background='classic', background_color='#F3F4F6'
-- Padding: {top:'80',right:'0',bottom:'80',left:'0',unit:'px'}
-- Section subtitle: "OUR SERVICES" — centered, color=#F59E0B, size=14px, uppercase, letter-spacing
-- Section heading: "Professional Plumbing Services for Every Need" — centered, color=#1B4D7A, size=36px, uppercase
-- Gap: {column:20, row:20, unit:'px'}
-- Row 1: 3-column row container, each child is a column container with:
-  - White card background (background_background='classic', background_color='#FFFFFF')
-  - Border radius, padding={top:40,right:30,bottom:40,left:30,unit:px}, center-aligned
-  - SVG icon (circular amber background), heading (h3, #1B4D7A), description text (#4B5563)
-  - Services: Pipe Repair & Installation | Leak Detection | Drain Cleaning
-- Row 2: Same pattern with: Water Heater Service | Emergency Plumbing | Bathroom Renovation
+**Pricing plans:** Basic — $79 — service call, single lockout or rekey, 30-day warranty · Standard — $139 (Most Popular) — full service call, rekey up to 3 locks, security walk-through, 1-year warranty · Premium — $239 — priority scheduling, whole-home lock & entry-point audit, one smart-lock install, 2-year warranty
 
-### 4. ABOUT SECTION (2 columns: image left, content right)
-- Section background: background_background='classic', background_color='#FFFFFF'
-- Padding: {top:'80',right:'0',bottom:'80',left:'0',unit:'px'}
-- Row container with 2 children (50% each auto):
-  - Left column: Image widget using sideloaded about image, border_radius
-  - Right column (text-align left, do NOT center-align):
-    - Subtitle: "ABOUT FLOWFIX" — color=#F59E0B, uppercase
-    - Heading: "Your Trusted Local Plumbing Experts" — color=#1B4D7A
-    - Text paragraph: Company story, 15+ years, licensed team — color=#4B5563
-    - Stats row (inner row container with 3 children):
-      - "15+" / "Years Experience"
-      - "5K+" / "Projects Done"
-      - "24/7" / "Availability"
-      Each stat: heading (color=#1B4D7A, bold) + small text below (color=#4B5563)
+**Stats:** 18+ years experience · 3,100+ jobs completed · 24/7 emergency service · 100% satisfaction rate · 5.0 ★ average rating
 
-### 5. CTA BANNER SECTION
-- Background: background_background='classic', background_color='#1B4D7A'
-- Padding: {top:'60',right:'0',bottom:'60',left:'0',unit:'px'}
-- Row container:
-  - Left (text): Heading "Ready to Fix Your Plumbing?" color=#FFFFFF + subtext color=#CBD5E1
-  - Right: Button "Call Now: (555) 123-4567" — background_color=#F59E0B, text_color=#111827, large, rounded
+**Contact:** 1180 Industry Blvd, Suite 4, Austin, TX · Office Mon–Sat 7 AM–7 PM, emergency line 24/7 · (555) 123-4567 · service@securekeyaustin.com · Licensed & insured · Serving greater Austin · est. 2007
 
-### 6. PROJECTS GALLERY
-- Section background: background_background='classic', background_color='#F3F4F6'
-- Padding: {top:'80',right:'0',bottom:'80',left:'0',unit:'px'}
-- Subtitle + Heading centered
-- Row container with 3 columns (first row), each containing an image widget with the sideloaded gallery images
-- Second row container with 3 more gallery images
-- Each image: border_radius, object-fit cover
+## Standards (non-negotiable)
 
-### 7. PRICING SECTION (3 price cards)
-- Section background: background_background='classic', background_color='#FFFFFF'
-- Padding: {top:'80',right:'0',bottom:'80',left:'0',unit:'px'}
-- Subtitle + Heading centered
-- Row container with 3 children (cards):
-  - Each card: white background, border (border_border='solid', border_width={top:1,right:1,bottom:1,left:1,unit:'px'}, border_color='#E5E7EB'), border_radius, padding
-  - Plan name heading, price heading (large, color=#1B4D7A), feature list (icon-list widget with checkmarks), CTA button
-  - Plans: Basic ($89), Standard ($149 — FEATURED with amber border-top or background accent), Premium ($249)
-  - Featured card: slightly different styling (accent border or background tint)
+### Accessibility — WCAG 2.1 AA
+- Text contrast ≥ 4.5:1 (≥ 3:1 for large text) against its actual background — check text over photos and dark bands.
+- Exactly one H1; headings descend logically (no skipped levels for styling reasons).
+- Descriptive alt text on every image; meaningful link/button labels (never "click here").
+- Comfortable touch targets on buttons and links; readable body size (≥ 16px); every form field has a visible, associated label.
 
-### 8. TESTIMONIALS SECTION
-- Background: background_background='classic', background_color='#F3F4F6'
-- Padding: {top:'80',right:'0',bottom:'80',left:'0',unit:'px'}
-- Subtitle + Heading centered
-- Row container with 3 testimonial cards:
-  - Each card: white background, padding, border_radius
-  - Star rating (5 stars, color=#F59E0B)
-  - Quote text in italics — color=#4B5563
-  - Customer name (bold, #111827) + "Verified Customer" in smaller text (#6B7280)
+### Images — real photography in every slot
+- Source real photos from **Unsplash, Pexels, or Pixabay** (use the available stock-image search/sideload tools if present, otherwise direct source URLs). Never leave an image slot empty; never use placeholder URLs.
+- Curate for a consistent clean, natural grade that matches the palette; pick photos of real technicians and real finished work that share one mood, not six random locksmith photos.
 
-### 9. CONTACT SECTION (2 columns: info left, map right)
-- Background: background_background='classic', background_color='#1B4D7A'
-- Padding: {top:'80',right:'0',bottom:'80',left:'0',unit:'px'}
-- Row container:
-  - Left: Heading "Get In Touch" color=#FFFFFF, text with phone/email/address info color=#CBD5E1, social icons
-  - Right: Google Maps widget with a real US address or a contact info card
+### Icons — one consistent SVG set
+- Use inline SVG icons in a single consistent style — Lucide/Feather spec: `viewBox="0 0 24 24"`, `fill="none"`, `stroke="currentColor"`, `stroke-width="1.75"`, round caps/joins. Generate what you need (key, lock, shield-check, clock, phone, map-pin, star, badge-dollar…).
+- Do not use the builder's bundled icon font/library, and no emoji as icons.
 
-### 10. FOOTER (4 columns)
-- Background: background_background='classic', background_color='#0F172A'
-- Padding: {top:'60',right:'0',bottom:'60',left:'0',unit:'px'}
-- Row container with 4 children:
-  - Col 1: Company name heading, brief description, social icons — all color=#94A3B8 / #FFFFFF
-  - Col 2: "Quick Links" heading + text list (Home, About, Services, Projects) — color=#94A3B8
-  - Col 3: "Services" heading + text list (Pipe Repair, Leak Detection, etc.) — color=#94A3B8
-  - Col 4: "Contact" heading + address, phone, email — color=#94A3B8
-- Divider widget (color=#1E293B)
-- Copyright text centered: "© 2026 FlowFix Plumbing. All rights reserved." — color=#64748B
+### Builder-native construction
+- Build with the chosen builder's **native elements/widgets/blocks** and its native styling, spacing, and motion features. Inspect the builder's available elements and their options first if tools for that exist.
+- Raw HTML/custom code embedded inside a visual builder is a **last resort** for a micro-detail that is genuinely impossible natively — never for whole sections. (If the chosen target IS plain HTML/CSS, write clean semantic HTML with modern CSS instead.)
 
-## CUSTOM CSS — APPLY AFTER PAGE IS BUILT
-After the page structure is built, use the `add-custom-css` tool to add these enhancements. Use page-level CSS (omit element_id) for global page styles, or element-level CSS (with element_id) for targeted effects.
-
-### Page-Level Custom CSS (apply to page, no element_id):
-```css
-/* Smooth scroll behavior */
-html { scroll-behavior: smooth; }
-
-/* Form field focus styling */
-.elementor-field-group input:focus,
-.elementor-field-group select:focus,
-.elementor-field-group textarea:focus {
-  border-color: #F59E0B !important;
-  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.15) !important;
-  outline: none;
-}
-
-/* Button hover animations */
-.elementor-button {
-  transition: all 0.3s ease !important;
-}
-.elementor-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(0,0,0,0.15);
-}
-
-/* Image hover zoom in gallery */
-.elementor-image img {
-  transition: transform 0.5s ease;
-}
-.elementor-image:hover img {
-  transform: scale(1.05);
-}
-```
-
-### Element-Level Custom CSS — Service Cards (apply to each service card container with element_id):
-```css
-selector {
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-selector:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-}
-```
-
-### Element-Level CSS — Booking Form Container:
-```css
-selector {
-  box-shadow: 0 25px 60px rgba(0,0,0,0.3);
-  backdrop-filter: blur(10px);
-}
-```
-
-### Element-Level CSS — Featured Pricing Card (Standard plan):
-```css
-selector {
-  border-top: 4px solid #F59E0B;
-  box-shadow: 0 15px 50px rgba(245, 158, 11, 0.15);
-  transform: scale(1.03);
-}
-selector:hover {
-  transform: scale(1.06);
-  box-shadow: 0 20px 60px rgba(245, 158, 11, 0.25);
-}
-```
-
-### Element-Level CSS — Testimonial Cards:
-```css
-selector {
-  transition: transform 0.3s ease;
-}
-selector:hover {
-  transform: translateY(-5px);
-}
-```
-
-## CUSTOM JAVASCRIPT — APPLY AFTER PAGE IS BUILT
-After the page is built, use the `add-custom-js` tool to add interactivity. Insert the JS into the footer container (or the last top-level container). Set wrap_dom_ready=true.
-
-### Scroll-Triggered Animations (add-custom-js, wrap_dom_ready=true):
-```javascript
-// Animate elements as they scroll into view
-const observerOptions = {
-  threshold: 0.15,
-  rootMargin: '0px 0px -50px 0px'
-};
-
-const fadeInObserver = new IntersectionObserver((entries) => {
-  entries.forEach(entry => {
-    if (entry.isIntersecting) {
-      entry.target.style.opacity = '1';
-      entry.target.style.transform = 'translateY(0)';
-      fadeInObserver.unobserve(entry.target);
-    }
-  });
-}, observerOptions);
-
-// Target all section headings and cards
-document.querySelectorAll('.elementor-heading-title, .elementor-icon-box-wrapper, .elementor-image, .elementor-price-table').forEach(el => {
-  el.style.opacity = '0';
-  el.style.transform = 'translateY(30px)';
-  el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
-  fadeInObserver.observe(el);
-});
-
-// Animate counters in the trust bar
-const counterObserver = new IntersectionObserver((entries) => {
-  entries.forEach(entry => {
-    if (entry.isIntersecting) {
-      const el = entry.target;
-      const text = el.textContent;
-      const match = text.match(/(\d+)/);
-      if (match) {
-        const target = parseInt(match[1]);
-        const suffix = text.replace(match[1], '');
-        let current = 0;
-        const increment = Math.ceil(target / 40);
-        const timer = setInterval(() => {
-          current += increment;
-          if (current >= target) {
-            current = target;
-            clearInterval(timer);
-          }
-          el.textContent = current + suffix;
-        }, 30);
-      }
-      counterObserver.unobserve(el);
-    }
-  });
-}, { threshold: 0.5 });
-
-document.querySelectorAll('.elementor-counter-number-wrapper, .elementor-heading-title').forEach(el => {
-  if (/^\d/.test(el.textContent.trim())) {
-    counterObserver.observe(el);
-  }
-});
-```
-
-## SITE-WIDE CODE SNIPPET (Optional — Pro only)
-If Elementor Pro is available, use `add-code-snippet` to create a global snippet:
-- Title: "FlowFix - Smooth Scroll & Preload"
-- Location: head
-- Priority: 1
-- Code:
-```html
-<style>
-  html { scroll-behavior: smooth; }
-  body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
-</style>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-```
-
-## EXECUTION ORDER
-1. **Search & sideload** all 8 images first
-2. **Upload SVG icons** using upload-svg-icon tool
-3. **Build the page** using build-page with the complete structure
-4. **Apply page-level CSS** using add-custom-css (no element_id)
-5. **Apply element-level CSS** using add-custom-css with element_id for: service cards, booking form container, featured pricing card, testimonial cards
-6. **Inject custom JS** using add-custom-js with wrap_dom_ready=true into the footer container
-7. **Create site-wide snippet** using add-code-snippet (optional, Pro only)
-
-## FINAL CHECKLIST
-- Every container with a background color MUST have both background_background='classic' AND background_color set
-- All text colors must be explicitly set with color='#hex'
-- NO flex_wrap or _flex_size anywhere in the structure
-- All images must be real sideloaded images, not placeholders
-- Use SVG icons, not Elementor icon library
-- Hero is 2-column: text left, booking form right
-- After build-page completes, apply custom CSS to page-level and individual elements (service cards, form, pricing featured card, testimonials)
-- After CSS, inject custom JS for scroll animations and counter effects using add-custom-js with wrap_dom_ready=true
-- Optionally create a site-wide code snippet for smooth scroll and font smoothing
-- Publish the page as draft
+### Completeness — a half-built page is a failure
+- Build and **fully populate one section at a time**: real headline, real copy, every service described, every plan with its price and inclusions, every quote written, every image placed — then move on. Never scaffold empty containers to "fill later."
+- When finished, walk the entire page and fix any empty element, placeholder text, missing image, or contrast failure. Publish as a **draft**.

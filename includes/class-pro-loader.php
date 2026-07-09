@@ -139,6 +139,9 @@ final class EMCP_Tools_Pro_Loader {
 		if ( class_exists( 'EMCP_Tools_Pro_Ajax' ) ) {
 			EMCP_Tools_Pro_Ajax::register();
 		}
+		if ( class_exists( 'EMCP_Tools_Pro_Prompts' ) && method_exists( 'EMCP_Tools_Pro_Prompts', 'register_download' ) ) {
+			EMCP_Tools_Pro_Prompts::register_download();
+		}
 		if ( class_exists( 'EMCP_Tools_Pro_Skills' ) ) {
 			( new EMCP_Tools_Pro_Skills() )->init();
 		}
