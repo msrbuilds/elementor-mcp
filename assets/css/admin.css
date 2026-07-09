@@ -1623,6 +1623,125 @@
 }
 
 /* =========================================================================
+ * Skills page — "Two ways to use these skills" callout
+ * ========================================================================= */
+
+.emcp-skills-ways {
+	margin: 20px 0 24px;
+}
+
+.emcp-skills-ways__title {
+	margin: 0 0 12px;
+	font-family: var(--mcp-font-heading, inherit);
+	font-size: 15px;
+	font-weight: 700;
+	color: var(--mcp-gray-900, #111827);
+}
+
+.emcp-skills-ways__grid {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 16px;
+}
+
+@media (max-width: 782px) {
+	.emcp-skills-ways__grid {
+		grid-template-columns: 1fr;
+	}
+}
+
+.emcp-skills-way {
+	display: flex;
+	flex-direction: column;
+	padding: 18px;
+	background: var(--mcp-white, #fff);
+	border: 1px solid var(--mcp-gray-200, #e5e7eb);
+	border-radius: var(--mcp-radius-md, 8px);
+}
+
+.emcp-skills-way--runtime {
+	border-color: var(--mcp-primary, #6366f1);
+	background: var(--mcp-primary-light, #eef2ff);
+}
+
+.emcp-skills-way__head {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	margin-bottom: 10px;
+}
+
+.emcp-skills-way__num {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 24px;
+	height: 24px;
+	flex-shrink: 0;
+	font-size: 13px;
+	font-weight: 700;
+	color: var(--mcp-white, #fff);
+	background: var(--mcp-primary, #6366f1);
+	border-radius: 50%;
+}
+
+.emcp-skills-way__title {
+	margin: 0;
+	font-size: 14px;
+	font-weight: 600;
+	color: var(--mcp-gray-900, #111827);
+}
+
+.emcp-skills-way__badge {
+	margin-left: auto;
+	padding: 2px 8px;
+	font-size: 11px;
+	font-weight: 700;
+	letter-spacing: 0.02em;
+	text-transform: uppercase;
+	color: var(--mcp-success, #16a34a);
+	background: var(--mcp-success-light, #dcfce7);
+	border-radius: var(--mcp-radius-sm, 6px);
+}
+
+.emcp-skills-way__desc {
+	flex: 1 1 auto;
+	margin: 0 0 14px;
+	font-size: 13px;
+	line-height: 1.5;
+	color: var(--mcp-gray-600, #4b5563);
+}
+
+.emcp-skills-way__status {
+	display: flex;
+	align-items: center;
+	gap: 7px;
+	margin: 0;
+	font-size: 12.5px;
+	font-weight: 500;
+}
+
+.emcp-skills-way__status.is-on {
+	color: var(--mcp-success, #16a34a);
+}
+
+.emcp-skills-way__status.is-off {
+	color: var(--mcp-gray-600, #4b5563);
+}
+
+.emcp-skills-way__dot {
+	width: 8px;
+	height: 8px;
+	flex-shrink: 0;
+	border-radius: 50%;
+	background: currentColor;
+}
+
+.emcp-skills-way__status a {
+	color: var(--mcp-primary, #6366f1);
+}
+
+/* =========================================================================
  * Templates page — "more coming" inline notice
  * ========================================================================= */
 
