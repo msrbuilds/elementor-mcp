@@ -284,6 +284,26 @@ class EMCP_Tools_Plugin {
 	}
 
 	/**
+	 * Option: "compact tool mode" (the meta-tool dispatcher). Default OFF.
+	 *
+	 * @var string
+	 */
+	const OPTION_DISPATCHER_MODE = 'emcp_tools_dispatcher_mode';
+
+	/**
+	 * Whether "compact tool mode" (the meta-tool dispatcher) is on. Default OFF —
+	 * when on, the server surfaces the 3 dispatcher tools instead of every
+	 * individual tool.
+	 *
+	 * @since 3.2.0
+	 *
+	 * @return bool
+	 */
+	public static function is_dispatcher_mode(): bool {
+		return '1' === (string) get_option( self::OPTION_DISPATCHER_MODE, '0' );
+	}
+
+	/**
 	 * Registers the ability category.
 	 *
 	 * Called during `wp_abilities_api_categories_init`.
