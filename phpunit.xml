@@ -23,6 +23,9 @@
         <testsuite name="Regression">
             <directory>pro/tests/unit/regression</directory>
         </testsuite>
+        <testsuite name="Dispatcher">
+            <directory>pro/tests/unit/dispatcher</directory>
+        </testsuite>
         <testsuite name="Widgets">
             <directory>pro/tests/unit/widgets</directory>
         </testsuite>

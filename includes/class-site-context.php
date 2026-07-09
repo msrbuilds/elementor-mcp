@@ -85,4 +85,64 @@ class EMCP_Tools_Site_Context {
 	public static function compose_instructions( string $base ): string {
 		return self::compose( $base, self::get_context(), self::is_enabled() );
 	}
+
+	/**
+	 * A compact environment + active-plugin inventory the agent gets in the
+	 * server description (and via list-tools). Adds the dispatcher usage preamble
+	 * when compact tool mode is on. Read live; keep it short.
+	 *
+	 * @return string
+	 */
+	public static function environment_summary(): string {
+		$wp    = function_exists( 'get_bloginfo' ) ? get_bloginfo( 'version' ) : '';
+		$php   = PHP_VERSION;
+		$lines = array( '## Environment' );
+		$lines[] = sprintf( '- WordPress %s · PHP %s', $wp, $php );
+
+		if ( defined( 'ELEMENTOR_VERSION' ) ) {
+			$atomic  = version_compare( ELEMENTOR_VERSION, '4.0.0', '>=' ) ? ' (atomic elements supported)' : '';
+			$pro     = defined( 'ELEMENTOR_PRO_VERSION' ) ? ' + Pro ' . ELEMENTOR_PRO_VERSION : '';
+			$lines[] = sprintf( '- Elementor %s%s%s', ELEMENTOR_VERSION, $pro, $atomic );
+		} else {
+			$lines[] = '- Elementor: not active (Elementor tools are unavailable; use the WordPress/Gutenberg tools)';
+		}
+
+		$inventory = self::plugin_inventory();
+		if ( '' !== $inventory ) {
+			$lines[] = '- Active plugins of note: ' . $inventory;
+		}
+
+		// Read the option directly (not EMCP_Tools_Plugin::is_dispatcher_mode())
+		// so this method has no dependency on the plugin singleton — keeps it
+		// unit-testable without booting EMCP_Tools_Plugin. Option name mirrors
+		// EMCP_Tools_Plugin::OPTION_DISPATCHER_MODE.
+		if ( function_exists( 'get_option' ) && '1' === (string) get_option( 'emcp_tools_dispatcher_mode', '0' ) ) {
+			$lines[] = '';
+			$lines[] = '## Compact tool mode';
+			$lines[] = 'This server exposes a small set of dispatcher tools. Discover tools with `list-tools`, fetch a tool\'s inputs with `get-tool-schema`, then run it with `call-tool` (name + arguments).';
+		}
+
+		return implode( "\n", $lines );
+	}
+
+	/**
+	 * Compact "name" list of active plugins the agent should know about.
+	 *
+	 * @return string
+	 */
+	private static function plugin_inventory(): string {
+		$known = array(
+			'woocommerce/woocommerce.php'        => 'WooCommerce',
+			'advanced-custom-fields/acf.php'     => 'ACF',
+			'advanced-custom-fields-pro/acf.php' => 'ACF Pro',
+		);
+		$active = function_exists( 'get_option' ) ? (array) get_option( 'active_plugins', array() ) : array();
+		$out    = array();
+		foreach ( $known as $file => $label ) {
+			if ( in_array( $file, $active, true ) ) {
+				$out[] = $label;
+			}
+		}
+		return implode( ', ', $out );
+	}
 }
