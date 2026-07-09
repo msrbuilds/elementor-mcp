@@ -3,20 +3,23 @@
  * Bundled MCP Adapter bootstrap.
  *
  * The plugin ships a copy of the WordPress MCP Adapter (`wordpress/mcp-adapter`)
- * under includes/vendors/mcp-adapter/ so users never have to install it as a
- * separate plugin. The Abilities API is core in WordPress 6.9+/7.0, but core
- * does NOT expose abilities over MCP — the adapter is still what creates the
- * `/wp-json/mcp/...` server endpoint. Bundling it makes EMCP self-contained.
+ * under vendor/ so users never have to install it as a separate plugin. The
+ * Abilities API is core in WordPress 6.9+/7.0, but core does NOT expose
+ * abilities over MCP — the adapter is what creates the `/wp-json/mcp/...`
+ * server endpoint. Bundling it makes EMCP self-contained.
  *
- * If a standalone MCP Adapter plugin is already active, we defer to it (its
- * classes are loaded first at plugin-include time, before this runs on
- * plugins_loaded) and do nothing — so there's never a double-load or version
- * clash. We only boot the bundled copy when nothing else has.
+ * The adapter is loaded through the Automattic Jetpack Autoloader
+ * (vendor/autoload_packages.php). When several active plugins each bundle the
+ * same adapter (WooCommerce, Automattic MCP, …), the Jetpack Autoloader
+ * coordinates via shared globals and registers only the HIGHEST version of
+ * each class process-wide — so there is never a "class already declared"
+ * fatal or a version clash, regardless of plugin load order.
  *
- * Only the adapter's `includes/` source is bundled (its 441K Composer
- * `vendor/` is entirely dev tooling — the package has zero runtime deps), so
- * we register a minimal PSR-4 autoloader for the `WP\MCP\` namespace rather
- * than loading the adapter's Composer autoloader.
+ * "Loadable" is not "booted": a plugin can autoload the WP\MCP classes without
+ * instantiating the adapter (WooCommerce does this unless its MCP feature flag
+ * is on). If nobody boots it, `mcp_adapter_init` never fires and our server
+ * route is never created. So ensure() also boots the adapter itself
+ * (idempotent) rather than assuming an external owner did.
  *
  * @package EMCP_Tools
  * @since   1.7.4
@@ -36,7 +39,7 @@ final class EMCP_Tools_Adapter_Bootstrap {
 	/**
 	 * Version of the bundled adapter (keep in sync with the copied source).
 	 */
-	const BUNDLED_VERSION = '0.4.1';
+	const BUNDLED_VERSION = '0.5.0';
 
 	/**
 	 * Where the adapter came from: 'external', 'bundled', or 'none'.
@@ -53,70 +56,34 @@ final class EMCP_Tools_Adapter_Bootstrap {
 	 * @since 1.7.4
 	 */
 	public static function ensure(): void {
-		// A copy of the MCP Adapter is already loadable. That can be a standalone
-		// MCP Adapter plugin (which boots it) OR another plugin that merely bundles
-		// and autoloads the WP\MCP classes without booting a server. WooCommerce
-		// 10.5+ does the latter: it registers the WP\MCP autoloader (so the
-		// class_exists() check below is true) but only instantiates the adapter
-		// when its experimental "MCP Integration" feature flag is enabled, which is
-		// off by default. "Loadable" is not "booted": if nobody boots the adapter,
-		// mcp_adapter_init never fires, our MCP server route is never created, and
-		// the endpoint 404s. So ensure the adapter is booted instead of deferring
-		// to a no-op.
-		if ( class_exists( '\WP\MCP\Core\McpAdapter' ) ) {
-			self::$source = 'external';
-
-			// Idempotent singleton: a no-op if the external owner already booted
-			// the adapter, and the safety net when it only autoloaded the classes
-			// (e.g. WooCommerce with its MCP feature flag off). This only fires
-			// mcp_adapter_init; it does not register any other plugin's tools —
-			// those are added on that hook by each plugin's own (gated) code.
-			if ( class_exists( '\WP\MCP\Plugin' ) ) {
-				\WP\MCP\Plugin::instance();
-			}
-
-			return;
+		// Load the adapter through the Jetpack Autoloader. It arbitrates the
+		// highest version across every active plugin that bundles the adapter,
+		// so requiring our copy is safe even when WooCommerce/others ship it too.
+		$autoloader = EMCP_TOOLS_DIR . 'vendor/autoload_packages.php';
+		if ( ! class_exists( '\WP\MCP\Core\McpAdapter' ) && is_readable( $autoloader ) ) {
+			require_once $autoloader;
 		}
 
-		$base = EMCP_TOOLS_DIR . 'includes/vendors/mcp-adapter/includes/';
-		if ( ! is_dir( $base ) ) {
+		if ( ! class_exists( '\WP\MCP\Core\McpAdapter' ) ) {
 			self::$source = 'none';
 			return;
 		}
 
-		// Minimal PSR-4 autoloader for the bundled adapter's WP\MCP\ namespace.
-		spl_autoload_register(
-			static function ( $class ) use ( $base ) {
-				$prefix = 'WP\\MCP\\';
-				if ( 0 !== strpos( $class, $prefix ) ) {
-					return;
-				}
-				$relative = substr( $class, strlen( $prefix ) );
-				$file     = $base . str_replace( '\\', '/', $relative ) . '.php';
-				if ( is_readable( $file ) ) {
-					require_once $file;
-				}
-			}
-		);
+		// External vs bundled is informational only now (the Jetpack Autoloader
+		// picks the winning copy regardless of who required it first).
+		self::$source = 'bundled';
 
-		// The standalone plugin defines these in its bootstrap; replicate for
-		// parity. WP_MCP_AUTOLOAD=false stops the adapter's own Autoloader from
-		// looking for a Composer vendor/autoload.php we intentionally didn't ship.
-		if ( ! defined( 'WP_MCP_DIR' ) ) {
-			define( 'WP_MCP_DIR', EMCP_TOOLS_DIR . 'includes/vendors/mcp-adapter/' );
-		}
-		if ( ! defined( 'WP_MCP_VERSION' ) ) {
-			define( 'WP_MCP_VERSION', self::BUNDLED_VERSION );
-		}
-		if ( ! defined( 'WP_MCP_AUTOLOAD' ) ) {
-			define( 'WP_MCP_AUTOLOAD', false );
-		}
-
-		// Boot the adapter exactly as its standalone plugin would: Plugin::instance()
-		// wires McpAdapter onto rest_api_init / init, which fires mcp_adapter_init.
+		// Boot the adapter (idempotent singleton). This is what fires
+		// mcp_adapter_init. It is a no-op if an external owner already booted it,
+		// and the safety net when the classes were merely autoloaded but never
+		// instantiated (e.g. WooCommerce with its MCP feature flag off). Booting
+		// only fires the init action; it does not register any other plugin's
+		// tools — those are added on that hook by each plugin's own gated code.
 		if ( class_exists( '\WP\MCP\Plugin' ) ) {
 			\WP\MCP\Plugin::instance();
-			self::$source = self::is_loaded() ? 'bundled' : 'none';
+		} elseif ( method_exists( '\WP\MCP\Core\McpAdapter', 'instance' ) ) {
+			// Fallback: a copy that exposes McpAdapter but not the Plugin wrapper.
+			\WP\MCP\Core\McpAdapter::instance();
 		}
 	}
 
