@@ -2,6 +2,18 @@
 
 All notable changes to MCP Tools for Elementor are documented in this file.
 
+## [3.2.0]
+
+> A core-engine release: the bundled MCP Adapter becomes a Composer dependency arbitrated by the Jetpack Autoloader (robust coexistence with other adapter-bundling plugins), an opt-in Compact tool mode collapses the tool surface to 3 dispatcher meta-tools to escape client tool-count caps, a richer discovery context hands agents the site's environment + active-plugin inventory, and (Pro) the bundled Agent Skills become discoverable and loadable by any connected MCP agent at runtime.
+
+### Added
+- **Compact tool mode (dispatcher), opt-in.** A new Connection-tab toggle (`emcp_tools_dispatcher_mode`, default OFF) surfaces just **3 meta-tools** — `list-tools` (compact catalog with `search`/`category` filters), `get-tool-schema` (batch input schemas), and `call-tool` (run a tool by name + arguments) — instead of the ~140 individual tools, so clients that cap tool counts can still reach the whole surface. `call-tool` delegates to each target tool's own permission check (no privilege escalation) and refuses disabled/unknown tools. Obsoletes Low-tools mode.
+- **Richer discovery context.** The MCP server description (and `list-tools`) now include a compact environment summary — WordPress/PHP/Elementor versions, atomic-element support, and an inventory of notable active plugins (WooCommerce, ACF) — so agents orient without extra calls.
+- **Agent-facing Skills (read-side, Pro).** The bundled Agent Skills (Performance, Security, Elementor page building) are now exposed to connected MCP agents at runtime via two read-only tools — `list-skills` (catalog + `search`) and `get-skill` (load a skill's full instructions by slug). A `## Skills` catalog also appears in the discovery context for progressive disclosure. Read-only; Pro-only.
+
+### Changed
+- **MCP Adapter is now a Composer dependency loaded via the Automattic Jetpack Autoloader.** When several active plugins bundle the same adapter (WooCommerce, Automattic MCP, …), the Jetpack Autoloader arbitrates the highest version process-wide, eliminating "class already declared" clashes regardless of load order. The runtime `vendor/` subset is committed and shipped.
+
 ## [3.1.3]
 
 > A bug-fix patch: resolves a plugin-update notice that lingered after updating, an MCP tool-name collision, debug-log noise, and a proxy text-corruption bug. Thanks to @gthibo for two detailed reports.

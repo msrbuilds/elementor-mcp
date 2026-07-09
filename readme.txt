@@ -3,7 +3,7 @@ Contributors: mianshahzadraza
 Tags: elementor, mcp, ai, page-builder, automation
 Requires at least: 6.9
 Tested up to: 7.0
-Stable tag: 3.1.3
+Stable tag: 3.2.0
 Requires PHP: 8.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -167,6 +167,13 @@ The plugin enforces WordPress capability checks on every tool. Read operations r
 2. Connection configuration page with copy-paste configs.
 
 == Changelog ==
+
+= 3.2.0 =
+A core-engine release.
+* Added: Compact tool mode (opt-in Connection-tab toggle) — surfaces 3 dispatcher meta-tools (list-tools / get-tool-schema / call-tool) instead of ~140 individual tools, so clients that cap tool counts can still reach the whole surface. call-tool delegates each tool's own permission check. Obsoletes Low-tools mode.
+* Added: richer discovery context — the server description now includes a compact environment summary (WordPress/PHP/Elementor versions, atomic-element support, notable active plugins) so agents orient without extra calls.
+* Added (Pro): Agent-facing Skills — the bundled Agent Skills are now discoverable and loadable by any connected MCP agent at runtime via two read-only tools, list-skills and get-skill, plus a Skills catalog in the discovery context.
+* Changed: the bundled MCP Adapter is now a Composer dependency loaded via the Automattic Jetpack Autoloader, which arbitrates the highest adapter version process-wide when multiple active plugins bundle it (WooCommerce, Automattic MCP) — no "class already declared" clashes regardless of load order.
 
 = 3.1.3 =
 A bug-fix patch (thanks @gthibo for two detailed reports).
