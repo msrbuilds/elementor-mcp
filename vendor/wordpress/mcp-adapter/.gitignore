@@ -1,0 +1,40 @@
+# Dependencies
+# macOS/IDE
+.DS_Store
+.idea
+.Spotlight-V100
+.Trashes
+.vscode
+*.sublime-project
+*.sublime-workspace
+/.vscode/
+ehthumbs.db
+Thumbs.db
+
+# Log files
+*.log
+/tests/logs
+
+# Packages
+/vendor/
+/node_modules/
+
+# Environment
+.env
+
+# Cache
+.phpunit.result.cache
+
+# Test output
+/tests/_output/*
+!/tests/_output/.gitkeep
+/coverage/
+
+# Configs
+/phpcs.xml
+/phpunit.xml
+/phpstan.neon
+
+# WP ENV
+/.wp-env.override.json
+

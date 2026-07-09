@@ -1,0 +1,1269 @@
+{
+  "version": "2025-11-25",
+  "domain": "Server",
+  "types": {
+    "ServerCapabilities": {
+      "kind": "class",
+      "domain": "Server",
+      "subdomain": "Lifecycle",
+      "namespace": "WP\\McpSchema\\Server\\Lifecycle\\DTO\\ServerCapabilities",
+      "purpose": "Capabilities that a server may support",
+      "implements": [],
+      "properties": {
+        "experimental": "{ [key: string]: object }?",
+        "logging": "object?",
+        "completions": "object?",
+        "prompts": "ServerCapabilitiesPrompts | undefined?",
+        "resources": "ServerCapabilitiesResources | undefined?",
+        "tools": "ServerCapabilitiesTools | undefined?",
+        "tasks": "ServerCapabilitiesTasks | undefined?"
+      },
+      "usedBy": [
+        "InitializeResult"
+      ],
+      "uses": [
+        "ServerCapabilitiesPrompts",
+        "ServerCapabilitiesResources",
+        "ServerCapabilitiesTools",
+        "ServerCapabilitiesTasks"
+      ]
+    },
+    "ListResourcesRequest": {
+      "kind": "class",
+      "domain": "Server",
+      "subdomain": "Resources",
+      "namespace": "WP\\McpSchema\\Server\\Resources\\DTO\\ListResourcesRequest",
+      "purpose": "Sent from the client to request a list of resources the server has",
+      "extends": "PaginatedRequest",
+      "implements": [
+        "ClientRequestInterface"
+      ],
+      "properties": {
+        "method": "\"resources/list\""
+      },
+      "usedBy": [
+        "ClientRequestInterface"
+      ],
+      "uses": [
+        "PaginatedRequest"
+      ],
+      "discriminator": {
+        "field": "method",
+        "value": "resources/list"
+      }
+    },
+    "ListResourcesResult": {
+      "kind": "class",
+      "domain": "Server",
+      "subdomain": "Resources",
+      "namespace": "WP\\McpSchema\\Server\\Resources\\DTO\\ListResourcesResult",
+      "purpose": "The server's response to a resources/list request from the client",
+      "extends": "PaginatedResult",
+      "implements": [
+        "ServerResultInterface"
+      ],
+      "properties": {
+        "resources": "Resource[]"
+      },
+      "usedBy": [
+        "ServerResultInterface"
+      ],
+      "uses": [
+        "PaginatedResult",
+        "Resource"
+      ]
+    },
+    "ListResourceTemplatesRequest": {
+      "kind": "class",
+      "domain": "Server",
+      "subdomain": "Resources",
+      "namespace": "WP\\McpSchema\\Server\\Resources\\DTO\\ListResourceTemplatesRequest",
+      "purpose": "Sent from the client to request a list of resource templates the server has",
+      "extends": "PaginatedRequest",
+      "implements": [
+        "ClientRequestInterface"
+      ],
+      "properties": {
+        "method": "\"resources/templates/list\""
+      },
+      "usedBy": [
+        "ClientRequestInterface"
+      ],
+      "uses": [
+        "PaginatedRequest"
+      ],
+      "discriminator": {
+        "field": "method",
+        "value": "resources/templates/list"
+      }
+    },
+    "ListResourceTemplatesResult": {
+      "kind": "class",
+      "domain": "Server",
+      "subdomain": "Resources",
+      "namespace": "WP\\McpSchema\\Server\\Resources\\DTO\\ListResourceTemplatesResult",
+      "purpose": "The server's response to a resources/templates/list request from the client",
+      "extends": "PaginatedResult",
+      "implements": [
+        "ServerResultInterface"
+      ],
+      "properties": {
+        "resourceTemplates": "ResourceTemplate[]"
+      },
+      "usedBy": [
+        "ServerResultInterface"
+      ],
+      "uses": [
+        "PaginatedResult",
+        "ResourceTemplate"
+      ]
+    },
+    "ResourceRequestParams": {
+      "kind": "class",
+      "domain": "Server",
+      "subdomain": "Resources",
+      "namespace": "WP\\McpSchema\\Server\\Resources\\DTO\\ResourceRequestParams",
+      "purpose": "Common parameters when working with resources",
+      "extends": "RequestParams",
+      "implements": [],
+      "properties": {
+        "uri": "string"
+      },
+      "usedBy": [
+        "ReadResourceRequestParams",
+        "SubscribeRequestParams",
+        "UnsubscribeRequestParams"
+      ],
+      "uses": [
+        "RequestParams"
+      ]
+    },
+    "ReadResourceRequestParams": {
+      "kind": "class",
+      "domain": "Server",
+      "subdomain": "Resources",
+      "namespace": "WP\\McpSchema\\Server\\Resources\\DTO\\ReadResourceRequestParams",
+      "purpose": "Parameters for a `resources/read` request",
+      "extends": "ResourceRequestParams",
+      "implements": [],
+      "properties": {},
+      "usedBy": [
+        "ReadResourceRequest"
+      ],
+      "uses": [
+        "ResourceRequestParams"
+      ]
+    },
+    "ReadResourceRequest": {
+      "kind": "class",
+      "domain": "Server",
+      "subdomain": "Resources",
+      "namespace": "WP\\McpSchema\\Server\\Resources\\DTO\\ReadResourceRequest",
+      "purpose": "Sent from the client to the server, to read a specific resource URI",
+      "extends": "JSONRPCRequest",
+      "implements": [
+        "ClientRequestInterface"
+      ],
+      "properties": {
+        "method": "\"resources/read\"",
+        "params": "ReadResourceRequestParams"
+      },
+      "usedBy": [
+        "ClientRequestInterface"
+      ],
+      "uses": [
+        "JSONRPCRequest",
+        "ReadResourceRequestParams"
+      ],
+      "discriminator": {
+        "field": "method",
+        "value": "resources/read"
+      }
+    },
+    "ReadResourceResult": {
+      "kind": "class",
+      "domain": "Server",
+      "subdomain": "Resources",
+      "namespace": "WP\\McpSchema\\Server\\Resources\\DTO\\ReadResourceResult",
+      "purpose": "The server's response to a resources/read request from the client",
+      "extends": "Result",
+      "implements": [
+        "ServerResultInterface"
+      ],
+      "properties": {
+        "contents": "(TextResourceContents | BlobResourceContents)[]"
+      },
+      "usedBy": [
+        "ServerResultInterface"
+      ],
+      "uses": [
+        "Result",
+        "BlobResourceContents)"
+      ]
+    },
+    "ResourceListChangedNotification": {
+      "kind": "class",
+      "domain": "Server",
+      "subdomain": "Resources",
+      "namespace": "WP\\McpSchema\\Server\\Resources\\DTO\\ResourceListChangedNotification",
+      "purpose": "An optional notification from the server to the client, informing it that the list of resources it can read from has changed",
+      "extends": "JSONRPCNotification",
+      "implements": [
+        "ServerNotificationInterface"
+      ],
+      "properties": {
+        "method": "\"notifications/resources/list_changed\"",
+        "params": "NotificationParams?"
+      },
+      "usedBy": [
+        "ServerNotificationInterface"
+      ],
+      "uses": [
+        "JSONRPCNotification",
+        "NotificationParams"
+      ],
+      "discriminator": {
+        "field": "method",
+        "value": "notifications/resources/list_changed"
+      }
+    },
+    "SubscribeRequestParams": {
+      "kind": "class",
+      "domain": "Server",
+      "subdomain": "Resources",
+      "namespace": "WP\\McpSchema\\Server\\Resources\\DTO\\SubscribeRequestParams",
+      "purpose": "Parameters for a `resources/subscribe` request",
+      "extends": "ResourceRequestParams",
+      "implements": [],
+      "properties": {},
+      "usedBy": [
+        "SubscribeRequest"
+      ],
+      "uses": [
+        "ResourceRequestParams"
+      ]
+    },
+    "SubscribeRequest": {
+      "kind": "class",
+      "domain": "Server",
+      "subdomain": "Resources",
+      "namespace": "WP\\McpSchema\\Server\\Resources\\DTO\\SubscribeRequest",
+      "purpose": "Sent from the client to request resources/updated notifications from the server whenever a particular resource changes",
+      "extends": "JSONRPCRequest",
+      "implements": [
+        "ClientRequestInterface"
+      ],
+      "properties": {
+        "method": "\"resources/subscribe\"",
+        "params": "SubscribeRequestParams"
+      },
+      "usedBy": [
+        "ClientRequestInterface"
+      ],
+      "uses": [
+        "JSONRPCRequest",
+        "SubscribeRequestParams"
+      ],
+      "discriminator": {
+        "field": "method",
+        "value": "resources/subscribe"
+      }
+    },
+    "UnsubscribeRequestParams": {
+      "kind": "class",
+      "domain": "Server",
+      "subdomain": "Resources",
+      "namespace": "WP\\McpSchema\\Server\\Resources\\DTO\\UnsubscribeRequestParams",
+      "purpose": "Parameters for a `resources/unsubscribe` request",
+      "extends": "ResourceRequestParams",
+      "implements": [],
+      "properties": {},
+      "usedBy": [
+        "UnsubscribeRequest"
+      ],
+      "uses": [
+        "ResourceRequestParams"
+      ]
+    },
+    "UnsubscribeRequest": {
+      "kind": "class",
+      "domain": "Server",
+      "subdomain": "Resources",
+      "namespace": "WP\\McpSchema\\Server\\Resources\\DTO\\UnsubscribeRequest",
+      "purpose": "Sent from the client to request cancellation of resources/updated notifications from the server",
+      "extends": "JSONRPCRequest",
+      "implements": [
+        "ClientRequestInterface"
+      ],
+      "properties": {
+        "method": "\"resources/unsubscribe\"",
+        "params": "UnsubscribeRequestParams"
+      },
+      "usedBy": [
+        "ClientRequestInterface"
+      ],
+      "uses": [
+        "JSONRPCRequest",
+        "UnsubscribeRequestParams"
+      ],
+      "discriminator": {
+        "field": "method",
+        "value": "resources/unsubscribe"
+      }
+    },
+    "ResourceUpdatedNotificationParams": {
+      "kind": "class",
+      "domain": "Server",
+      "subdomain": "Resources",
+      "namespace": "WP\\McpSchema\\Server\\Resources\\DTO\\ResourceUpdatedNotificationParams",
+      "purpose": "Parameters for a `notifications/resources/updated` notification",
+      "extends": "NotificationParams",
+      "implements": [],
+      "properties": {
+        "uri": "string"
+      },
+      "usedBy": [
+        "ResourceUpdatedNotification"
+      ],
+      "uses": [
+        "NotificationParams"
+      ]
+    },
+    "ResourceUpdatedNotification": {
+      "kind": "class",
+      "domain": "Server",
+      "subdomain": "Resources",
+      "namespace": "WP\\McpSchema\\Server\\Resources\\DTO\\ResourceUpdatedNotification",
+      "purpose": "A notification from the server to the client, informing it that a resource has changed and may need to be read again",
+      "extends": "JSONRPCNotification",
+      "implements": [
+        "ServerNotificationInterface"
+      ],
+      "properties": {
+        "method": "\"notifications/resources/updated\"",
+        "params": "ResourceUpdatedNotificationParams"
+      },
+      "usedBy": [
+        "ServerNotificationInterface"
+      ],
+      "uses": [
+        "JSONRPCNotification",
+        "ResourceUpdatedNotificationParams"
+      ],
+      "discriminator": {
+        "field": "method",
+        "value": "notifications/resources/updated"
+      }
+    },
+    "Resource": {
+      "kind": "class",
+      "domain": "Server",
+      "subdomain": "Resources",
+      "namespace": "WP\\McpSchema\\Server\\Resources\\DTO\\Resource",
+      "purpose": "A known resource that the server is capable of reading",
+      "extends": "BaseMetadata",
+      "implements": [],
+      "properties": {
+        "uri": "string",
+        "description": "string?",
+        "mimeType": "string?",
+        "annotations": "Annotations?",
+        "size": "number?",
+        "_meta": "{ [key: string]: unknown }?"
+      },
+      "usedBy": [
+        "ListResourcesResult",
+        "ResourceLink"
+      ],
+      "uses": [
+        "BaseMetadata",
+        "Icons",
+        "Annotations"
+      ]
+    },
+    "ResourceTemplate": {
+      "kind": "class",
+      "domain": "Server",
+      "subdomain": "Resources",
+      "namespace": "WP\\McpSchema\\Server\\Resources\\DTO\\ResourceTemplate",
+      "purpose": "A template description for resources available on the server",
+      "extends": "BaseMetadata",
+      "implements": [],
+      "properties": {
+        "uriTemplate": "string",
+        "description": "string?",
+        "mimeType": "string?",
+        "annotations": "Annotations?",
+        "_meta": "{ [key: string]: unknown }?"
+      },
+      "usedBy": [
+        "ListResourceTemplatesResult"
+      ],
+      "uses": [
+        "BaseMetadata",
+        "Icons",
+        "Annotations"
+      ]
+    },
+    "ResourceContents": {
+      "kind": "class",
+      "domain": "Server",
+      "subdomain": "Resources",
+      "namespace": "WP\\McpSchema\\Server\\Resources\\DTO\\ResourceContents",
+      "purpose": "The contents of a specific resource or sub-resource",
+      "implements": [],
+      "properties": {
+        "uri": "string",
+        "mimeType": "string?",
+        "_meta": "{ [key: string]: unknown }?"
+      },
+      "usedBy": [
+        "TextResourceContents",
+        "BlobResourceContents"
+      ],
+      "uses": []
+    },
+    "ListPromptsRequest": {
+      "kind": "class",
+      "domain": "Server",
+      "subdomain": "Prompts",
+      "namespace": "WP\\McpSchema\\Server\\Prompts\\DTO\\ListPromptsRequest",
+      "purpose": "Sent from the client to request a list of prompts and prompt templates the server has",
+      "extends": "PaginatedRequest",
+      "implements": [
+        "ClientRequestInterface"
+      ],
+      "properties": {
+        "method": "\"prompts/list\""
+      },
+      "usedBy": [
+        "ClientRequestInterface"
+      ],
+      "uses": [
+        "PaginatedRequest"
+      ],
+      "discriminator": {
+        "field": "method",
+        "value": "prompts/list"
+      }
+    },
+    "ListPromptsResult": {
+      "kind": "class",
+      "domain": "Server",
+      "subdomain": "Prompts",
+      "namespace": "WP\\McpSchema\\Server\\Prompts\\DTO\\ListPromptsResult",
+      "purpose": "The server's response to a prompts/list request from the client",
+      "extends": "PaginatedResult",
+      "implements": [
+        "ServerResultInterface"
+      ],
+      "properties": {
+        "prompts": "Prompt[]"
+      },
+      "usedBy": [
+        "ServerResultInterface"
+      ],
+      "uses": [
+        "PaginatedResult",
+        "Prompt"
+      ]
+    },
+    "GetPromptRequestParams": {
+      "kind": "class",
+      "domain": "Server",
+      "subdomain": "Prompts",
+      "namespace": "WP\\McpSchema\\Server\\Prompts\\DTO\\GetPromptRequestParams",
+      "purpose": "Parameters for a `prompts/get` request",
+      "extends": "RequestParams",
+      "implements": [],
+      "properties": {
+        "name": "string",
+        "arguments": "{ [key: string]: string }?"
+      },
+      "usedBy": [
+        "GetPromptRequest"
+      ],
+      "uses": [
+        "RequestParams"
+      ]
+    },
+    "GetPromptRequest": {
+      "kind": "class",
+      "domain": "Server",
+      "subdomain": "Prompts",
+      "namespace": "WP\\McpSchema\\Server\\Prompts\\DTO\\GetPromptRequest",
+      "purpose": "Used by the client to get a prompt provided by the server",
+      "extends": "JSONRPCRequest",
+      "implements": [
+        "ClientRequestInterface"
+      ],
+      "properties": {
+        "method": "\"prompts/get\"",
+        "params": "GetPromptRequestParams"
+      },
+      "usedBy": [
+        "ClientRequestInterface"
+      ],
+      "uses": [
+        "JSONRPCRequest",
+        "GetPromptRequestParams"
+      ],
+      "discriminator": {
+        "field": "method",
+        "value": "prompts/get"
+      }
+    },
+    "GetPromptResult": {
+      "kind": "class",
+      "domain": "Server",
+      "subdomain": "Prompts",
+      "namespace": "WP\\McpSchema\\Server\\Prompts\\DTO\\GetPromptResult",
+      "purpose": "The server's response to a prompts/get request from the client",
+      "extends": "Result",
+      "implements": [
+        "ServerResultInterface"
+      ],
+      "properties": {
+        "description": "string?",
+        "messages": "PromptMessage[]"
+      },
+      "usedBy": [
+        "ServerResultInterface"
+      ],
+      "uses": [
+        "Result",
+        "PromptMessage"
+      ]
+    },
+    "Prompt": {
+      "kind": "class",
+      "domain": "Server",
+      "subdomain": "Prompts",
+      "namespace": "WP\\McpSchema\\Server\\Prompts\\DTO\\Prompt",
+      "purpose": "A prompt or prompt template that the server offers",
+      "extends": "BaseMetadata",
+      "implements": [],
+      "properties": {
+        "description": "string?",
+        "arguments": "PromptArgument[]?",
+        "_meta": "{ [key: string]: unknown }?"
+      },
+      "usedBy": [
+        "ListPromptsResult"
+      ],
+      "uses": [
+        "BaseMetadata",
+        "Icons",
+        "PromptArgument"
+      ]
+    },
+    "PromptArgument": {
+      "kind": "class",
+      "domain": "Server",
+      "subdomain": "Prompts",
+      "namespace": "WP\\McpSchema\\Server\\Prompts\\DTO\\PromptArgument",
+      "purpose": "Describes an argument that a prompt can accept",
+      "extends": "BaseMetadata",
+      "implements": [],
+      "properties": {
+        "description": "string?",
+        "required": "boolean?"
+      },
+      "usedBy": [
+        "Prompt"
+      ],
+      "uses": [
+        "BaseMetadata"
+      ]
+    },
+    "PromptMessage": {
+      "kind": "class",
+      "domain": "Server",
+      "subdomain": "Prompts",
+      "namespace": "WP\\McpSchema\\Server\\Prompts\\DTO\\PromptMessage",
+      "purpose": "Describes a message returned as part of a prompt",
+      "implements": [],
+      "properties": {
+        "role": "Role",
+        "content": "ContentBlock"
+      },
+      "usedBy": [
+        "GetPromptResult"
+      ],
+      "uses": [
+        "Role",
+        "ContentBlock"
+      ]
+    },
+    "ResourceLink": {
+      "kind": "class",
+      "domain": "Server",
+      "subdomain": "Resources",
+      "namespace": "WP\\McpSchema\\Server\\Resources\\DTO\\ResourceLink",
+      "purpose": "A resource that the server is capable of reading, included in a prompt or tool call result",
+      "extends": "Resource",
+      "implements": [
+        "ContentBlockInterface"
+      ],
+      "properties": {
+        "type": "\"resource_link\""
+      },
+      "usedBy": [
+        "ContentBlockInterface"
+      ],
+      "uses": [
+        "Resource"
+      ],
+      "discriminator": {
+        "field": "type",
+        "value": "resource_link"
+      }
+    },
+    "PromptListChangedNotification": {
+      "kind": "class",
+      "domain": "Server",
+      "subdomain": "Prompts",
+      "namespace": "WP\\McpSchema\\Server\\Prompts\\DTO\\PromptListChangedNotification",
+      "purpose": "An optional notification from the server to the client, informing it that the list of prompts it offers has changed",
+      "extends": "JSONRPCNotification",
+      "implements": [
+        "ServerNotificationInterface"
+      ],
+      "properties": {
+        "method": "\"notifications/prompts/list_changed\"",
+        "params": "NotificationParams?"
+      },
+      "usedBy": [
+        "ServerNotificationInterface"
+      ],
+      "uses": [
+        "JSONRPCNotification",
+        "NotificationParams"
+      ],
+      "discriminator": {
+        "field": "method",
+        "value": "notifications/prompts/list_changed"
+      }
+    },
+    "ListToolsRequest": {
+      "kind": "class",
+      "domain": "Server",
+      "subdomain": "Tools",
+      "namespace": "WP\\McpSchema\\Server\\Tools\\DTO\\ListToolsRequest",
+      "purpose": "Sent from the client to request a list of tools the server has",
+      "extends": "PaginatedRequest",
+      "implements": [
+        "ClientRequestInterface"
+      ],
+      "properties": {
+        "method": "\"tools/list\""
+      },
+      "usedBy": [
+        "ClientRequestInterface"
+      ],
+      "uses": [
+        "PaginatedRequest"
+      ],
+      "discriminator": {
+        "field": "method",
+        "value": "tools/list"
+      }
+    },
+    "ListToolsResult": {
+      "kind": "class",
+      "domain": "Server",
+      "subdomain": "Tools",
+      "namespace": "WP\\McpSchema\\Server\\Tools\\DTO\\ListToolsResult",
+      "purpose": "The server's response to a tools/list request from the client",
+      "extends": "PaginatedResult",
+      "implements": [
+        "ServerResultInterface"
+      ],
+      "properties": {
+        "tools": "Tool[]"
+      },
+      "usedBy": [
+        "ServerResultInterface"
+      ],
+      "uses": [
+        "PaginatedResult",
+        "Tool"
+      ]
+    },
+    "CallToolResult": {
+      "kind": "class",
+      "domain": "Server",
+      "subdomain": "Tools",
+      "namespace": "WP\\McpSchema\\Server\\Tools\\DTO\\CallToolResult",
+      "purpose": "The server's response to a tool call",
+      "extends": "Result",
+      "implements": [
+        "ServerResultInterface"
+      ],
+      "properties": {
+        "content": "ContentBlock[]",
+        "structuredContent": "{ [key: string]: unknown }?",
+        "isError": "boolean?"
+      },
+      "usedBy": [
+        "ServerResultInterface"
+      ],
+      "uses": [
+        "Result",
+        "ContentBlock"
+      ]
+    },
+    "CallToolRequestParams": {
+      "kind": "class",
+      "domain": "Server",
+      "subdomain": "Tools",
+      "namespace": "WP\\McpSchema\\Server\\Tools\\DTO\\CallToolRequestParams",
+      "purpose": "Parameters for a `tools/call` request",
+      "extends": "TaskAugmentedRequestParams",
+      "implements": [],
+      "properties": {
+        "name": "string",
+        "arguments": "{ [key: string]: unknown }?"
+      },
+      "usedBy": [
+        "CallToolRequest"
+      ],
+      "uses": [
+        "TaskAugmentedRequestParams"
+      ]
+    },
+    "CallToolRequest": {
+      "kind": "class",
+      "domain": "Server",
+      "subdomain": "Tools",
+      "namespace": "WP\\McpSchema\\Server\\Tools\\DTO\\CallToolRequest",
+      "purpose": "Used by the client to invoke a tool provided by the server",
+      "extends": "JSONRPCRequest",
+      "implements": [
+        "ClientRequestInterface"
+      ],
+      "properties": {
+        "method": "\"tools/call\"",
+        "params": "CallToolRequestParams"
+      },
+      "usedBy": [
+        "ClientRequestInterface"
+      ],
+      "uses": [
+        "JSONRPCRequest",
+        "CallToolRequestParams"
+      ],
+      "discriminator": {
+        "field": "method",
+        "value": "tools/call"
+      }
+    },
+    "ToolListChangedNotification": {
+      "kind": "class",
+      "domain": "Server",
+      "subdomain": "Tools",
+      "namespace": "WP\\McpSchema\\Server\\Tools\\DTO\\ToolListChangedNotification",
+      "purpose": "An optional notification from the server to the client, informing it that the list of tools it offers has changed",
+      "extends": "JSONRPCNotification",
+      "implements": [
+        "ServerNotificationInterface"
+      ],
+      "properties": {
+        "method": "\"notifications/tools/list_changed\"",
+        "params": "NotificationParams?"
+      },
+      "usedBy": [
+        "ServerNotificationInterface"
+      ],
+      "uses": [
+        "JSONRPCNotification",
+        "NotificationParams"
+      ],
+      "discriminator": {
+        "field": "method",
+        "value": "notifications/tools/list_changed"
+      }
+    },
+    "ToolAnnotations": {
+      "kind": "class",
+      "domain": "Server",
+      "subdomain": "Tools",
+      "namespace": "WP\\McpSchema\\Server\\Tools\\DTO\\ToolAnnotations",
+      "purpose": "Additional properties describing a Tool to clients",
+      "implements": [],
+      "properties": {
+        "title": "string?",
+        "readOnlyHint": "boolean?",
+        "destructiveHint": "boolean?",
+        "idempotentHint": "boolean?",
+        "openWorldHint": "boolean?"
+      },
+      "usedBy": [
+        "Tool"
+      ],
+      "uses": []
+    },
+    "ToolExecution": {
+      "kind": "class",
+      "domain": "Server",
+      "subdomain": "Tools",
+      "namespace": "WP\\McpSchema\\Server\\Tools\\DTO\\ToolExecution",
+      "purpose": "Execution-related properties for a tool",
+      "implements": [],
+      "properties": {
+        "taskSupport": "\"forbidden\" | \"optional\" | \"required\"?"
+      },
+      "usedBy": [
+        "Tool"
+      ],
+      "uses": []
+    },
+    "Tool": {
+      "kind": "class",
+      "domain": "Server",
+      "subdomain": "Tools",
+      "namespace": "WP\\McpSchema\\Server\\Tools\\DTO\\Tool",
+      "purpose": "Definition for a tool the client can call",
+      "extends": "BaseMetadata",
+      "implements": [],
+      "properties": {
+        "description": "string?",
+        "inputSchema": "ToolInputSchema",
+        "execution": "ToolExecution?",
+        "outputSchema": "ToolOutputSchema | undefined?",
+        "annotations": "ToolAnnotations?",
+        "_meta": "{ [key: string]: unknown }?"
+      },
+      "usedBy": [
+        "ListToolsResult",
+        "CreateMessageRequestParams"
+      ],
+      "uses": [
+        "BaseMetadata",
+        "Icons",
+        "ToolInputSchema",
+        "ToolExecution",
+        "ToolOutputSchema",
+        "ToolAnnotations"
+      ]
+    },
+    "SetLevelRequestParams": {
+      "kind": "class",
+      "domain": "Server",
+      "subdomain": "Logging",
+      "namespace": "WP\\McpSchema\\Server\\Logging\\DTO\\SetLevelRequestParams",
+      "purpose": "Parameters for a `logging/setLevel` request",
+      "extends": "RequestParams",
+      "implements": [],
+      "properties": {
+        "level": "LoggingLevel"
+      },
+      "usedBy": [
+        "SetLevelRequest"
+      ],
+      "uses": [
+        "RequestParams",
+        "LoggingLevel"
+      ]
+    },
+    "SetLevelRequest": {
+      "kind": "class",
+      "domain": "Server",
+      "subdomain": "Logging",
+      "namespace": "WP\\McpSchema\\Server\\Logging\\DTO\\SetLevelRequest",
+      "purpose": "A request from the client to the server, to enable or adjust logging",
+      "extends": "JSONRPCRequest",
+      "implements": [
+        "ClientRequestInterface"
+      ],
+      "properties": {
+        "method": "\"logging/setLevel\"",
+        "params": "SetLevelRequestParams"
+      },
+      "usedBy": [
+        "ClientRequestInterface"
+      ],
+      "uses": [
+        "JSONRPCRequest",
+        "SetLevelRequestParams"
+      ],
+      "discriminator": {
+        "field": "method",
+        "value": "logging/setLevel"
+      }
+    },
+    "LoggingMessageNotificationParams": {
+      "kind": "class",
+      "domain": "Server",
+      "subdomain": "Logging",
+      "namespace": "WP\\McpSchema\\Server\\Logging\\DTO\\LoggingMessageNotificationParams",
+      "purpose": "Parameters for a `notifications/message` notification",
+      "extends": "NotificationParams",
+      "implements": [],
+      "properties": {
+        "level": "LoggingLevel",
+        "logger": "string?",
+        "data": "unknown"
+      },
+      "usedBy": [
+        "LoggingMessageNotification"
+      ],
+      "uses": [
+        "NotificationParams",
+        "LoggingLevel"
+      ]
+    },
+    "LoggingMessageNotification": {
+      "kind": "class",
+      "domain": "Server",
+      "subdomain": "Logging",
+      "namespace": "WP\\McpSchema\\Server\\Logging\\DTO\\LoggingMessageNotification",
+      "purpose": "JSONRPCNotification of a log message passed from server to client",
+      "extends": "JSONRPCNotification",
+      "implements": [
+        "ServerNotificationInterface"
+      ],
+      "properties": {
+        "method": "\"notifications/message\"",
+        "params": "LoggingMessageNotificationParams"
+      },
+      "usedBy": [
+        "ServerNotificationInterface"
+      ],
+      "uses": [
+        "JSONRPCNotification",
+        "LoggingMessageNotificationParams"
+      ],
+      "discriminator": {
+        "field": "method",
+        "value": "notifications/message"
+      }
+    },
+    "CompleteRequestParams": {
+      "kind": "class",
+      "domain": "Server",
+      "subdomain": "Core",
+      "namespace": "WP\\McpSchema\\Server\\Core\\DTO\\CompleteRequestParams",
+      "purpose": "Parameters for a `completion/complete` request",
+      "extends": "RequestParams",
+      "implements": [],
+      "properties": {
+        "ref": "PromptReference | ResourceTemplateReference",
+        "argument": "CompleteRequestParamsArgument",
+        "context": "CompleteRequestParamsContext | undefined?"
+      },
+      "usedBy": [
+        "CompleteRequest"
+      ],
+      "uses": [
+        "RequestParams",
+        "PromptReference",
+        "ResourceTemplateReference",
+        "CompleteRequestParamsArgument",
+        "CompleteRequestParamsContext"
+      ]
+    },
+    "CompleteRequest": {
+      "kind": "class",
+      "domain": "Server",
+      "subdomain": "Core",
+      "namespace": "WP\\McpSchema\\Server\\Core\\DTO\\CompleteRequest",
+      "purpose": "A request from the client to the server, to ask for completion options",
+      "extends": "JSONRPCRequest",
+      "implements": [
+        "ClientRequestInterface"
+      ],
+      "properties": {
+        "method": "\"completion/complete\"",
+        "params": "CompleteRequestParams"
+      },
+      "usedBy": [
+        "ClientRequestInterface"
+      ],
+      "uses": [
+        "JSONRPCRequest",
+        "CompleteRequestParams"
+      ],
+      "discriminator": {
+        "field": "method",
+        "value": "completion/complete"
+      }
+    },
+    "CompleteResult": {
+      "kind": "class",
+      "domain": "Server",
+      "subdomain": "Core",
+      "namespace": "WP\\McpSchema\\Server\\Core\\DTO\\CompleteResult",
+      "purpose": "The server's response to a completion/complete request",
+      "extends": "Result",
+      "implements": [
+        "ServerResultInterface"
+      ],
+      "properties": {
+        "completion": "CompleteResultCompletion"
+      },
+      "usedBy": [
+        "ServerResultInterface"
+      ],
+      "uses": [
+        "Result",
+        "CompleteResultCompletion"
+      ]
+    },
+    "ResourceTemplateReference": {
+      "kind": "class",
+      "domain": "Server",
+      "subdomain": "Core",
+      "namespace": "WP\\McpSchema\\Server\\Core\\DTO\\ResourceTemplateReference",
+      "purpose": "A reference to a resource or resource template definition",
+      "implements": [],
+      "properties": {
+        "type": "\"ref/resource\"",
+        "uri": "string"
+      },
+      "usedBy": [
+        "CompleteRequestParams"
+      ],
+      "uses": []
+    },
+    "PromptReference": {
+      "kind": "class",
+      "domain": "Server",
+      "subdomain": "Core",
+      "namespace": "WP\\McpSchema\\Server\\Core\\DTO\\PromptReference",
+      "purpose": "Identifies a prompt",
+      "extends": "BaseMetadata",
+      "implements": [],
+      "properties": {
+        "type": "\"ref/prompt\""
+      },
+      "usedBy": [
+        "CompleteRequestParams"
+      ],
+      "uses": [
+        "BaseMetadata"
+      ]
+    },
+    "ServerCapabilitiesPrompts": {
+      "kind": "class",
+      "domain": "Server",
+      "subdomain": "Lifecycle",
+      "namespace": "WP\\McpSchema\\Server\\Lifecycle\\DTO\\ServerCapabilitiesPrompts",
+      "purpose": "Present if the server offers any prompt templates",
+      "implements": [],
+      "properties": {
+        "listChanged": "boolean?"
+      },
+      "usedBy": [
+        "ServerCapabilities"
+      ],
+      "uses": []
+    },
+    "ServerCapabilitiesResources": {
+      "kind": "class",
+      "domain": "Server",
+      "subdomain": "Lifecycle",
+      "namespace": "WP\\McpSchema\\Server\\Lifecycle\\DTO\\ServerCapabilitiesResources",
+      "purpose": "Present if the server offers any resources to read",
+      "implements": [],
+      "properties": {
+        "subscribe": "boolean?",
+        "listChanged": "boolean?"
+      },
+      "usedBy": [
+        "ServerCapabilities"
+      ],
+      "uses": []
+    },
+    "ServerCapabilitiesTools": {
+      "kind": "class",
+      "domain": "Server",
+      "subdomain": "Lifecycle",
+      "namespace": "WP\\McpSchema\\Server\\Lifecycle\\DTO\\ServerCapabilitiesTools",
+      "purpose": "Present if the server offers any tools to call",
+      "implements": [],
+      "properties": {
+        "listChanged": "boolean?"
+      },
+      "usedBy": [
+        "ServerCapabilities"
+      ],
+      "uses": []
+    },
+    "ServerCapabilitiesTasks": {
+      "kind": "class",
+      "domain": "Server",
+      "subdomain": "Lifecycle",
+      "namespace": "WP\\McpSchema\\Server\\Lifecycle\\DTO\\ServerCapabilitiesTasks",
+      "purpose": "Present if the server supports task-augmented requests",
+      "implements": [],
+      "properties": {
+        "list": "object?",
+        "cancel": "object?"
+      },
+      "usedBy": [
+        "ServerCapabilities"
+      ],
+      "uses": []
+    },
+    "ToolInputSchema": {
+      "kind": "class",
+      "domain": "Server",
+      "subdomain": "Tools",
+      "namespace": "WP\\McpSchema\\Server\\Tools\\DTO\\ToolInputSchema",
+      "purpose": "A JSON Schema object defining the expected parameters for the tool",
+      "implements": [],
+      "properties": {
+        "$schema": "string?",
+        "type": "\"object\"",
+        "properties": "{ [key: string]: object }?",
+        "required": "string[]?"
+      },
+      "usedBy": [
+        "Tool"
+      ],
+      "uses": []
+    },
+    "ToolOutputSchema": {
+      "kind": "class",
+      "domain": "Server",
+      "subdomain": "Tools",
+      "namespace": "WP\\McpSchema\\Server\\Tools\\DTO\\ToolOutputSchema",
+      "purpose": "An optional JSON Schema object defining the structure of the tool's output returned in",
+      "implements": [],
+      "properties": {
+        "$schema": "string?",
+        "type": "\"object\"",
+        "properties": "{ [key: string]: object }?",
+        "required": "string[]?"
+      },
+      "usedBy": [
+        "Tool"
+      ],
+      "uses": []
+    },
+    "CompleteRequestParamsArgument": {
+      "kind": "class",
+      "domain": "Server",
+      "subdomain": "Core",
+      "namespace": "WP\\McpSchema\\Server\\Core\\DTO\\CompleteRequestParamsArgument",
+      "purpose": "The argument's information",
+      "implements": [],
+      "properties": {
+        "name": "string",
+        "value": "string"
+      },
+      "usedBy": [
+        "CompleteRequestParams"
+      ],
+      "uses": []
+    },
+    "CompleteRequestParamsContext": {
+      "kind": "class",
+      "domain": "Server",
+      "subdomain": "Core",
+      "namespace": "WP\\McpSchema\\Server\\Core\\DTO\\CompleteRequestParamsContext",
+      "purpose": "Additional, optional context for completions",
+      "implements": [],
+      "properties": {
+        "arguments": "{ [key: string]: string }?"
+      },
+      "usedBy": [
+        "CompleteRequestParams"
+      ],
+      "uses": []
+    },
+    "CompleteResultCompletion": {
+      "kind": "class",
+      "domain": "Server",
+      "subdomain": "Core",
+      "namespace": "WP\\McpSchema\\Server\\Core\\DTO\\CompleteResultCompletion",
+      "purpose": "Complete Result Completion data structure",
+      "implements": [],
+      "properties": {
+        "values": "string[]",
+        "total": "number?",
+        "hasMore": "boolean?"
+      },
+      "usedBy": [
+        "CompleteResult"
+      ],
+      "uses": []
+    },
+    "LoggingLevelInterface": {
+      "kind": "union",
+      "domain": "Server",
+      "subdomain": "Logging",
+      "namespace": "WP\\McpSchema\\Server\\Logging\\Union\\LoggingLevelInterface",
+      "purpose": "The severity of a log message.\n\nThese map to syslog message severities, as specified in RFC-5424:\nhttps://datatracker.ietf.org/doc/html/rfc5424#section-6.2.1",
+      "implements": [],
+      "properties": {},
+      "usedBy": [],
+      "uses": []
+    },
+    "ServerNotificationInterface": {
+      "kind": "union",
+      "domain": "Server",
+      "subdomain": "Lifecycle",
+      "namespace": "WP\\McpSchema\\Server\\Lifecycle\\Union\\ServerNotificationInterface",
+      "purpose": "Union type: CancelledNotification | ProgressNotification | LoggingMessageNotification | ResourceUpdatedNotification | ResourceListChangedNotification | ToolListChangedNotification | PromptListChangedNotification | ElicitationCompleteNotification | TaskStatusNotification",
+      "implements": [],
+      "properties": {},
+      "usedBy": [],
+      "uses": [
+        "CancelledNotification",
+        "ProgressNotification",
+        "LoggingMessageNotification",
+        "ResourceUpdatedNotification",
+        "ResourceListChangedNotification",
+        "ToolListChangedNotification",
+        "PromptListChangedNotification",
+        "ElicitationCompleteNotification",
+        "TaskStatusNotification"
+      ]
+    },
+    "ServerResultInterface": {
+      "kind": "union",
+      "domain": "Server",
+      "subdomain": "Lifecycle",
+      "namespace": "WP\\McpSchema\\Server\\Lifecycle\\Union\\ServerResultInterface",
+      "purpose": "Union type: EmptyResult | InitializeResult | CompleteResult | GetPromptResult | ListPromptsResult | ListResourceTemplatesResult | ListResourcesResult | ReadResourceResult | CallToolResult | ListToolsResult | GetTaskResult | GetTaskPayloadResult | ListTasksResult | CancelTaskResult",
+      "implements": [],
+      "properties": {},
+      "usedBy": [],
+      "uses": [
+        "EmptyResult",
+        "InitializeResult",
+        "CompleteResult",
+        "GetPromptResult",
+        "ListPromptsResult",
+        "ListResourceTemplatesResult",
+        "ListResourcesResult",
+        "ReadResourceResult",
+        "CallToolResult",
+        "ListToolsResult",
+        "GetTaskResult",
+        "GetTaskPayloadResult",
+        "ListTasksResult",
+        "CancelTaskResult"
+      ]
+    }
+  },
+  "factories": {
+    "ServerNotificationFactory": {
+      "interface": "ServerNotificationInterface",
+      "discriminator": "method",
+      "mappings": {
+        "notifications/cancelled": "CancelledNotification",
+        "notifications/progress": "ProgressNotification",
+        "notifications/message": "LoggingMessageNotification",
+        "notifications/resources/updated": "ResourceUpdatedNotification",
+        "notifications/resources/list_changed": "ResourceListChangedNotification",
+        "notifications/tools/list_changed": "ToolListChangedNotification",
+        "notifications/prompts/list_changed": "PromptListChangedNotification",
+        "notifications/elicitation/complete": "ElicitationCompleteNotification",
+        "notifications/tasks/status": "TaskStatusNotification"
+      }
+    }
+  }
+}

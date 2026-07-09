@@ -1,0 +1,19 @@
+# Exclude dev-only files and directories from Composer package distribution
+
+# Directories
+/.claude                export-ignore
+/.github                export-ignore
+/.idea                  export-ignore
+/generator              export-ignore
+/skill                  export-ignore
+
+# Files
+/.gitattributes         export-ignore
+/.gitignore             export-ignore
+/CLAUDE.md              export-ignore
+/composer.lock          export-ignore
+/CONTRIBUTING.md        export-ignore
+/phpstan.neon           export-ignore
+
+# Patterns
+*.DS_Store              export-ignore

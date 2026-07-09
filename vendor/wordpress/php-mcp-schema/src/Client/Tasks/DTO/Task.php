@@ -1,0 +1,231 @@
+<?php
+
+declare(strict_types=1);
+
+namespace WP\McpSchema\Client\Tasks\DTO;
+
+use WP\McpSchema\Common\AbstractDataTransferObject;
+use WP\McpSchema\Common\Traits\ValidatesRequiredFields;
+
+/**
+ * Data associated with a task.
+ *
+ * @since 2025-11-25
+ *
+ * @mcp-domain Client
+ * @mcp-subdomain Tasks
+ * @mcp-version 2025-11-25
+ */
+class Task extends AbstractDataTransferObject
+{
+    use ValidatesRequiredFields;
+
+    /**
+     * The task identifier.
+     *
+     * @since 2025-11-25
+     *
+     * @var string
+     */
+    protected string $taskId;
+
+    /**
+     * Current task state.
+     *
+     * @since 2025-11-25
+     *
+     * @var 'working'|'input_required'|'completed'|'failed'|'cancelled'
+     */
+    protected string $status;
+
+    /**
+     * Optional human-readable message describing the current task state.
+     * This can provide context for any status, including:
+     * - Reasons for "cancelled" status
+     * - Summaries for "completed" status
+     * - Diagnostic information for "failed" status (e.g., error details, what went wrong)
+     *
+     * @since 2025-11-25
+     *
+     * @var string|null
+     */
+    protected ?string $statusMessage;
+
+    /**
+     * ISO 8601 timestamp when the task was created.
+     *
+     * @since 2025-11-25
+     *
+     * @var string
+     */
+    protected string $createdAt;
+
+    /**
+     * ISO 8601 timestamp when the task was last updated.
+     *
+     * @since 2025-11-25
+     *
+     * @var string
+     */
+    protected string $lastUpdatedAt;
+
+    /**
+     * Actual retention duration from creation in milliseconds, null for unlimited.
+     *
+     * @since 2025-11-25
+     *
+     * @var int|null
+     */
+    protected ?int $ttl;
+
+    /**
+     * Suggested polling interval in milliseconds.
+     *
+     * @since 2025-11-25
+     *
+     * @var int|null
+     */
+    protected ?int $pollInterval;
+
+    /**
+     * @param string $taskId @since 2025-11-25
+     * @param 'working'|'input_required'|'completed'|'failed'|'cancelled' $status @since 2025-11-25
+     * @param string $createdAt @since 2025-11-25
+     * @param string $lastUpdatedAt @since 2025-11-25
+     * @param int|null $ttl @since 2025-11-25
+     * @param string|null $statusMessage @since 2025-11-25
+     * @param int|null $pollInterval @since 2025-11-25
+     */
+    public function __construct(
+        string $taskId,
+        string $status,
+        string $createdAt,
+        string $lastUpdatedAt,
+        ?int $ttl,
+        ?string $statusMessage = null,
+        ?int $pollInterval = null
+    ) {
+        $this->taskId = $taskId;
+        $this->status = $status;
+        $this->createdAt = $createdAt;
+        $this->lastUpdatedAt = $lastUpdatedAt;
+        $this->ttl = $ttl;
+        $this->statusMessage = $statusMessage;
+        $this->pollInterval = $pollInterval;
+    }
+
+    /**
+     * Creates an instance from an array.
+     *
+     * @param array{
+     *     taskId: string,
+     *     status: 'working'|'input_required'|'completed'|'failed'|'cancelled',
+     *     statusMessage?: string|null,
+     *     createdAt: string,
+     *     lastUpdatedAt: string,
+     *     ttl: int|null,
+     *     pollInterval?: int|null
+     * } $data
+     * @phpstan-param array<string, mixed> $data
+     * @return self
+     */
+    public static function fromArray(array $data): self
+    {
+        self::assertRequired($data, ['taskId', 'status', 'createdAt', 'lastUpdatedAt', 'ttl']);
+
+        /** @var 'working'|'input_required'|'completed'|'failed'|'cancelled' $status */
+        $status = self::asString($data['status']);
+
+        return new self(
+            self::asString($data['taskId']),
+            $status,
+            self::asString($data['createdAt']),
+            self::asString($data['lastUpdatedAt']),
+            self::asInt($data['ttl']),
+            self::asStringOrNull($data['statusMessage'] ?? null),
+            self::asIntOrNull($data['pollInterval'] ?? null)
+        );
+    }
+
+    /**
+     * Converts the instance to an array.
+     *
+     * @return array<string, mixed>
+     */
+    public function toArray(): array
+    {
+        $result = [];
+
+        $result['taskId'] = $this->taskId;
+        $result['status'] = $this->status;
+        if ($this->statusMessage !== null) {
+            $result['statusMessage'] = $this->statusMessage;
+        }
+        $result['createdAt'] = $this->createdAt;
+        $result['lastUpdatedAt'] = $this->lastUpdatedAt;
+        if ($this->ttl !== null) {
+            $result['ttl'] = $this->ttl;
+        }
+        if ($this->pollInterval !== null) {
+            $result['pollInterval'] = $this->pollInterval;
+        }
+
+        return $result;
+    }
+
+    /**
+     * @return string
+     */
+    public function getTaskId(): string
+    {
+        return $this->taskId;
+    }
+
+    /**
+     * @return 'working'|'input_required'|'completed'|'failed'|'cancelled'
+     */
+    public function getStatus(): string
+    {
+        return $this->status;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getStatusMessage(): ?string
+    {
+        return $this->statusMessage;
+    }
+
+    /**
+     * @return string
+     */
+    public function getCreatedAt(): string
+    {
+        return $this->createdAt;
+    }
+
+    /**
+     * @return string
+     */
+    public function getLastUpdatedAt(): string
+    {
+        return $this->lastUpdatedAt;
+    }
+
+    /**
+     * @return int|null
+     */
+    public function getTtl(): ?int
+    {
+        return $this->ttl;
+    }
+
+    /**
+     * @return int|null
+     */
+    public function getPollInterval(): ?int
+    {
+        return $this->pollInterval;
+    }
+}

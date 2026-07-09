@@ -1,0 +1,57 @@
+{
+	"name": "automattic/jetpack-autoloader",
+	"description": "Creates a custom autoloader for a plugin or theme.",
+	"type": "composer-plugin",
+	"license": "GPL-2.0-or-later",
+	"keywords": [
+		"autoload",
+		"autoloader",
+		"composer",
+		"plugin",
+		"jetpack",
+		"wordpress"
+	],
+	"require": {
+		"php": ">=7.2",
+		"composer-plugin-api": "^2.2"
+	},
+	"require-dev": {
+		"composer/composer": "^2.2",
+		"yoast/phpunit-polyfills": "^4.0.0",
+		"automattic/phpunit-select-config": "^1.0.9"
+	},
+	"autoload": {
+		"classmap": [
+			"src/AutoloadGenerator.php"
+		],
+		"psr-4": {
+			"Automattic\\Jetpack\\Autoloader\\": "src"
+		}
+	},
+	"scripts": {
+		"phpunit": [
+			"phpunit-select-config phpunit.#.xml.dist --colors=always"
+		],
+		"test-php": "@composer phpunit",
+		"test-php-coverage": [
+			"php -dpcov.directory=. ./vendor/bin/phpunit-select-config phpunit.#.xml.dist --coverage-php \"./tests/php/tmp/coverage-report.php\"",
+			"php ./tests/php/bin/test-coverage.php \"$COVERAGE_DIR/php.cov\""
+		]
+	},
+	"minimum-stability": "dev",
+	"prefer-stable": true,
+	"extra": {
+		"autotagger": true,
+		"class": "Automattic\\Jetpack\\Autoloader\\CustomAutoloaderPlugin",
+		"mirror-repo": "Automattic/jetpack-autoloader",
+		"changelogger": {
+			"link-template": "https://github.com/Automattic/jetpack-autoloader/compare/v${old}...v${new}"
+		},
+		"version-constants": {
+			"::VERSION": "src/AutoloadGenerator.php"
+		},
+		"branch-alias": {
+			"dev-trunk": "5.0.x-dev"
+		}
+	}
+}

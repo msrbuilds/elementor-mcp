@@ -1,8 +1,38 @@
-# Dependencies
-vendor/
+# Composer: ignore everything under vendor/, then un-ignore ONLY the runtime
+# packages we ship (the MCP adapter + the Jetpack Autoloader). Dev tooling
+# (phpunit, sebastian, nikic, …) stays ignored and is restored by
+# `composer install`. We load vendor/autoload_packages.php at runtime, never
+# vendor/autoload.php, so the standard composer autoload_*.php are NOT shipped.
+/vendor/*
+!/vendor/autoload_packages.php
+!/vendor/automattic/
+!/vendor/jetpack-autoloader/
+!/vendor/wordpress/
+!/vendor/composer/
+/vendor/composer/*
+!/vendor/composer/InstalledVersions.php
+!/vendor/composer/installed.json
+!/vendor/composer/jetpack_autoload_classmap.php
+!/vendor/composer/jetpack_autoload_filemap.php
+!/vendor/composer/jetpack_autoload_psr4.php
 
-# Composer
-composer.lock
+# Within the shipped packages, keep runtime code only — drop test/CI/doc cruft
+# so the zip stays lean (composer install restores them locally; they're just
+# never tracked or shipped).
+/vendor/wordpress/mcp-adapter/tests/
+/vendor/wordpress/mcp-adapter/docs/
+/vendor/wordpress/mcp-adapter/.github/
+/vendor/wordpress/mcp-adapter/*.dist
+/vendor/wordpress/mcp-adapter/phpstan.neon*
+/vendor/wordpress/mcp-adapter/phpcs.xml*
+/vendor/wordpress/php-mcp-schema/tests/
+/vendor/wordpress/php-mcp-schema/generator/
+/vendor/wordpress/php-mcp-schema/.github/
+/vendor/wordpress/php-mcp-schema/*.dist
+/vendor/wordpress/php-mcp-schema/phpstan.neon*
+/vendor/automattic/jetpack-autoloader/tests/
+/vendor/automattic/jetpack-autoloader/.github/
+/vendor/automattic/jetpack-autoloader/*.dist
 
 # IDE / Editor
 .vscode/

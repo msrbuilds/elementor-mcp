@@ -1,0 +1,2 @@
+# Automatically generated rules.
+/.git*	export-ignore

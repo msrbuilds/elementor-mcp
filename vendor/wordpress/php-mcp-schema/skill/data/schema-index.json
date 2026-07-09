@@ -1,0 +1,130 @@
+{
+  "version": "2025-11-25",
+  "namespace": "WP\\McpSchema",
+  "summary": {
+    "types": 164,
+    "domains": 3,
+    "subdomains": 17,
+    "rpcMethods": 20,
+    "factories": 11
+  },
+  "domains": {
+    "Common": [
+      "Tasks",
+      "JsonRpc",
+      "Protocol",
+      "Core",
+      "Lifecycle",
+      "Content"
+    ],
+    "Client": [
+      "Lifecycle",
+      "Tasks",
+      "Sampling",
+      "Roots",
+      "Elicitation"
+    ],
+    "Server": [
+      "Lifecycle",
+      "Resources",
+      "Prompts",
+      "Tools",
+      "Logging",
+      "Core"
+    ]
+  },
+  "rpcMethods": [
+    {
+      "method": "initialize",
+      "direction": "client→server"
+    },
+    {
+      "method": "ping",
+      "direction": "bidirectional"
+    },
+    {
+      "method": "resources/list",
+      "direction": "client→server"
+    },
+    {
+      "method": "resources/templates/list",
+      "direction": "client→server"
+    },
+    {
+      "method": "resources/read",
+      "direction": "client→server"
+    },
+    {
+      "method": "resources/subscribe",
+      "direction": "client→server"
+    },
+    {
+      "method": "resources/unsubscribe",
+      "direction": "client→server"
+    },
+    {
+      "method": "prompts/list",
+      "direction": "client→server"
+    },
+    {
+      "method": "prompts/get",
+      "direction": "client→server"
+    },
+    {
+      "method": "tools/list",
+      "direction": "client→server"
+    },
+    {
+      "method": "tools/call",
+      "direction": "client→server"
+    },
+    {
+      "method": "tasks/get",
+      "direction": "bidirectional"
+    },
+    {
+      "method": "tasks/result",
+      "direction": "bidirectional"
+    },
+    {
+      "method": "tasks/cancel",
+      "direction": "bidirectional"
+    },
+    {
+      "method": "tasks/list",
+      "direction": "bidirectional"
+    },
+    {
+      "method": "logging/setLevel",
+      "direction": "client→server"
+    },
+    {
+      "method": "sampling/createMessage",
+      "direction": "server→client"
+    },
+    {
+      "method": "completion/complete",
+      "direction": "client→server"
+    },
+    {
+      "method": "roots/list",
+      "direction": "server→client"
+    },
+    {
+      "method": "elicitation/create",
+      "direction": "server→client"
+    }
+  ],
+  "entryPoints": {
+    "Common/Tasks": "tasks/get",
+    "Common/Protocol": "initialize",
+    "Server/Resources": "resources/list",
+    "Server/Prompts": "prompts/list",
+    "Server/Tools": "tools/list",
+    "Server/Logging": "logging/setLevel",
+    "Client/Sampling": "sampling/createMessage",
+    "Server/Core": "completion/complete",
+    "Client/Roots": "roots/list",
+    "Client/Elicitation": "elicitation/create"
+  }
+}

@@ -1,0 +1,998 @@
+{
+  "version": "2025-11-25",
+  "domain": "Client",
+  "types": {
+    "ClientCapabilities": {
+      "kind": "class",
+      "domain": "Client",
+      "subdomain": "Lifecycle",
+      "namespace": "WP\\McpSchema\\Client\\Lifecycle\\DTO\\ClientCapabilities",
+      "purpose": "Capabilities a client may support",
+      "implements": [],
+      "properties": {
+        "experimental": "{ [key: string]: object }?",
+        "roots": "ClientCapabilitiesRoots | undefined?",
+        "sampling": "ClientCapabilitiesSampling | undefined?",
+        "elicitation": "ClientCapabilitiesElicitation | undefined?",
+        "tasks": "ClientCapabilitiesTasks | undefined?"
+      },
+      "usedBy": [
+        "InitializeRequestParams"
+      ],
+      "uses": [
+        "ClientCapabilitiesRoots",
+        "ClientCapabilitiesSampling",
+        "ClientCapabilitiesElicitation",
+        "ClientCapabilitiesTasks"
+      ]
+    },
+    "TaskMetadata": {
+      "kind": "class",
+      "domain": "Client",
+      "subdomain": "Tasks",
+      "namespace": "WP\\McpSchema\\Client\\Tasks\\DTO\\TaskMetadata",
+      "purpose": "Metadata for augmenting a request with task execution",
+      "implements": [],
+      "properties": {
+        "ttl": "number?"
+      },
+      "usedBy": [
+        "TaskAugmentedRequestParams"
+      ],
+      "uses": []
+    },
+    "RelatedTaskMetadata": {
+      "kind": "class",
+      "domain": "Client",
+      "subdomain": "Tasks",
+      "namespace": "WP\\McpSchema\\Client\\Tasks\\DTO\\RelatedTaskMetadata",
+      "purpose": "Metadata for associating messages with a task",
+      "implements": [],
+      "properties": {
+        "taskId": "string"
+      },
+      "usedBy": [],
+      "uses": []
+    },
+    "Task": {
+      "kind": "class",
+      "domain": "Client",
+      "subdomain": "Tasks",
+      "namespace": "WP\\McpSchema\\Client\\Tasks\\DTO\\Task",
+      "purpose": "Data associated with a task",
+      "implements": [],
+      "properties": {
+        "taskId": "string",
+        "status": "TaskStatus",
+        "statusMessage": "string?",
+        "createdAt": "string",
+        "lastUpdatedAt": "string",
+        "ttl": "number | null",
+        "pollInterval": "number?"
+      },
+      "usedBy": [
+        "CreateTaskResult",
+        "ListTasksResult",
+        "GetTaskResult",
+        "CancelTaskResult"
+      ],
+      "uses": [
+        "TaskStatus"
+      ]
+    },
+    "CreateTaskResult": {
+      "kind": "class",
+      "domain": "Client",
+      "subdomain": "Tasks",
+      "namespace": "WP\\McpSchema\\Client\\Tasks\\DTO\\CreateTaskResult",
+      "purpose": "A response to a task-augmented request",
+      "extends": "Result",
+      "implements": [],
+      "properties": {
+        "task": "Task"
+      },
+      "usedBy": [],
+      "uses": [
+        "Result",
+        "Task"
+      ]
+    },
+    "CreateMessageRequestParams": {
+      "kind": "class",
+      "domain": "Client",
+      "subdomain": "Sampling",
+      "namespace": "WP\\McpSchema\\Client\\Sampling\\DTO\\CreateMessageRequestParams",
+      "purpose": "Parameters for a `sampling/createMessage` request",
+      "extends": "TaskAugmentedRequestParams",
+      "implements": [],
+      "properties": {
+        "messages": "SamplingMessage[]",
+        "modelPreferences": "ModelPreferences?",
+        "systemPrompt": "string?",
+        "includeContext": "\"none\" | \"thisServer\" | \"allServers\"?",
+        "temperature": "number?",
+        "maxTokens": "number",
+        "stopSequences": "string[]?",
+        "metadata": "object?",
+        "tools": "Tool[]?",
+        "toolChoice": "ToolChoice?"
+      },
+      "usedBy": [
+        "CreateMessageRequest"
+      ],
+      "uses": [
+        "TaskAugmentedRequestParams",
+        "SamplingMessage",
+        "ModelPreferences",
+        "Tool",
+        "ToolChoice"
+      ]
+    },
+    "ToolChoice": {
+      "kind": "class",
+      "domain": "Client",
+      "subdomain": "Sampling",
+      "namespace": "WP\\McpSchema\\Client\\Sampling\\DTO\\ToolChoice",
+      "purpose": "Controls tool selection behavior for sampling requests",
+      "implements": [],
+      "properties": {
+        "mode": "\"auto\" | \"required\" | \"none\"?"
+      },
+      "usedBy": [
+        "CreateMessageRequestParams"
+      ],
+      "uses": []
+    },
+    "CreateMessageRequest": {
+      "kind": "class",
+      "domain": "Client",
+      "subdomain": "Sampling",
+      "namespace": "WP\\McpSchema\\Client\\Sampling\\DTO\\CreateMessageRequest",
+      "purpose": "A request from the server to sample an LLM via the client",
+      "extends": "JSONRPCRequest",
+      "implements": [
+        "ServerRequestInterface"
+      ],
+      "properties": {
+        "method": "\"sampling/createMessage\"",
+        "params": "CreateMessageRequestParams"
+      },
+      "usedBy": [
+        "ServerRequestInterface"
+      ],
+      "uses": [
+        "JSONRPCRequest",
+        "CreateMessageRequestParams"
+      ],
+      "discriminator": {
+        "field": "method",
+        "value": "sampling/createMessage"
+      }
+    },
+    "CreateMessageResult": {
+      "kind": "class",
+      "domain": "Client",
+      "subdomain": "Sampling",
+      "namespace": "WP\\McpSchema\\Client\\Sampling\\DTO\\CreateMessageResult",
+      "purpose": "The client's response to a sampling/createMessage request from the server",
+      "extends": "Result",
+      "implements": [
+        "ClientResultInterface"
+      ],
+      "properties": {
+        "model": "string",
+        "stopReason": "\"endTurn\" | \"stopSequence\" | \"maxTokens\" | \"too...?"
+      },
+      "usedBy": [
+        "ClientResultInterface"
+      ],
+      "uses": [
+        "Result",
+        "SamplingMessage"
+      ]
+    },
+    "SamplingMessage": {
+      "kind": "class",
+      "domain": "Client",
+      "subdomain": "Sampling",
+      "namespace": "WP\\McpSchema\\Client\\Sampling\\DTO\\SamplingMessage",
+      "purpose": "Describes a message issued to or received from an LLM API",
+      "implements": [],
+      "properties": {
+        "role": "Role",
+        "content": "SamplingMessageContentBlock | SamplingMessageCo...",
+        "_meta": "{ [key: string]: unknown }?"
+      },
+      "usedBy": [
+        "CreateMessageRequestParams",
+        "CreateMessageResult"
+      ],
+      "uses": [
+        "Role",
+        "SamplingMessageContentBlock"
+      ]
+    },
+    "ToolUseContent": {
+      "kind": "class",
+      "domain": "Client",
+      "subdomain": "Sampling",
+      "namespace": "WP\\McpSchema\\Client\\Sampling\\DTO\\ToolUseContent",
+      "purpose": "A request from the assistant to call a tool",
+      "implements": [
+        "SamplingMessageContentBlockInterface"
+      ],
+      "properties": {
+        "type": "\"tool_use\"",
+        "id": "string",
+        "name": "string",
+        "input": "{ [key: string]: unknown }",
+        "_meta": "{ [key: string]: unknown }?"
+      },
+      "usedBy": [
+        "SamplingMessageContentBlockInterface"
+      ],
+      "uses": [],
+      "discriminator": {
+        "field": "type",
+        "value": "tool_use"
+      }
+    },
+    "ToolResultContent": {
+      "kind": "class",
+      "domain": "Client",
+      "subdomain": "Sampling",
+      "namespace": "WP\\McpSchema\\Client\\Sampling\\DTO\\ToolResultContent",
+      "purpose": "The result of a tool use, provided by the user back to the assistant",
+      "implements": [
+        "SamplingMessageContentBlockInterface"
+      ],
+      "properties": {
+        "type": "\"tool_result\"",
+        "toolUseId": "string",
+        "content": "ContentBlock[]",
+        "structuredContent": "{ [key: string]: unknown }?",
+        "isError": "boolean?",
+        "_meta": "{ [key: string]: unknown }?"
+      },
+      "usedBy": [
+        "SamplingMessageContentBlockInterface"
+      ],
+      "uses": [
+        "ContentBlock"
+      ],
+      "discriminator": {
+        "field": "type",
+        "value": "tool_result"
+      }
+    },
+    "ModelPreferences": {
+      "kind": "class",
+      "domain": "Client",
+      "subdomain": "Sampling",
+      "namespace": "WP\\McpSchema\\Client\\Sampling\\DTO\\ModelPreferences",
+      "purpose": "The server's preferences for model selection, requested of the client during sampling",
+      "implements": [],
+      "properties": {
+        "hints": "ModelHint[]?",
+        "costPriority": "number?",
+        "speedPriority": "number?",
+        "intelligencePriority": "number?"
+      },
+      "usedBy": [
+        "CreateMessageRequestParams"
+      ],
+      "uses": [
+        "ModelHint"
+      ]
+    },
+    "ModelHint": {
+      "kind": "class",
+      "domain": "Client",
+      "subdomain": "Sampling",
+      "namespace": "WP\\McpSchema\\Client\\Sampling\\DTO\\ModelHint",
+      "purpose": "Hints to use for model selection",
+      "implements": [],
+      "properties": {
+        "name": "string?"
+      },
+      "usedBy": [
+        "ModelPreferences"
+      ],
+      "uses": []
+    },
+    "ListRootsRequest": {
+      "kind": "class",
+      "domain": "Client",
+      "subdomain": "Roots",
+      "namespace": "WP\\McpSchema\\Client\\Roots\\DTO\\ListRootsRequest",
+      "purpose": "Sent from the server to request a list of root URIs from the client",
+      "extends": "JSONRPCRequest",
+      "implements": [
+        "ServerRequestInterface"
+      ],
+      "properties": {
+        "method": "\"roots/list\"",
+        "params": "RequestParams?"
+      },
+      "usedBy": [
+        "ServerRequestInterface"
+      ],
+      "uses": [
+        "JSONRPCRequest",
+        "RequestParams"
+      ],
+      "discriminator": {
+        "field": "method",
+        "value": "roots/list"
+      }
+    },
+    "ListRootsResult": {
+      "kind": "class",
+      "domain": "Client",
+      "subdomain": "Roots",
+      "namespace": "WP\\McpSchema\\Client\\Roots\\DTO\\ListRootsResult",
+      "purpose": "The client's response to a roots/list request from the server",
+      "extends": "Result",
+      "implements": [
+        "ClientResultInterface"
+      ],
+      "properties": {
+        "roots": "Root[]"
+      },
+      "usedBy": [
+        "ClientResultInterface"
+      ],
+      "uses": [
+        "Result",
+        "Root"
+      ]
+    },
+    "Root": {
+      "kind": "class",
+      "domain": "Client",
+      "subdomain": "Roots",
+      "namespace": "WP\\McpSchema\\Client\\Roots\\DTO\\Root",
+      "purpose": "Represents a root directory or file that the server can operate on",
+      "implements": [],
+      "properties": {
+        "uri": "string",
+        "name": "string?",
+        "_meta": "{ [key: string]: unknown }?"
+      },
+      "usedBy": [
+        "ListRootsResult"
+      ],
+      "uses": []
+    },
+    "RootsListChangedNotification": {
+      "kind": "class",
+      "domain": "Client",
+      "subdomain": "Roots",
+      "namespace": "WP\\McpSchema\\Client\\Roots\\DTO\\RootsListChangedNotification",
+      "purpose": "A notification from the client to the server, informing it that the list of roots has changed",
+      "extends": "JSONRPCNotification",
+      "implements": [
+        "ClientNotificationInterface"
+      ],
+      "properties": {
+        "method": "\"notifications/roots/list_changed\"",
+        "params": "NotificationParams?"
+      },
+      "usedBy": [
+        "ClientNotificationInterface"
+      ],
+      "uses": [
+        "JSONRPCNotification",
+        "NotificationParams"
+      ],
+      "discriminator": {
+        "field": "method",
+        "value": "notifications/roots/list_changed"
+      }
+    },
+    "ElicitRequestFormParams": {
+      "kind": "class",
+      "domain": "Client",
+      "subdomain": "Elicitation",
+      "namespace": "WP\\McpSchema\\Client\\Elicitation\\DTO\\ElicitRequestFormParams",
+      "purpose": "The parameters for a request to elicit non-sensitive information from the user via a form in the client",
+      "extends": "TaskAugmentedRequestParams",
+      "implements": [
+        "ElicitRequestParamsInterface"
+      ],
+      "properties": {
+        "mode": "\"form\"?",
+        "message": "string",
+        "requestedSchema": "ElicitRequestFormParamsRequestedSchema"
+      },
+      "usedBy": [
+        "ElicitRequestParamsInterface"
+      ],
+      "uses": [
+        "TaskAugmentedRequestParams",
+        "ElicitRequestFormParamsRequestedSchema"
+      ],
+      "discriminator": {
+        "field": "mode",
+        "value": "form"
+      }
+    },
+    "ElicitRequestURLParams": {
+      "kind": "class",
+      "domain": "Client",
+      "subdomain": "Elicitation",
+      "namespace": "WP\\McpSchema\\Client\\Elicitation\\DTO\\ElicitRequestURLParams",
+      "purpose": "The parameters for a request to elicit information from the user via a URL in the client",
+      "extends": "TaskAugmentedRequestParams",
+      "implements": [
+        "ElicitRequestParamsInterface"
+      ],
+      "properties": {
+        "mode": "\"url\"",
+        "message": "string",
+        "elicitationId": "string",
+        "url": "string"
+      },
+      "usedBy": [
+        "ElicitRequestParamsInterface"
+      ],
+      "uses": [
+        "TaskAugmentedRequestParams"
+      ],
+      "discriminator": {
+        "field": "mode",
+        "value": "url"
+      }
+    },
+    "ElicitRequest": {
+      "kind": "class",
+      "domain": "Client",
+      "subdomain": "Elicitation",
+      "namespace": "WP\\McpSchema\\Client\\Elicitation\\DTO\\ElicitRequest",
+      "purpose": "A request from the server to elicit additional information from the user via the client",
+      "extends": "JSONRPCRequest",
+      "implements": [
+        "ServerRequestInterface"
+      ],
+      "properties": {
+        "method": "\"elicitation/create\"",
+        "params": "ElicitRequestParams"
+      },
+      "usedBy": [
+        "ServerRequestInterface"
+      ],
+      "uses": [
+        "JSONRPCRequest",
+        "ElicitRequestParams"
+      ],
+      "discriminator": {
+        "field": "method",
+        "value": "elicitation/create"
+      }
+    },
+    "StringSchema": {
+      "kind": "class",
+      "domain": "Client",
+      "subdomain": "Elicitation",
+      "namespace": "WP\\McpSchema\\Client\\Elicitation\\DTO\\StringSchema",
+      "purpose": "String Schema data structure",
+      "implements": [
+        "PrimitiveSchemaDefinitionInterface"
+      ],
+      "properties": {
+        "type": "\"string\"",
+        "title": "string?",
+        "description": "string?",
+        "minLength": "number?",
+        "maxLength": "number?",
+        "format": "\"email\" | \"uri\" | \"date\" | \"date-time\"?",
+        "default": "string?"
+      },
+      "usedBy": [
+        "PrimitiveSchemaDefinitionInterface"
+      ],
+      "uses": [],
+      "discriminator": {
+        "field": "type",
+        "value": "string"
+      }
+    },
+    "NumberSchema": {
+      "kind": "class",
+      "domain": "Client",
+      "subdomain": "Elicitation",
+      "namespace": "WP\\McpSchema\\Client\\Elicitation\\DTO\\NumberSchema",
+      "purpose": "Number Schema data structure",
+      "implements": [
+        "PrimitiveSchemaDefinitionInterface"
+      ],
+      "properties": {
+        "type": "\"number\" | \"integer\"",
+        "title": "string?",
+        "description": "string?",
+        "minimum": "number?",
+        "maximum": "number?",
+        "default": "number?"
+      },
+      "usedBy": [
+        "PrimitiveSchemaDefinitionInterface"
+      ],
+      "uses": []
+    },
+    "BooleanSchema": {
+      "kind": "class",
+      "domain": "Client",
+      "subdomain": "Elicitation",
+      "namespace": "WP\\McpSchema\\Client\\Elicitation\\DTO\\BooleanSchema",
+      "purpose": "Boolean Schema data structure",
+      "implements": [
+        "PrimitiveSchemaDefinitionInterface"
+      ],
+      "properties": {
+        "type": "\"boolean\"",
+        "title": "string?",
+        "description": "string?",
+        "default": "boolean?"
+      },
+      "usedBy": [
+        "PrimitiveSchemaDefinitionInterface"
+      ],
+      "uses": [],
+      "discriminator": {
+        "field": "type",
+        "value": "boolean"
+      }
+    },
+    "UntitledSingleSelectEnumSchema": {
+      "kind": "class",
+      "domain": "Client",
+      "subdomain": "Elicitation",
+      "namespace": "WP\\McpSchema\\Client\\Elicitation\\DTO\\UntitledSingleSelectEnumSchema",
+      "purpose": "Schema for single-selection enumeration without display titles for options",
+      "implements": [
+        "SingleSelectEnumSchemaInterface"
+      ],
+      "properties": {
+        "type": "\"string\"",
+        "title": "string?",
+        "description": "string?",
+        "enum": "string[]",
+        "default": "string?"
+      },
+      "usedBy": [
+        "SingleSelectEnumSchemaInterface"
+      ],
+      "uses": [],
+      "discriminator": {
+        "field": "type",
+        "value": "string"
+      }
+    },
+    "TitledSingleSelectEnumSchema": {
+      "kind": "class",
+      "domain": "Client",
+      "subdomain": "Elicitation",
+      "namespace": "WP\\McpSchema\\Client\\Elicitation\\DTO\\TitledSingleSelectEnumSchema",
+      "purpose": "Schema for single-selection enumeration with display titles for each option",
+      "implements": [
+        "SingleSelectEnumSchemaInterface"
+      ],
+      "properties": {
+        "type": "\"string\"",
+        "title": "string?",
+        "description": "string?",
+        "oneOf": "Array<{\n    /**\n     * The enum value.\n     */\n...",
+        "default": "string?"
+      },
+      "usedBy": [
+        "SingleSelectEnumSchemaInterface"
+      ],
+      "uses": [
+        "Array<{\n    /**\n     * The enum value.\n     */\n    const: string;\n    /**\n     * Display label for this option.\n     */\n    title: string;\n  }>"
+      ],
+      "discriminator": {
+        "field": "type",
+        "value": "string"
+      }
+    },
+    "UntitledMultiSelectEnumSchema": {
+      "kind": "class",
+      "domain": "Client",
+      "subdomain": "Elicitation",
+      "namespace": "WP\\McpSchema\\Client\\Elicitation\\DTO\\UntitledMultiSelectEnumSchema",
+      "purpose": "Schema for multiple-selection enumeration without display titles for options",
+      "implements": [
+        "MultiSelectEnumSchemaInterface"
+      ],
+      "properties": {
+        "type": "\"array\"",
+        "title": "string?",
+        "description": "string?",
+        "minItems": "number?",
+        "maxItems": "number?",
+        "items": "UntitledMultiSelectEnumSchemaItems",
+        "default": "string[]?"
+      },
+      "usedBy": [
+        "MultiSelectEnumSchemaInterface"
+      ],
+      "uses": [
+        "UntitledMultiSelectEnumSchemaItems"
+      ],
+      "discriminator": {
+        "field": "type",
+        "value": "array"
+      }
+    },
+    "TitledMultiSelectEnumSchema": {
+      "kind": "class",
+      "domain": "Client",
+      "subdomain": "Elicitation",
+      "namespace": "WP\\McpSchema\\Client\\Elicitation\\DTO\\TitledMultiSelectEnumSchema",
+      "purpose": "Schema for multiple-selection enumeration with display titles for each option",
+      "implements": [
+        "MultiSelectEnumSchemaInterface"
+      ],
+      "properties": {
+        "type": "\"array\"",
+        "title": "string?",
+        "description": "string?",
+        "minItems": "number?",
+        "maxItems": "number?",
+        "items": "TitledMultiSelectEnumSchemaItems",
+        "default": "string[]?"
+      },
+      "usedBy": [
+        "MultiSelectEnumSchemaInterface"
+      ],
+      "uses": [
+        "TitledMultiSelectEnumSchemaItems"
+      ],
+      "discriminator": {
+        "field": "type",
+        "value": "array"
+      }
+    },
+    "LegacyTitledEnumSchema": {
+      "kind": "class",
+      "domain": "Client",
+      "subdomain": "Elicitation",
+      "namespace": "WP\\McpSchema\\Client\\Elicitation\\DTO\\LegacyTitledEnumSchema",
+      "purpose": "Use TitledSingleSelectEnumSchema instead",
+      "implements": [
+        "EnumSchemaInterface"
+      ],
+      "properties": {
+        "type": "\"string\"",
+        "title": "string?",
+        "description": "string?",
+        "enum": "string[]",
+        "enumNames": "string[]?",
+        "default": "string?"
+      },
+      "usedBy": [
+        "EnumSchemaInterface"
+      ],
+      "uses": [],
+      "discriminator": {
+        "field": "type",
+        "value": "string"
+      }
+    },
+    "ElicitResult": {
+      "kind": "class",
+      "domain": "Client",
+      "subdomain": "Elicitation",
+      "namespace": "WP\\McpSchema\\Client\\Elicitation\\DTO\\ElicitResult",
+      "purpose": "The client's response to an elicitation request",
+      "extends": "Result",
+      "implements": [
+        "ClientResultInterface"
+      ],
+      "properties": {
+        "action": "\"accept\" | \"decline\" | \"cancel\"",
+        "content": "{ [key: string]: string | number | boolean | st...?"
+      },
+      "usedBy": [
+        "ClientResultInterface"
+      ],
+      "uses": [
+        "Result"
+      ]
+    },
+    "ElicitationCompleteNotification": {
+      "kind": "class",
+      "domain": "Client",
+      "subdomain": "Elicitation",
+      "namespace": "WP\\McpSchema\\Client\\Elicitation\\DTO\\ElicitationCompleteNotification",
+      "purpose": "An optional notification from the server to the client, informing it of a completion of a out-of-band elicitation request",
+      "extends": "JSONRPCNotification",
+      "implements": [
+        "ServerNotificationInterface"
+      ],
+      "properties": {
+        "method": "\"notifications/elicitation/complete\"",
+        "params": "ElicitationCompleteNotificationParams"
+      },
+      "usedBy": [
+        "ServerNotificationInterface"
+      ],
+      "uses": [
+        "JSONRPCNotification",
+        "ElicitationCompleteNotificationParams"
+      ],
+      "discriminator": {
+        "field": "method",
+        "value": "notifications/elicitation/complete"
+      }
+    },
+    "ClientCapabilitiesRoots": {
+      "kind": "class",
+      "domain": "Client",
+      "subdomain": "Lifecycle",
+      "namespace": "WP\\McpSchema\\Client\\Lifecycle\\DTO\\ClientCapabilitiesRoots",
+      "purpose": "Present if the client supports listing roots",
+      "implements": [],
+      "properties": {
+        "listChanged": "boolean?"
+      },
+      "usedBy": [
+        "ClientCapabilities"
+      ],
+      "uses": []
+    },
+    "ClientCapabilitiesSampling": {
+      "kind": "class",
+      "domain": "Client",
+      "subdomain": "Lifecycle",
+      "namespace": "WP\\McpSchema\\Client\\Lifecycle\\DTO\\ClientCapabilitiesSampling",
+      "purpose": "Present if the client supports sampling from an LLM",
+      "implements": [],
+      "properties": {
+        "context": "object?",
+        "tools": "object?"
+      },
+      "usedBy": [
+        "ClientCapabilities"
+      ],
+      "uses": []
+    },
+    "ClientCapabilitiesElicitation": {
+      "kind": "class",
+      "domain": "Client",
+      "subdomain": "Lifecycle",
+      "namespace": "WP\\McpSchema\\Client\\Lifecycle\\DTO\\ClientCapabilitiesElicitation",
+      "purpose": "Present if the client supports elicitation from the server",
+      "implements": [],
+      "properties": {
+        "form": "object?",
+        "url": "object?"
+      },
+      "usedBy": [
+        "ClientCapabilities"
+      ],
+      "uses": []
+    },
+    "ClientCapabilitiesTasks": {
+      "kind": "class",
+      "domain": "Client",
+      "subdomain": "Lifecycle",
+      "namespace": "WP\\McpSchema\\Client\\Lifecycle\\DTO\\ClientCapabilitiesTasks",
+      "purpose": "Present if the client supports task-augmented requests",
+      "implements": [],
+      "properties": {
+        "list": "object?",
+        "cancel": "object?"
+      },
+      "usedBy": [
+        "ClientCapabilities"
+      ],
+      "uses": []
+    },
+    "ElicitRequestFormParamsRequestedSchema": {
+      "kind": "class",
+      "domain": "Client",
+      "subdomain": "Elicitation",
+      "namespace": "WP\\McpSchema\\Client\\Elicitation\\DTO\\ElicitRequestFormParamsRequestedSchema",
+      "purpose": "A restricted subset of JSON Schema",
+      "implements": [],
+      "properties": {
+        "$schema": "string?",
+        "type": "\"object\"",
+        "required": "string[]?"
+      },
+      "usedBy": [
+        "ElicitRequestFormParams"
+      ],
+      "uses": []
+    },
+    "UntitledMultiSelectEnumSchemaItems": {
+      "kind": "class",
+      "domain": "Client",
+      "subdomain": "Elicitation",
+      "namespace": "WP\\McpSchema\\Client\\Elicitation\\DTO\\UntitledMultiSelectEnumSchemaItems",
+      "purpose": "Schema for the array items",
+      "implements": [],
+      "properties": {
+        "type": "\"string\"",
+        "enum": "string[]"
+      },
+      "usedBy": [
+        "UntitledMultiSelectEnumSchema"
+      ],
+      "uses": []
+    },
+    "TitledMultiSelectEnumSchemaItems": {
+      "kind": "class",
+      "domain": "Client",
+      "subdomain": "Elicitation",
+      "namespace": "WP\\McpSchema\\Client\\Elicitation\\DTO\\TitledMultiSelectEnumSchemaItems",
+      "purpose": "Schema for array items with enum options and display labels",
+      "implements": [],
+      "properties": {},
+      "usedBy": [
+        "TitledMultiSelectEnumSchema"
+      ],
+      "uses": []
+    },
+    "ElicitationCompleteNotificationParams": {
+      "kind": "class",
+      "domain": "Client",
+      "subdomain": "Elicitation",
+      "namespace": "WP\\McpSchema\\Client\\Elicitation\\DTO\\ElicitationCompleteNotificationParams",
+      "purpose": "Parameters for ElicitationCompleteNotification",
+      "implements": [],
+      "properties": {
+        "elicitationId": "string"
+      },
+      "usedBy": [
+        "ElicitationCompleteNotification"
+      ],
+      "uses": []
+    },
+    "TaskStatusInterface": {
+      "kind": "union",
+      "domain": "Client",
+      "subdomain": "Tasks",
+      "namespace": "WP\\McpSchema\\Client\\Tasks\\Union\\TaskStatusInterface",
+      "purpose": "The status of a task.",
+      "implements": [],
+      "properties": {},
+      "usedBy": [],
+      "uses": []
+    },
+    "ElicitRequestParamsInterface": {
+      "kind": "union",
+      "domain": "Client",
+      "subdomain": "Elicitation",
+      "namespace": "WP\\McpSchema\\Client\\Elicitation\\Union\\ElicitRequestParamsInterface",
+      "purpose": "The parameters for a request to elicit additional information from the user via the client.",
+      "implements": [],
+      "properties": {},
+      "usedBy": [],
+      "uses": [
+        "ElicitRequestFormParams",
+        "ElicitRequestURLParams"
+      ]
+    },
+    "PrimitiveSchemaDefinitionInterface": {
+      "kind": "union",
+      "domain": "Client",
+      "subdomain": "Elicitation",
+      "namespace": "WP\\McpSchema\\Client\\Elicitation\\Union\\PrimitiveSchemaDefinitionInterface",
+      "purpose": "Restricted schema definitions that only allow primitive types\nwithout nested objects or arrays.",
+      "implements": [],
+      "properties": {},
+      "usedBy": [],
+      "uses": [
+        "StringSchema",
+        "NumberSchema",
+        "BooleanSchema",
+        "EnumSchema"
+      ]
+    },
+    "SingleSelectEnumSchemaInterface": {
+      "kind": "union",
+      "domain": "Client",
+      "subdomain": "Elicitation",
+      "namespace": "WP\\McpSchema\\Client\\Elicitation\\Union\\SingleSelectEnumSchemaInterface",
+      "purpose": "Union type: UntitledSingleSelectEnumSchema | TitledSingleSelectEnumSchema",
+      "implements": [],
+      "properties": {},
+      "usedBy": [],
+      "uses": [
+        "UntitledSingleSelectEnumSchema",
+        "TitledSingleSelectEnumSchema"
+      ]
+    },
+    "MultiSelectEnumSchemaInterface": {
+      "kind": "union",
+      "domain": "Client",
+      "subdomain": "Elicitation",
+      "namespace": "WP\\McpSchema\\Client\\Elicitation\\Union\\MultiSelectEnumSchemaInterface",
+      "purpose": "Union type: UntitledMultiSelectEnumSchema | TitledMultiSelectEnumSchema",
+      "implements": [],
+      "properties": {},
+      "usedBy": [],
+      "uses": [
+        "UntitledMultiSelectEnumSchema",
+        "TitledMultiSelectEnumSchema"
+      ]
+    },
+    "EnumSchemaInterface": {
+      "kind": "union",
+      "domain": "Client",
+      "subdomain": "Elicitation",
+      "namespace": "WP\\McpSchema\\Client\\Elicitation\\Union\\EnumSchemaInterface",
+      "purpose": "Union type: SingleSelectEnumSchema | MultiSelectEnumSchema | LegacyTitledEnumSchema",
+      "implements": [],
+      "properties": {},
+      "usedBy": [],
+      "uses": [
+        "SingleSelectEnumSchema",
+        "MultiSelectEnumSchema",
+        "LegacyTitledEnumSchema"
+      ]
+    },
+    "ClientResultInterface": {
+      "kind": "union",
+      "domain": "Client",
+      "subdomain": "Lifecycle",
+      "namespace": "WP\\McpSchema\\Client\\Lifecycle\\Union\\ClientResultInterface",
+      "purpose": "Union type: EmptyResult | CreateMessageResult | ListRootsResult | ElicitResult | GetTaskResult | GetTaskPayloadResult | ListTasksResult | CancelTaskResult",
+      "implements": [],
+      "properties": {},
+      "usedBy": [],
+      "uses": [
+        "EmptyResult",
+        "CreateMessageResult",
+        "ListRootsResult",
+        "ElicitResult",
+        "GetTaskResult",
+        "GetTaskPayloadResult",
+        "ListTasksResult",
+        "CancelTaskResult"
+      ]
+    }
+  },
+  "factories": {
+    "ElicitRequestParamsFactory": {
+      "interface": "ElicitRequestParamsInterface",
+      "discriminator": "mode",
+      "mappings": {
+        "form": "ElicitRequestFormParams",
+        "url": "ElicitRequestURLParams"
+      }
+    },
+    "PrimitiveSchemaDefinitionFactory": {
+      "interface": "PrimitiveSchemaDefinitionInterface",
+      "discriminator": "type",
+      "mappings": {
+        "string": "StringSchema",
+        "number\" | \"integer": "NumberSchema",
+        "boolean": "BooleanSchema"
+      }
+    },
+    "SingleSelectEnumSchemaFactory": {
+      "interface": "SingleSelectEnumSchemaInterface",
+      "discriminator": "type",
+      "mappings": {
+        "string": "TitledSingleSelectEnumSchema"
+      }
+    },
+    "MultiSelectEnumSchemaFactory": {
+      "interface": "MultiSelectEnumSchemaInterface",
+      "discriminator": "type",
+      "mappings": {
+        "array": "TitledMultiSelectEnumSchema"
+      }
+    },
+    "EnumSchemaFactory": {
+      "interface": "EnumSchemaInterface",
+      "discriminator": "type",
+      "mappings": {
+        "string": "LegacyTitledEnumSchema"
+      }
+    }
+  }
+}

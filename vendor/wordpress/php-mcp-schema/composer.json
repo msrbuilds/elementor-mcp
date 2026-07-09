@@ -1,0 +1,38 @@
+{
+    "name": "wordpress/php-mcp-schema",
+    "description": "PHP DTOs for the Model Context Protocol (MCP) specification",
+    "type": "library",
+    "license": "GPL-2.0-or-later",
+    "keywords": [
+        "mcp",
+        "model-context-protocol",
+        "dto",
+        "schema",
+        "php"
+    ],
+    "homepage": "https://github.com/WordPress/php-mcp-schema",
+    "authors": [
+        {
+            "name": "WordPress",
+            "homepage": "https://wordpress.org"
+        }
+    ],
+    "require": {
+        "php": ">=7.4"
+    },
+    "require-dev": {
+        "phpstan/phpstan": "^1.10"
+    },
+    "autoload": {
+        "psr-4": {
+            "WP\\McpSchema\\": "src/"
+        }
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "scripts": {
+        "analyse": "phpstan analyse",
+        "phpstan": "@analyse"
+    }
+}
