@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+	Standalone config for the PUBLIC test suite (no private pro/ submodule
+	needed). The root phpunit.xml / phpunit.xml.dist point at pro/tests and are
+	only runnable by Pro developers.
+
+	Run from the plugin root:  vendor/bin/phpunit -c tests/phpunit.xml
+-->
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/10.5/phpunit.xsd"
+	bootstrap="bootstrap.php"
+	colors="true"
+	cacheDirectory="../.phpunit.public.cache"
+	beStrictAboutOutputDuringTests="true">
+	<testsuites>
+		<testsuite name="public">
+			<directory suffix="Test.php">.</directory>
+		</testsuite>
+	</testsuites>
+</phpunit>

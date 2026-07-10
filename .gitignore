@@ -100,8 +100,10 @@ docs/
 /includes/admin/views/page-skills.php
 /assets/js/ai-chat.js
 /assets/css/ai-chat.css
-/tests/
 /tools/
+
+# Public test-suite cache (tests/phpunit.xml)
+.phpunit.public.cache/
 
 # Playwright MCP + local test artifacts (never committed)
 .playwright-mcp/
