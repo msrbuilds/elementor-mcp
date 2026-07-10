@@ -3,7 +3,7 @@ Contributors: mianshahzadraza
 Tags: elementor, mcp, ai, page-builder, automation
 Requires at least: 6.9
 Tested up to: 7.0
-Stable tag: 3.2.0
+Stable tag: 3.2.1
 Requires PHP: 8.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -167,6 +167,10 @@ The plugin enforces WordPress capability checks on every tool. Read operations r
 2. Connection configuration page with copy-paste configs.
 
 == Changelog ==
+
+= 3.2.1 =
+A maintenance release. No plugin behavior changes.
+* Fixed: updated the bundled Freemius SDK from 2.13.3 to 2.13.4. Freemius withdrew 2.13.3 after finding a regression in its add-on checkout flow. This plugin does not use Freemius add-ons, so it was never affected — but it should not ship a version the vendor unpublished.
 
 = 3.2.0 =
 A core-engine release, and a rewrite of the Premium Prompts.
