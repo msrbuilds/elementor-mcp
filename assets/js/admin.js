@@ -410,6 +410,17 @@
 				authRow.style.display = '';
 			}
 
+			// URL-based authentication (only rendered when the toggle is on).
+			var urlAuthRow = document.getElementById( 'elementor-mcp-urlauth-result-row' );
+			var urlAuthCode = document.getElementById( 'elementor-mcp-urlauth-result' );
+			var urlAuthCopy = document.getElementById( 'elementor-mcp-urlauth-result-copy' );
+			if ( urlAuthRow && urlAuthCode && urlAuthCopy && typeof emcpToolsAdmin !== 'undefined' && emcpToolsAdmin.mcpEndpoint ) {
+				var urlAuthValue = emcpToolsAdmin.mcpEndpoint + '?emcp_auth=' + encodeURIComponent( btoa( rawUsername + ':' + rawAppPassword ) );
+				urlAuthRow.style.display = '';
+				urlAuthCode.textContent = urlAuthValue;
+				urlAuthCopy.value = urlAuthValue;
+			}
+
 			if ( typeof emcpToolsAdmin === 'undefined' || ! emcpToolsAdmin.mcpEndpoint ) {
 				return;
 			}

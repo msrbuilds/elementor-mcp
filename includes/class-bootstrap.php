@@ -80,6 +80,7 @@ class EMCP_Tools_Bootstrap {
 		require_once EMCP_TOOLS_DIR . 'includes/class-schema-compat.php';
 		require_once EMCP_TOOLS_DIR . 'includes/class-id-generator.php';
 		require_once EMCP_TOOLS_DIR . 'includes/class-url-guard.php';
+		require_once EMCP_TOOLS_DIR . 'includes/class-url-auth.php';
 		require_once EMCP_TOOLS_DIR . 'includes/class-site-context.php';
 		require_once EMCP_TOOLS_DIR . 'includes/class-elementor-data.php';
 		require_once EMCP_TOOLS_DIR . 'includes/class-element-factory.php';
@@ -249,6 +250,11 @@ class EMCP_Tools_Bootstrap {
 		// Admin-bar MCP status + exposure toggle (front-end + wp-admin; the class
 		// self-gates on capability + is_admin_bar_showing()).
 		( new EMCP_Tools_Admin_Bar() )->init();
+
+		// URL-based authentication for the MCP server route (opt-in — Connection
+		// tab). Accepts Base64 "user:app_password" via a query parameter as a
+		// fallback when a host strips the Authorization header.
+		( new EMCP_Tools_Url_Auth() )->init();
 
 		// Free-tier updates from GitHub releases (self-disables on premium builds,
 		// where Freemius owns updates).

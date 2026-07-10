@@ -725,6 +725,22 @@ class EMCP_Tools_Admin {
 			)
 		);
 
+		// URL-based authentication for the MCP server route (Connection tab). OFF
+		// by default — Base64 credentials in a URL query string can end up in
+		// server access logs, browser history, or a Referer header, so it's an
+		// explicit opt-in fallback for hosts that strip the Authorization header.
+		register_setting(
+			self::SETTINGS_GROUP_SERVER,
+			EMCP_Tools_Url_Auth::OPTION_ENABLED,
+			array(
+				'type'              => 'string',
+				'default'           => '0',
+				'sanitize_callback' => static function ( $value ) {
+					return '1' === (string) $value ? '1' : '0';
+				},
+			)
+		);
+
 		// Stock-image provider API keys (Connection → 3rd Party Services sub-tab)
 		// — power the stock-image tools (search-images / add-stock-image). All
 		// three are free keys. Registered in their own group so that sub-tab's

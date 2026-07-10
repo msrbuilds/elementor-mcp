@@ -127,6 +127,8 @@ $emcp_tools_server_enabled = class_exists( 'EMCP_Tools_Plugin' )
 			</div>
 		</div>
 
+		<?php $emcp_tools_url_auth_enabled = EMCP_Tools_Url_Auth::is_enabled(); ?>
+
 		<form method="post" action="options.php" id="emcp-conn-form" class="elementor-mcp-activate-form">
 			<?php settings_fields( EMCP_Tools_Admin::SETTINGS_GROUP_SERVER ); ?>
 
@@ -195,6 +197,44 @@ $emcp_tools_server_enabled = class_exists( 'EMCP_Tools_Plugin' )
 						);
 						?>
 					</p>
+				</div>
+
+				<?php // Card C: URL-based authentication. ?>
+				<div class="emcp-conn-card">
+					<h2 class="emcp-conn-card-title"><?php esc_html_e( 'URL-based authentication', 'emcp-tools' ); ?></h2>
+
+					<label class="emcp-switch emcp-conn-toggle">
+						<input
+							type="checkbox"
+							name="<?php echo esc_attr( EMCP_Tools_Url_Auth::OPTION_ENABLED ); ?>"
+							value="1"
+							<?php checked( $emcp_tools_url_auth_enabled ); ?>
+						/>
+						<span class="elementor-mcp-toggle" aria-hidden="true"><span class="elementor-mcp-toggle-track"></span></span>
+						<span class="emcp-switch-label"><?php esc_html_e( 'Also accept credentials via a URL query parameter', 'emcp-tools' ); ?></span>
+					</label>
+
+					<p class="elementor-mcp-activate-note">
+						<?php esc_html_e( 'Adds an additional authentication method alongside the Authorization header: the same Base64 "username:application_password" value, passed as an emcp_auth query parameter on the MCP endpoint URL. Useful when a host strips the Authorization header before it reaches PHP (see the troubleshooting box below) and fixing that at the server level is not an option. Still only ever validates Application Passwords — never a regular account password.', 'emcp-tools' ); ?>
+					</p>
+					<p class="elementor-mcp-activate-note elementor-mcp-activate-note--security">
+						<strong><?php esc_html_e( 'Security note:', 'emcp-tools' ); ?></strong>
+						<?php esc_html_e( 'Credentials embedded in a URL can end up in server access logs, browser history, or a Referer header. Leave this off unless you specifically need it, and prefer the Authorization header when your host supports it.', 'emcp-tools' ); ?>
+					</p>
+
+					<?php if ( $emcp_tools_url_auth_enabled ) : ?>
+						<div id="elementor-mcp-urlauth-result-row" style="display: none;">
+							<div class="elementor-mcp-cred-field">
+								<label for="elementor-mcp-urlauth-result-copy"><?php esc_html_e( 'MCP endpoint URL (with embedded credentials)', 'emcp-tools' ); ?></label>
+								<div class="elementor-mcp-auth-result">
+									<code id="elementor-mcp-urlauth-result"></code>
+									<button type="button" class="button elementor-mcp-copy-btn" data-target="elementor-mcp-urlauth-result-copy"><?php esc_html_e( 'Copy', 'emcp-tools' ); ?></button>
+									<textarea id="elementor-mcp-urlauth-result-copy" class="elementor-mcp-copy-source"></textarea>
+								</div>
+								<p class="description"><?php esc_html_e( 'Generate credentials in Step 1 below to fill this in.', 'emcp-tools' ); ?></p>
+							</div>
+						</div>
+					<?php endif; ?>
 				</div>
 
 			</div>
