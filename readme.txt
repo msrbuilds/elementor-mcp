@@ -3,7 +3,7 @@ Contributors: mianshahzadraza
 Tags: elementor, mcp, ai, page-builder, automation
 Requires at least: 6.9
 Tested up to: 7.0
-Stable tag: 3.2.1
+Stable tag: 3.2.0
 Requires PHP: 8.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -168,10 +168,6 @@ The plugin enforces WordPress capability checks on every tool. Read operations r
 
 == Changelog ==
 
-= 3.2.1 =
-A maintenance release. No plugin behavior changes.
-* Fixed: updated the bundled Freemius SDK from 2.13.3 to 2.13.4. Freemius withdrew 2.13.3 after finding a regression in its add-on checkout flow. This plugin does not use Freemius add-ons, so it was never affected — but it should not ship a version the vendor unpublished.
-
 = 3.2.0 =
 A core-engine release, and a rewrite of the Premium Prompts.
 * Added: all 50 Premium Prompts rewritten. Instead of dictating a section-by-section Elementor layout, each prompt now gives the AI a style guide, a design direction, the exact content, and hard standards — WCAG 2.1 AA, real photography in every slot, one consistent SVG icon set, builder-native construction, a completeness rule, and a lead-capture form — then lets it design the page. Expect more distinctive results.
@@ -179,6 +175,7 @@ A core-engine release, and a rewrite of the Premium Prompts.
 * Added (Pro): "Download v1 Prompts" on the Prompts screen — the original 50 prompts as an archive, for anyone who prefers the older, prescriptive style. License-, capability- and nonce-gated.
 * Added (Pro): web_fetch in the AI Chat — the model can read a URL you give it (a reference design, a competitor page, docs, a JSON endpoint, or a stylesheet). Fetching a page also returns the absolute URLs of its stylesheets, so the AI can read a design's colours and type scale from source. It cannot search the web; it needs a URL. Works in the Chat tab and both editor panels.
 * Security: web_fetch runs on your server, so every URL and every redirect hop is validated first — http(s) only, no credentials in the URL, ports 80/443 only, and refused if any resolved address is loopback, private, link-local (including the cloud-metadata address), CGNAT, multicast or reserved. Responses are size-capped, limited to text, never executed, and handed to the model labelled as untrusted data.
+* Fixed: updated the bundled Freemius SDK from 2.13.3 to 2.13.4. Freemius withdrew 2.13.3 after finding a regression in its add-on checkout flow. This plugin does not use Freemius add-ons, so it was never affected — but it should not ship a version the vendor unpublished.
 * Fixed: plugin scripts and styles are now versioned by their own file modification time, so a changed asset is never served stale from the browser cache between releases.
 * Changed: the Prompts screen shows a one-time, per-user notice explaining the rewritten prompts.
 * Added: Compact tool mode (opt-in Tools-tab toggle) — surfaces 3 dispatcher meta-tools (list-tools / get-tool-schema / call-tool) instead of ~140 individual tools, so clients that cap tool counts can still reach the whole surface. call-tool delegates each tool's own permission check; your per-tool toggles still apply. Replaces the old Low-tools mode.

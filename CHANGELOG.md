@@ -2,13 +2,6 @@
 
 All notable changes to MCP Tools for Elementor are documented in this file.
 
-## [3.2.1]
-
-> A maintenance release: the bundled Freemius SDK moves to the vendor's current version. No plugin behaviour changes.
-
-### Fixed
-- **Updated the bundled Freemius SDK from 2.13.3 to 2.13.4.** Freemius withdrew 2.13.3 after finding a regression in its add-on checkout flow; 2.13.4 carries the fix. EMCP Tools does not use Freemius add-ons (`has_addons => false`), so the regression never affected this plugin — but shipping a version the vendor unpublished is not something to leave in place. The only functional difference between the two SDK versions is that checkout fix.
-
 ## [3.2.0]
 
 > A core-engine release, and a rewrite of the Premium Prompts. The bundled MCP Adapter becomes a Composer dependency arbitrated by the Jetpack Autoloader (robust coexistence with other adapter-bundling plugins). An opt-in **Compact tool mode** collapses the tool surface to 3 dispatcher meta-tools to escape client tool-count caps, and a richer discovery context hands agents the site's environment + active-plugin inventory. On Pro, the bundled **Agent Skills** (now **7** playbooks) become discoverable and loadable by any connected MCP agent at runtime, with a Modules-tab switch to turn that injection off. All **50 Premium Prompts are rewritten** to hand the AI a design direction instead of a fixed layout — and they now work with any page builder. The AI Chat gains a **`web_fetch` tool** so a model can read a reference design you point it at.
@@ -33,6 +26,7 @@ All notable changes to MCP Tools for Elementor are documented in this file.
 - **One SSRF guard, not two.** The strict validation lives on the existing `EMCP_Tools_Url_Guard`, which already protected the image/SVG sideload tools, rather than in a second implementation that would drift out of step with it.
 
 ### Fixed
+- **Updated the bundled Freemius SDK from 2.13.3 to 2.13.4.** Freemius withdrew 2.13.3 after finding a regression in its add-on checkout flow. EMCP Tools does not use Freemius add-ons (`has_addons => false`), so the regression never affected this plugin, but a plugin should not ship a dependency version its vendor unpublished.
 - **Plugin assets no longer serve stale from the browser cache.** Scripts and styles were versioned by the plugin version unless `WP_DEBUG` was on, so a changed file could be served from cache between releases. Each asset is now versioned by its own modification time — which also fixes a CSS change never busting its own cache entry because all handles shared the JavaScript file's version.
 - Regenerated the shipped Jetpack autoloader without dev dependencies, so a clean install no longer emits a "Failed to open stream" notice for a dev-only file referenced in the autoloader's file map.
 - Pruned non-runtime metadata (lockfiles, package manifests, docs) from the shipped `vendor/` subset — a smaller download with no functional change.
