@@ -42,6 +42,14 @@ function emcp_test_reset(): void {
 		'posts'              => array(),   // post_id => post-ish object.
 		'options_pages'      => array(),
 		'abilities'          => array(),   // name => registration args.
+		'cpt_tax_supported'  => true,      // Toggles the ACF 6.1+ CPT/tax API stubs.
+		'acf_post_types'     => array(),   // key/ID => acf-post-type definition.
+		'acf_taxonomies'     => array(),   // key/ID => acf-taxonomy definition.
+		'existing_types'     => array(),   // slugs seen as already-registered post types.
+		'existing_taxes'     => array(),   // slugs seen as already-registered taxonomies.
+		'imported_types'     => array(),   // recorded acf_import_post_type() args.
+		'imported_taxes'     => array(),   // recorded acf_import_taxonomy() args.
+		'updated_internal'   => array(),   // recorded acf_update_internal_post_type() args.
 	);
 }
 emcp_test_reset();
@@ -207,6 +215,60 @@ function acf_update_field( $field ) {
 	}
 	$GLOBALS['emcp_test']['updated_fields'][] = $field;
 	return $field;
+}
+
+// ---------------------------------------------------------------------------
+// WordPress post-type / taxonomy registry stubs
+// ---------------------------------------------------------------------------
+
+function post_type_exists( $slug ): bool {
+	return in_array( (string) $slug, $GLOBALS['emcp_test']['existing_types'], true );
+}
+
+function taxonomy_exists( $slug ): bool {
+	return in_array( (string) $slug, $GLOBALS['emcp_test']['existing_taxes'], true );
+}
+
+// ---------------------------------------------------------------------------
+// ACF 6.1+ CPT / taxonomy stubs (present in the harness = "ACF 6.1+"; the
+// EMCP_Tools_ACF_Abilities::cpt_tax_supported() gate keys off function_exists).
+// ---------------------------------------------------------------------------
+
+function acf_get_acf_post_types(): array {
+	return array_values( $GLOBALS['emcp_test']['acf_post_types'] );
+}
+
+function acf_get_acf_taxonomies(): array {
+	return array_values( $GLOBALS['emcp_test']['acf_taxonomies'] );
+}
+
+function acf_get_internal_post_type( $id, $post_type ) {
+	$store = 'acf-post-type' === $post_type ? 'acf_post_types' : 'acf_taxonomies';
+	foreach ( $GLOBALS['emcp_test'][ $store ] as $item ) {
+		if ( ( $item['key'] ?? '' ) === $id || ( isset( $item['ID'] ) && (int) $item['ID'] === (int) $id ) ) {
+			return $item;
+		}
+	}
+	return false;
+}
+
+function acf_import_post_type( $def ) {
+	$def['ID']                                = 201 + count( $GLOBALS['emcp_test']['imported_types'] );
+	$GLOBALS['emcp_test']['imported_types'][] = $def;
+	$GLOBALS['emcp_test']['acf_post_types'][ $def['key'] ] = $def;
+	return $def;
+}
+
+function acf_import_taxonomy( $def ) {
+	$def['ID']                                = 301 + count( $GLOBALS['emcp_test']['imported_taxes'] );
+	$GLOBALS['emcp_test']['imported_taxes'][] = $def;
+	$GLOBALS['emcp_test']['acf_taxonomies'][ $def['key'] ] = $def;
+	return $def;
+}
+
+function acf_update_internal_post_type( $item, $post_type ) {
+	$GLOBALS['emcp_test']['updated_internal'][] = array( 'post_type' => $post_type, 'item' => $item );
+	return $item;
 }
 
 // ---------------------------------------------------------------------------

@@ -62,10 +62,11 @@ class AcfAbilitiesTest extends TestCase {
 	// Registration
 	// -------------------------------------------------------------------
 
-	public function test_registers_the_seven_acf_tools(): void {
+	public function test_registers_all_acf_tools_with_cpt_tax_support(): void {
 		$this->abilities->register();
 
 		$expected = array(
+			// Field values + field groups + options pages (iteration 1).
 			'emcp-tools/list-acf-field-groups',
 			'emcp-tools/get-acf-field-group',
 			'emcp-tools/list-acf-options-pages',
@@ -73,6 +74,15 @@ class AcfAbilitiesTest extends TestCase {
 			'emcp-tools/update-acf-fields',
 			'emcp-tools/create-acf-field-group',
 			'emcp-tools/update-acf-field-group',
+			// CPTs + taxonomies (iteration 2, ACF 6.1+).
+			'emcp-tools/list-acf-post-types',
+			'emcp-tools/get-acf-post-type',
+			'emcp-tools/create-acf-post-type',
+			'emcp-tools/update-acf-post-type',
+			'emcp-tools/list-acf-taxonomies',
+			'emcp-tools/get-acf-taxonomy',
+			'emcp-tools/create-acf-taxonomy',
+			'emcp-tools/update-acf-taxonomy',
 		);
 		$this->assertSame( $expected, $this->abilities->get_ability_names() );
 		foreach ( $expected as $name ) {
@@ -80,14 +90,27 @@ class AcfAbilitiesTest extends TestCase {
 		}
 	}
 
+	public function test_cpt_tax_support_is_detected(): void {
+		// The harness declares the ACF 6.1+ functions, so the gate is on.
+		$this->assertTrue( EMCP_Tools_ACF_Abilities::cpt_tax_supported() );
+	}
+
 	public function test_read_tools_are_annotated_readonly_and_writes_are_not(): void {
 		$this->abilities->register();
 		$abilities = $GLOBALS['emcp_test']['abilities'];
 
-		foreach ( array( 'list-acf-field-groups', 'get-acf-field-group', 'list-acf-options-pages', 'get-acf-fields' ) as $slug ) {
+		$reads = array(
+			'list-acf-field-groups', 'get-acf-field-group', 'list-acf-options-pages', 'get-acf-fields',
+			'list-acf-post-types', 'get-acf-post-type', 'list-acf-taxonomies', 'get-acf-taxonomy',
+		);
+		$writes = array(
+			'update-acf-fields', 'create-acf-field-group', 'update-acf-field-group',
+			'create-acf-post-type', 'update-acf-post-type', 'create-acf-taxonomy', 'update-acf-taxonomy',
+		);
+		foreach ( $reads as $slug ) {
 			$this->assertTrue( $abilities[ 'emcp-tools/' . $slug ]['meta']['annotations']['readonly'], $slug );
 		}
-		foreach ( array( 'update-acf-fields', 'create-acf-field-group', 'update-acf-field-group' ) as $slug ) {
+		foreach ( $writes as $slug ) {
 			$this->assertFalse( $abilities[ 'emcp-tools/' . $slug ]['meta']['annotations']['readonly'], $slug );
 		}
 	}
@@ -459,5 +482,158 @@ class AcfAbilitiesTest extends TestCase {
 
 		$result = $this->abilities->execute_get_fields( array( 'options_page' => 'options' ) );
 		$this->assertSame( '© 2026', $result['fields']['footer_text'] );
+	}
+
+	// -------------------------------------------------------------------
+	// Custom Post Types (ACF 6.1+)
+	// -------------------------------------------------------------------
+
+	public function test_create_post_type_generates_key_and_imports(): void {
+		$result = $this->abilities->execute_create_post_type( array(
+			'post_type' => 'book',
+			'title'     => 'Books',
+			'singular'  => 'Book',
+			'supports'  => array( 'title', 'editor', 'thumbnail' ),
+		) );
+
+		$this->assertIsArray( $result );
+		$this->assertCount( 1, $GLOBALS['emcp_test']['imported_types'] );
+		$imported = $GLOBALS['emcp_test']['imported_types'][0];
+		$this->assertStringStartsWith( 'post_type_', $imported['key'] );
+		$this->assertSame( 'book', $imported['post_type'] );
+		$this->assertSame( 'Books', $imported['labels']['name'] );
+		$this->assertSame( 'Book', $imported['labels']['singular_name'] );
+		$this->assertSame( 'book', $result['post_type'] );
+	}
+
+	public function test_create_post_type_rejects_existing_slug(): void {
+		$GLOBALS['emcp_test']['existing_types'][] = 'book';
+		$result = $this->abilities->execute_create_post_type( array( 'post_type' => 'book', 'title' => 'Books' ) );
+		$this->assertInstanceOf( WP_Error::class, $result );
+		$this->assertSame( 'post_type_exists', $result->get_error_code() );
+	}
+
+	public function test_create_post_type_rejects_reserved_slug(): void {
+		$result = $this->abilities->execute_create_post_type( array( 'post_type' => 'page', 'title' => 'Pages' ) );
+		$this->assertInstanceOf( WP_Error::class, $result );
+		$this->assertSame( 'reserved_slug', $result->get_error_code() );
+	}
+
+	public function test_create_post_type_rejects_overlong_slug(): void {
+		$result = $this->abilities->execute_create_post_type( array( 'post_type' => str_repeat( 'a', 21 ), 'title' => 'X' ) );
+		$this->assertInstanceOf( WP_Error::class, $result );
+		$this->assertSame( 'invalid_slug', $result->get_error_code() );
+	}
+
+	public function test_update_post_type_rejects_slug_change(): void {
+		$GLOBALS['emcp_test']['acf_post_types']['post_type_x'] = array(
+			'key' => 'post_type_x', 'ID' => 210, 'post_type' => 'book', 'title' => 'Books', 'active' => true,
+		);
+		$result = $this->abilities->execute_update_post_type( array( 'key' => 'post_type_x', 'post_type' => 'novel' ) );
+		$this->assertInstanceOf( WP_Error::class, $result );
+		$this->assertSame( 'immutable_slug', $result->get_error_code() );
+	}
+
+	public function test_update_post_type_changes_title_and_taxonomies(): void {
+		$GLOBALS['emcp_test']['acf_post_types']['post_type_x'] = array(
+			'key' => 'post_type_x', 'ID' => 210, 'post_type' => 'book', 'title' => 'Books',
+			'active' => true, 'labels' => array( 'name' => 'Books', 'singular_name' => 'Book' ),
+		);
+		$result = $this->abilities->execute_update_post_type( array(
+			'key'        => 'post_type_x',
+			'title'      => 'Publications',
+			'taxonomies' => array( 'genre', 'genre', 'author' ),
+		) );
+
+		$this->assertIsArray( $result );
+		$saved = $GLOBALS['emcp_test']['updated_internal'][0]['item'];
+		$this->assertSame( 'acf-post-type', $GLOBALS['emcp_test']['updated_internal'][0]['post_type'] );
+		$this->assertSame( 'Publications', $saved['title'] );
+		$this->assertSame( 'Publications', $saved['labels']['name'] );
+		$this->assertSame( array( 'genre', 'author' ), $saved['taxonomies'] ); // deduped, sanitized
+	}
+
+	public function test_get_post_type_missing_returns_error(): void {
+		$result = $this->abilities->execute_get_post_type( array( 'key' => 'post_type_nope' ) );
+		$this->assertInstanceOf( WP_Error::class, $result );
+		$this->assertSame( 'not_found', $result->get_error_code() );
+	}
+
+	public function test_list_post_types_filters_inactive_and_search(): void {
+		$GLOBALS['emcp_test']['acf_post_types'] = array(
+			array( 'key' => 'post_type_a', 'ID' => 1, 'post_type' => 'book', 'title' => 'Books', 'active' => true ),
+			array( 'key' => 'post_type_b', 'ID' => 2, 'post_type' => 'movie', 'title' => 'Movies', 'active' => false ),
+		);
+		$active = $this->abilities->execute_list_post_types( array() );
+		$this->assertSame( 1, $active['total'] );
+		$this->assertSame( 'book', $active['post_types'][0]['post_type'] );
+
+		$all = $this->abilities->execute_list_post_types( array( 'active_only' => false ) );
+		$this->assertSame( 2, $all['total'] );
+
+		$search = $this->abilities->execute_list_post_types( array( 'active_only' => false, 'search' => 'movie' ) );
+		$this->assertSame( 1, $search['total'] );
+		$this->assertSame( 'movie', $search['post_types'][0]['post_type'] );
+	}
+
+	// -------------------------------------------------------------------
+	// Taxonomies (ACF 6.1+)
+	// -------------------------------------------------------------------
+
+	public function test_create_taxonomy_requires_object_type(): void {
+		$result = $this->abilities->execute_create_taxonomy( array( 'taxonomy' => 'genre', 'title' => 'Genres', 'object_type' => array() ) );
+		$this->assertInstanceOf( WP_Error::class, $result );
+		$this->assertSame( 'missing_params', $result->get_error_code() );
+	}
+
+	public function test_create_taxonomy_generates_key_and_imports(): void {
+		$result = $this->abilities->execute_create_taxonomy( array(
+			'taxonomy'    => 'genre',
+			'title'       => 'Genres',
+			'object_type' => array( 'book' ),
+		) );
+
+		$this->assertIsArray( $result );
+		$this->assertCount( 1, $GLOBALS['emcp_test']['imported_taxes'] );
+		$imported = $GLOBALS['emcp_test']['imported_taxes'][0];
+		$this->assertStringStartsWith( 'taxonomy_', $imported['key'] );
+		$this->assertSame( 'genre', $imported['taxonomy'] );
+		$this->assertSame( array( 'book' ), $imported['object_type'] );
+		$this->assertTrue( $imported['hierarchical'] ); // default true for taxonomies
+	}
+
+	public function test_create_taxonomy_rejects_existing_slug(): void {
+		$GLOBALS['emcp_test']['existing_taxes'][] = 'genre';
+		$result = $this->abilities->execute_create_taxonomy( array( 'taxonomy' => 'genre', 'title' => 'Genres', 'object_type' => array( 'book' ) ) );
+		$this->assertInstanceOf( WP_Error::class, $result );
+		$this->assertSame( 'taxonomy_exists', $result->get_error_code() );
+	}
+
+	public function test_update_taxonomy_rejects_slug_change_and_updates_object_type(): void {
+		$GLOBALS['emcp_test']['acf_taxonomies']['taxonomy_x'] = array(
+			'key' => 'taxonomy_x', 'ID' => 310, 'taxonomy' => 'genre', 'title' => 'Genres',
+			'active' => true, 'object_type' => array( 'book' ), 'labels' => array( 'name' => 'Genres' ),
+		);
+		$rename = $this->abilities->execute_update_taxonomy( array( 'key' => 'taxonomy_x', 'taxonomy' => 'category2' ) );
+		$this->assertInstanceOf( WP_Error::class, $rename );
+		$this->assertSame( 'immutable_slug', $rename->get_error_code() );
+
+		$ok = $this->abilities->execute_update_taxonomy( array( 'key' => 'taxonomy_x', 'object_type' => array( 'book', 'movie' ) ) );
+		$this->assertIsArray( $ok );
+		$saved = $GLOBALS['emcp_test']['updated_internal'][0]['item'];
+		$this->assertSame( 'acf-taxonomy', $GLOBALS['emcp_test']['updated_internal'][0]['post_type'] );
+		$this->assertSame( array( 'book', 'movie' ), $saved['object_type'] );
+	}
+
+	// -------------------------------------------------------------------
+	// CPT/tax permissions
+	// -------------------------------------------------------------------
+
+	public function test_cpt_tax_tools_require_manage_options(): void {
+		$GLOBALS['emcp_test']['caps'] = array( 'edit_posts' ); // no manage_options
+		$this->assertFalse( $this->abilities->check_manage_permission() );
+
+		$GLOBALS['emcp_test']['caps'] = array( 'manage_options' );
+		$this->assertTrue( $this->abilities->check_manage_permission() );
 	}
 }
