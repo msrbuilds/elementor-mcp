@@ -38,6 +38,7 @@ final class EMCP_Tools_Pro_Loader {
 		'includes/ai-chat/class-ai-chat-store.php',
 		'includes/ai-chat/class-ai-chat-tool-groups.php',
 		'includes/ai-chat/class-ai-chat-prompt.php',
+		'includes/ai-chat/class-ai-chat-web-fetch.php',
 		'includes/ai-chat/class-ai-chat-controller.php',
 		'includes/themer/class-themer-pro-matchers.php',
 		'includes/themer/class-themer-pro-conditions.php',
@@ -86,6 +87,32 @@ final class EMCP_Tools_Pro_Loader {
 			return EMCP_TOOLS_URL . 'pro/' . $rel;
 		}
 		return '';
+	}
+
+	/**
+	 * Cache-busting version for a Pro asset: its modification time.
+	 *
+	 * Keyed on the file, not on EMCP_TOOLS_VERSION, so an edited asset is picked
+	 * up without a version bump. Previously this fell back to the plugin version
+	 * unless WP_DEBUG was on, which meant an unreleased JS/CSS change was served
+	 * from the browser cache on any non-debug install — including a dev site.
+	 *
+	 * On a released install the mtime is the install/extract time and still
+	 * changes on every update, so this is also correct in production.
+	 *
+	 * @since 3.2.0
+	 * @param string $rel Path relative to the Pro root.
+	 * @return string Version string.
+	 */
+	public static function asset_version( string $rel ): string {
+		$path = self::path( $rel );
+		if ( '' !== $path ) {
+			$mtime = @filemtime( $path ); // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged -- Falls back below.
+			if ( $mtime ) {
+				return (string) $mtime;
+			}
+		}
+		return EMCP_TOOLS_VERSION;
 	}
 
 	/** True when the private Pro overlay is present (either root). */

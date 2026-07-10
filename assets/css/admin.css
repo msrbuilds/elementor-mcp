@@ -1294,13 +1294,6 @@
 /* =========================================================================
  * Premium prompts library
  * ========================================================================= */
-
-.elementor-mcp-pro-prompts {
-	margin-top: 40px;
-	padding-top: 32px;
-	border-top: 1px solid var(--mcp-gray-200);
-}
-
 .elementor-mcp-pro-prompts-header {
 	display: flex;
 	align-items: flex-start;
@@ -3118,7 +3111,7 @@ body.emcp-modal-open { overflow: hidden; }
 /* Full-width admin header (app bar + tab nav + Help dropdown) ---------------- */
 .elementor-mcp-admin > h1 { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap; border: 0; }
 
-.emcp-appbar { display: flex; align-items: stretch; justify-content: space-between; gap: 16px; flex-wrap: wrap; background: var(--mcp-white); border-bottom: 1px solid var(--mcp-gray-200); padding: 0 0 0 20px; margin: -10px -20px 0 -22px; border-top: 1px solid var(--mcp-gray-200); }
+.emcp-appbar { display: flex; align-items: stretch; justify-content: space-between; gap: 16px; flex-wrap: wrap; background: var(--mcp-white); border-bottom: 1px solid var(--mcp-gray-200); padding: 0 20px 0 20px; margin: -10px -20px 0 -22px; border-top: 1px solid var(--mcp-gray-200); }
 .emcp-appbar-brand { display: flex; align-items: center; gap: 10px; min-width: 0; padding: 15px 0; width: 40%;}
 .emcp-appbar-logo { width: 34px; height: 34px; border-radius: 6px; object-fit: contain; }
 .emcp-appbar-title { font-size: 18px; font-weight: 700; color: var(--mcp-gray-800, #1d2327); }
@@ -3779,58 +3772,130 @@ body.emcp-modal-open { overflow: hidden; }
 }
 
 /* =========================================================================
- * Prompts v1 (legacy) download — flat, no gradient.
+ * "Prompts have been rewritten" notice — flat, dismissible, one-time.
  * ========================================================================= */
 
-.elementor-mcp-prompts-legacy {
+.elementor-mcp-prompts-whatsnew {
+	position: relative;
 	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	gap: 24px;
-	margin-top: 32px;
-	padding: 20px 24px;
-	background: var(--mcp-gray-50);
-	border: 1px solid var(--mcp-gray-200);
-	border-radius: var(--mcp-radius);
+	align-items: flex-start;
+	gap: 16px;
+	margin: 0 0 24px;
+	padding: 18px 44px 18px 20px;
+	background: var(--mcp-primary-light, #eef2ff);
+	border: 1px solid #c7d2fe;
+	border-left: 3px solid var(--mcp-primary, #6366f1);
+	border-radius: var(--mcp-radius-sm, 6px);
 }
 
-.elementor-mcp-prompts-legacy-content {
+.elementor-mcp-prompts-whatsnew-body {
 	min-width: 0;
 }
 
-.elementor-mcp-prompts-legacy-content h3 {
-	display: flex;
-	align-items: center;
-	gap: 8px;
+.elementor-mcp-prompts-whatsnew h3 {
 	margin: 0 0 6px;
 	font-family: var(--mcp-font-heading);
 	font-size: 15px;
-	color: var(--mcp-gray-900);
+	line-height: 1.3;
+	color: var(--mcp-gray-900, #111827);
 }
 
-.elementor-mcp-prompts-legacy-content .description {
-	margin: 0;
-	max-width: 72ch;
-	color: var(--mcp-gray-500);
+.elementor-mcp-prompts-whatsnew p {
+	margin: 0 0 6px;
+	font-size: 13px;
+	line-height: 1.6;
+	color: var(--mcp-gray-700, #374151);
 }
 
-.elementor-mcp-prompts-legacy-btn {
+.elementor-mcp-prompts-whatsnew p:last-child {
+	margin-bottom: 0;
+}
+
+.elementor-mcp-prompts-whatsnew-dismiss {
+	position: absolute;
+	top: 10px;
+	right: 10px;
 	display: inline-flex;
 	align-items: center;
-	gap: 6px;
-	flex-shrink: 0;
+	justify-content: center;
+	width: 26px;
+	height: 26px;
+	border-radius: var(--mcp-radius-sm, 6px);
+	color: var(--mcp-gray-500, #6b7280);
+	text-decoration: none;
+	transition: background-color 0.15s ease, color 0.15s ease;
 }
 
-.elementor-mcp-prompts-legacy-btn .dashicons {
+.elementor-mcp-prompts-whatsnew-dismiss:hover,
+.elementor-mcp-prompts-whatsnew-dismiss:focus {
+	background: #dbe1fd;
+	color: var(--mcp-gray-900, #111827);
+}
+
+.elementor-mcp-prompts-whatsnew-dismiss .dashicons {
+	width: 18px;
+	height: 18px;
+	font-size: 18px;
+}
+
+/* =========================================================================
+ * Prompts v1 (legacy) download — secondary button beside "Sync Library".
+ * Flat, no gradient; mirrors the sync button's geometry so the pair aligns.
+ * ========================================================================= */
+
+.elementor-mcp-pro-prompts-actions {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	flex-shrink: 0;
+	flex-wrap: wrap;
+}
+
+.wp-core-ui a.elementor-mcp-legacy-btn,
+.wp-core-ui .elementor-mcp-legacy-btn {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	padding: 9px 18px;
+	min-height: 0;
+	font-size: 13px;
+	font-weight: 600;
+	line-height: 1;
+	color: var(--mcp-gray-700, #374151);
+	background: var(--mcp-white, #fff);
+	border: 1px solid var(--mcp-gray-300, #d1d5db);
+	border-radius: var(--mcp-radius-sm, 6px);
+	box-shadow: none;
+	cursor: pointer;
+	text-decoration: none;
+	text-shadow: none;
+	transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.wp-core-ui a.elementor-mcp-legacy-btn:hover,
+.wp-core-ui a.elementor-mcp-legacy-btn:focus,
+.wp-core-ui .elementor-mcp-legacy-btn:hover,
+.wp-core-ui .elementor-mcp-legacy-btn:focus {
+	background: var(--mcp-gray-50, #f9fafb);
+	border-color: var(--mcp-gray-400, #9ca3af);
+	color: var(--mcp-gray-900, #111827);
+	box-shadow: none;
+}
+
+.wp-core-ui a.elementor-mcp-legacy-btn:focus-visible {
+	outline: 2px solid var(--mcp-primary, #6366f1);
+	outline-offset: 1px;
+}
+
+.elementor-mcp-legacy-btn .dashicons {
 	width: 16px;
 	height: 16px;
 	font-size: 16px;
+	color: var(--mcp-gray-500, #6b7280);
 }
 
 @media screen and (max-width: 782px) {
-	.elementor-mcp-prompts-legacy {
-		flex-direction: column;
-		align-items: flex-start;
-		gap: 16px;
+	.elementor-mcp-pro-prompts-actions {
+		width: 100%;
 	}
 }

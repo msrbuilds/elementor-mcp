@@ -226,10 +226,67 @@ class EMCP_Tools_Admin {
 		add_action( 'wp_ajax_emcp_tools_toggle_php_snippet', array( $this, 'ajax_toggle_php_snippet' ) );
 		add_action( 'wp_ajax_emcp_tools_delete_php_snippet', array( $this, 'ajax_delete_php_snippet' ) );
 		add_action( 'admin_post_emcp_tools_download_mcpb', array( $this, 'handle_download_mcpb' ) );
+		add_action( 'admin_post_' . self::ACTION_DISMISS_PROMPTS_NOTICE, array( $this, 'handle_dismiss_prompts_notice' ) );
 	}
 
 	/** Nonce action for the .mcpb bundle download. */
 	const NONCE_DOWNLOAD_MCPB = 'emcp_tools_download_mcpb';
+
+	/** admin-post action that dismisses the "prompts rewritten" notice. */
+	const ACTION_DISMISS_PROMPTS_NOTICE = 'emcp_tools_dismiss_prompts_notice';
+
+	/**
+	 * User meta flag recording that the current user has dismissed the notice
+	 * announcing the rewritten (v2) prompt library. Per-user, not per-site, so
+	 * one administrator dismissing it does not hide it from the others.
+	 *
+	 * Suffixed with the library generation: a future rewrite bumps the key and
+	 * the notice surfaces again rather than staying permanently dismissed.
+	 *
+	 * @since 3.2.0
+	 */
+	const META_PROMPTS_NOTICE_DISMISSED = 'emcp_tools_prompts_v2_notice_dismissed';
+
+	/**
+	 * Whether the current user has dismissed the rewritten-prompts notice.
+	 *
+	 * @since 3.2.0
+	 * @return bool
+	 */
+	public static function prompts_notice_dismissed(): bool {
+		return (bool) get_user_meta( get_current_user_id(), self::META_PROMPTS_NOTICE_DISMISSED, true );
+	}
+
+	/**
+	 * Nonce-protected URL that dismisses the rewritten-prompts notice.
+	 *
+	 * @since 3.2.0
+	 * @return string
+	 */
+	public static function prompts_notice_dismiss_url(): string {
+		return wp_nonce_url(
+			admin_url( 'admin-post.php?action=' . self::ACTION_DISMISS_PROMPTS_NOTICE ),
+			self::ACTION_DISMISS_PROMPTS_NOTICE
+		);
+	}
+
+	/**
+	 * Persist the dismissal, then bounce back to the Prompts screen.
+	 *
+	 * @since 3.2.0
+	 */
+	public function handle_dismiss_prompts_notice(): void {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_die( esc_html__( 'You do not have permission to do that.', 'emcp-tools' ), '', array( 'response' => 403 ) );
+		}
+
+		check_admin_referer( self::ACTION_DISMISS_PROMPTS_NOTICE );
+
+		update_user_meta( get_current_user_id(), self::META_PROMPTS_NOTICE_DISMISSED, '1' );
+
+		wp_safe_redirect( admin_url( 'admin.php?page=' . self::PAGE_SLUG . '-prompts' ) );
+		exit;
+	}
 
 	/**
 	 * Option that records which version of the default disabled-tools seeding

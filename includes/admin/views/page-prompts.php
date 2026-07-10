@@ -60,9 +60,45 @@ if ( $emcp_tools_has_pro ) {
 }
 
 $emcp_tools_upgrade_url = emcp_tools_upgrade_url();
+
+// Legacy (v1) prompt archive: bundled with premium builds only, and streamed
+// through a capability + nonce + license gated admin-post handler.
+$emcp_tools_v1_available = class_exists( 'EMCP_Tools_Pro_Prompts' )
+	&& method_exists( 'EMCP_Tools_Pro_Prompts', 'v1_zip_available' )
+	&& EMCP_Tools_Pro_Prompts::v1_zip_available();
+$emcp_tools_v1_url       = $emcp_tools_v1_available ? EMCP_Tools_Pro_Prompts::v1_download_url() : '';
 ?>
 
 <div class="elementor-mcp-prompts">
+
+	<?php // -------------------------------------------------------------------
+	// One-time notice for users arriving from an older version: the prompt
+	// library was rewritten, so the cards below look different than before.
+	// ------------------------------------------------------------------- ?>
+
+	<?php if ( ! EMCP_Tools_Admin::prompts_notice_dismissed() ) : ?>
+		<div class="elementor-mcp-prompts-whatsnew">
+			<div class="elementor-mcp-prompts-whatsnew-body">
+				<h3><?php esc_html_e( 'The prompts have been rewritten', 'emcp-tools' ); ?></h3>
+				<p>
+					<?php esc_html_e( 'Prompts no longer dictate a fixed, section-by-section layout. Each one now gives the AI a style guide, a design direction, the exact content, and hard standards — accessibility, real photography, consistent SVG icons, and a working contact form — then lets it design the page. Expect noticeably better, more distinctive results.', 'emcp-tools' ); ?>
+				</p>
+				<p>
+					<?php esc_html_e( 'They also work with any page builder: change the first line of a prompt from Elementor to Gutenberg, Bricks, or plain HTML/CSS, and the rest still applies.', 'emcp-tools' ); ?>
+					<?php if ( $emcp_tools_v1_available ) : ?>
+						<?php esc_html_e( 'Prefer the originals? Download the v1 prompts using the button below.', 'emcp-tools' ); ?>
+					<?php endif; ?>
+				</p>
+			</div>
+			<a
+				href="<?php echo esc_url( EMCP_Tools_Admin::prompts_notice_dismiss_url() ); ?>"
+				class="elementor-mcp-prompts-whatsnew-dismiss"
+				aria-label="<?php esc_attr_e( 'Dismiss this notice', 'emcp-tools' ); ?>"
+			>
+				<span class="dashicons dashicons-no-alt" aria-hidden="true"></span>
+			</a>
+		</div>
+	<?php endif; ?>
 
 	<?php
 	// Hide the bundled sample-prompts section when the user has Pro AND the
@@ -147,14 +183,26 @@ $emcp_tools_upgrade_url = emcp_tools_upgrade_url();
 						<?php endif; ?>
 					</p>
 				</div>
-				<button
-					type="button"
-					class="button elementor-mcp-pro-sync-btn"
-					data-nonce="<?php echo esc_attr( wp_create_nonce( 'emcp_tools_sync_pro_prompts' ) ); ?>"
-				>
-					<span class="dashicons dashicons-update" aria-hidden="true"></span>
-					<?php esc_html_e( 'Sync Library', 'emcp-tools' ); ?>
-				</button>
+				<div class="elementor-mcp-pro-prompts-actions">
+					<?php if ( $emcp_tools_v1_available ) : ?>
+						<a
+							href="<?php echo esc_url( $emcp_tools_v1_url ); ?>"
+							class="button elementor-mcp-legacy-btn"
+							title="<?php esc_attr_e( 'The original prompts, which prescribe an explicit section-by-section Elementor layout.', 'emcp-tools' ); ?>"
+						>
+							<span class="dashicons dashicons-download" aria-hidden="true"></span>
+							<?php esc_html_e( 'Download v1 Prompts', 'emcp-tools' ); ?>
+						</a>
+					<?php endif; ?>
+					<button
+						type="button"
+						class="button elementor-mcp-pro-sync-btn"
+						data-nonce="<?php echo esc_attr( wp_create_nonce( 'emcp_tools_sync_pro_prompts' ) ); ?>"
+					>
+						<span class="dashicons dashicons-update" aria-hidden="true"></span>
+						<?php esc_html_e( 'Sync Library', 'emcp-tools' ); ?>
+					</button>
+				</div>
 			</div>
 
 			<div class="elementor-mcp-pro-filters" role="tablist" aria-label="<?php esc_attr_e( 'Filter by category', 'emcp-tools' ); ?>">
@@ -220,7 +268,7 @@ $emcp_tools_upgrade_url = emcp_tools_upgrade_url();
 				<p>
 					<?php echo esc_html( $emcp_tools_pro_error ); ?>
 				</p>
-				<p>
+				<p class="elementor-mcp-pro-prompts-actions">
 					<button
 						type="button"
 						class="button elementor-mcp-pro-sync-btn"
@@ -228,6 +276,12 @@ $emcp_tools_upgrade_url = emcp_tools_upgrade_url();
 					>
 						<?php esc_html_e( 'Retry Sync', 'emcp-tools' ); ?>
 					</button>
+					<?php if ( $emcp_tools_v1_available ) : ?>
+						<a href="<?php echo esc_url( $emcp_tools_v1_url ); ?>" class="button elementor-mcp-legacy-btn">
+							<span class="dashicons dashicons-download" aria-hidden="true"></span>
+							<?php esc_html_e( 'Download v1 Prompts', 'emcp-tools' ); ?>
+						</a>
+					<?php endif; ?>
 				</p>
 			</div>
 		</div>
@@ -245,35 +299,6 @@ $emcp_tools_upgrade_url = emcp_tools_upgrade_url();
 			</div>
 		</div>
 
-	<?php endif; ?>
-
-	<?php // -------------------------------------------------------------------
-	// Legacy (v1) prompt library. Bundled with premium builds only, and served
-	// through a capability + nonce + license gated admin-post handler.
-	// ------------------------------------------------------------------- ?>
-
-	<?php
-	$emcp_tools_v1_available = class_exists( 'EMCP_Tools_Pro_Prompts' )
-		&& method_exists( 'EMCP_Tools_Pro_Prompts', 'v1_zip_available' )
-		&& EMCP_Tools_Pro_Prompts::v1_zip_available();
-	?>
-
-	<?php if ( $emcp_tools_v1_available ) : ?>
-		<div class="elementor-mcp-prompts-legacy">
-			<div class="elementor-mcp-prompts-legacy-content">
-				<h3>
-					<?php esc_html_e( 'Prompts v1 (legacy)', 'emcp-tools' ); ?>
-					<span class="elementor-mcp-badge elementor-mcp-badge--pro">PRO</span>
-				</h3>
-				<p class="description">
-					<?php esc_html_e( 'The original blueprints, which prescribe an explicit section-by-section Elementor layout. The current prompts instead hand the AI a style guide, section intents, and hard standards, then let it design the layout — and they work with any page builder. Download the v1 set if you prefer the older, more prescriptive style.', 'emcp-tools' ); ?>
-				</p>
-			</div>
-			<a href="<?php echo esc_url( EMCP_Tools_Pro_Prompts::v1_download_url() ); ?>" class="button elementor-mcp-prompts-legacy-btn">
-				<span class="dashicons dashicons-download" aria-hidden="true"></span>
-				<?php esc_html_e( 'Download Prompts v1 (.zip)', 'emcp-tools' ); ?>
-			</a>
-		</div>
 	<?php endif; ?>
 
 </div>
