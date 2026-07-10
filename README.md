@@ -186,6 +186,19 @@ Add to `~/.gemini/antigravity/mcp_config.json`:
 }
 ```
 
+### Claude.ai (web custom connector)
+
+Claude.ai's custom connectors only take a server URL — there's no field for an `Authorization` header, and the connection is made from Anthropic's cloud rather than your browser, so there's no local client to add one either. Turn on **URL-based authentication** on the Connection tab (off by default), then use the endpoint with your credentials appended as a query parameter:
+
+1. Go to **Profile → Settings → Integrations** on claude.ai and add a custom connector.
+2. Use this as the server URL, replacing `BASE64_ENCODED_CREDENTIALS` with your base64-encoded `username:app-password`:
+
+```text
+https://your-site.com/wp-json/mcp/emcp-tools-server?emcp_auth=BASE64_ENCODED_CREDENTIALS
+```
+
+The Connection tab generates this URL for you automatically once the toggle is on.
+
 ### WP-CLI stdio (local development)
 
 For local development with WP-CLI available, you can use the stdio transport (no HTTP auth needed):

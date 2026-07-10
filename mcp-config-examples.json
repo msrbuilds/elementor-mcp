@@ -97,6 +97,12 @@
     }
   },
 
+  "claude_ai_custom_connector": {
+    "_description": "Claude.ai (web) — custom connector using URL-based authentication",
+    "_note": "Claude.ai's custom connector UI only accepts a server URL, with no field for an Authorization header, and the connection runs from Anthropic's cloud so there's no local client to add one either. Enable 'URL-based authentication' on the Connection tab first (off by default), then use this URL as the connector's server URL.",
+    "url": "https://your-site.com/wp-json/mcp/emcp-tools-server?emcp_auth=BASE64_OF_USERNAME:APP_PASSWORD"
+  },
+
   "vscode_mcp_direct_http": {
     "_description": "VS Code MCP extension — direct HTTP connection (add to VS Code settings)",
     "servers": {
