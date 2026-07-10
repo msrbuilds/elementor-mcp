@@ -302,7 +302,7 @@ class EMCP_Tools_Admin {
 	 *
 	 * @since 1.8.0
 	 */
-	const DEFAULTS_VERSION = 11;
+	const DEFAULTS_VERSION = 12;
 
 	/**
 	 * SEO/A11y Pro MCP tool slugs that ship disabled-by-default (v2 defaults).
@@ -451,6 +451,40 @@ class EMCP_Tools_Admin {
 	}
 
 	/**
+	 * ACF mutation tool slugs that ship disabled-by-default. The reads
+	 * (list/get field groups, options pages, field values) stay enabled.
+	 *
+	 * @since 3.3.0
+	 * @return string[]
+	 */
+	public static function acf_write_tool_slugs(): array {
+		return array(
+			'emcp-tools/update-acf-fields',
+			'emcp-tools/create-acf-field-group',
+			'emcp-tools/update-acf-field-group',
+		);
+	}
+
+	/**
+	 * All ACF tool slugs. The whole domain only registers when ACF (free or
+	 * Pro) is active, so every slug is excluded from the drift guard.
+	 *
+	 * @since 3.3.0
+	 * @return string[]
+	 */
+	public static function acf_tool_slugs(): array {
+		return array_merge(
+			array(
+				'emcp-tools/list-acf-field-groups',
+				'emcp-tools/get-acf-field-group',
+				'emcp-tools/list-acf-options-pages',
+				'emcp-tools/get-acf-fields',
+			),
+			self::acf_write_tool_slugs()
+		);
+	}
+
+	/**
 	 * Seeds default disabled-tools on install/upgrade so new Pro tool batches
 	 * ship off-by-default (keeping sites under client tool caps), then records
 	 * the applied version. Each version step adds ONLY its newly-introduced
@@ -537,6 +571,12 @@ class EMCP_Tools_Admin {
 		// behind the master switch too). The admin opts in on the Tools tab.
 		if ( $applied < 11 ) {
 			$add = array_merge( $add, self::themer_php_tool_slugs() );
+		}
+
+		// v12 — ACF mutation tools ship disabled-by-default (field values +
+		// field group authoring). Reads stay on.
+		if ( $applied < 12 ) {
+			$add = array_merge( $add, self::acf_write_tool_slugs() );
 		}
 
 		$merged = array_values( array_unique( array_merge( $existing, $add ) ) );
@@ -1701,6 +1741,7 @@ class EMCP_Tools_Admin {
 			// (renamed/removed tools) and not expected environment-gating.
 			$emcp_conditional = array_merge(
 				self::themer_php_tool_slugs(),
+				self::acf_tool_slugs(),
 				array( 'emcp-tools/resize-media' )
 			);
 			foreach ( $catalog as $emcp_group ) {
@@ -2026,6 +2067,47 @@ class EMCP_Tools_Admin {
 					'emcp-tools/update-user'  => array(
 						'label'       => __( 'Update User', 'emcp-tools' ),
 						'description' => __( 'Edits a non-admin user\'s profile (no role/password; admins refused).', 'emcp-tools' ),
+						'badges'      => array(),
+					),
+				),
+			),
+			'wp_acf'           => array(
+				'platform' => 'wordpress',
+				'label'    => __( 'ACF (Custom Fields)', 'emcp-tools' ),
+				'tools'    => array(
+					'emcp-tools/list-acf-field-groups'   => array(
+						'label'       => __( 'List ACF Field Groups', 'emcp-tools' ),
+						'description' => __( 'Lists ACF field groups with key, title, active state, and field count. Only registers when ACF is active.', 'emcp-tools' ),
+						'badges'      => array( 'read-only' ),
+					),
+					'emcp-tools/get-acf-field-group'     => array(
+						'label'       => __( 'Get ACF Field Group', 'emcp-tools' ),
+						'description' => __( 'Returns one field group\'s location rules and recursive field tree (names, keys, types, sub-fields, layouts).', 'emcp-tools' ),
+						'badges'      => array( 'read-only' ),
+					),
+					'emcp-tools/list-acf-options-pages'  => array(
+						'label'       => __( 'List ACF Options Pages', 'emcp-tools' ),
+						'description' => __( 'Lists registered ACF options pages (ACF PRO feature; empty list on free ACF).', 'emcp-tools' ),
+						'badges'      => array( 'read-only' ),
+					),
+					'emcp-tools/get-acf-fields'          => array(
+						'label'       => __( 'Get ACF Fields', 'emcp-tools' ),
+						'description' => __( 'Reads ACF field values from a post or an options page, formatted (repeaters/flexible as nested arrays).', 'emcp-tools' ),
+						'badges'      => array( 'read-only' ),
+					),
+					'emcp-tools/update-acf-fields'       => array(
+						'label'       => __( 'Update ACF Fields', 'emcp-tools' ),
+						'description' => __( 'Writes ACF field values on a post or options page, including repeater/flexible/gallery rows. Disabled by default.', 'emcp-tools' ),
+						'badges'      => array(),
+					),
+					'emcp-tools/create-acf-field-group'  => array(
+						'label'       => __( 'Create ACF Field Group', 'emcp-tools' ),
+						'description' => __( 'Creates a new field group with fields and location rules, saved to the database. Disabled by default.', 'emcp-tools' ),
+						'badges'      => array(),
+					),
+					'emcp-tools/update-acf-field-group'  => array(
+						'label'       => __( 'Update ACF Field Group', 'emcp-tools' ),
+						'description' => __( 'Edits a database-stored field group: settings, new fields, or per-field setting changes (no deletes/renames). Disabled by default.', 'emcp-tools' ),
 						'badges'      => array(),
 					),
 				),
