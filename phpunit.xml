@@ -83,6 +83,9 @@
         <testsuite name="Transactions">
             <directory>pro/tests/unit/transactions</directory>
         </testsuite>
+        <testsuite name="Search">
+            <directory>pro/tests/unit/search</directory>
+        </testsuite>
     </testsuites>
 
     <source>
