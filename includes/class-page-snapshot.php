@@ -41,6 +41,127 @@ class EMCP_Tools_Page_Snapshot {
 	}
 
 	/**
+	 * Core sections, always available and computed in-process.
+	 */
+	const CORE_SECTIONS = array( 'post', 'structure', 'tokens', 'responsive', 'content', 'seo_lite', 'warnings' );
+
+	/**
+	 * Heavy, opt-in sections (loopback fetch / WCAG math). performance is free;
+	 * a11y + seo are Pro (resolved via the seam).
+	 */
+	const HEAVY_SECTIONS = array( 'performance', 'a11y', 'seo' );
+
+	/**
+	 * Build a page snapshot.
+	 *
+	 * @param int   $post_id Target post.
+	 * @param array $args    { builder?, post?, sections?, include?, fresh?, url? }.
+	 * @return array
+	 */
+	public function build( int $post_id, array $args = array() ): array {
+		$sections = ( ! empty( $args['sections'] ) && is_array( $args['sections'] ) )
+			? array_values( array_intersect( self::CORE_SECTIONS, $args['sections'] ) )
+			: self::CORE_SECTIONS;
+		$include  = ( ! empty( $args['include'] ) && is_array( $args['include'] ) )
+			? array_values( array_intersect( self::HEAVY_SECTIONS, $args['include'] ) )
+			: array();
+
+		$builder  = isset( $args['builder'] ) ? (string) $args['builder'] : 'elementor';
+		$elements = ( 'elementor' === $builder ) ? (array) $this->data->get_page_data( $post_id ) : array();
+
+		$norm    = self::normalize_tree( $elements );
+		$content = self::content_stats( $elements );
+		$out     = array();
+
+		if ( in_array( 'post', $sections, true ) ) {
+			$out['post'] = ( isset( $args['post'] ) && is_array( $args['post'] ) )
+				? $args['post']
+				: array(
+					'id'      => $post_id,
+					'builder' => $builder,
+				);
+		}
+		if ( in_array( 'structure', $sections, true ) ) {
+			$out['structure'] = $norm;
+		}
+		if ( in_array( 'tokens', $sections, true ) ) {
+			$out['tokens'] = self::extract_tokens( $elements );
+		}
+		if ( in_array( 'responsive', $sections, true ) ) {
+			$out['responsive'] = self::detect_responsive( $elements );
+		}
+		if ( in_array( 'content', $sections, true ) ) {
+			$out['content'] = $content;
+		}
+		if ( in_array( 'seo_lite', $sections, true ) ) {
+			$out['seo_lite'] = self::seo_lite( $post_id, $content );
+		}
+		if ( in_array( 'warnings', $sections, true ) ) {
+			$out['warnings'] = self::warnings( $elements, $norm['counts'], $content );
+		}
+
+		// Heavy, opt-in sections resolved via the seam (see heavy_sections()).
+		if ( $include ) {
+			foreach ( $this->heavy_sections( $post_id, $include, $args ) as $key => $section ) {
+				$out[ $key ] = $section;
+			}
+		}
+
+		return $out;
+	}
+
+	/**
+	 * Free SEO-lite read: h1 count from content + meta title/description/canonical/og
+	 * read directly from Yoast / Rank Math / core meta (no Pro dependency).
+	 *
+	 * @param int   $post_id Post ID.
+	 * @param array $content From content_stats().
+	 * @return array{h1_count:int,meta_title:string,meta_description:string,canonical:string,og_image:string}
+	 */
+	public static function seo_lite( int $post_id, array $content ): array {
+		$h1 = 0;
+		foreach ( ( $content['headings'] ?? array() ) as $h ) {
+			if ( isset( $h['tag'] ) && 'h1' === strtolower( (string) $h['tag'] ) ) {
+				++$h1;
+			}
+		}
+
+		$read = static function ( array $keys ) use ( $post_id ): string {
+			if ( ! function_exists( 'get_post_meta' ) || $post_id <= 0 ) {
+				return '';
+			}
+			foreach ( $keys as $key ) {
+				$v = get_post_meta( $post_id, $key, true );
+				if ( is_string( $v ) && '' !== $v ) {
+					return $v;
+				}
+			}
+			return '';
+		};
+
+		return array(
+			'h1_count'         => $h1,
+			'meta_title'       => $read( array( '_yoast_wpseo_title', 'rank_math_title' ) ),
+			'meta_description' => $read( array( '_yoast_wpseo_metadesc', 'rank_math_description' ) ),
+			'canonical'        => $read( array( '_yoast_wpseo_canonical', 'rank_math_canonical_url' ) ),
+			'og_image'         => $read( array( '_yoast_wpseo_opengraph-image', 'rank_math_facebook_image' ) ),
+		);
+	}
+
+	/**
+	 * Resolve opt-in heavy sections. Replaced with real logic in a later step; the
+	 * scaffold returns no sections so build() stays green before the seam exists.
+	 *
+	 * @param int   $post_id Post ID.
+	 * @param array $include Requested heavy sections.
+	 * @param array $args    Build args.
+	 * @return array<string,array>
+	 */
+	protected function heavy_sections( int $post_id, array $include, array $args ): array {
+		return array();
+	}
+
+	/**
 	 * Recursively normalize an Elementor elements array into a compact tree + counts.
 	 *
 	 * @param array $elements Elementor elements array.
