@@ -29,13 +29,42 @@ Add to `claude_desktop_config.json`:
 
 Create the application password at **WordPress Admin → Users → Profile → Application Passwords**.
 
+## Multiple sites (one session, many installs)
+
+Instead of the single `WP_URL` set, provide a **site registry** and drive several WordPress installs from one connection. Set `EMCP_SITES` to a JSON map of aliases → credentials (or point `EMCP_SITES_FILE` at a JSON file with the same shape):
+
+```json
+{
+  "mcpServers": {
+    "emcp-tools": {
+      "command": "npx",
+      "args": ["-y", "@msrbuilds/emcp-proxy@latest"],
+      "env": {
+        "EMCP_SITES": "{\"acme\":{\"url\":\"https://acme.com\",\"username\":\"admin\",\"appPassword\":\"xxxx xxxx xxxx xxxx\"},\"globex\":{\"url\":\"https://globex.com\",\"username\":\"admin\",\"appPassword\":\"yyyy yyyy yyyy yyyy\"}}",
+        "EMCP_DEFAULT_SITE": "acme"
+      }
+    }
+  }
+}
+```
+
+When more than one site is configured, two extra tools appear:
+
+- **`emcp_list_sites`** — list the configured sites and which one is active.
+- **`emcp_use_site`** — switch the active site (`{ "site": "globex" }`); every subsequent tool call targets it. The proxy keeps a separate session per site and initializes each one transparently on first use.
+
+Single-site `WP_URL` mode is unchanged and does **not** add these tools.
+
 ## Environment variables
 
 | Variable | Required | Purpose |
 |---|---|---|
-| `WP_URL` | yes | WordPress site URL, e.g. `https://your-site.com` |
-| `WP_USERNAME` | yes | WordPress username |
-| `WP_APP_PASSWORD` | yes | WordPress Application Password |
+| `WP_URL` | single-site | WordPress site URL, e.g. `https://your-site.com` |
+| `WP_USERNAME` | single-site | WordPress username |
+| `WP_APP_PASSWORD` | single-site | WordPress Application Password |
+| `EMCP_SITES` | multi-site | JSON registry: `{ "alias": { "url", "username", "appPassword" }, … }` |
+| `EMCP_SITES_FILE` | multi-site | Path to a JSON file with the registry (alternative to `EMCP_SITES`) |
+| `EMCP_DEFAULT_SITE` | no | Alias to start on (defaults to the first entry) |
 | `MCP_PROTOCOL_VERSION` | no | Override the protocol version in the `initialize` handshake. Set to `2024-11-05` if your client rejects the adapter's `2025-06-18`. |
 | `MCP_LOG_FILE` | no | Path to a debug log file. |
 
