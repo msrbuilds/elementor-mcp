@@ -2004,6 +2004,15 @@ class EMCP_Tools_Admin {
 					'emcp-tools/delete-rows'    => array( 'label' => __( 'Delete Rows', 'emcp-tools' ),    'description' => __( 'Delete rows matching a WHERE (confirm). Disabled by default.', 'emcp-tools' ), 'badges' => array() ),
 				),
 			),
+			'transactions'     => array(
+				'platform' => 'wordpress',
+				'label' => __( 'Changes & Rollback', 'emcp-tools' ),
+				'tools' => array(
+					'emcp-tools/list-changes'    => array( 'label' => __( 'List Changes', 'emcp-tools' ),    'description' => __( 'List recent AI-made changes (Elementor/filesystem/database), newest first.', 'emcp-tools' ), 'badges' => array( 'read-only' ) ),
+					'emcp-tools/get-change'      => array( 'label' => __( 'Get Change', 'emcp-tools' ),      'description' => __( 'Full detail of one change-ledger entry, including its rollback reference.', 'emcp-tools' ), 'badges' => array( 'read-only' ) ),
+					'emcp-tools/rollback-change' => array( 'label' => __( 'Roll Back Change', 'emcp-tools' ), 'description' => __( 'Undo one recorded change by id (page/file/database). Only reverts changes EMCP recorded.', 'emcp-tools' ), 'badges' => array() ),
+				),
+			),
 			'wp_packages'      => array(
 				'platform' => 'wordpress',
 				'label' => __( 'Plugins & Themes', 'emcp-tools' ),

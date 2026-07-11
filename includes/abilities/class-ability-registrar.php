@@ -121,6 +121,11 @@ class EMCP_Tools_Ability_Registrar {
 		$snapshot->register();
 		$this->ability_names = array_merge( $this->ability_names, $snapshot->get_ability_names() );
 
+		// AI-safe transactions — change ledger + rollback (always-on, write foundation).
+		$transactions = new EMCP_Tools_Transaction_Abilities();
+		$transactions->register();
+		$this->ability_names = array_merge( $this->ability_names, $transactions->get_ability_names() );
+
 		// Compact tool mode dispatcher (list-tools/get-tool-schema/call-tool).
 		// Registered ALWAYS so wp_get_ability() resolves them, but deliberately
 		// NOT added to $this->ability_names — register_mcp_server() surfaces them
