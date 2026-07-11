@@ -853,16 +853,23 @@ class EMCP_Tools_Content_Abilities {
 		$orderby  = in_array( $input['orderby'] ?? '', array( 'date', 'modified', 'title', 'menu_order', 'ID' ), true ) ? $input['orderby'] : 'date';
 		$order    = ( isset( $input['order'] ) && 'ASC' === strtoupper( (string) $input['order'] ) ) ? 'ASC' : 'DESC';
 
-		$post_type = isset( $input['post_type'] ) ? sanitize_key( (string) $input['post_type'] ) : 'post';
-		if ( '' === $post_type ) {
+		$pt_raw    = $input['post_type'] ?? 'post';
+		$post_type = is_array( $pt_raw )
+			? array_values( array_filter( array_map( 'sanitize_key', $pt_raw ) ) )
+			: sanitize_key( (string) $pt_raw );
+		if ( empty( $post_type ) ) {
 			$post_type = 'post';
 		}
-		$status_in = isset( $input['status'] ) ? (string) $input['status'] : 'any';
-		$status    = in_array(
-			$status_in,
-			array( 'publish', 'future', 'draft', 'pending', 'private', 'trash', 'any' ),
-			true
-		) ? $status_in : 'any';
+		$valid_status = array( 'publish', 'future', 'draft', 'pending', 'private', 'trash', 'any' );
+		$status_raw   = $input['status'] ?? 'any';
+		if ( is_array( $status_raw ) ) {
+			$status = array_values( array_intersect( array_map( 'sanitize_key', $status_raw ), $valid_status ) );
+			if ( empty( $status ) || in_array( 'any', $status, true ) ) {
+				$status = 'any';
+			}
+		} else {
+			$status = in_array( (string) $status_raw, $valid_status, true ) ? (string) $status_raw : 'any';
+		}
 
 		$args = array(
 			'post_type'      => $post_type,
