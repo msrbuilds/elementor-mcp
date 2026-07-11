@@ -170,9 +170,10 @@ The plugin enforces WordPress capability checks on every tool. Read operations r
 == Changelog ==
 
 = 3.3.0 =
-Foundation release: understand a page from one call, and undo any change.
+Foundation release: understand a page from one call, undo any change, and reuse existing content.
 * Added: get-page-snapshot (always-on, read-only) returns one normalized digest of a page — structure tree + counts, global colors/typography/classes actually in use, per-device responsive overrides, content outline, and an SEO-lite summary — so an AI agent can reason about a page from a single call. Opt-in performance/accessibility/SEO audit summaries via include:[performance,a11y,seo] (a11y/seo are Pro); heavy sections are transient-cached.
 * Added: AI-safe transactions — a unified change ledger + rollback (list-changes / get-change / rollback-change). Every AI-made Elementor edit, filesystem write, and database write is recorded, and any recorded change can be undone (restore a page's prior data, restore/remove a file from its backup, or inverse a database write from its before-image). Requires manage_options; the ledger is capped by count and size.
+* Added: Content search (search-content / reindex-search) — find the site's own pages, templates, widgets, and global styles by natural-language query so an AI agent can reuse existing content instead of rebuilding it. Lexical, field-weighted ranking over a materialized index that also updates when pages/templates are saved.
 
 = 3.2.1 =
 Atomic-element write fixes + a new ACF / ACF PRO integration.
@@ -492,56 +493,3 @@ The first major release of the rebranded EMCP Tools — a step beyond Elementor 
 * 1 composite build-page tool.
 * Admin settings page with tool toggles and connection info.
 * Node.js HTTP proxy for remote connections.
-
-== Upgrade Notice ==
-
-= 1.7.1 =
-Premium Templates library + EMCP Agent Skill download go live for Pro subscribers. New Skills and Templates admin tabs. Global upgrade banner on non-EMCP admin screens. All in-plugin Upgrade CTAs now route to the external pricing page on emcp.msrbuilds.com.
-
-= 1.7.0 =
-Premium Prompts go live — 50+ landing-page prompts across 10 industries, auto-synced from the EMCP Tools server for Pro subscribers. Authentication moves from query parameters to the Authorization Bearer header so license keys stop showing up in server access logs. New "Read the Docs" link in the admin header points at the new docs site.
-
-= 1.6.1 =
-Cleanup-only release: moves the uninstall handler from `uninstall.php` to the Freemius `after_uninstall` hook (required by Freemius), and adds the two options introduced in 1.6.0 to the cleanup list. No behavior changes during normal use.
-
-= 1.6.0 =
-Fixes #45 — admin tool toggles now actually filter what MCP clients see. New top-level admin menu with submenus, Low-tools mode for Antigravity/Gemini-friendly tool counts, and Pro widgets now disabled by default to stay under 100-tool client caps.
-
-= 1.5.1 =
-Fixes container `justify_content` / `align_items` / `align_content` settings not being applied on the front-end (#32). Recommended for anyone using `add-container`, `update-container`, `update-element`, `batch-update`, or `build-page` to control flex alignment.
-
-= 1.5.0 =
-Adds 13 new MCP tools for Elementor 4.0's atomic element system (110 tools total). All atomic tools self-guard on Elementor >= 4.0 with zero changes to the existing 97 legacy tools.
-
-= 1.4.3 =
-Adds 5 new Pro widget convenience tools (97 tools total) and fixes Gemini API / Antigravity compatibility — removes empty enum values and adds missing array items schema for non-Claude MCP clients.
-
-= 1.4.0 =
-Major update: 22 new tools including theme builder, dynamic tags, popup builder, WooCommerce widgets, and enhanced layout management. Total tools now 92.
-
-= 1.3.2 =
-Plugin renamed to "MCP Tools for Elementor". WPCS fixes and WordPress 6.9 compatibility.
-
-= 1.3.1 =
-New Prompts tab in admin — browse and copy sample landing page prompts directly from WordPress.
-
-= 1.3.0 =
-4 new Custom Code tools: add-custom-css, add-custom-js, add-code-snippet, list-code-snippets. Enables AI agents to inject CSS, JS, and site-wide code snippets.
-
-= 1.2.3 =
-Factory now strips flex_wrap and _flex_size from settings to prevent layout overflow. Background color guidance added to tool descriptions.
-
-= 1.2.2 =
-Fixes row layout — inner containers use content_width=full with percentage widths, no flex_wrap or _flex_size overrides.
-
-= 1.2.1 =
-Fixes row container overflow — children now use percentage widths and flex-wrap for correct multi-column layouts.
-
-= 1.2.0 =
-24 new widget convenience tools covering all major Elementor free and Pro widgets.
-
-= 1.1.1 =
-Container layout fixes, stock image tools, multi-IDE connection configs. Fixes fatal error with `_flex_size` on row containers.
-
-= 1.0.0 =
-Initial release.
