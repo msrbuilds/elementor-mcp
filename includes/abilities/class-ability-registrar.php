@@ -131,6 +131,11 @@ class EMCP_Tools_Ability_Registrar {
 		$search->register();
 		$this->ability_names = array_merge( $this->ability_names, $search->get_ability_names() );
 
+		// Content mirror — export/restore page content as git-trackable files (always-on).
+		$mirror = new EMCP_Tools_Content_Mirror_Abilities();
+		$mirror->register();
+		$this->ability_names = array_merge( $this->ability_names, $mirror->get_ability_names() );
+
 		// Compact tool mode dispatcher (list-tools/get-tool-schema/call-tool).
 		// Registered ALWAYS so wp_get_ability() resolves them, but deliberately
 		// NOT added to $this->ability_names — register_mcp_server() surfaces them
