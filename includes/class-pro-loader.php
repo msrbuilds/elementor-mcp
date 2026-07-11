@@ -31,6 +31,7 @@ final class EMCP_Tools_Pro_Loader {
 		'includes/abilities/class-a11y-abilities.php',
 		'includes/class-skill-catalog.php',
 		'includes/abilities/class-skill-abilities.php',
+		'includes/class-page-snapshot-pro.php',
 		'includes/admin/class-pro-brand-kits.php',
 		'includes/ai-chat/class-key-crypto.php',
 		'includes/ai-chat/class-ai-providers.php',
@@ -154,6 +155,11 @@ final class EMCP_Tools_Pro_Loader {
 		// Agent-facing skills (read-side): hook the discovery-context catalog.
 		if ( class_exists( 'EMCP_Tools_Skill_Catalog' ) ) {
 			EMCP_Tools_Skill_Catalog::init();
+		}
+
+		// Page-snapshot Pro sections (a11y + deep seo) attach to the free seam.
+		if ( class_exists( 'EMCP_Tools_Page_Snapshot_Pro' ) ) {
+			EMCP_Tools_Page_Snapshot_Pro::init();
 		}
 	}
 
