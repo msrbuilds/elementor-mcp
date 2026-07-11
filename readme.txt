@@ -179,6 +179,10 @@ Atomic-element write fixes + a new ACF / ACF PRO integration.
 * Added: ACF-managed Custom Post Types and taxonomies are registered as data through ACF (acf_import_post_type / acf_import_taxonomy) — no PHP is written or executed. Together with the field operations this is enough to build a full content structure end-to-end: CPT to taxonomy to field group to posts with values.
 * Added: conservative authoring guardrails — no delete operations; fields can never be removed; a field's name/key/type, or a post type / taxonomy slug, can never change (renames orphan stored content); code-registered (acf-json/PHP) groups are refused by the group editor; the CPT/taxonomy read operations list only the ACF-managed ones.
 * Added: a new "Plugins" sub-tab on the Tools screen, with an "ACF (Advanced Custom Fields)" section showing the two dispatcher toggles (acf-read on, acf-write off), each listing the operations it covers.
+* Added: set-social-image (Pro SEO) — sets the Open Graph + Twitter/X share image for a page via the active SEO plugin's meta (Yoast: opengraph-image(-id)/twitter-image(-id); Rank Math: facebook/twitter image(_id)), so link previews use the image you choose instead of the first content image Yoast otherwise keeps. Disabled-by-default with the SEO toolkit. (#82)
+* Added: a full_bleed flag on add-container that seeds an edge-to-edge container recipe (full content width, 100% width, zero padding, zero flex/gap, column + stretch) — the correct top-level container for Elementor Canvas pages, where the boxed defaults leave white strips. Explicit settings still override the preset. (#83)
+* Fixed: list-posts now accepts array post_type / status (multi-type and multi-status queries) instead of stringifying arrays to "Array" and silently returning wrong or unfiltered results. (#80)
+* Fixed: get-post now returns protected meta keys a site opts into via the emcp_tools_content_allowed_protected_meta filter, matching create/update-post (read-after-write no longer broken). (#77)
 
 = 3.2.0 =
 A core-engine release, and a rewrite of the Premium Prompts.

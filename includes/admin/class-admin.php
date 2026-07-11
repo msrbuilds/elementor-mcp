@@ -302,7 +302,7 @@ class EMCP_Tools_Admin {
 	 *
 	 * @since 1.8.0
 	 */
-	const DEFAULTS_VERSION = 14;
+	const DEFAULTS_VERSION = 15;
 
 	/**
 	 * SEO/A11y Pro MCP tool slugs that ship disabled-by-default (v2 defaults).
@@ -317,6 +317,7 @@ class EMCP_Tools_Admin {
 			'emcp-tools/extract-keywords-from-content',
 			'emcp-tools/generate-meta-tags',
 			'emcp-tools/generate-schema-markup',
+			'emcp-tools/set-social-image',
 			'emcp-tools/audit-page-a11y',
 			'emcp-tools/fix-color-contrast',
 			'emcp-tools/add-alt-text-from-context',
@@ -592,6 +593,12 @@ class EMCP_Tools_Admin {
 		if ( $applied < 14 ) {
 			$existing = array_values( array_diff( $existing, self::legacy_acf_operation_slugs() ) );
 			$add[]    = 'emcp-tools/acf-write';
+		}
+
+		// v15 — set-social-image (Pro SEO) ships disabled-by-default, consistent
+		// with the rest of the SEO/A11y toolkit.
+		if ( $applied < 15 ) {
+			$add[] = 'emcp-tools/set-social-image';
 		}
 
 		$merged = array_values( array_unique( array_merge( $existing, $add ) ) );
@@ -2627,6 +2634,11 @@ class EMCP_Tools_Admin {
 					'emcp-tools/generate-schema-markup'        => array(
 						'label'       => __( 'Generate Schema Markup', 'emcp-tools' ),
 						'description' => __( 'Generates (apply:true injects) JSON-LD structured data (Article, LocalBusiness, FAQPage, etc.). Dry-run by default.', 'emcp-tools' ),
+						'badges'      => array( 'pro' ),
+					),
+					'emcp-tools/set-social-image'              => array(
+						'label'       => __( 'Set Social Image', 'emcp-tools' ),
+						'description' => __( 'Sets the Open Graph + Twitter share image (Yoast / Rank Math) so link previews use the image you choose, not the first content image.', 'emcp-tools' ),
 						'badges'      => array( 'pro' ),
 					),
 				),

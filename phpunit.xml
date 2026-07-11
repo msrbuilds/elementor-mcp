@@ -74,6 +74,9 @@
         <testsuite name="Themer">
             <directory>pro/tests/unit/Themer</directory>
         </testsuite>
+        <testsuite name="Seo">
+            <directory>pro/tests/unit/seo</directory>
+        </testsuite>
     </testsuites>
 
     <source>

@@ -134,6 +134,10 @@ class EMCP_Tools_Layout_Abilities {
 							'type'        => 'object',
 							'description' => __( 'Container settings: flex_direction, flex_wrap, flex_justify_content, flex_align_items, gap, content_width, padding, margin, background, border, etc. (Unprefixed justify_content / align_items / align_content are accepted and remapped to the flex_-prefixed keys.)', 'emcp-tools' ),
 						),
+						'full_bleed' => array(
+							'type'        => 'boolean',
+							'description' => __( 'When true, seed an edge-to-edge full-bleed container (full content width, 100% width, zero padding, zero flex/gap, column + stretch). Use for the top-level container on Canvas-template pages so headers/footers and full-width sections have no white strips. Any explicit `settings` you pass still override the preset.', 'emcp-tools' ),
+						),
 					),
 					'required'   => array( 'post_id' ),
 				),
@@ -169,6 +173,15 @@ class EMCP_Tools_Layout_Abilities {
 		$parent_id = sanitize_text_field( $input['parent_id'] ?? '' );
 		$position  = intval( $input['position'] ?? -1 );
 		$settings  = $input['settings'] ?? array();
+
+		// full_bleed preset: a top-level edge-to-edge container. On Canvas-template
+		// pages (the natural template for AI-built full pages) the boxed defaults
+		// leave white strips around headers/footers and edge-to-edge sections
+		// (#83). The preset seeds the known-good recipe; any explicit `settings`
+		// the caller passes still win, so it's a starting point, not a lock.
+		if ( ! empty( $input['full_bleed'] ) ) {
+			$settings = array_merge( self::full_bleed_preset(), (array) $settings );
+		}
 
 		if ( ! $post_id ) {
 			return new \WP_Error( 'missing_post_id', __( 'The post_id parameter is required.', 'emcp-tools' ) );
@@ -208,6 +221,27 @@ class EMCP_Tools_Layout_Abilities {
 		return array(
 			'element_id' => $container['id'],
 			'post_id'    => $post_id,
+		);
+	}
+
+	/**
+	 * The full-bleed container recipe: full content width, 100% width, zero
+	 * padding, zero flex/gap, column direction, stretch alignment. This is the
+	 * known-good top-level container for Canvas-template pages, where Elementor's
+	 * boxed defaults otherwise leave white strips (#83).
+	 *
+	 * @since 3.2.1
+	 * @return array<string,mixed>
+	 */
+	public static function full_bleed_preset(): array {
+		return array(
+			'content_width'    => 'full',
+			'flex_direction'   => 'column',
+			'flex_align_items' => 'stretch',
+			'width'            => array( 'unit' => '%', 'size' => 100 ),
+			'padding'          => array( 'unit' => 'px', 'top' => '0', 'right' => '0', 'bottom' => '0', 'left' => '0', 'isLinked' => true ),
+			'gap'              => array( 'unit' => 'px', 'size' => 0, 'column' => '0', 'row' => '0' ),
+			'flex_gap'         => array( 'unit' => 'px', 'size' => 0, 'column' => '0', 'row' => '0' ),
 		);
 	}
 
