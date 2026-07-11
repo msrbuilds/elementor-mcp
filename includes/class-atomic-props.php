@@ -143,10 +143,15 @@ class EMCP_Tools_Atomic_Props {
 	}
 
 	/**
-	 * Wraps a WordPress media image reference.
+	 * Wraps a WordPress media image reference for the atomic `e-image` widget.
 	 *
-	 * @param int    $image_id  The attachment ID.
-	 * @param string $image_url The image URL (optional fallback).
+	 * Elementor's Image_Src_Prop_Type enforces `id XOR url` — exactly one of the
+	 * two may be set, the other MUST be null — and the id must be an
+	 * `image-attachment-id`, not a plain `number`. Passing both (or a `number`
+	 * id) makes Elementor reject the value with `image: invalid_value` (#74).
+	 *
+	 * @param int    $image_id  The attachment ID (0 to use a url instead).
+	 * @param string $image_url The image URL (used only when $image_id is 0).
 	 * @return array Typed image prop.
 	 */
 	public static function image( int $image_id, string $image_url = '' ): array {
@@ -154,10 +159,54 @@ class EMCP_Tools_Atomic_Props {
 			'$$type' => 'image',
 			'value'  => array(
 				'src' => array(
-					'id'  => self::number( $image_id ),
-					'url' => self::url( $image_url ),
+					'$$type' => 'image-src',
+					'value'  => self::image_src_value( $image_id, $image_url ),
 				),
 			),
+		);
+	}
+
+	/**
+	 * Wraps a WordPress media SVG reference for the atomic `e-svg` widget.
+	 *
+	 * The `e-svg` widget's `svg` prop is a distinct `svg-src` type — NOT the
+	 * `image`/`image-src` type used by `e-image` — so it must not be built with
+	 * image() (#74). Its shape mirrors image-src (id/url) with at least one set.
+	 *
+	 * @param int    $svg_id  The attachment ID (0 to use a url instead).
+	 * @param string $svg_url The SVG URL (used only when $svg_id is 0).
+	 * @return array Typed svg-src prop.
+	 */
+	public static function svg( int $svg_id, string $svg_url = '' ): array {
+		return array(
+			'$$type' => 'svg-src',
+			'value'  => self::image_src_value( $svg_id, $svg_url ),
+		);
+	}
+
+	/**
+	 * Builds the inner id/url value shared by image-src and svg-src: an
+	 * `image-attachment-id` when an id is given (url null), otherwise a `url`
+	 * (id null).
+	 *
+	 * @param int    $id  The attachment ID (0 to use a url).
+	 * @param string $url The URL (used only when $id is 0).
+	 * @return array{id:?array,url:?array}
+	 */
+	private static function image_src_value( int $id, string $url ): array {
+		if ( $id > 0 ) {
+			return array(
+				'id'  => array(
+					'$$type' => 'image-attachment-id',
+					'value'  => $id,
+				),
+				'url' => null,
+			);
+		}
+
+		return array(
+			'id'  => null,
+			'url' => '' === $url ? null : self::url( $url ),
 		);
 	}
 
@@ -207,11 +256,28 @@ class EMCP_Tools_Atomic_Props {
 
 				case 'image':
 					if ( is_array( $value ) && isset( $value['src'] ) && is_array( $value['src'] ) ) {
+						// src is wrapped as {$$type:image-src, value:{id,url}}; an
+						// older/bare {id,url} shape is tolerated for round-trips.
+						$src = isset( $value['src']['$$type'], $value['src']['value'] ) && is_array( $value['src']['value'] )
+							? $value['src']['value']
+							: $value['src'];
 						return array(
-							'id'  => self::unwrap( $value['src']['id'] ?? 0 ),
-							'url' => self::unwrap( $value['src']['url'] ?? '' ),
+							'id'  => self::unwrap( $src['id'] ?? 0 ),
+							'url' => self::unwrap( $src['url'] ?? '' ),
 						);
 					}
+					return $value;
+
+				case 'svg-src':
+					if ( is_array( $value ) ) {
+						return array(
+							'id'  => self::unwrap( $value['id'] ?? 0 ),
+							'url' => self::unwrap( $value['url'] ?? '' ),
+						);
+					}
+					return $value;
+
+				case 'image-attachment-id':
 					return $value;
 
 				default:

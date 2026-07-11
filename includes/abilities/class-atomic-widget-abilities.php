@@ -434,8 +434,7 @@ class EMCP_Tools_Atomic_Widget_Abilities {
 				$image_url = esc_url_raw( $input['image_url'] ?? '' );
 
 				if ( $image_id ) {
-					$url = wp_get_attachment_url( $image_id );
-					$settings['image'] = EMCP_Tools_Atomic_Props::image( $image_id, $url ?: '' );
+					$settings['image'] = EMCP_Tools_Atomic_Props::image( $image_id );
 				} elseif ( $image_url ) {
 					$settings['image'] = EMCP_Tools_Atomic_Props::image( 0, $image_url );
 				}
@@ -475,10 +474,9 @@ class EMCP_Tools_Atomic_Widget_Abilities {
 				$svg_url = esc_url_raw( $input['svg_url'] ?? '' );
 
 				if ( $svg_id ) {
-					$url = wp_get_attachment_url( $svg_id );
-					$settings['svg'] = EMCP_Tools_Atomic_Props::image( $svg_id, $url ?: '' );
+					$settings['svg'] = EMCP_Tools_Atomic_Props::svg( $svg_id );
 				} elseif ( $svg_url ) {
-					$settings['svg'] = EMCP_Tools_Atomic_Props::image( 0, $svg_url );
+					$settings['svg'] = EMCP_Tools_Atomic_Props::svg( 0, $svg_url );
 				}
 
 				if ( ! empty( $input['css_id'] ) ) {
