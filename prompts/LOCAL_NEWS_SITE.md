@@ -27,6 +27,8 @@ This playbook is for hyperlocal news / community sites that publish articles as 
 5. `add-shortcode` → `[elementor-template id="FOOTER_ID"]`
 6. Set the URL slug and SEO meta afterwards via REST (`POST /wp/v2/pages/{id}`).
 
+> **Prerequisite for the REST meta steps:** Yoast's `_yoast_wpseo_*` keys are protected, so a vanilla site silently ignores them over REST — first register them (`register_post_meta(..., ['show_in_rest'=>true])`) or opt them into the `emcp_tools_content_allowed_protected_meta` filter. See #82.
+
 ## ARTICLE HTML (inside the single HTML widget)
 - Semantic broadsheet structure: `<article>` → lead block (kicker, single `<h1>`, byline row with `<time datetime="YYYY-MM-DD">`, standfirst paragraph, hero `<figure>` with `<figcaption>` crediting the photographer) → body paragraphs → `<h2>` sections → gallery figures → footer block (disclaimer + "send us your story" contact line).
 - Exactly one `<h1>`; sections use `<h2>` — never skip levels.
