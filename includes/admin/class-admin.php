@@ -149,7 +149,6 @@ class EMCP_Tools_Admin {
 				self::PAGE_SLUG                 => __( 'Dashboard', 'emcp-tools' ),
 				self::PAGE_SLUG . '-modules'    => __( 'Modules', 'emcp-tools' ),
 				self::PAGE_SLUG . '-tools'      => __( 'Tools', 'emcp-tools' ),
-				self::PAGE_SLUG . '-history'    => __( 'History', 'emcp-tools' ),
 				self::PAGE_SLUG . '-connection' => __( 'Connection', 'emcp-tools' ),
 				self::PAGE_SLUG . '-ai-chat'    => __( 'AI Chat', 'emcp-tools' ),
 				self::PAGE_SLUG . '-context'    => __( 'Context', 'emcp-tools' ),
@@ -158,6 +157,7 @@ class EMCP_Tools_Admin {
 				self::PAGE_SLUG . '-brand-kits' => __( 'Brand Kits', 'emcp-tools' ),
 				self::PAGE_SLUG . '-skills'     => __( 'Skills', 'emcp-tools' ),
 				self::PAGE_SLUG . '-widgets'    => __( 'Sandbox', 'emcp-tools' ),
+				self::PAGE_SLUG . '-history'    => __( 'History', 'emcp-tools' ),
 				self::PAGE_SLUG . '-changelog'  => __( 'Changelog', 'emcp-tools' ),
 			);
 			if ( ! $this->ai_chat_tab_visible() ) {
