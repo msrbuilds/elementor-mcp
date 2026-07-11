@@ -2,6 +2,11 @@
 
 All notable changes to MCP Tools for Elementor are documented in this file.
 
+## [Unreleased]
+
+### Added
+- **WordPress nav-menu management (2 dispatcher tools, 13 operations).** Two tools — `menu-read` and `menu-write` — expose full nav-menu control following the ACF dispatcher pattern (call either with no `operation` to list what it can do). `menu-read`: `list-menus`, `get-menu` (nested item tree), `list-locations`, and `render` (`wp_nav_menu` HTML, for embedding a live menu in a custom header). `menu-write`: create/rename/delete menus, assign/unassign theme locations, and add/update/delete/reorder items (custom links, pages, posts, CPTs, categories, taxonomies) — with update/reorder preserving unspecified fields. Also adds an optional `[emcp_menu]` shortcode so a custom HTML header can render a live menu. Fills the gap where nav menus were otherwise only reachable via the Elementor Pro widget.
+
 ## [3.2.1]
 
 > A feature + fix release. **ACF / ACF PRO** becomes a first-class integration — exposed as **two dispatcher tools** (`acf-read` / `acf-write`) behind a new **Plugins** tab — letting an agent build a whole content structure (custom post type → taxonomy → field group → posts with values) end to end. Atomic-element writes get three fixes so v4 pages actually persist. New tools round out AI publishing: **`set-social-image`** fixes wrong social link-previews, and a **`full_bleed`** container preset kills the white strips on Canvas pages. Plus a new **`emcp-plugins`** agent skill, a couple of content-query fixes, and admin polish.
