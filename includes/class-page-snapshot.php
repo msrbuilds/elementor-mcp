@@ -284,6 +284,146 @@ class EMCP_Tools_Page_Snapshot {
 	}
 
 	/**
+	 * Content-level stats: heading outline, word/image/link/button counts, missing alts.
+	 *
+	 * @param array $elements Elementor elements array.
+	 * @return array{headings:array,word_count:int,image_count:int,images_missing_alt:int,link_count:int,button_count:int}
+	 */
+	public static function content_stats( array $elements ): array {
+		$acc = array(
+			'headings'           => array(),
+			'word_count'         => 0,
+			'image_count'        => 0,
+			'images_missing_alt' => 0,
+			'link_count'         => 0,
+			'button_count'       => 0,
+		);
+		self::walk_content( $elements, $acc );
+		return $acc;
+	}
+
+	/**
+	 * Recursive content collector.
+	 *
+	 * @param array $elements Elements.
+	 * @param array $acc      Accumulator (by reference).
+	 */
+	private static function walk_content( array $elements, array &$acc ): void {
+		foreach ( $elements as $el ) {
+			if ( ! is_array( $el ) ) {
+				continue;
+			}
+			$wt = isset( $el['widgetType'] ) ? (string) $el['widgetType'] : '';
+			$s  = ( isset( $el['settings'] ) && is_array( $el['settings'] ) ) ? $el['settings'] : array();
+
+			if ( 'heading' === $wt && ! empty( $s['title'] ) && is_string( $s['title'] ) ) {
+				$tag               = ( ! empty( $s['header_size'] ) && is_string( $s['header_size'] ) ) ? $s['header_size'] : 'h2';
+				$acc['headings'][] = array(
+					'tag'        => $tag,
+					'text'       => self::snippet( trim( (string) preg_replace( '/<[^>]*>/', '', $s['title'] ) ), 120 ),
+					'element_id' => isset( $el['id'] ) ? (string) $el['id'] : '',
+				);
+			}
+
+			// Word count from common text fields.
+			foreach ( array( 'title', 'editor', 'text', 'description_text', 'testimonial_content' ) as $tk ) {
+				if ( ! empty( $s[ $tk ] ) && is_string( $s[ $tk ] ) ) {
+					$plain = trim( (string) preg_replace( '/\s+/', ' ', (string) preg_replace( '/<[^>]*>/', ' ', $s[ $tk ] ) ) );
+					if ( '' !== $plain ) {
+						$acc['word_count'] += count( preg_split( '/\s+/', $plain ) );
+					}
+				}
+			}
+
+			if ( 'image' === $wt || 'theme-site-logo' === $wt ) {
+				if ( isset( $s['image'] ) && is_array( $s['image'] ) ) {
+					++$acc['image_count'];
+					if ( empty( $s['image']['alt'] ) ) {
+						++$acc['images_missing_alt'];
+					}
+				}
+			}
+
+			if ( 'button' === $wt ) {
+				++$acc['button_count'];
+			}
+			if ( isset( $s['link']['url'] ) && '' !== $s['link']['url'] ) {
+				++$acc['link_count'];
+			}
+
+			if ( ! empty( $el['elements'] ) && is_array( $el['elements'] ) ) {
+				self::walk_content( $el['elements'], $acc );
+			}
+		}
+	}
+
+	/**
+	 * Structural smell warnings.
+	 *
+	 * @param array $elements Raw elements (for empty-container detection).
+	 * @param array $counts   From normalize_tree()['counts'].
+	 * @param array $content  From content_stats().
+	 * @return array<int,array{code:string,message:string}>
+	 */
+	public static function warnings( array $elements, array $counts, array $content ): array {
+		$w  = array();
+		$h1 = 0;
+		foreach ( ( $content['headings'] ?? array() ) as $h ) {
+			if ( isset( $h['tag'] ) && 'h1' === strtolower( (string) $h['tag'] ) ) {
+				++$h1;
+			}
+		}
+		if ( 0 === $h1 ) {
+			$w[] = array(
+				'code'    => 'no_h1',
+				'message' => 'Page has no H1 heading.',
+			);
+		}
+		if ( $h1 > 1 ) {
+			$w[] = array(
+				'code'    => 'multiple_h1',
+				'message' => 'Page has more than one H1 heading.',
+			);
+		}
+		if ( isset( $counts['max_depth'] ) && $counts['max_depth'] >= 6 ) {
+			$w[] = array(
+				'code'    => 'deep_nesting',
+				'message' => 'Container nesting is 6+ levels deep.',
+			);
+		}
+		if ( self::has_empty_container( $elements ) ) {
+			$w[] = array(
+				'code'    => 'empty_container',
+				'message' => 'One or more containers have no children.',
+			);
+		}
+		return $w;
+	}
+
+	/**
+	 * Whether any non-widget element has no children.
+	 *
+	 * @param array $elements Elements.
+	 * @return bool
+	 */
+	private static function has_empty_container( array $elements ): bool {
+		foreach ( $elements as $el ) {
+			if ( ! is_array( $el ) ) {
+				continue;
+			}
+			$is_widget = ( isset( $el['elType'] ) && 'widget' === $el['elType'] );
+			$children  = ( isset( $el['elements'] ) && is_array( $el['elements'] ) ) ? $el['elements'] : array();
+			if ( ! $is_widget && ! $children ) {
+				return true;
+			}
+			if ( $children && self::has_empty_container( $children ) ) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/**
 	 * Truncate to a max length with an ellipsis.
 	 *
 	 * @param string $text Text.
