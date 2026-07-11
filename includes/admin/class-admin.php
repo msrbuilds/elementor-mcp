@@ -758,6 +758,21 @@ class EMCP_Tools_Admin {
 			)
 		);
 
+		// Content mirror auto-export (Tools tab). Off by default — when on, saving an
+		// Elementor page/template also writes its JSON to uploads/emcp-content-mirror/
+		// for external version control. The MCP export/restore tools work regardless.
+		register_setting(
+			self::SETTINGS_GROUP,
+			EMCP_Tools_Content_Mirror::OPTION_ENABLED,
+			array(
+				'type'              => 'string',
+				'default'           => '0',
+				'sanitize_callback' => static function ( $value ) {
+					return '1' === (string) $value ? '1' : '0';
+				},
+			)
+		);
+
 		// "Activate Abilities API for EMCP" server gate (Connection tab). On by
 		// default; an absent checkbox on submit sanitizes to '0' (off).
 		register_setting(
@@ -2019,6 +2034,15 @@ class EMCP_Tools_Admin {
 				'tools' => array(
 					'emcp-tools/search-content'  => array( 'label' => __( 'Search Content', 'emcp-tools' ),  'description' => __( 'Search the site\'s pages, templates, widgets, and global styles to reuse existing content.', 'emcp-tools' ), 'badges' => array( 'read-only' ) ),
 					'emcp-tools/reindex-search'  => array( 'label' => __( 'Reindex Search', 'emcp-tools' ),  'description' => __( 'Rebuild the content-search index (also updates on save).', 'emcp-tools' ), 'badges' => array() ),
+				),
+			),
+			'content_mirror'   => array(
+				'platform' => 'wordpress',
+				'label' => __( 'Content Mirror (Git)', 'emcp-tools' ),
+				'tools' => array(
+					'emcp-tools/export-content'        => array( 'label' => __( 'Export Content', 'emcp-tools' ),        'description' => __( 'Export page/template content to git-trackable JSON files.', 'emcp-tools' ), 'badges' => array() ),
+					'emcp-tools/restore-content'       => array( 'label' => __( 'Restore Content', 'emcp-tools' ),       'description' => __( 'Restore a page/template from its mirror file (file-based undo).', 'emcp-tools' ), 'badges' => array() ),
+					'emcp-tools/list-content-exports'  => array( 'label' => __( 'List Content Exports', 'emcp-tools' ), 'description' => __( 'List the mirror files on disk.', 'emcp-tools' ), 'badges' => array( 'read-only' ) ),
 				),
 			),
 			'wp_packages'      => array(

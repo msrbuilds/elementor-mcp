@@ -86,6 +86,9 @@
         <testsuite name="Search">
             <directory>pro/tests/unit/search</directory>
         </testsuite>
+        <testsuite name="Mirror">
+            <directory>pro/tests/unit/mirror</directory>
+        </testsuite>
     </testsuites>
 
     <source>
