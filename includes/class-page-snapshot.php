@@ -149,8 +149,10 @@ class EMCP_Tools_Page_Snapshot {
 	}
 
 	/**
-	 * Resolve opt-in heavy sections. Replaced with real logic in a later step; the
-	 * scaffold returns no sections so build() stays green before the seam exists.
+	 * Resolve opt-in heavy sections. Free-core supplies `performance`; the Pro overlay
+	 * hooks `emcp_tools_page_snapshot_sections` for `a11y` + deep `seo`. Anything still
+	 * unresolved degrades to a pro-gated/unavailable stub. Heavy sections are
+	 * transient-cached (15 min) unless $args['fresh'].
 	 *
 	 * @param int   $post_id Post ID.
 	 * @param array $include Requested heavy sections.
@@ -158,7 +160,94 @@ class EMCP_Tools_Page_Snapshot {
 	 * @return array<string,array>
 	 */
 	protected function heavy_sections( int $post_id, array $include, array $args ): array {
-		return array();
+		$fresh    = ! empty( $args['fresh'] );
+		$sections = array();
+
+		// Free: performance (page-level; needs manage_options).
+		if ( in_array( 'performance', $include, true ) ) {
+			$sections['performance'] = $this->cached_section(
+				$post_id,
+				'performance',
+				$fresh,
+				function () use ( $post_id, $args ) {
+					if ( ! ( function_exists( 'current_user_can' ) && current_user_can( 'manage_options' ) ) ) {
+						return array(
+							'available' => false,
+							'reason'    => 'permission',
+						);
+					}
+					if ( ! class_exists( 'EMCP_Tools_Performance_Analyzer' ) ) {
+						return array(
+							'available' => false,
+							'reason'    => 'unavailable',
+						);
+					}
+					$analyzer = new EMCP_Tools_Performance_Analyzer();
+					$input    = array( 'post_id' => $post_id );
+					if ( ! empty( $args['url'] ) ) {
+						$input['url'] = (string) $args['url'];
+					}
+					$report = $analyzer->analyze( $input );
+					if ( function_exists( 'is_wp_error' ) && is_wp_error( $report ) ) {
+						return array(
+							'available' => false,
+							'reason'    => 'error',
+						);
+					}
+					$report = (array) $report;
+					return array(
+						'available'       => true,
+						'score'           => $report['score'] ?? null,
+						'grade'           => $report['grade'] ?? null,
+						'recommendations' => array_slice( (array) ( $report['top_recommendations'] ?? array() ), 0, 5 ),
+					);
+				}
+			);
+		}
+
+		// Pro sections via the seam.
+		$seam = apply_filters( 'emcp_tools_page_snapshot_sections', array(), $post_id, $include, $args );
+		foreach ( array( 'a11y', 'seo' ) as $key ) {
+			if ( ! in_array( $key, $include, true ) ) {
+				continue;
+			}
+			if ( isset( $seam[ $key ] ) && is_array( $seam[ $key ] ) ) {
+				$sections[ $key ] = $seam[ $key ];
+			} else {
+				$sections[ $key ] = array(
+					'available'  => false,
+					'pro_gated'  => true,
+				);
+			}
+		}
+
+		return $sections;
+	}
+
+	/**
+	 * Transient wrapper for a heavy section.
+	 *
+	 * @param int      $post_id Post ID.
+	 * @param string   $section Section key.
+	 * @param bool     $fresh   Bypass the cache.
+	 * @param callable $compute Producer returning the section array.
+	 * @return array
+	 */
+	private function cached_section( int $post_id, string $section, bool $fresh, callable $compute ): array {
+		$key = 'emcp_snap_' . $post_id . '_' . $section;
+		if ( ! $fresh && function_exists( 'get_transient' ) ) {
+			$hit = get_transient( $key );
+			if ( is_array( $hit ) ) {
+				$hit['cached'] = true;
+				return $hit;
+			}
+		}
+		$val = $compute();
+		if ( function_exists( 'set_transient' ) && ! empty( $val['available'] ) ) {
+			set_transient( $key, $val, 15 * ( defined( 'MINUTE_IN_SECONDS' ) ? MINUTE_IN_SECONDS : 60 ) );
+		}
+		$val['cached'] = false;
+		return $val;
 	}
 
 	/**
