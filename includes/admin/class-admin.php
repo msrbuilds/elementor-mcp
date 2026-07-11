@@ -1817,6 +1817,11 @@ class EMCP_Tools_Admin {
 						'description' => __( 'Returns the full Elementor element tree for a page.', 'emcp-tools' ),
 						'badges'      => array( 'read-only' ),
 					),
+					'emcp-tools/get-page-snapshot'    => array(
+						'label'       => __( 'Get Page Snapshot', 'emcp-tools' ),
+						'description' => __( 'One normalized page digest: structure, tokens-in-use, responsive overrides, content outline, SEO-lite (+ opt-in performance/a11y/seo).', 'emcp-tools' ),
+						'badges'      => array( 'read-only' ),
+					),
 					'emcp-tools/get-element-settings' => array(
 						'label'       => __( 'Get Element Settings', 'emcp-tools' ),
 						'description' => __( 'Returns the settings of a specific element by ID.', 'emcp-tools' ),

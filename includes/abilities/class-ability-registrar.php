@@ -116,6 +116,11 @@ class EMCP_Tools_Ability_Registrar {
 		$gutenberg->register();
 		$this->ability_names = array_merge( $this->ability_names, $gutenberg->get_ability_names() );
 
+		// Page Snapshot — always-on normalized page digest (read foundation).
+		$snapshot = new EMCP_Tools_Snapshot_Abilities( $this->data );
+		$snapshot->register();
+		$this->ability_names = array_merge( $this->ability_names, $snapshot->get_ability_names() );
+
 		// Compact tool mode dispatcher (list-tools/get-tool-schema/call-tool).
 		// Registered ALWAYS so wp_get_ability() resolves them, but deliberately
 		// NOT added to $this->ability_names — register_mcp_server() surfaces them

@@ -77,6 +77,9 @@
         <testsuite name="Seo">
             <directory>pro/tests/unit/seo</directory>
         </testsuite>
+        <testsuite name="Snapshot">
+            <directory>pro/tests/unit/snapshot</directory>
+        </testsuite>
     </testsuites>
 
     <source>

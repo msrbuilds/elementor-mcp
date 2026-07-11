@@ -2,6 +2,13 @@
 
 All notable changes to MCP Tools for Elementor are documented in this file.
 
+## [3.3.0]
+
+> A read-foundation release. New **`get-page-snapshot`** tool returns one normalized digest of a page — structure, tokens-in-use, responsive overrides, content outline and SEO-lite — so an AI agent can understand a page from a single call instead of stitching several read tools together, with opt-in performance/accessibility/SEO audit summaries.
+
+### Added
+- **`get-page-snapshot` (always-on, read-only).** One normalized page digest so an agent can reason about a page from a single call instead of chaining `get-page-structure` + `get-global-settings` + `list-global-classes` and reassembling. Core sections (free, computed in-process): normalized structure tree + counts (`by_widget_type`, `max_depth`), global colors/typography/`g-` classes **actually in use** with usage counts, per-device responsive overrides, a content outline (headings, word/image/link/button counts, images-missing-alt), an SEO-lite summary (Yoast/Rank Math/core), and structural warnings. Opt-in heavy sections via `include:[performance,a11y,seo]` — `performance` is free (page-level, needs `manage_options`), `a11y` and deep `seo` are Pro and degrade to `pro_gated` on free builds; heavy sections are transient-cached (15 min, `fresh:true` to bypass). A `sections` param subsets the core output to control token cost.
+
 ## [3.2.1]
 
 > A feature + fix release. **ACF / ACF PRO** becomes a first-class integration — exposed as **two dispatcher tools** (`acf-read` / `acf-write`) behind a new **Plugins** tab — letting an agent build a whole content structure (custom post type → taxonomy → field group → posts with values) end to end. Atomic-element writes get three fixes so v4 pages actually persist. New tools round out AI publishing: **`set-social-image`** fixes wrong social link-previews, and a **`full_bleed`** container preset kills the white strips on Canvas pages. Plus a new **`emcp-plugins`** agent skill, a couple of content-query fixes, and admin polish.
