@@ -200,6 +200,9 @@ class EMCP_Tools_Data {
 			return $document;
 		}
 
+		// Capture the prior Elementor data so the change ledger can offer a rollback.
+		$emcp_before_raw = get_post_meta( $post_id, '_elementor_data', true );
+
 		// Attempt native Elementor save (handles CSS regen, cache busting).
 		// Elementor 4.0 atomic widgets THROW on invalid settings instead of
 		// returning false, so catch it and return a clean error rather than
@@ -248,6 +251,25 @@ class EMCP_Tools_Data {
 			if ( file_exists( $css_path ) ) {
 				wp_delete_file( $css_path );
 			}
+		}
+
+		// Record the edit to the unified change ledger (skipped during rollback).
+		if ( class_exists( 'EMCP_Tools_Change_Log' ) && ! EMCP_Tools_Change_Log::$suppress ) {
+			$emcp_before = array();
+			if ( is_string( $emcp_before_raw ) && '' !== $emcp_before_raw ) {
+				$emcp_decoded = json_decode( $emcp_before_raw, true );
+				if ( is_array( $emcp_decoded ) ) {
+					$emcp_before = $emcp_decoded;
+				}
+			}
+			$emcp_title = function_exists( 'get_the_title' ) ? (string) get_the_title( $post_id ) : '';
+			EMCP_Tools_Change_Log::record( array(
+				'domain'   => 'elementor',
+				'action'   => 'page-edit',
+				'target'   => trim( $emcp_title . ' (#' . $post_id . ')' ),
+				'summary'  => sprintf( 'Edited Elementor page #%d', $post_id ),
+				'rollback' => array( 'type' => 'elementor-data', 'post_id' => $post_id, 'before' => $emcp_before ),
+			) );
 		}
 
 		return true;

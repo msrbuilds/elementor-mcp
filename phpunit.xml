@@ -80,6 +80,9 @@
         <testsuite name="Snapshot">
             <directory>pro/tests/unit/snapshot</directory>
         </testsuite>
+        <testsuite name="Transactions">
+            <directory>pro/tests/unit/transactions</directory>
+        </testsuite>
     </testsuites>
 
     <source>

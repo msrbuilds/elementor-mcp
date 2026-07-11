@@ -317,6 +317,7 @@ class EMCP_Tools_Filesystem_Abilities {
 		}
 		self::invalidate_php_opcache( $abs );
 		EMCP_Tools_Filesystem_Guard::log( 'write', $abs );
+		self::record_fs_change( 'write-file', $abs, $backup );
 		return array(
 			'path'   => EMCP_Tools_Filesystem_Guard::to_relative( $abs ),
 			'bytes'  => (int) $bytes,
@@ -404,6 +405,7 @@ class EMCP_Tools_Filesystem_Abilities {
 		}
 		self::invalidate_php_opcache( $abs );
 		EMCP_Tools_Filesystem_Guard::log( 'edit', $abs );
+		self::record_fs_change( 'edit-file', $abs, $backup );
 		return array(
 			'path'         => EMCP_Tools_Filesystem_Guard::to_relative( $abs ),
 			'replacements' => $all ? $count : 1,
@@ -468,11 +470,37 @@ class EMCP_Tools_Filesystem_Abilities {
 		}
 		self::invalidate_php_opcache( $abs );
 		EMCP_Tools_Filesystem_Guard::log( 'delete', $abs );
+		self::record_fs_change( 'delete-file', $abs, $backup );
 		return array(
 			'path'    => EMCP_Tools_Filesystem_Guard::to_relative( $abs ),
 			'deleted' => true,
 			'backup'  => $backup ? EMCP_Tools_Filesystem_Guard::to_relative( $backup ) : null,
 		);
+	}
+
+	/**
+	 * Record a filesystem mutation to the unified change ledger.
+	 *
+	 * @param string        $action write-file | edit-file | delete-file.
+	 * @param string        $abs    Absolute target path.
+	 * @param string|mixed  $backup Backup path ('' when the write created a new file).
+	 */
+	private static function record_fs_change( string $action, string $abs, $backup ): void {
+		if ( ! class_exists( 'EMCP_Tools_Change_Log' ) ) {
+			return;
+		}
+		$rel     = EMCP_Tools_Filesystem_Guard::to_relative( $abs );
+		$rollback = ( '' === $backup )
+			? array( 'type' => 'file-create', 'target_path' => $abs )
+			: array( 'type' => 'file-backup', 'target_path' => $abs, 'backup_path' => (string) $backup );
+		$verbs   = array( 'write-file' => 'Wrote', 'edit-file' => 'Edited', 'delete-file' => 'Deleted' );
+		EMCP_Tools_Change_Log::record( array(
+			'domain'   => 'filesystem',
+			'action'   => $action,
+			'target'   => $rel,
+			'summary'  => ( $verbs[ $action ] ?? 'Changed' ) . ' ' . $rel,
+			'rollback' => $rollback,
+		) );
 	}
 
 	/**

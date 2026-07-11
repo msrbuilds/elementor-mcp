@@ -170,8 +170,9 @@ The plugin enforces WordPress capability checks on every tool. Read operations r
 == Changelog ==
 
 = 3.3.0 =
-Read-foundation release: a new page-snapshot tool.
+Foundation release: understand a page from one call, and undo any change.
 * Added: get-page-snapshot (always-on, read-only) returns one normalized digest of a page — structure tree + counts, global colors/typography/classes actually in use, per-device responsive overrides, content outline, and an SEO-lite summary — so an AI agent can reason about a page from a single call. Opt-in performance/accessibility/SEO audit summaries via include:[performance,a11y,seo] (a11y/seo are Pro); heavy sections are transient-cached.
+* Added: AI-safe transactions — a unified change ledger + rollback (list-changes / get-change / rollback-change). Every AI-made Elementor edit, filesystem write, and database write is recorded, and any recorded change can be undone (restore a page's prior data, restore/remove a file from its backup, or inverse a database write from its before-image). Requires manage_options; the ledger is capped by count and size.
 
 = 3.2.1 =
 Atomic-element write fixes + a new ACF / ACF PRO integration.
