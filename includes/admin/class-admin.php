@@ -1961,6 +1961,22 @@ class EMCP_Tools_Admin {
 					),
 				),
 			),
+			'wp_nav_menus'     => array(
+				'platform' => 'wordpress',
+				'label' => __( 'Navigation Menus', 'emcp-tools' ),
+				'tools' => array(
+					'emcp-tools/menu-read'  => array(
+						'label'       => __( 'Menu Read', 'emcp-tools' ),
+						'description' => __( 'Read nav menus: list menus, get a menu\'s nested item tree, list theme locations, render a menu to HTML. Call with no operation to list read operations.', 'emcp-tools' ),
+						'badges'      => array( 'read-only' ),
+					),
+					'emcp-tools/menu-write' => array(
+						'label'       => __( 'Menu Write', 'emcp-tools' ),
+						'description' => __( 'Manage nav menus: create/rename/delete menus, assign theme locations, and add/update/delete/reorder items. Call with no operation to list write operations.', 'emcp-tools' ),
+						'badges'      => array(),
+					),
+				),
+			),
 			'wp_content'       => array(
 				'platform' => 'wordpress',
 				'label' => __( 'WordPress Content', 'emcp-tools' ),
