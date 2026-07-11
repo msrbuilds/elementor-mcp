@@ -124,6 +124,9 @@ class EMCP_Tools_Bootstrap {
 		require_once EMCP_TOOLS_DIR . 'includes/abilities/class-plugin-abilities.php';
 		require_once EMCP_TOOLS_DIR . 'includes/abilities/class-theme-abilities.php';
 		require_once EMCP_TOOLS_DIR . 'includes/abilities/class-user-abilities.php';
+		require_once EMCP_TOOLS_DIR . 'includes/abilities/class-nav-menu-abilities.php';
+		require_once EMCP_TOOLS_DIR . 'includes/class-nav-menu-shortcode.php';
+		add_action( 'init', array( 'EMCP_Tools_Nav_Menu_Shortcode', 'register' ) );
 		// ACF tools (field values + field group discovery/authoring; writes off by default).
 		require_once EMCP_TOOLS_DIR . 'includes/abilities/class-acf-abilities.php';
 		// Performance Analyzer (v3.0.0) — read-only server/WP/page audit.

@@ -182,6 +182,11 @@ class EMCP_Tools_Ability_Registrar {
 		$users->register();
 		$this->ability_names = array_merge( $this->ability_names, $users->get_ability_names() );
 
+		// WordPress Nav Menu abilities (menus, items, theme locations, render).
+		$nav_menus = new EMCP_Tools_Nav_Menu_Abilities();
+		$nav_menus->register();
+		$this->ability_names = array_merge( $this->ability_names, $nav_menus->get_ability_names() );
+
 		// ACF abilities — only when Advanced Custom Fields (free or Pro) is active.
 		if ( class_exists( 'EMCP_Tools_ACF_Abilities' ) && EMCP_Tools_ACF_Abilities::acf_active() ) {
 			$acf = new EMCP_Tools_ACF_Abilities();
