@@ -2102,12 +2102,17 @@ class EMCP_Tools_Admin {
 					),
 					'emcp-tools/update-element'       => array(
 						'label'       => __( 'Update Element', 'emcp-tools' ),
-						'description' => __( 'Updates settings on any element (widget or container) by ID.', 'emcp-tools' ),
+						'description' => __( 'Updates settings on any element (widget or container) by ID. Also writes v4 atomic styles / editor_settings when included.', 'emcp-tools' ),
 						'badges'      => array(),
 					),
 					'emcp-tools/batch-update'         => array(
 						'label'       => __( 'Batch Update', 'emcp-tools' ),
 						'description' => __( 'Applies multiple element updates in a single call.', 'emcp-tools' ),
+						'badges'      => array(),
+					),
+					'emcp-tools/set-element-label'    => array(
+						'label'       => __( 'Set Element Label', 'emcp-tools' ),
+						'description' => __( 'Sets an element\'s Navigator label (editor_settings.title).', 'emcp-tools' ),
 						'badges'      => array(),
 					),
 					'emcp-tools/reorder-elements'     => array(

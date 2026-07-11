@@ -443,6 +443,28 @@ class EMCP_Tools_Data {
 					$item['settings'] = array();
 				}
 
+				// Sibling-root keys: on v4 atomic elements the local `styles`
+				// map and `editor_settings` (Navigator label = editor_settings.
+				// title) live at the element ROOT, as siblings of `settings`.
+				// An agent naturally nests them under `settings`; hoist them out
+				// and deep-merge into the root so they actually persist instead
+				// of being written to a dead `settings.styles` key (#72, #73).
+				foreach ( array( 'styles', 'editor_settings' ) as $root_key ) {
+					if ( ! array_key_exists( $root_key, $settings ) ) {
+						continue;
+					}
+
+					$incoming = $settings[ $root_key ];
+					unset( $settings[ $root_key ] );
+
+					if ( is_array( $incoming ) ) {
+						$existing = isset( $item[ $root_key ] ) && is_array( $item[ $root_key ] ) ? $item[ $root_key ] : array();
+						$item[ $root_key ] = self::deep_merge( $existing, $incoming );
+					} else {
+						$item[ $root_key ] = $incoming;
+					}
+				}
+
 				// Containers: rewrite MCP shorthand keys (`justify_content`,
 				// `align_items`, `align_content`) to Elementor's prefixed flex
 				// keys before merging. Without this, the values are saved
@@ -463,5 +485,55 @@ class EMCP_Tools_Data {
 		}
 
 		return false;
+	}
+
+	/**
+	 * Recursively merges $incoming into $existing. Associative arrays are merged
+	 * key-by-key; lists (numeric-keyed arrays, e.g. a `variants` array) and
+	 * scalars are replaced wholesale by the incoming value. This lets a partial
+	 * `styles`/`editor_settings` update touch one class or key without dropping
+	 * the siblings, while still replacing a variants list the caller supplied in
+	 * full.
+	 *
+	 * @since 3.2.1
+	 *
+	 * @param array $existing The current value.
+	 * @param array $incoming The value to merge in (wins on conflicts).
+	 * @return array The merged array.
+	 */
+	private static function deep_merge( array $existing, array $incoming ): array {
+		foreach ( $incoming as $key => $value ) {
+			if (
+				is_string( $key )
+				&& isset( $existing[ $key ] )
+				&& is_array( $existing[ $key ] )
+				&& is_array( $value )
+				&& self::is_assoc( $existing[ $key ] )
+				&& self::is_assoc( $value )
+			) {
+				$existing[ $key ] = self::deep_merge( $existing[ $key ], $value );
+			} else {
+				$existing[ $key ] = $value;
+			}
+		}
+
+		return $existing;
+	}
+
+	/**
+	 * Whether an array is associative (has any string key / non-sequential
+	 * integer keys). An empty array is treated as a list (not associative).
+	 *
+	 * @since 3.2.1
+	 *
+	 * @param array $arr The array to test.
+	 * @return bool
+	 */
+	private static function is_assoc( array $arr ): bool {
+		if ( array() === $arr ) {
+			return false;
+		}
+
+		return array_keys( $arr ) !== range( 0, count( $arr ) - 1 );
 	}
 }

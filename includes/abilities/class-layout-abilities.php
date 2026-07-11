@@ -56,6 +56,7 @@ class EMCP_Tools_Layout_Abilities {
 			'emcp-tools/update-container',
 			'emcp-tools/update-element',
 			'emcp-tools/batch-update',
+			'emcp-tools/set-element-label',
 			'emcp-tools/reorder-elements',
 			'emcp-tools/move-element',
 			'emcp-tools/remove-element',
@@ -73,6 +74,7 @@ class EMCP_Tools_Layout_Abilities {
 		$this->register_update_container();
 		$this->register_update_element();
 		$this->register_batch_update();
+		$this->register_set_element_label();
 		$this->register_reorder_elements();
 		$this->register_move_element();
 		$this->register_remove_element();
@@ -315,7 +317,7 @@ class EMCP_Tools_Layout_Abilities {
 			'emcp-tools/update-element',
 			array(
 				'label'               => __( 'Update Element', 'emcp-tools' ),
-				'description'         => __( 'Updates settings on any element (container or widget). Settings are merged (partial update). Works for all element types — no need to know if the target is a container or widget.', 'emcp-tools' ),
+				'description'         => __( 'Updates settings on any element (container or widget). Settings are merged (partial update). Works for all element types — no need to know if the target is a container or widget. For v4 atomic elements you may also include a `styles` map (the element\'s local CSS classes) and/or `editor_settings` (e.g. `{ "title": "Hero" }` for the Navigator label) in the settings object — these are routed to the element root automatically. Use set-element-label for just the Navigator name.', 'emcp-tools' ),
 				'category'            => 'emcp-tools',
 				'execute_callback'    => array( $this, 'execute_update_element' ),
 				'permission_callback' => array( $this, 'check_edit_permission' ),
@@ -406,7 +408,7 @@ class EMCP_Tools_Layout_Abilities {
 			'emcp-tools/batch-update',
 			array(
 				'label'               => __( 'Batch Update Elements', 'emcp-tools' ),
-				'description'         => __( 'Updates multiple elements in a single save operation. Each operation specifies an element_id and settings to merge. Much more efficient than calling update-element multiple times.', 'emcp-tools' ),
+				'description'         => __( 'Updates multiple elements in a single save operation. Each operation specifies an element_id and settings to merge. Much more efficient than calling update-element multiple times. As with update-element, a per-operation settings object may include a `styles` map and/or `editor_settings` for v4 atomic elements — these are routed to the element root automatically.', 'emcp-tools' ),
 				'category'            => 'emcp-tools',
 				'execute_callback'    => array( $this, 'execute_batch_update' ),
 				'permission_callback' => array( $this, 'check_edit_permission' ),
@@ -504,6 +506,101 @@ class EMCP_Tools_Layout_Abilities {
 			'success' => empty( $failed ),
 			'updated' => $updated_count,
 			'failed'  => $failed,
+		);
+	}
+
+	// -------------------------------------------------------------------------
+	// set-element-label (Navigator label — editor_settings.title)
+	// -------------------------------------------------------------------------
+
+	private function register_set_element_label(): void {
+		emcp_tools_register_ability(
+			'emcp-tools/set-element-label',
+			array(
+				'label'               => __( 'Set Element Label', 'emcp-tools' ),
+				'description'         => __( 'Sets an element\'s Navigator label (stored in editor_settings.title). Works for any element; especially useful on v4 atomic elements to keep the layout readable. A convenience wrapper — the same result can be had via update-element with editor_settings.', 'emcp-tools' ),
+				'category'            => 'emcp-tools',
+				'execute_callback'    => array( $this, 'execute_set_element_label' ),
+				'permission_callback' => array( $this, 'check_edit_permission' ),
+				'input_schema'        => array(
+					'type'       => 'object',
+					'properties' => array(
+						'post_id'    => array(
+							'type'        => 'integer',
+							'description' => __( 'The post/page ID.', 'emcp-tools' ),
+						),
+						'element_id' => array(
+							'type'        => 'string',
+							'description' => __( 'The element ID to label.', 'emcp-tools' ),
+						),
+						'title'      => array(
+							'type'        => 'string',
+							'description' => __( 'The Navigator label to set.', 'emcp-tools' ),
+						),
+					),
+					'required'   => array( 'post_id', 'element_id', 'title' ),
+				),
+				'output_schema'       => array(
+					'type'       => 'object',
+					'properties' => array(
+						'success'    => array( 'type' => 'boolean' ),
+						'element_id' => array( 'type' => 'string' ),
+						'title'      => array( 'type' => 'string' ),
+					),
+				),
+				'meta'                => array(
+					'annotations'  => array(
+						'readonly'    => false,
+						'destructive' => false,
+						'idempotent'  => true,
+					),
+					'show_in_rest' => true,
+				),
+			)
+		);
+	}
+
+	public function execute_set_element_label( $input ) {
+		$post_id    = absint( $input['post_id'] ?? 0 );
+		$element_id = sanitize_text_field( $input['element_id'] ?? '' );
+		$title      = sanitize_text_field( $input['title'] ?? '' );
+
+		if ( ! $post_id || empty( $element_id ) || '' === $title ) {
+			return new \WP_Error( 'missing_params', __( 'post_id, element_id, and title are required.', 'emcp-tools' ) );
+		}
+
+		$page_data = $this->data->get_page_data( $post_id );
+
+		if ( is_wp_error( $page_data ) ) {
+			return $page_data;
+		}
+
+		if ( null === $this->data->find_element_by_id( $page_data, $element_id ) ) {
+			return new \WP_Error( 'element_not_found', __( 'Element not found.', 'emcp-tools' ) );
+		}
+
+		// editor_settings is a sibling-root key; update_element_settings() hoists
+		// it out of the settings payload and deep-merges it into the element root.
+		$updated = $this->data->update_element_settings(
+			$page_data,
+			$element_id,
+			array( 'editor_settings' => array( 'title' => $title ) )
+		);
+
+		if ( ! $updated ) {
+			return new \WP_Error( 'update_failed', __( 'Failed to set element label.', 'emcp-tools' ) );
+		}
+
+		$result = $this->data->save_page_data( $post_id, $page_data );
+
+		if ( is_wp_error( $result ) ) {
+			return $result;
+		}
+
+		return array(
+			'success'    => true,
+			'element_id' => $element_id,
+			'title'      => $title,
 		);
 	}
 
