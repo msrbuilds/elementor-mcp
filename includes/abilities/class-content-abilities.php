@@ -582,8 +582,10 @@ class EMCP_Tools_Content_Abilities {
 		$meta_raw = get_post_meta( $post_id );
 		$meta     = array();
 		if ( is_array( $meta_raw ) ) {
+			$allowed = (array) apply_filters( 'emcp_tools_content_allowed_protected_meta', array() );
 			foreach ( $meta_raw as $key => $vals ) {
-				if ( '_' === substr( (string) $key, 0, 1 ) || is_protected_meta( (string) $key, 'post' ) ) {
+				$key = (string) $key;
+				if ( ! in_array( $key, $allowed, true ) && ( '_' === substr( $key, 0, 1 ) || is_protected_meta( $key, 'post' ) ) ) {
 					continue;
 				}
 				$meta[ $key ] = is_array( $vals ) && 1 === count( $vals ) ? maybe_unserialize( $vals[0] ) : array_map( 'maybe_unserialize', (array) $vals );
