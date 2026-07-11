@@ -2013,6 +2013,14 @@ class EMCP_Tools_Admin {
 					'emcp-tools/rollback-change' => array( 'label' => __( 'Roll Back Change', 'emcp-tools' ), 'description' => __( 'Undo one recorded change by id (page/file/database). Only reverts changes EMCP recorded.', 'emcp-tools' ), 'badges' => array() ),
 				),
 			),
+			'search'           => array(
+				'platform' => 'wordpress',
+				'label' => __( 'Content Search', 'emcp-tools' ),
+				'tools' => array(
+					'emcp-tools/search-content'  => array( 'label' => __( 'Search Content', 'emcp-tools' ),  'description' => __( 'Search the site\'s pages, templates, widgets, and global styles to reuse existing content.', 'emcp-tools' ), 'badges' => array( 'read-only' ) ),
+					'emcp-tools/reindex-search'  => array( 'label' => __( 'Reindex Search', 'emcp-tools' ),  'description' => __( 'Rebuild the content-search index (also updates on save).', 'emcp-tools' ), 'badges' => array() ),
+				),
+			),
 			'wp_packages'      => array(
 				'platform' => 'wordpress',
 				'label' => __( 'Plugins & Themes', 'emcp-tools' ),

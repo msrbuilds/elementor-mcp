@@ -126,6 +126,11 @@ class EMCP_Tools_Ability_Registrar {
 		$transactions->register();
 		$this->ability_names = array_merge( $this->ability_names, $transactions->get_ability_names() );
 
+		// Content search — lexical index over pages/templates/widgets/globals (always-on).
+		$search = new EMCP_Tools_Search_Abilities();
+		$search->register();
+		$this->ability_names = array_merge( $this->ability_names, $search->get_ability_names() );
+
 		// Compact tool mode dispatcher (list-tools/get-tool-schema/call-tool).
 		// Registered ALWAYS so wp_get_ability() resolves them, but deliberately
 		// NOT added to $this->ability_names — register_mcp_server() surfaces them

@@ -110,6 +110,9 @@ class EMCP_Tools_Bootstrap {
 		require_once EMCP_TOOLS_DIR . 'includes/abilities/class-snapshot-abilities.php';
 		require_once EMCP_TOOLS_DIR . 'includes/class-change-log.php';
 		require_once EMCP_TOOLS_DIR . 'includes/abilities/class-transaction-abilities.php';
+		require_once EMCP_TOOLS_DIR . 'includes/class-search-ranker.php';
+		require_once EMCP_TOOLS_DIR . 'includes/class-search-index.php';
+		require_once EMCP_TOOLS_DIR . 'includes/abilities/class-search-abilities.php';
 		require_once EMCP_TOOLS_DIR . 'includes/class-admin-bar.php';
 		require_once EMCP_TOOLS_DIR . 'includes/class-github-updater.php';
 		require_once EMCP_TOOLS_DIR . 'includes/abilities/class-content-abilities.php';
@@ -226,6 +229,8 @@ class EMCP_Tools_Bootstrap {
 	 * @since 2.1.0
 	 */
 	private static function wire_hooks(): void {
+		// Content search index: install-on-init + incremental re-index on save/delete.
+		EMCP_Tools_Search_Index::init();
 		add_action( 'init', array( 'EMCP_Tools_Kit_Backup_Store', 'register_post_type' ) );
 		add_action( 'init', array( 'EMCP_Tools_Widget_Store', 'register_post_type' ) );
 		( new EMCP_Tools_Widget_Loader() )->register_hooks();
