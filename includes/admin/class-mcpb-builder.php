@@ -160,8 +160,11 @@ class EMCP_Tools_Mcpb_Builder {
 				=> "const { request: httpRequest } = require('http');",
 			"/import\s*\{\s*request\s*as\s*httpsRequest\s*\}\s*from\s*'node:https'\s*;/"
 				=> "const { request: httpsRequest } = require('https');",
-			"/import\s*\{\s*appendFileSync\s*\}\s*from\s*'node:fs'\s*;/"
-				=> "const { appendFileSync } = require('fs');",
+			// fs may import one OR several named functions (e.g. appendFileSync,
+			// readFileSync). Capture the whole destructure list so adding an fs
+			// import to the proxy never silently breaks the bundle again.
+			"/import\s*\{([^}]+)\}\s*from\s*'node:fs'\s*;/"
+				=> 'const {$1} = require(\'fs\');',
 		);
 		foreach ( $esm_to_cjs as $pattern => $replacement ) {
 			$source = (string) preg_replace( $pattern, $replacement, $source );
