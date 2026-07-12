@@ -170,6 +170,13 @@ class EMCP_Tools_Mcpb_Builder {
 			$source = (string) preg_replace( $pattern, $replacement, $source );
 		}
 
+		// 2b. Strip ESM `export` keywords. The proxy marks some functions/consts
+		//     `export` so its pure logic can be unit-tested (node --test imports
+		//     the .mjs); in the bundled CJS copy those are plain declarations. A
+		//     bare `export` is a syntax error in CommonJS and crashes the server
+		//     on startup, so this must run for every `export function|const|…`.
+		$source = (string) preg_replace( '/^\s*export\s+(?=(?:default\s+)?(?:function|const|let|var|class|async)\b)/m', '', $source );
+
 		// 3. Build the credential preamble: overrides process.env BEFORE any
 		//    code reads from it, so the file works whether or not the host
 		//    injects the mcp_config.env values.
@@ -213,6 +220,9 @@ class EMCP_Tools_Mcpb_Builder {
 		}
 		if ( preg_match( "/\bimport\s+[{*]/", $source ) ) {
 			return 'Built server/index.js still contains ESM import statements.';
+		}
+		if ( preg_match( '/^\s*export\s+/m', $source ) ) {
+			return 'Built server/index.js still contains ESM export statements.';
 		}
 		return null;
 	}
