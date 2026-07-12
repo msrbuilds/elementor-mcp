@@ -10,7 +10,7 @@
 [![PHP](https://img.shields.io/badge/PHP-%3E%3D8.1-8892BF.svg)](https://php.net)
 [![WordPress](https://img.shields.io/badge/WordPress-%3E%3D6.9-21759B.svg)](https://wordpress.org)
 [![Elementor](https://img.shields.io/badge/Elementor-%3E%3D3.20-92003B.svg)](https://elementor.com)
-[![MCP Tools](https://img.shields.io/badge/MCP_Tools-up%20to%20130-orange.svg)](#available-tools)
+[![MCP Tools](https://img.shields.io/badge/MCP_Tools-up%20to%20150-orange.svg)](#available-tools)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 [![GitHub Issues](https://img.shields.io/github/issues/msrbuilds/elementor-mcp)](https://github.com/msrbuilds/elementor-mcp/issues)
 [![GitHub Stars](https://img.shields.io/github/stars/msrbuilds/elementor-mcp?style=social)](https://github.com/msrbuilds/elementor-mcp)
@@ -29,11 +29,18 @@ A WordPress plugin that extends the [WordPress MCP Adapter](https://github.com/W
 
 ## Features
 
-- **A focused MCP toolset** covering the full Elementor page-building workflow — and, as of v3.0.0, growing beyond Elementor into general WordPress management across multiple domains: content, settings, plugins & themes, media library, users, performance, filesystem, and database. As of v3.0.0 the 62 per-widget tools were folded into a catalog-backed model, so the active surface is much smaller — every widget is still reachable via discover → inspect → act. Counts scale with your environment (registered counts, live-verified on Elementor 4.1.4):
-  - **106 tools** — free Elementor only (82 active by default)
-  - **120 tools** — free Elementor + Elementor 4.0 atomic elements (96 active)
-  - **116 tools** — with Elementor Pro (77 active)
-  - **130 tools** — with Elementor Pro + Elementor 4.0 (91 active; + WooCommerce adds no new tools)
+- **New in v3.3.0** — five "intelligence, not just transport" features that let an AI agent *understand*, *undo*, and *reuse* your site, plus a big community contribution:
+  - **Page Snapshot** (`get-page-snapshot`) — one normalized digest of a page (structure, tokens-in-use, responsive overrides, content outline, SEO-lite, + opt-in performance/a11y/SEO audits) so the AI reasons about a page in a single call
+  - **Change History & Rollback** (`list-changes` / `get-change` / `rollback-change`) — every AI-made Elementor/filesystem/database change is recorded to one ledger and can be undone, from MCP **and** a new **History** admin tab
+  - **Content Search** (`search-content` / `reindex-search`) — find the site's own pages, templates, widgets, and global styles by natural-language query so the AI reuses existing work instead of rebuilding it
+  - **Content Mirror** (`export-content` / `restore-content` / `list-content-exports`) — export page/template content to git-trackable JSON files for external version control
+  - **Navigation Menus** (`menu-read` / `menu-write` + `[emcp_menu]` shortcode) — full WordPress nav-menu management over MCP (community-contributed)
+  - **Multi-site proxy** (`@msrbuilds/emcp-proxy` 1.9.0) — drive many WordPress installs from one connection with a site registry and `emcp_use_site`
+- **A focused MCP toolset** covering the full Elementor page-building workflow — and, since v3.0.0, growing beyond Elementor into general WordPress management across many domains: content, nav menus, settings, plugins & themes, media library, users, performance, filesystem, and database. The 62 per-widget tools are folded into a catalog-backed model, so the active surface stays small — every widget is still reachable via discover → inspect → act. Counts scale with your environment (registered counts; v3.3.0 adds 11 always-on tools over the live-verified 4.1.4 baseline):
+  - **128 tools** — free Elementor only (104 active by default)
+  - **142 tools** — free Elementor + Elementor 4.0 atomic elements (118 active)
+  - **138 tools** — with Elementor Pro (99 active)
+  - **152 tools** — with Elementor Pro + Elementor 4.0 (113 active; + WooCommerce adds no new tools)
   - **+2 ACF tools** when Advanced Custom Fields (free or PRO) is active — `acf-read` and `acf-write`, two dispatchers exposing **15 ACF operations** (8 read, 7 write; the Custom-Post-Type/taxonomy operations need ACF 6.1+). Each dispatcher is a single toggle under Tools → Plugins → ACF (listing the operations it covers); `acf-read` is on by default, `acf-write` ships off (v3.2.1)
   - **39 of these ship disabled-by-default** (SEO & Accessibility, Widget Builder, PHP Snippets, the 9 Plugins & Themes write tools, `delete-media`, the 2 Users write tools, the 3 Filesystem write tools, and the 3 Database write tools) — plus the 7 ACF write operations are off by default within `acf-write` — so the typical active surface is smaller until you opt in on the Tools tab
 - **WordPress Content (beyond Elementor)** — Create and manage posts, pages, and any custom post type — content, status, taxonomy terms, custom fields, and featured images — via MCP, without touching Elementor data. Built on WP core; every post carries an `is_elementor` flag that steers agents to the Elementor tools for builder pages
@@ -63,7 +70,7 @@ A WordPress plugin that extends the [WordPress MCP Adapter](https://github.com/W
 - **SVG Icons** — Upload SVG icons from URL or raw markup for use with Elementor icon widgets
 - **Custom Code** — Add custom CSS (element/page level), inject JavaScript, create site-wide code snippets for head/body injection
 - **Low-tools Mode** — One-click toggle that filters the active tool list to a curated essentials set, for MCP clients with strict tool caps (Antigravity, Gemini API, etc.). After the v3.0.0 widget consolidation the active count already fits most caps, so this is rarely needed now
-- **Admin Dashboard** — Dedicated top-level **EMCP Tools** menu with Tools / Connection / Prompts / Templates / Brand Kits / Skills / Widget Builder / Changelog tabs. Toggle individual tools on/off, view connection configs for all supported MCP clients, and reach the **Get Support** portal from any tab
+- **Admin Dashboard** — Dedicated top-level **EMCP Tools** menu with Dashboard / Modules / Tools / Connection / Prompts / Templates / Brand Kits / Skills / Sandbox / **History** / Changelog tabs. Toggle individual tools on/off, view connection configs for all supported MCP clients, review and roll back AI-made changes on the History tab, and reach the **Get Support** portal from any tab
 
 ## Requirements
 
