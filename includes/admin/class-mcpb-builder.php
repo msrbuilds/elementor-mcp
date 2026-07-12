@@ -39,11 +39,15 @@ class EMCP_Tools_Mcpb_Builder {
 	 */
 	public static function build_manifest( string $site_url, string $username, string $app_password ): array {
 		$host    = (string) wp_parse_url( $site_url, PHP_URL_HOST );
+		$slug    = self::host_slug( $host );
 		$version = defined( 'EMCP_TOOLS_VERSION' ) ? EMCP_TOOLS_VERSION : '0.0.0';
 
 		return array(
 			'manifest_version' => self::MANIFEST_VERSION,
-			'name'             => 'emcp-tools',
+			// Unique per site: Claude Desktop identifies extensions by the
+			// manifest `name`, so a fixed name makes each install silently
+			// overwrite the previous site's bundle. See #86.
+			'name'             => '' !== $slug ? 'emcp-tools-' . $slug : 'emcp-tools',
 			'display_name'     => sprintf( 'EMCP Tools — %s', $host ),
 			'version'          => $version,
 			'description'      => sprintf( 'Connect Claude Desktop to %s for Elementor and WordPress management via MCP.', $host ),
@@ -70,6 +74,22 @@ class EMCP_Tools_Mcpb_Builder {
 				),
 			),
 		);
+	}
+
+	/**
+	 * Derive a Claude-Desktop-safe, per-site suffix from the site host.
+	 *
+	 * Claude Desktop keys installed extensions by the manifest `name` (not the
+	 * filename or `display_name`), so the name must be unique per site or a
+	 * second install replaces the first. e.g. "staging.example.co.uk" →
+	 * "staging-example-co-uk".
+	 *
+	 * @param string $host wp_parse_url() host component.
+	 * @return string Lower-case slug, or '' when the host yields no slug.
+	 */
+	private static function host_slug( string $host ): string {
+		$slug = preg_replace( '/[^a-z0-9]+/', '-', strtolower( $host ) );
+		return trim( (string) $slug, '-' );
 	}
 
 	/**
