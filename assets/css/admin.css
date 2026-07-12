@@ -4095,3 +4095,24 @@ body.emcp-modal-open { overflow: hidden; }
 }
 .emcp-history__empty .dashicons { font-size: 32px; width: 32px; height: 32px; opacity: .5; }
 .emcp-history__note { color: #787c82; font-size: 12px; margin-top: 10px; }
+
+/* .mcpb bundle credential warning (Connection tab) */
+.elementor-mcp-mcpb-warning {
+	display: flex;
+	align-items: flex-start;
+	gap: 8px;
+	margin: 10px 0;
+	padding: 10px 12px;
+	border: 1px solid #dba617;
+	border-left-width: 4px;
+	border-radius: 4px;
+	background: #fcf9e8;
+	color: #674e00;
+	font-size: 13px;
+	line-height: 1.5;
+}
+.elementor-mcp-mcpb-warning .dashicons {
+	color: #dba617;
+	flex: 0 0 auto;
+	margin-top: 1px;
+}

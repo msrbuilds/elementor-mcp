@@ -1277,8 +1277,10 @@
 		// 1) Bundle (.mcpb)
 		if ( m.bundle ) {
 			html += emcpBlock( 'One-click bundle (.mcpb)',
-				'<p class="description">Download and double-click to install in Claude Desktop — no config files to edit. ' +
-				'<strong>The file contains a live password — delete it after importing.</strong></p>' +
+				'<p class="description">Download and double-click to install in Claude Desktop — no config files to edit.</p>' +
+				'<p class="elementor-mcp-mcpb-warning"><span class="dashicons dashicons-warning" aria-hidden="true"></span> ' +
+				'<strong>Treat this file as a secret.</strong> It embeds your WordPress application password in plaintext, so anyone with the file can access this site. ' +
+				'Don\'t email it, share it, commit it to git, or leave it in a cloud-synced folder — and delete it once it\'s imported into Claude Desktop.</p>' +
 				'<p><button type="button" class="button button-primary" id="elementor-mcp-mcpb-download">Download .mcpb bundle</button></p>' );
 		}
 		// 2) CLI command
