@@ -339,7 +339,38 @@ class EMCP_Tools_Ability_Registrar {
 		 */
 		$this->ability_names = apply_filters( 'emcp_tools_ability_names', $this->ability_names );
 
+		// F-013: emcp_tools_ability_names is a public seam, so a third-party
+		// callback can hand back non-strings or names that don't match the MCP
+		// ability-name grammar. Drop anything invalid before the list reaches
+		// create_server(), which would otherwise register broken/undefined tools.
+		$this->ability_names = self::sanitize_ability_names( $this->ability_names );
+
 		return $this->ability_names;
+	}
+
+	/**
+	 * Keeps only well-formed MCP ability names — `[a-z0-9-]+/[a-z0-9-]+` — from
+	 * whatever the emcp_tools_ability_names filter returned. Non-array input
+	 * yields an empty list.
+	 *
+	 * @since 3.3.1
+	 *
+	 * @param mixed $names Filter return value.
+	 * @return string[] Validated ability names.
+	 */
+	private static function sanitize_ability_names( $names ): array {
+		if ( ! is_array( $names ) ) {
+			return array();
+		}
+
+		return array_values(
+			array_filter(
+				$names,
+				static function ( $name ) {
+					return is_string( $name ) && (bool) preg_match( '/^[a-z0-9-]+\/[a-z0-9-]+$/', $name );
+				}
+			)
+		);
 	}
 
 	/**
