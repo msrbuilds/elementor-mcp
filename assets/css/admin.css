@@ -3139,6 +3139,15 @@
 .elementor-mcp-tool-card.is-unavailable .elementor-mcp-toggle-track { cursor: not-allowed; }
 .elementor-mcp-elementor-inactive { margin: 0 0 16px; }
 
+/* Per-tool "install/activate X to enable" hint (e.g. Astra + Spectra combo). */
+.elementor-mcp-tool-unavailable-note {
+	display: inline-block;
+	margin-top: 4px;
+	font-size: 11px;
+	font-weight: 600;
+	color: var(--mcp-amber-600, #b45309);
+}
+
 /* Modules tab ----------------------------------------------------------- */
 .emcp-modules-grid { grid-template-columns: repeat( auto-fill, minmax( 360px, 1fr ) ); }
 .emcp-module-card { flex-direction: column; cursor: default; gap: 0; }

@@ -30,7 +30,9 @@
 		if ( enableAll ) {
 			enableAll.addEventListener( 'click', function () {
 				form.querySelectorAll( toolCheckboxSelector ).forEach( function ( cb ) {
-					cb.checked = true;
+					if ( ! cb.disabled ) {
+						cb.checked = true;
+					}
 				} );
 				updateCards( form );
 			} );
@@ -39,7 +41,9 @@
 		if ( disableAll ) {
 			disableAll.addEventListener( 'click', function () {
 				form.querySelectorAll( toolCheckboxSelector ).forEach( function ( cb ) {
-					cb.checked = false;
+					if ( ! cb.disabled ) {
+						cb.checked = false;
+					}
 				} );
 				updateCards( form );
 			} );
@@ -56,7 +60,9 @@
 			if ( catEnableAll ) {
 				catEnableAll.addEventListener( 'click', function () {
 					cat.querySelectorAll( 'input[type="checkbox"]' ).forEach( function ( cb ) {
-						cb.checked = true;
+						if ( ! cb.disabled ) {
+							cb.checked = true;
+						}
 					} );
 					updateCards( form );
 				} );
@@ -65,7 +71,9 @@
 			if ( catDisableAll ) {
 				catDisableAll.addEventListener( 'click', function () {
 					cat.querySelectorAll( 'input[type="checkbox"]' ).forEach( function ( cb ) {
-						cb.checked = false;
+						if ( ! cb.disabled ) {
+							cb.checked = false;
+						}
 					} );
 					updateCards( form );
 				} );

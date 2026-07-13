@@ -1817,6 +1817,31 @@ class EMCP_Tools_Admin {
 	}
 
 	/**
+	 * Whether the Astra theme integration's tools are available (Astra is the
+	 * active parent theme). When false the admin greys out + disables the Astra
+	 * toggles, the same way Elementor tools are gated when Elementor is inactive.
+	 *
+	 * @since 3.4.0
+	 *
+	 * @return bool
+	 */
+	public static function astra_available(): bool {
+		return function_exists( 'get_template' ) && 'astra' === get_template();
+	}
+
+	/**
+	 * Whether the Spectra Blocks integration's tools are available (the Spectra
+	 * plugin — Ultimate Addons for Gutenberg — is installed and active).
+	 *
+	 * @since 3.4.0
+	 *
+	 * @return bool
+	 */
+	public static function spectra_available(): bool {
+		return class_exists( 'EMCP_Tools_Spectra_Catalog' ) && EMCP_Tools_Spectra_Catalog::is_active();
+	}
+
+	/**
 	 * Returns the categories with the Elementor-platform ones removed. Used for
 	 * truthful tool counts when Elementor is inactive (those tools never register).
 	 *
@@ -2293,41 +2318,42 @@ class EMCP_Tools_Admin {
 					),
 				),
 			),
-			'theme_astra'      => array(
+			'theme_astra_spectra' => array(
 				'platform' => 'themes',
-				'label'    => __( 'Astra', 'emcp-tools' ),
-				'note'     => __( 'Astra theme settings, exposed only when Astra is the active theme.', 'emcp-tools' ),
+				'label'    => __( 'Astra + Spectra', 'emcp-tools' ),
+				'note'     => __( 'The Astra theme and its Spectra blocks companion, grouped as one pack. Astra tools manage the theme\'s settings (enabled only when Astra is the active theme); Spectra tools give the block catalog + insertion (enabled only when the Spectra plugin is active). Toggles for an inactive component are disabled until you install and activate it.', 'emcp-tools' ),
 				'tools'    => array(
-					'emcp-tools/astra-read'  => array(
-						'label'       => __( 'Astra Read', 'emcp-tools' ),
-						'description' => __( 'Read curated Astra settings (colors, typography, layout, header/footer) with value + type/label/group metadata.', 'emcp-tools' ),
-						'badges'      => array( 'read-only' ),
-						'operations'  => array( 'get-settings' ),
+					'emcp-tools/astra-read'    => array(
+						'label'            => __( 'Astra Read', 'emcp-tools' ),
+						'description'      => __( 'Read Astra settings (colors, typography, layout, header/footer) with value + type/label/group metadata.', 'emcp-tools' ),
+						'badges'           => array( 'read-only' ),
+						'operations'       => array( 'get-settings' ),
+						'available'        => self::astra_available(),
+						'unavailable_note' => __( 'Activate the Astra theme to enable this tool.', 'emcp-tools' ),
 					),
-					'emcp-tools/astra-write' => array(
-						'label'       => __( 'Astra Write', 'emcp-tools' ),
-						'description' => __( 'Write curated Astra settings; non-allowlisted keys are reported in skipped[].', 'emcp-tools' ),
-						'badges'      => array(),
-						'operations'  => array( 'update-settings' ),
+					'emcp-tools/astra-write'   => array(
+						'label'            => __( 'Astra Write', 'emcp-tools' ),
+						'description'      => __( 'Write Astra settings; non-allowlisted keys are reported in skipped[].', 'emcp-tools' ),
+						'badges'           => array(),
+						'operations'       => array( 'update-settings' ),
+						'available'        => self::astra_available(),
+						'unavailable_note' => __( 'Activate the Astra theme to enable this tool.', 'emcp-tools' ),
 					),
-				),
-			),
-			'theme_spectra'    => array(
-				'platform' => 'themes',
-				'label'    => __( 'Spectra Blocks', 'emcp-tools' ),
-				'note'     => __( 'The Spectra block catalog (pairs with Astra), exposed only when the Spectra plugin is active. Read tools give the block catalog + curated settings; the write tool inserts a Spectra block.', 'emcp-tools' ),
-				'tools'    => array(
 					'emcp-tools/spectra-read'  => array(
-						'label'       => __( 'Spectra Read', 'emcp-tools' ),
-						'description' => __( 'Catalog of available Spectra blocks (list-blocks) and their curated settings + example markup (get-block-schema).', 'emcp-tools' ),
-						'badges'      => array( 'read-only' ),
-						'operations'  => array( 'list-blocks', 'get-block-schema' ),
+						'label'            => __( 'Spectra Read', 'emcp-tools' ),
+						'description'      => __( 'Catalog of available Spectra blocks (list-blocks) and each block\'s real attributes + example markup (get-block-schema).', 'emcp-tools' ),
+						'badges'           => array( 'read-only' ),
+						'operations'       => array( 'list-blocks', 'get-block-schema' ),
+						'available'        => self::spectra_available(),
+						'unavailable_note' => __( 'Install & activate the Spectra plugin to enable this tool.', 'emcp-tools' ),
 					),
 					'emcp-tools/spectra-write' => array(
-						'label'       => __( 'Spectra Write', 'emcp-tools' ),
-						'description' => __( 'Insert a Spectra block into a post with curated defaults + a generated block_id (add-block).', 'emcp-tools' ),
-						'badges'      => array(),
-						'operations'  => array( 'add-block' ),
+						'label'            => __( 'Spectra Write', 'emcp-tools' ),
+						'description'      => __( 'Insert a Spectra block into a post with a generated block_id (add-block); Spectra applies its own defaults.', 'emcp-tools' ),
+						'badges'           => array(),
+						'operations'       => array( 'add-block' ),
+						'available'        => self::spectra_available(),
+						'unavailable_note' => __( 'Install & activate the Spectra plugin to enable this tool.', 'emcp-tools' ),
 					),
 				),
 			),

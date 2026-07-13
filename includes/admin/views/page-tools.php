@@ -251,15 +251,21 @@ $emcp_tools_badge_labels = array(
 						<?php foreach ( $emcp_tools_category['tools'] as $emcp_tools_slug => $emcp_tools_tool ) : ?>
 							<?php
 							$emcp_tools_is_enabled = ! in_array( $emcp_tools_slug, $emcp_tools_disabled, true );
+							// A tool is unavailable when its whole platform is off (Elementor
+							// inactive) OR the tool carries an explicit availability flag that
+							// is false (e.g. the Astra tools when Astra is not the active
+							// theme, the Spectra tools when the Spectra plugin is inactive).
+							$emcp_tools_tool_unavailable = $emcp_tools_cat_unavailable
+								|| ( array_key_exists( 'available', $emcp_tools_tool ) && ! $emcp_tools_tool['available'] );
 							?>
-							<label class="elementor-mcp-tool-card <?php echo esc_attr( ( $emcp_tools_is_enabled ? 'is-enabled' : 'is-disabled' ) . ( $emcp_tools_cat_unavailable ? ' is-unavailable' : '' ) ); ?>">
+							<label class="elementor-mcp-tool-card <?php echo esc_attr( ( $emcp_tools_is_enabled ? 'is-enabled' : 'is-disabled' ) . ( $emcp_tools_tool_unavailable ? ' is-unavailable' : '' ) ); ?>">
 								<input
 									type="checkbox"
 									name="<?php echo esc_attr( EMCP_Tools_Admin::OPTION_DISABLED_TOOLS ); ?>[]"
 									value="<?php echo esc_attr( $emcp_tools_slug ); ?>"
 									data-stored-enabled="<?php echo esc_attr( in_array( $emcp_tools_slug, $emcp_tools_disabled, true ) ? '0' : '1' ); ?>"
 									<?php checked( $emcp_tools_is_enabled ); ?>
-									<?php disabled( $emcp_tools_cat_unavailable ); ?>
+									<?php disabled( $emcp_tools_tool_unavailable ); ?>
 								/>
 								<span class="elementor-mcp-toggle" aria-hidden="true">
 									<span class="elementor-mcp-toggle-track"></span>
@@ -274,6 +280,9 @@ $emcp_tools_badge_labels = array(
 										<?php endforeach; ?>
 									</span>
 									<span class="elementor-mcp-tool-desc"><?php echo esc_html( $emcp_tools_tool['description'] ); ?></span>
+									<?php if ( $emcp_tools_tool_unavailable && ! empty( $emcp_tools_tool['unavailable_note'] ) ) : ?>
+										<span class="elementor-mcp-tool-unavailable-note"><?php echo esc_html( $emcp_tools_tool['unavailable_note'] ); ?></span>
+									<?php endif; ?>
 									<?php if ( ! empty( $emcp_tools_tool['operations'] ) ) : ?>
 										<span class="elementor-mcp-tool-ops">
 											<span class="elementor-mcp-tool-ops-label">
