@@ -129,6 +129,13 @@ class EMCP_Tools_Bootstrap {
 		add_action( 'init', array( 'EMCP_Tools_Nav_Menu_Shortcode', 'register' ) );
 		// ACF tools (field values + field group discovery/authoring; writes off by default).
 		require_once EMCP_TOOLS_DIR . 'includes/abilities/class-acf-abilities.php';
+
+		// Themes domain: the child-theme builder + the dispatcher base (must load
+		// before its subclasses) + the integrations.
+		require_once EMCP_TOOLS_DIR . 'includes/class-child-theme-builder.php';
+		require_once EMCP_TOOLS_DIR . 'includes/abilities/class-theme-integration.php';
+		require_once EMCP_TOOLS_DIR . 'includes/abilities/class-active-theme-integration.php';
+		require_once EMCP_TOOLS_DIR . 'includes/abilities/class-astra-integration.php';
 		// Performance Analyzer (v3.0.0) — read-only server/WP/page audit.
 		require_once EMCP_TOOLS_DIR . 'includes/performance/class-performance-finding.php';
 		require_once EMCP_TOOLS_DIR . 'includes/performance/class-performance-server-audit.php';
@@ -289,6 +296,11 @@ class EMCP_Tools_Bootstrap {
 		EMCP_Tools_Pro_Loader::load_admin();
 		EMCP_Tools_Pro_Loader::wire_admin_hooks();
 
+		// Non-blocking, per-user-dismissible nudge to install Elementor when it is
+		// absent (Elementor is optional; every other tool works without it).
+		require_once EMCP_TOOLS_DIR . 'includes/admin/class-elementor-notice.php';
+		( new EMCP_Tools_Elementor_Notice() )->init();
+
 		require_once EMCP_TOOLS_DIR . 'includes/admin/class-upgrade-notice.php';
 		( new EMCP_Tools_Upgrade_Notice() )->init();
 
@@ -369,24 +381,9 @@ class EMCP_Tools_Bootstrap {
 
 		// Elementor is OPTIONAL. When absent, the plugin still loads and every
 		// beyond-Elementor tool works; only the Elementor tool family + the
-		// Elementor admin areas are unavailable. Surface a non-blocking warning.
-		if ( ! self::elementor_active() && is_admin() ) {
-			add_action(
-				'admin_notices',
-				function () {
-					if ( ! current_user_can( 'manage_options' ) ) {
-						return;
-					}
-					$install = self_admin_url( 'plugin-install.php?s=Elementor&tab=search&type=term' );
-					printf(
-						'<div class="notice notice-warning"><p>%s</p><p><a class="button button-secondary" href="%s">%s</a></p></div>',
-						esc_html__( 'EMCP Tools is active. Install and activate Elementor to enable the Elementor page-building tools (widgets, layout, templates, brand kits). All other tools — WordPress content, plugins & themes, users, media, performance, security, filesystem, and database — work without it.', 'emcp-tools' ),
-						esc_url( $install ),
-						esc_html__( 'Install Elementor', 'emcp-tools' )
-					);
-				}
-			);
-		}
+		// Elementor admin areas are unavailable. The non-blocking, per-user
+		// dismissible "Install Elementor" nudge is handled by
+		// EMCP_Tools_Elementor_Notice, wired in load_admin().
 
 		return true;
 	}

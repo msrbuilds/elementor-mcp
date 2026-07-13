@@ -80,9 +80,14 @@ abstract class EMCP_Tools_Theme_Integration {
 			array(
 				'label'               => $this->label() . ' Read',
 				'description'         => $this->read_description(),
-				'input_schema'        => $this->dispatch_schema(),
+				'category'            => 'emcp-tools',
 				'execute_callback'    => array( $this, 'run_read' ),
 				'permission_callback' => array( $this, 'can_read' ),
+				'input_schema'        => $this->dispatch_schema(),
+				'meta'                => array(
+					'annotations'  => array( 'readonly' => true, 'destructive' => false, 'idempotent' => true ),
+					'show_in_rest' => true,
+				),
 			)
 		);
 		emcp_tools_register_ability(
@@ -90,9 +95,14 @@ abstract class EMCP_Tools_Theme_Integration {
 			array(
 				'label'               => $this->label() . ' Write',
 				'description'         => $this->write_description(),
-				'input_schema'        => $this->dispatch_schema(),
+				'category'            => 'emcp-tools',
 				'execute_callback'    => array( $this, 'run_write' ),
 				'permission_callback' => array( $this, 'can_write' ),
+				'input_schema'        => $this->dispatch_schema(),
+				'meta'                => array(
+					'annotations'  => array( 'readonly' => false, 'destructive' => false, 'idempotent' => false ),
+					'show_in_rest' => true,
+				),
 			)
 		);
 	}
