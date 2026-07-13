@@ -3148,6 +3148,29 @@
 	color: var(--mcp-amber-600, #b45309);
 }
 
+/* Section-level notice (e.g. Astra + Spectra File Generation heads-up). */
+.elementor-mcp-cat-notice {
+	display: flex;
+	gap: 8px;
+	align-items: flex-start;
+	margin: 0 0 14px;
+	padding: 10px 14px;
+	border-radius: 8px;
+	font-size: 12.5px;
+	line-height: 1.5;
+}
+.elementor-mcp-cat-notice.is-warning {
+	background: var(--mcp-amber-50, #fffbeb);
+	border: 1px solid var(--mcp-amber-200, #fde68a);
+	color: var(--mcp-amber-800, #92400e);
+}
+.elementor-mcp-cat-notice.is-info {
+	background: var(--mcp-blue-50, #eff6ff);
+	border: 1px solid var(--mcp-blue-200, #bfdbfe);
+	color: var(--mcp-blue-800, #1e40af);
+}
+.elementor-mcp-cat-notice-icon { flex: 0 0 auto; margin-top: 1px; opacity: 0.9; }
+
 /* Modules tab ----------------------------------------------------------- */
 .emcp-modules-grid { grid-template-columns: repeat( auto-fill, minmax( 360px, 1fr ) ); }
 .emcp-module-card { flex-direction: column; cursor: default; gap: 0; }

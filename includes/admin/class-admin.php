@@ -1842,6 +1842,46 @@ class EMCP_Tools_Admin {
 	}
 
 	/**
+	 * Whether Spectra is set to generate separate CSS/JS files (as opposed to its
+	 * default inline CSS). In file mode, pages an AI builds or edits over MCP can
+	 * render with stale cached CSS until the assets are regenerated — so the combo
+	 * section shows a heads-up to switch to inline while building.
+	 *
+	 * @since 3.4.0
+	 *
+	 * @return bool
+	 */
+	public static function spectra_file_generation_on(): bool {
+		if ( ! self::spectra_available() ) {
+			return false;
+		}
+		// Spectra's default is inline CSS; treat an absent option as inline.
+		if ( class_exists( 'UAGB_Admin_Helper' ) && method_exists( 'UAGB_Admin_Helper', 'get_admin_settings_option' ) ) {
+			return 'enabled' === UAGB_Admin_Helper::get_admin_settings_option( '_uagb_allow_file_generation', 'disabled' );
+		}
+		return 'enabled' === get_option( '_uagb_allow_file_generation', 'disabled' );
+	}
+
+	/**
+	 * The Astra + Spectra section notice, or null. Returns an actionable warning
+	 * only when Spectra's separate-file CSS generation is on (the state that
+	 * causes stale styling for AI-built pages).
+	 *
+	 * @since 3.4.0
+	 *
+	 * @return array{type:string,message:string}|null
+	 */
+	public static function spectra_file_generation_notice(): ?array {
+		if ( ! self::spectra_file_generation_on() ) {
+			return null;
+		}
+		return array(
+			'type'    => 'warning',
+			'message' => __( 'Spectra is set to generate separate CSS files. When an AI builds or edits pages over MCP, those cached files can go stale and a page may look unstyled until they are rebuilt. While building with AI, turn OFF Spectra → Settings → Asset Generation → File Generation (use inline CSS), or click "Regenerate Assets" there after edits.', 'emcp-tools' ),
+		);
+	}
+
+	/**
 	 * Returns the categories with the Elementor-platform ones removed. Used for
 	 * truthful tool counts when Elementor is inactive (those tools never register).
 	 *
@@ -2322,6 +2362,7 @@ class EMCP_Tools_Admin {
 				'platform' => 'themes',
 				'label'    => __( 'Astra + Spectra', 'emcp-tools' ),
 				'note'     => __( 'The Astra theme and its Spectra blocks companion, grouped as one pack. Astra tools manage the theme\'s settings (enabled only when Astra is the active theme); Spectra tools give the block catalog + insertion (enabled only when the Spectra plugin is active). Toggles for an inactive component are disabled until you install and activate it.', 'emcp-tools' ),
+				'notice'   => self::spectra_file_generation_notice(),
 				'tools'    => array(
 					'emcp-tools/astra-read'    => array(
 						'label'            => __( 'Astra Read', 'emcp-tools' ),

@@ -247,6 +247,20 @@ $emcp_tools_badge_labels = array(
 					$emcp_tools_first_tool = reset( $emcp_tools_category['tools'] );
 					$emcp_tools_has_ops    = ! empty( $emcp_tools_first_tool['operations'] );
 					?>
+					<?php
+					// Section-level notice (e.g. the Astra + Spectra heads-up about
+					// Spectra's File Generation setting). Only rendered when the category
+					// carries one, so it appears only when actionable.
+					if ( ! empty( $emcp_tools_category['notice'] ) && ! empty( $emcp_tools_category['notice']['message'] ) ) :
+						$emcp_tools_notice_type = $emcp_tools_category['notice']['type'] ?? 'info';
+						?>
+					<div class="elementor-mcp-cat-notice is-<?php echo esc_attr( $emcp_tools_notice_type ); ?>">
+						<span class="elementor-mcp-cat-notice-icon" aria-hidden="true">
+							<svg viewBox="0 0 20 20" width="16" height="16"><path fill="currentColor" d="M10 1.6a8.4 8.4 0 100 16.8 8.4 8.4 0 000-16.8zM11 14H9v-2h2v2zm0-4H9V5h2v5z"/></svg>
+						</span>
+						<span><?php echo esc_html( $emcp_tools_category['notice']['message'] ); ?></span>
+					</div>
+					<?php endif; ?>
 					<div class="elementor-mcp-tools-grid <?php echo esc_attr( $emcp_tools_has_ops ? 'is-two-up' : '' ); ?>" id="<?php echo esc_attr( $emcp_tools_grid_id ); ?>">
 						<?php foreach ( $emcp_tools_category['tools'] as $emcp_tools_slug => $emcp_tools_tool ) : ?>
 							<?php
