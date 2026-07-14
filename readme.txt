@@ -3,7 +3,7 @@ Contributors: mianshahzadraza
 Tags: elementor, mcp, ai, page-builder, automation
 Requires at least: 6.9
 Tested up to: 7.0
-Stable tag: 3.3.0
+Stable tag: 3.4.0
 Requires PHP: 8.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -170,8 +170,12 @@ The plugin enforces WordPress capability checks on every tool. Read operations r
 == Changelog ==
 
 = 3.4.0 =
-New Themes domain: full context on the active theme, settings management, and child-theme creation for safe file edits.
+New Themes domain, WP-CLI tools, SVG uploads, and 50 starter templates.
 * Added: Themes tab with theme integrations on the ACF two-dispatcher pattern (one Read tool, one Write tool, each bundling internal operations). Active Theme (theme-read / theme-write, any theme): get-theme-context (framework, block-theme, supports, menu locations, child status), get-mods / set-mods (theme_mod values, structural keys refused), and create-child-theme (scaffold + activate a child of the active parent so the agent can edit theme files via the Filesystem tools; requires confirm:true, idempotent). Astra (astra-read / astra-write, when Astra is active): generic get-settings / update-settings over a curated astra-settings allowlist (colors, typography, layout, header/footer). Reads on by default; the two write dispatchers ship disabled-by-default. More framework packs (Kadence, GeneratePress) build on the same base.
+* Added: WP-CLI tools (4 tools, disabled-by-default, manage_options): run-wp-cli (synchronous), dispatch-wp-cli (background job), get-wp-cli-job, list-wp-cli-jobs. A command validator blocks destructive/host-level commands (eval, shell, db query/import/export/reset, config set, package/cli mutations) and dangerous flags; runs in-process when available, else via a spawned shell. Every run is recorded to the change ledger.
+* Added: SVG Uploads module (opt-in): allow sanitized SVG/SVGZ uploads to the Media Library. Every uploaded SVG is scrubbed with enshrined/svg-sanitize (scripts, event handlers, external references removed) and rejected if it can't be made safe. Fixes the common programmatic-upload failure where WordPress mis-detects SVG as a text file.
+* Added: get-block-schema now surfaces Spectra's shared-helper attributes so Gutenberg/Spectra blocks report their real attribute names and defaults.
+* Changed: search-images and sideload-image are now core WordPress tools — they register on any site regardless of Elementor (they only need a stock-provider API key and the Media Library).
 
 = 3.3.0 =
 Foundation release: understand a page from one call, undo any change, and reuse existing content.
