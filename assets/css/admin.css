@@ -3526,6 +3526,8 @@ body.emcp-modal-open { overflow: hidden; }
 	border-radius: var(--mcp-radius);
 	text-decoration: none;
 	transition: box-shadow var(--mcp-transition), border-color var(--mcp-transition), background var(--mcp-transition), transform var(--mcp-transition);
+	position: relative;
+	flex-direction: column;
 }
 
 .emcp-dash-card:hover,
@@ -3582,6 +3584,9 @@ body.emcp-modal-open { overflow: hidden; }
 	flex-shrink: 0;
 	align-self: center;
 	transition: color var(--mcp-transition), transform var(--mcp-transition);
+	position: absolute;
+	top: 25px;
+	right: 15px;
 }
 
 .emcp-dash-card:hover .emcp-dash-card-arrow {
