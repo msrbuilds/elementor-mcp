@@ -62,6 +62,13 @@ $emcp_features = array(
 		'show'  => true,
 	),
 	array(
+		'icon'  => 'dashicons-undo',
+		'title' => __( 'History', 'emcp-tools' ),
+		'desc'  => __( 'Review every change your AI made and roll any of them back — a unified change ledger with one-click undo.', 'emcp-tools' ),
+		'href'  => admin_url( 'admin.php?page=' . $emcp_page . '-history' ),
+		'show'  => true,
+	),
+	array(
 		'icon'  => 'dashicons-format-chat',
 		'title' => __( 'AI Chat', 'emcp-tools' ),
 		'desc'  => __( 'Edit pages by chatting with AI right inside the Elementor and Gutenberg editors.', 'emcp-tools' ),
@@ -121,6 +128,11 @@ $emcp_features = array(
  * different video, swap `id`/`title`/`channel` and the `watch?v=` URL.
  */
 $emcp_videos = array(
+	array(
+		'title'   => 'Build a Full WordPress Site Without Touching Elementor',
+		'channel' => 'WP Academy',
+		'id'      => 'KkOioXKT_Eo',
+	),
 	array(
 		'title'   => 'Create Elementor Landing Pages FAST with Claude and MCP Server',
 		'channel' => 'WP Academy',
