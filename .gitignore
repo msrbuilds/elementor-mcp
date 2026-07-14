@@ -8,6 +8,7 @@
 !/vendor/automattic/
 !/vendor/jetpack-autoloader/
 !/vendor/wordpress/
+!/vendor/enshrined/
 !/vendor/composer/
 /vendor/composer/*
 !/vendor/composer/InstalledVersions.php

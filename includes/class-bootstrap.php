@@ -202,6 +202,8 @@ class EMCP_Tools_Bootstrap {
 		require_once EMCP_TOOLS_DIR . 'includes/modules/class-brand-kits-module.php';
 		require_once EMCP_TOOLS_DIR . 'includes/modules/class-templates-module.php';
 		require_once EMCP_TOOLS_DIR . 'includes/modules/class-agent-skills-module.php';
+		require_once EMCP_TOOLS_DIR . 'includes/modules/svg-support/class-svg-sanitizer.php';
+		require_once EMCP_TOOLS_DIR . 'includes/modules/svg-support/class-svg-support-module.php';
 		// EMCP Themer (free): builder-agnostic theme builder engine + module + MCP tools.
 		require_once EMCP_TOOLS_DIR . 'includes/themer/class-themer-matcher-registry.php';
 		require_once EMCP_TOOLS_DIR . 'includes/themer/class-themer-conditions.php';
@@ -265,6 +267,7 @@ class EMCP_Tools_Bootstrap {
 		$emcp_modules->register( new EMCP_Tools_Templates_Module() );
 		$emcp_modules->register( new EMCP_Tools_Themer_Module() );
 		$emcp_modules->register( new EMCP_Tools_Agent_Skills_Module() );
+		$emcp_modules->register( new EMCP_Tools_SVG_Support_Module() );
 		EMCP_Tools_Pro_Loader::register_modules( $emcp_modules );
 		do_action( 'emcp_tools_register_modules', $emcp_modules );
 		$emcp_modules->apply_defaults();
