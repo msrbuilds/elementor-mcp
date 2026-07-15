@@ -2,6 +2,13 @@
 
 All notable changes to MCP Tools for Elementor are documented in this file.
 
+## [3.4.2]
+
+> Template & prompt usage insights.
+
+### Added
+- **Usage counts on the Pro library.** Each template card in the Pro Templates library now shows how many times it has been applied across all sites ("Used N times"), so you can see what's popular. The **Dashboard** gains a **Your usage** widget — templates you've applied and prompts you've copied on this site, plus the globally-popular templates. Powered by lightweight, best-effort telemetry to emcptools.com (license + site only, non-blocking); no page content, customer data, or AI conversations are ever sent.
+
 ## [3.4.1]
 
 > OAuth sign-in for MCP clients, plus atomic-element and compact-mode fixes.

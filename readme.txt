@@ -3,7 +3,7 @@ Contributors: mianshahzadraza
 Tags: elementor, mcp, ai, page-builder, automation
 Requires at least: 6.9
 Tested up to: 7.0
-Stable tag: 3.4.1
+Stable tag: 3.4.2
 Requires PHP: 8.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -168,6 +168,10 @@ The plugin enforces WordPress capability checks on every tool. Read operations r
 2. Connection configuration page with copy-paste configs.
 
 == Changelog ==
+
+= 3.4.2 =
+Template & prompt usage insights.
+* Added: "Used N times" usage counts on Pro template cards, plus a "Your usage" widget on the Dashboard (templates you've applied and prompts you've copied on this site + the globally-popular templates). Lightweight, non-blocking telemetry (license + site only; no page content, customer data, or AI conversations are ever sent).
 
 = 3.4.1 =
 OAuth sign-in for MCP clients + atomic-element and compact-mode fixes.
