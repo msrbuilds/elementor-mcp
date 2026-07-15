@@ -1340,6 +1340,17 @@
 			return out;
 		}
 
+		if ( o.type === 'steps' ) {
+			( o.steps || [] ).forEach( function ( s ) {
+				if ( s.copy ) {
+					out += emcpCopyBlock( s.title || '', emcpFill( s.copy, name, endpoint ) );
+				} else {
+					out += emcpStep( s.title || '', s.desc ? emcpEscapeHtml( emcpFill( s.desc, name, endpoint ) ) : '' );
+				}
+			} );
+			return out;
+		}
+
 		if ( o.type === 'config' ) {
 			if ( o.deeplink ) { out += emcpOAuthDeeplink( o.deeplink, name, endpoint, 'One-click install' ); }
 			var paths = '';

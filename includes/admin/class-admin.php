@@ -1797,14 +1797,26 @@ class EMCP_Tools_Admin {
 			'template' => "{\n    \"mcpServers\": {\n        \"%NAME%\": {\n            \"url\": \"%ENDPOINT%\"\n        }\n    }\n}",
 			'deeplink' => 'cursor',
 		);
+		// The ChatGPT App signs in through its own MCP UI (Add server → Streamable
+		// HTTP → Authenticate), not a config file — config.toml has no OAuth path.
 		$oauth_codex = array(
-			'type'     => 'config',
-			'lang'     => 'toml',
-			'paths'    => array(
-				array( 'path' => '~/.codex/config.toml', 'label' => __( 'macOS / Linux', 'emcp-tools' ) ),
-				array( 'path' => '%USERPROFILE%\\.codex\\config.toml', 'label' => __( 'Windows', 'emcp-tools' ) ),
+			'type'  => 'steps',
+			'steps' => array(
+				array(
+					'title' => __( 'a. Open the MCP settings', 'emcp-tools' ),
+					'desc'  => __( 'In the ChatGPT app, go to File → Settings → Plugins, switch to the MCP tab, and click “Add server”.', 'emcp-tools' ),
+				),
+				array(
+					'title' => __( 'b. Choose Streamable HTTP', 'emcp-tools' ),
+					'desc'  => __( 'Set Type to “Streamable HTTP”, then enter a name and this server URL:', 'emcp-tools' ),
+				),
+				array( 'title' => __( 'Name', 'emcp-tools' ), 'copy' => '%NAME%' ),
+				array( 'title' => __( 'URL', 'emcp-tools' ), 'copy' => '%ENDPOINT%' ),
+				array(
+					'title' => __( 'c. Save, then Authenticate', 'emcp-tools' ),
+					'desc'  => __( 'Click Save. An “Authenticate” button appears on the server row — click it, then “Approve” on the consent screen that opens. Your site is now connected and you can start chatting.', 'emcp-tools' ),
+				),
 			),
-			'template' => "[mcp_servers.%NAME%]\nurl = \"%ENDPOINT%\"",
 		);
 		$oauth_antigravity = array(
 			'type'     => 'config',
@@ -1825,7 +1837,7 @@ class EMCP_Tools_Admin {
 		// with the live endpoint + Basic-auth token in JS (escaped). HTML tags are
 		// kept outside the translation calls so they are not escaped.
 		$codex_guide = '<p class="description">'
-			. esc_html__( 'Prefer Codex\'s UI? Choose “Connect to a custom MCP” → “Streamable HTTP”, then fill the form like this:', 'emcp-tools' )
+			. esc_html__( 'Prefer the ChatGPT App\'s UI? Choose “Connect to a custom MCP” → “Streamable HTTP”, then fill the form like this:', 'emcp-tools' )
 			. '</p>'
 			. '<table class="emcp-conn-guide"><tbody>'
 			. '<tr><th>' . esc_html__( 'Name', 'emcp-tools' ) . '</th><td><code>%NAME%</code></td></tr>'
@@ -1871,10 +1883,10 @@ class EMCP_Tools_Admin {
 			),
 			array(
 				'id'          => 'codex',
-				'label'       => __( 'Codex', 'emcp-tools' ),
+				'label'       => __( 'ChatGPT App', 'emcp-tools' ),
 				'icon'        => 'editor-code',
 				'image'       => 'gpt.png',
-				'guide_title' => __( 'Using the Codex “Custom MCP” form', 'emcp-tools' ),
+				'guide_title' => __( 'Using the ChatGPT App “Custom MCP” form', 'emcp-tools' ),
 				'guide'       => $codex_guide,
 				'methods'     => array( 'bundle' => false, 'cli' => $codex_cli, 'ai_prompt' => false, 'json' => array( 'toml', 'toml-stdio' ) ),
 				'oauth'       => $oauth_codex,

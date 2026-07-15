@@ -84,7 +84,7 @@ Add to your MCP client configuration:
 }
 `
 
-= Codex Connection =
+= ChatGPT App (Codex) Connection =
 
 Add to `~/.codex/config.toml` or `.codex/config.toml`:
 
@@ -177,6 +177,7 @@ OAuth sign-in for MCP clients + atomic-element and compact-mode fixes.
 * Fixed: get-page-snapshot returned zeros on atomic (v4) pages (#91) — now extracts atomic heading/paragraph/button/image content.
 * Fixed: atomic style-class writes were persisted but never applied (#92) — writes now reference the class on the element.
 * Fixed: compact tool mode surfaced 6 tools instead of 3 (core context abilities now fold into the dispatcher catalog).
+* Changed: renamed the Codex connection card to "ChatGPT App" and corrected its OAuth setup to the app's in-app MCP flow (Add server → Streamable HTTP → Save → Authenticate → Approve). The Application Password (config.toml) method is unchanged.
 
 = 3.4.0 =
 New Themes domain, WP-CLI tools, SVG uploads, and 50 starter templates.

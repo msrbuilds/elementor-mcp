@@ -50,7 +50,7 @@ $emcp_features = array(
 	array(
 		'icon'  => 'dashicons-admin-links',
 		'title' => __( 'Connection', 'emcp-tools' ),
-		'desc'  => __( 'Connect Claude, Cursor, Codex and more — copy-paste configs, app passwords, and a one-click bundle.', 'emcp-tools' ),
+		'desc'  => __( 'Connect Claude, Cursor, the ChatGPT App and more — copy-paste configs, app passwords, and a one-click bundle.', 'emcp-tools' ),
 		'href'  => admin_url( 'admin.php?page=' . $emcp_page . '-connection' ),
 		'show'  => true,
 	),

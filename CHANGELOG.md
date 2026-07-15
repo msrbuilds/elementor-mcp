@@ -16,6 +16,9 @@ All notable changes to MCP Tools for Elementor are documented in this file.
 - **Atomic `styles` writes silently ignored (#92).** Writing a local style class persisted the definition but never referenced it, so Elementor didn't apply it. Style writes now auto-wire the class into the element's `classes` prop.
 - **Compact tool mode surfaced 6 tools instead of 3.** The three WordPress core context abilities leaked into the top-level list alongside the 3 meta-tools; they now fold into the dispatcher catalog (still reachable via `call-tool`).
 
+### Changed
+- **Codex renamed to "ChatGPT App", with a corrected OAuth flow.** The connection card is now labelled **ChatGPT App**, and its OAuth setup follows the app's in-app MCP flow (File → Settings → Plugins → MCPs → **Add server** → **Streamable HTTP** → **Save** → **Authenticate** → **Approve**) instead of a `config.toml` snippet, which has no OAuth path. The Application Password (`config.toml` + header) method is unchanged.
+
 ## [3.4.0]
 
 > A new **Themes** domain: give an AI agent full context on the active theme, manage its settings, and create a child theme so it can safely edit theme files.
