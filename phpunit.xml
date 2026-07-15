@@ -112,6 +112,9 @@
         <testsuite name="Themes">
             <directory>pro/tests/unit/themes</directory>
         </testsuite>
+        <testsuite name="Woo">
+            <directory>pro/tests/unit/woo</directory>
+        </testsuite>
     </testsuites>
 
     <source>
