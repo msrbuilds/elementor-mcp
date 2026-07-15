@@ -3,7 +3,7 @@ Contributors: mianshahzadraza
 Tags: elementor, mcp, ai, page-builder, automation
 Requires at least: 6.9
 Tested up to: 7.0
-Stable tag: 3.4.0
+Stable tag: 3.4.1
 Requires PHP: 8.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -168,6 +168,15 @@ The plugin enforces WordPress capability checks on every tool. Read operations r
 2. Connection configuration page with copy-paste configs.
 
 == Changelog ==
+
+= 3.4.1 =
+OAuth sign-in for MCP clients + atomic-element and compact-mode fixes.
+* Added: OAuth sign-in for AI clients (free). Claude and other MCP clients connect through a standard OAuth 2.1 flow — approve access from your WordPress login, no Application Password to copy. Self-contained authorization server (discovery, dynamic client registration, PKCE, admin-only consent, short-lived + refresh tokens); the token acts as the authorizing admin, and Application Passwords keep working alongside it. HTTPS-gated, on by default when available.
+* Added: Connection tab authentication-method chooser (OAuth vs Application password) with per-client setup steps (mcp-add command, custom-connector walkthrough with one-click deep links, or config-file snippet), a Connected apps list with Revoke, and a Claude.ai client.
+* Fixed: OAuth discovery 404 — MCP clients request the resource-scoped well-known path (RFC 9728), which 404'd and broke OAuth with real clients; now served.
+* Fixed: get-page-snapshot returned zeros on atomic (v4) pages (#91) — now extracts atomic heading/paragraph/button/image content.
+* Fixed: atomic style-class writes were persisted but never applied (#92) — writes now reference the class on the element.
+* Fixed: compact tool mode surfaced 6 tools instead of 3 (core context abilities now fold into the dispatcher catalog).
 
 = 3.4.0 =
 New Themes domain, WP-CLI tools, SVG uploads, and 50 starter templates.

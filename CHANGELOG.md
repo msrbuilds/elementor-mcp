@@ -2,6 +2,20 @@
 
 All notable changes to MCP Tools for Elementor are documented in this file.
 
+## [3.4.1]
+
+> OAuth sign-in for MCP clients, plus atomic-element and compact-mode fixes.
+
+### Added
+- **OAuth sign-in for AI clients (free).** Claude and other MCP clients can connect through a standard OAuth 2.1 authorization flow — you approve access from your WordPress login instead of copying an Application Password. Self-contained authorization server (discovery metadata, Dynamic Client Registration, PKCE-S256, admin-only consent, 1h access + rotating 30-day refresh tokens); the token acts as the authorizing admin so all capability checks apply unchanged, and Application Passwords keep working alongside it. HTTPS-gated, enabled by default when available.
+- **Connection tab: authentication-method chooser.** Choose **OAuth** ("Sign in through the browser, no password to copy") or **Application password**; the per-client setup adapts to your choice — a `mcp add … --transport http <url>` command, a custom-connector UI walkthrough (with a one-click deep link for Claude.ai/Cursor), or a config-file snippet (Cursor `mcp.json`, Codex `config.toml`, Antigravity `mcp_config.json`). Adds a **Connected apps** list with one-click Revoke, and a Claude.ai client.
+
+### Fixed
+- **OAuth discovery 404 (real-client blocker).** MCP clients request the discovery document at the resource-scoped path (`/.well-known/oauth-protected-resource/…`, RFC 9728 §3.1), not just the site root; that request 404'd, silently breaking OAuth with real clients. Both are now served.
+- **`get-page-snapshot` ignored atomic (v4) widgets (#91).** The content outline and SEO-lite summary came back all-zeros on pages built with atomic elements. Now extracts `e-heading` / `e-paragraph` / `e-button` / `e-image` content.
+- **Atomic `styles` writes silently ignored (#92).** Writing a local style class persisted the definition but never referenced it, so Elementor didn't apply it. Style writes now auto-wire the class into the element's `classes` prop.
+- **Compact tool mode surfaced 6 tools instead of 3.** The three WordPress core context abilities leaked into the top-level list alongside the 3 meta-tools; they now fold into the dispatcher catalog (still reachable via `call-tool`).
+
 ## [3.4.0]
 
 > A new **Themes** domain: give an AI agent full context on the active theme, manage its settings, and create a child theme so it can safely edit theme files.
