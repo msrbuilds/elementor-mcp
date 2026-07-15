@@ -471,9 +471,14 @@ class EMCP_Tools_Data {
 				// An agent naturally nests them under `settings`; hoist them out
 				// and deep-merge into the root so they actually persist instead
 				// of being written to a dead `settings.styles` key (#72, #73).
+				$touched_styles = false;
 				foreach ( array( 'styles', 'editor_settings' ) as $root_key ) {
 					if ( ! array_key_exists( $root_key, $settings ) ) {
 						continue;
+					}
+
+					if ( 'styles' === $root_key ) {
+						$touched_styles = true;
 					}
 
 					$incoming = $settings[ $root_key ];
@@ -496,6 +501,16 @@ class EMCP_Tools_Data {
 				}
 
 				$item['settings'] = array_merge( $item['settings'], $settings );
+
+				// v4 atomic: a local style class only renders when the element's
+				// `classes` prop references it. An agent that writes a `styles`
+				// map but forgets to add the class id to settings.classes gets a
+				// silent no-op — the styles persist but never apply (#92). Wire
+				// every local class id from the styles map into settings.classes.
+				if ( $touched_styles ) {
+					self::sync_local_class_refs( $item );
+				}
+
 				return true;
 			}
 
@@ -557,5 +572,72 @@ class EMCP_Tools_Data {
 		}
 
 		return array_keys( $arr ) !== range( 0, count( $arr ) - 1 );
+	}
+
+	/**
+	 * Ensures every local style class in an atomic element's `styles` map is
+	 * referenced by its `settings.classes` prop, so Elementor actually applies
+	 * the styles at render time.
+	 *
+	 * In Elementor 4.0 (atomic), a per-element local class lives in the element
+	 * root `styles` map keyed by an `e-<id>-<hash>` class id, with a sibling
+	 * `settings.classes = { $$type:'classes', value:[ ...ids ] }` that lists the
+	 * classes actually applied to the element. Writing a `styles` entry alone
+	 * persists the definition but renders nothing until the id is also in
+	 * `classes.value`. This wires up any missing references (idempotent) so a
+	 * `styles` write is self-contained (#92).
+	 *
+	 * @since 3.4.1
+	 *
+	 * @param array $item Element structure (by reference).
+	 */
+	private static function sync_local_class_refs( array &$item ): void {
+		if ( empty( $item['styles'] ) || ! is_array( $item['styles'] ) ) {
+			return;
+		}
+
+		// Collect local class ids from the styles map (type:'class' only).
+		$ids = array();
+		foreach ( $item['styles'] as $key => $def ) {
+			if ( ! is_array( $def ) ) {
+				continue;
+			}
+			if ( isset( $def['type'] ) && 'class' !== $def['type'] ) {
+				continue;
+			}
+			$id = ( isset( $def['id'] ) && is_string( $def['id'] ) && '' !== $def['id'] )
+				? $def['id']
+				: ( is_string( $key ) ? $key : '' );
+			if ( '' !== $id ) {
+				$ids[] = $id;
+			}
+		}
+
+		if ( empty( $ids ) ) {
+			return;
+		}
+
+		if ( ! isset( $item['settings'] ) || ! is_array( $item['settings'] ) ) {
+			$item['settings'] = array();
+		}
+		$classes = ( isset( $item['settings']['classes'] ) && is_array( $item['settings']['classes'] ) )
+			? $item['settings']['classes']
+			: array();
+
+		// Normalize to the atomic classes wrapper { $$type:'classes', value:[] }.
+		if ( ! isset( $classes['$$type'] ) ) {
+			$classes['$$type'] = 'classes';
+		}
+		if ( ! isset( $classes['value'] ) || ! is_array( $classes['value'] ) ) {
+			$classes['value'] = array();
+		}
+
+		foreach ( $ids as $id ) {
+			if ( ! in_array( $id, $classes['value'], true ) ) {
+				$classes['value'][] = $id;
+			}
+		}
+
+		$item['settings']['classes'] = $classes;
 	}
 }

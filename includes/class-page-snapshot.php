@@ -538,10 +538,7 @@ class EMCP_Tools_Page_Snapshot {
 			// Word count from common text fields.
 			foreach ( array( 'title', 'editor', 'text', 'description_text', 'testimonial_content' ) as $tk ) {
 				if ( ! empty( $s[ $tk ] ) && is_string( $s[ $tk ] ) ) {
-					$plain = trim( (string) preg_replace( '/\s+/', ' ', (string) preg_replace( '/<[^>]*>/', ' ', $s[ $tk ] ) ) );
-					if ( '' !== $plain ) {
-						$acc['word_count'] += count( preg_split( '/\s+/', $plain ) );
-					}
+					$acc['word_count'] += self::count_words( $s[ $tk ] );
 				}
 			}
 
@@ -561,10 +558,98 @@ class EMCP_Tools_Page_Snapshot {
 				++$acc['link_count'];
 			}
 
+			// Atomic (Elementor 4.0) widgets store their content as $$type-wrapped
+			// props under different keys than classic widgets, so the classic
+			// branches above miss them entirely (issue #91). Handle them here.
+			switch ( $wt ) {
+				case 'e-heading':
+					$atext = self::atomic_scalar( $s['title'] ?? null );
+					if ( '' !== $atext ) {
+						$atag              = self::atomic_scalar( $s['tag'] ?? null );
+						$acc['headings'][] = array(
+							'tag'        => ( '' !== $atag ) ? $atag : 'h2',
+							'text'       => self::snippet( trim( (string) preg_replace( '/<[^>]*>/', '', $atext ) ), 120 ),
+							'element_id' => isset( $el['id'] ) ? (string) $el['id'] : '',
+						);
+						$acc['word_count'] += self::count_words( $atext );
+					}
+					break;
+				case 'e-paragraph':
+					$acc['word_count'] += self::count_words( self::atomic_scalar( $s['paragraph'] ?? null ) );
+					break;
+				case 'e-button':
+					++$acc['button_count'];
+					$acc['word_count'] += self::count_words( self::atomic_scalar( $s['text'] ?? null ) );
+					break;
+				case 'e-image':
+					if ( null !== self::atomic_image( $s['image'] ?? null ) ) {
+						++$acc['image_count'];
+						if ( '' === self::atomic_scalar( $s['alt'] ?? null ) ) {
+							++$acc['images_missing_alt'];
+						}
+					}
+					break;
+			}
+			// Atomic link props are $$type-wrapped, so the classic check above
+			// (which expects settings.link.url) never fires for them.
+			if ( isset( $s['link']['$$type'] ) && '' !== self::atomic_scalar( $s['link'] ) ) {
+				++$acc['link_count'];
+			}
+
 			if ( ! empty( $el['elements'] ) && is_array( $el['elements'] ) ) {
 				self::walk_content( $el['elements'], $acc );
 			}
 		}
+	}
+
+	/**
+	 * Counts words in a text/HTML fragment (tags stripped, whitespace collapsed).
+	 *
+	 * @param string $text Text or HTML.
+	 * @return int Word count.
+	 */
+	private static function count_words( string $text ): int {
+		$plain = trim( (string) preg_replace( '/\s+/', ' ', (string) preg_replace( '/<[^>]*>/', ' ', $text ) ) );
+		if ( '' === $plain ) {
+			return 0;
+		}
+		return count( preg_split( '/\s+/', $plain ) );
+	}
+
+	/**
+	 * Unwraps an atomic ($$type-wrapped) prop to a scalar string. Returns a plain
+	 * string as-is; returns '' for anything that doesn't resolve to a string.
+	 *
+	 * @param mixed $prop Atomic prop or plain value.
+	 * @return string
+	 */
+	private static function atomic_scalar( $prop ): string {
+		if ( is_string( $prop ) ) {
+			return $prop;
+		}
+		if ( is_array( $prop ) && isset( $prop['$$type'] ) && class_exists( 'EMCP_Tools_Atomic_Props' ) ) {
+			$value = EMCP_Tools_Atomic_Props::unwrap( $prop );
+			return is_string( $value ) ? $value : '';
+		}
+		return '';
+	}
+
+	/**
+	 * Unwraps an atomic image prop to { id, url }, or null when it carries no
+	 * image reference.
+	 *
+	 * @param mixed $prop Atomic image prop.
+	 * @return array{id:mixed,url:mixed}|null
+	 */
+	private static function atomic_image( $prop ): ?array {
+		if ( ! is_array( $prop ) || ! isset( $prop['$$type'] ) || ! class_exists( 'EMCP_Tools_Atomic_Props' ) ) {
+			return null;
+		}
+		$image = EMCP_Tools_Atomic_Props::unwrap( $prop );
+		if ( is_array( $image ) && ( ! empty( $image['id'] ) || ! empty( $image['url'] ) ) ) {
+			return $image;
+		}
+		return null;
 	}
 
 	/**
