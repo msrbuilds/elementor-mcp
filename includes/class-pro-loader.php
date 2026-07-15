@@ -53,6 +53,7 @@ final class EMCP_Tools_Pro_Loader {
 		'includes/ai-chat/class-gutenberg-editor.php',
 		'includes/admin/class-pro-prompts.php',
 		'includes/admin/class-pro-templates.php',
+		'includes/admin/class-pro-usage.php',
 		'includes/admin/class-pro-ajax.php',
 		'includes/admin/class-pro-skills.php',
 	);
