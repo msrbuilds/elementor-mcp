@@ -170,7 +170,8 @@ The plugin enforces WordPress capability checks on every tool. Read operations r
 == Changelog ==
 
 = 3.4.2 =
-Template & prompt usage insights.
+WooCommerce integration + template & prompt usage insights.
+* Added: WooCommerce Pro integration — two tools (woo-read / woo-write) over the full wc/v3 surface (~120 operations): products, variations, orders, refunds, customers, coupons, reports, settings, shipping, taxes, webhooks, system status. Runs through WooCommerce's own REST (HPOS-safe). Reads on by default; writes off by default; refunds/deletes/batch require confirm:true. Registers only when WooCommerce is active.
 * Added: "Used N times" usage counts on Pro template cards, plus a "Your usage" widget on the Dashboard (templates you've applied and prompts you've copied on this site + the globally-popular templates). Lightweight, non-blocking telemetry (license + site only; no page content, customer data, or AI conversations are ever sent).
 
 = 3.4.1 =

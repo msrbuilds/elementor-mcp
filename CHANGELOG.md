@@ -4,9 +4,10 @@ All notable changes to MCP Tools for Elementor are documented in this file.
 
 ## [3.4.2]
 
-> Template & prompt usage insights.
+> WooCommerce integration + template/prompt usage insights.
 
 ### Added
+- **WooCommerce Pro integration.** Two dispatcher tools — `woo-read` / `woo-write` — expose the **full WooCommerce `wc/v3` surface** (~120 operations): products (+ variations, categories, tags, attributes, reviews), orders (+ notes, refunds), customers, coupons, reports, settings, payment gateways, shipping, taxes, webhooks, and system status. Operations run through WooCommerce's own REST controllers (HPOS-safe, no privilege escalation). Reads are enabled by default; **writes ship disabled-by-default**, and money/irreversible operations (refunds, deletes, batch) additionally require `confirm:true`. Registers only when WooCommerce is active; enable **WooCommerce Write** under EMCP Tools → Tools → Plugins.
 - **Usage counts on the Pro library.** Each template card in the Pro Templates library now shows how many times it has been applied across all sites ("Used N times"), so you can see what's popular. The **Dashboard** gains a **Your usage** widget — templates you've applied and prompts you've copied on this site, plus the globally-popular templates. Powered by lightweight, best-effort telemetry to emcptools.com (license + site only, non-blocking); no page content, customer data, or AI conversations are ever sent.
 
 ## [3.4.1]
