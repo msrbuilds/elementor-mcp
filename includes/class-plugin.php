@@ -282,7 +282,10 @@ class EMCP_Tools_Plugin {
 			$tools,                                                   // tools
 			array(),                                                  // resources
 			array(),                                                  // prompts
-			null                                                      // transport_permission_callback
+			// OAuth bearer auth when enabled (falls through to App Password); else adapter default.
+			( class_exists( 'EMCP_Tools_OAuth_Server' ) && EMCP_Tools_OAuth_Server::is_enabled() )
+				? array( 'EMCP_Tools_OAuth_Bearer', 'permission_callback' )
+				: null                                                // transport_permission_callback
 		);
 	}
 

@@ -197,8 +197,95 @@ $emcp_tools_server_enabled = class_exists( 'EMCP_Tools_Plugin' )
 					</p>
 				</div>
 
+				<?php // Card C: OAuth sign-in. ?>
+				<?php $emcp_oauth_available = class_exists( 'EMCP_Tools_OAuth_Server' ) && EMCP_Tools_OAuth_Server::is_available(); ?>
+				<div class="emcp-conn-card">
+					<h2 class="emcp-conn-card-title"><?php esc_html_e( 'OAuth sign-in for AI clients', 'emcp-tools' ); ?></h2>
+
+					<label class="emcp-switch emcp-conn-toggle">
+						<input
+							type="checkbox"
+							name="<?php echo esc_attr( EMCP_Tools_OAuth_Server::OPTION_ENABLED ); ?>"
+							value="1"
+							<?php checked( class_exists( 'EMCP_Tools_OAuth_Server' ) && EMCP_Tools_OAuth_Server::option_enabled() ); ?>
+							<?php disabled( ! $emcp_oauth_available ); ?>
+						/>
+						<span class="elementor-mcp-toggle" aria-hidden="true"><span class="elementor-mcp-toggle-track"></span></span>
+						<span class="emcp-switch-label"><?php esc_html_e( 'Let clients connect by signing in (OAuth) — no password to copy', 'emcp-tools' ); ?></span>
+					</label>
+
+					<?php if ( ! $emcp_oauth_available ) : ?>
+						<p class="elementor-mcp-activate-note elementor-mcp-activate-note--security">
+							<?php esc_html_e( 'OAuth requires HTTPS. This site is not served over HTTPS, so OAuth sign-in is unavailable — use an Application Password below.', 'emcp-tools' ); ?>
+						</p>
+					<?php endif; ?>
+					<p class="elementor-mcp-activate-note">
+						<?php esc_html_e( 'Claude and other MCP clients connect through a standard authorization flow: they open a page where you approve access from your WordPress login. Administrators only; Application Passwords keep working alongside it.', 'emcp-tools' ); ?>
+					</p>
+				</div>
+
 			</div>
 		</form>
+
+		<?php // ===== OAuth sign-in details ===== ?>
+		<?php if ( class_exists( 'EMCP_Tools_OAuth_Server' ) && EMCP_Tools_OAuth_Server::is_enabled() ) : ?>
+			<?php $emcp_oauth_url = esc_url_raw( rest_url( 'mcp/emcp-tools-server' ) ); ?>
+			<div class="elementor-mcp-section">
+				<h2><?php esc_html_e( 'Sign in with OAuth', 'emcp-tools' ); ?></h2>
+				<p class="description"><?php esc_html_e( 'Add this site as a connector in your AI client, then approve the connection from your WordPress login — no Application Password to copy.', 'emcp-tools' ); ?></p>
+
+				<div class="elementor-mcp-cred-field" style="max-width:640px;">
+					<label for="emcp-oauth-url-copy"><?php esc_html_e( 'Connector URL (MCP server)', 'emcp-tools' ); ?></label>
+					<div class="elementor-mcp-auth-result">
+						<code id="emcp-oauth-url"><?php echo esc_html( $emcp_oauth_url ); ?></code>
+						<button type="button" class="button elementor-mcp-copy-btn" data-target="emcp-oauth-url-copy"><?php esc_html_e( 'Copy', 'emcp-tools' ); ?></button>
+						<textarea id="emcp-oauth-url-copy" class="elementor-mcp-copy-source"><?php echo esc_textarea( $emcp_oauth_url ); ?></textarea>
+					</div>
+				</div>
+
+				<details class="elementor-mcp-cred-advanced" style="margin-top:12px;">
+					<summary><?php esc_html_e( 'Per-client steps', 'emcp-tools' ); ?></summary>
+					<ul style="margin:10px 0 0 18px;list-style:disc;">
+						<li><strong>Claude</strong> — <?php esc_html_e( 'Settings → Connectors → Add custom connector → paste the URL → Connect → approve the sign-in.', 'emcp-tools' ); ?></li>
+						<li><strong>Cursor / VS Code</strong> — <?php esc_html_e( 'Add an MCP server of type "http" with the URL above; complete the browser sign-in when prompted.', 'emcp-tools' ); ?></li>
+					</ul>
+				</details>
+
+				<?php
+				$emcp_oauth_clients = class_exists( 'EMCP_Tools_OAuth_Store' ) ? EMCP_Tools_OAuth_Store::list_authorized_clients() : array();
+				if ( ! empty( $emcp_oauth_clients ) ) :
+					?>
+					<h3 style="margin-top:22px;"><?php esc_html_e( 'Authorized clients', 'emcp-tools' ); ?></h3>
+					<table class="widefat striped" style="max-width:760px;">
+						<thead>
+							<tr>
+								<th><?php esc_html_e( 'Client', 'emcp-tools' ); ?></th>
+								<th><?php esc_html_e( 'Connected as', 'emcp-tools' ); ?></th>
+								<th><?php esc_html_e( 'Active tokens', 'emcp-tools' ); ?></th>
+								<th></th>
+							</tr>
+						</thead>
+						<tbody>
+						<?php
+						foreach ( $emcp_oauth_clients as $emcp_oc ) :
+							$emcp_oc_user = get_userdata( $emcp_oc['user_id'] );
+							$emcp_revoke  = wp_nonce_url(
+								admin_url( 'admin-post.php?action=' . EMCP_Tools_Admin::ACTION_REVOKE_OAUTH . '&client=' . rawurlencode( $emcp_oc['client_id'] ) ),
+								EMCP_Tools_Admin::ACTION_REVOKE_OAUTH . '_' . $emcp_oc['client_id']
+							);
+							?>
+							<tr>
+								<td><?php echo esc_html( $emcp_oc['client_name'] ); ?></td>
+								<td><?php echo esc_html( $emcp_oc_user ? $emcp_oc_user->user_login : '#' . (int) $emcp_oc['user_id'] ); ?></td>
+								<td><?php echo (int) $emcp_oc['active_tokens']; ?></td>
+								<td><a href="<?php echo esc_url( $emcp_revoke ); ?>" class="button button-small"><?php esc_html_e( 'Revoke', 'emcp-tools' ); ?></a></td>
+							</tr>
+						<?php endforeach; ?>
+						</tbody>
+					</table>
+				<?php endif; ?>
+			</div>
+		<?php endif; ?>
 
 		<!-- HTTP Connection -->
 		<div class="elementor-mcp-section">

@@ -107,6 +107,14 @@ class EMCP_Tools_Bootstrap {
 		require_once EMCP_TOOLS_DIR . 'includes/class-block-tree.php';
 		require_once EMCP_TOOLS_DIR . 'includes/abilities/class-gutenberg-abilities.php';
 		require_once EMCP_TOOLS_DIR . 'includes/class-page-snapshot.php';
+		require_once EMCP_TOOLS_DIR . 'includes/oauth/class-oauth-util.php';
+		require_once EMCP_TOOLS_DIR . 'includes/oauth/class-oauth-store.php';
+		require_once EMCP_TOOLS_DIR . 'includes/oauth/class-oauth-metadata.php';
+		require_once EMCP_TOOLS_DIR . 'includes/oauth/class-oauth-clients.php';
+		require_once EMCP_TOOLS_DIR . 'includes/oauth/class-oauth-authorize.php';
+		require_once EMCP_TOOLS_DIR . 'includes/oauth/class-oauth-token.php';
+		require_once EMCP_TOOLS_DIR . 'includes/oauth/class-oauth-bearer.php';
+		require_once EMCP_TOOLS_DIR . 'includes/oauth/class-oauth-server.php';
 		require_once EMCP_TOOLS_DIR . 'includes/abilities/class-snapshot-abilities.php';
 		require_once EMCP_TOOLS_DIR . 'includes/class-change-log.php';
 		require_once EMCP_TOOLS_DIR . 'includes/abilities/class-transaction-abilities.php';
@@ -252,6 +260,8 @@ class EMCP_Tools_Bootstrap {
 	private static function wire_hooks(): void {
 		// Content search index: install-on-init + incremental re-index on save/delete.
 		EMCP_Tools_Search_Index::init();
+		// OAuth sign-in: install storage on init (routes wired in later phases).
+		EMCP_Tools_OAuth_Server::init();
 		// Content mirror: auto-export-on-save (gated by its option) + delete cleanup.
 		EMCP_Tools_Content_Mirror::init();
 		add_action( 'init', array( 'EMCP_Tools_Kit_Backup_Store', 'register_post_type' ) );

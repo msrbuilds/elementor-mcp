@@ -232,6 +232,7 @@ class EMCP_Tools_Admin {
 		add_action( 'admin_post_emcp_tools_download_mcpb', array( $this, 'handle_download_mcpb' ) );
 		add_action( 'admin_post_' . self::ACTION_DISMISS_PROMPTS_NOTICE, array( $this, 'handle_dismiss_prompts_notice' ) );
 		add_action( 'admin_post_' . self::ACTION_ROLLBACK_CHANGE, array( $this, 'handle_rollback_change' ) );
+		add_action( 'admin_post_' . self::ACTION_REVOKE_OAUTH, array( $this, 'handle_revoke_oauth_client' ) );
 	}
 
 	/** Nonce action for the .mcpb bundle download. */
@@ -242,6 +243,13 @@ class EMCP_Tools_Admin {
 
 	/** admin-post action that rolls back a change from the History tab. */
 	const ACTION_ROLLBACK_CHANGE = 'emcp_tools_rollback_change';
+
+	/**
+	 * admin-post action: revoke all tokens for one OAuth client.
+	 *
+	 * @var string
+	 */
+	const ACTION_REVOKE_OAUTH = 'emcp_tools_revoke_oauth_client';
 
 	/**
 	 * Nonce-protected URL that rolls back one change-ledger entry.
@@ -276,6 +284,25 @@ class EMCP_Tools_Admin {
 			: 'ok';
 
 		wp_safe_redirect( admin_url( 'admin.php?page=' . self::PAGE_SLUG . '-history&rollback=' . $status ) );
+		exit;
+	}
+
+	/**
+	 * Revoke every token issued to an OAuth client (disconnects it).
+	 */
+	public function handle_revoke_oauth_client(): void {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_die( esc_html__( 'You do not have permission to do that.', 'emcp-tools' ), '', array( 'response' => 403 ) );
+		}
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- nonce verified just below against the per-client action.
+		$client_id = isset( $_GET['client'] ) ? sanitize_text_field( wp_unslash( $_GET['client'] ) ) : '';
+		check_admin_referer( self::ACTION_REVOKE_OAUTH . '_' . $client_id );
+
+		if ( '' !== $client_id && class_exists( 'EMCP_Tools_OAuth_Store' ) ) {
+			EMCP_Tools_OAuth_Store::revoke_client( $client_id );
+		}
+
+		wp_safe_redirect( admin_url( 'admin.php?page=' . self::PAGE_SLUG . '-connection&oauth_revoked=1#emcp-conn-main' ) );
 		exit;
 	}
 
@@ -863,6 +890,21 @@ class EMCP_Tools_Admin {
 			array(
 				'type'              => 'string',
 				'default'           => '1',
+				'sanitize_callback' => static function ( $value ) {
+					return '1' === (string) $value ? '1' : '0';
+				},
+			)
+		);
+
+		// OAuth sign-in for MCP clients (Connection tab). No stored default — the
+		// effective default is "on when HTTPS", enforced by
+		// EMCP_Tools_OAuth_Server (is_available). The form posts a hidden 0 +
+		// checkbox 1 so an unchecked box saves '0'.
+		register_setting(
+			self::SETTINGS_GROUP_SERVER,
+			EMCP_Tools_OAuth_Server::OPTION_ENABLED,
+			array(
+				'type'              => 'string',
 				'sanitize_callback' => static function ( $value ) {
 					return '1' === (string) $value ? '1' : '0';
 				},

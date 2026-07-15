@@ -28,6 +28,9 @@
         <testsuite name="Regression">
             <directory>pro/tests/unit/regression</directory>
         </testsuite>
+        <testsuite name="OAuth">
+            <directory>pro/tests/unit/oauth</directory>
+        </testsuite>
         <testsuite name="Dispatcher">
             <directory>pro/tests/unit/dispatcher</directory>
         </testsuite>
