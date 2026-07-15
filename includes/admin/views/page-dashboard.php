@@ -173,6 +173,56 @@ $emcp_videos = array(
 		<?php endforeach; ?>
 	</section>
 
+	<?php
+	// Usage widget (Pro): this site's activity + the globally-popular templates.
+	if ( class_exists( 'EMCP_Tools_Pro_Usage' ) ) :
+		$emcp_usage_local = EMCP_Tools_Pro_Usage::local_summary();
+		// Cached-only — never block the dashboard on a network fetch. The
+		// templates page warms this transient when a Pro user opens it.
+		$emcp_usage_counts = EMCP_Tools_Pro_Usage::cached_counts();
+		// Top 5 templates by global usage.
+		$emcp_pop = array();
+		foreach ( $emcp_usage_counts as $emcp_k => $emcp_n ) {
+			if ( 0 === strpos( $emcp_k, 'template:' ) ) {
+				$emcp_pop[ substr( $emcp_k, 9 ) ] = (int) $emcp_n;
+			}
+		}
+		arsort( $emcp_pop );
+		$emcp_pop = array_slice( $emcp_pop, 0, 5, true );
+		?>
+		<section class="emcp-dash-section" aria-labelledby="emcp-dash-usage-h">
+			<div class="emcp-dash-section-head">
+				<h2 id="emcp-dash-usage-h" class="emcp-dash-section-title"><?php esc_html_e( 'Your usage', 'emcp-tools' ); ?></h2>
+				<p class="emcp-dash-section-sub"><?php esc_html_e( 'What you have applied on this site, plus what is popular across everyone.', 'emcp-tools' ); ?></p>
+			</div>
+			<div class="emcp-dash-usage">
+				<div class="emcp-dash-usage-kpis">
+					<div class="emcp-dash-usage-kpi">
+						<span class="emcp-dash-usage-num"><?php echo esc_html( number_format_i18n( $emcp_usage_local['templates'] ) ); ?></span>
+						<span class="emcp-dash-usage-lbl"><?php esc_html_e( 'templates applied', 'emcp-tools' ); ?></span>
+					</div>
+					<div class="emcp-dash-usage-kpi">
+						<span class="emcp-dash-usage-num"><?php echo esc_html( number_format_i18n( $emcp_usage_local['prompts'] ) ); ?></span>
+						<span class="emcp-dash-usage-lbl"><?php esc_html_e( 'prompts copied', 'emcp-tools' ); ?></span>
+					</div>
+				</div>
+				<?php if ( ! empty( $emcp_pop ) ) : ?>
+					<div class="emcp-dash-usage-pop">
+						<div class="emcp-dash-usage-pop-h"><?php esc_html_e( 'Popular templates', 'emcp-tools' ); ?></div>
+						<ul class="emcp-dash-usage-list">
+							<?php foreach ( $emcp_pop as $emcp_slug => $emcp_used ) : ?>
+								<li>
+									<span class="emcp-dash-usage-slug"><?php echo esc_html( $emcp_slug ); ?></span>
+									<span class="emcp-dash-usage-count"><?php echo esc_html( sprintf( /* translators: %s: number of uses */ _n( '%s use', '%s uses', $emcp_used, 'emcp-tools' ), number_format_i18n( $emcp_used ) ) ); ?></span>
+								</li>
+							<?php endforeach; ?>
+						</ul>
+					</div>
+				<?php endif; ?>
+			</div>
+		</section>
+	<?php endif; ?>
+
 	<!-- Feature sneak peek -->
 	<section class="emcp-dash-section" aria-labelledby="emcp-dash-features-h">
 		<div class="emcp-dash-section-head">

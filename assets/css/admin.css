@@ -4201,3 +4201,15 @@ body[data-emcp-auth="app-password"] [data-authfor="oauth"] { display: none; }
 .emcp-oauth-desc { margin: 0 0 8px; }
 .emcp-oauth-path-label { color: #9497a8; font-size: 12.5px; }
 .emcp-oauth-deeplink { margin-bottom: 6px; }
+/* Dashboard usage widget (Pro). Flat, no gradients. */
+.emcp-dash-usage { display: flex; flex-wrap: wrap; gap: 28px; align-items: flex-start; }
+.emcp-dash-usage-kpis { display: flex; gap: 28px; }
+.emcp-dash-usage-kpi { display: flex; flex-direction: column; }
+.emcp-dash-usage-num { font-size: 30px; font-weight: 700; line-height: 1.1; color: #1f2430; }
+.emcp-dash-usage-lbl { font-size: 12.5px; color: #6b7280; margin-top: 2px; }
+.emcp-dash-usage-pop { min-width: 240px; }
+.emcp-dash-usage-pop-h { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; color: #6b7280; margin-bottom: 8px; }
+.emcp-dash-usage-list { margin: 0; padding: 0; list-style: none; }
+.emcp-dash-usage-list li { display: flex; justify-content: space-between; gap: 12px; padding: 5px 0; border-bottom: 1px solid #eef0f4; font-size: 13px; }
+.emcp-dash-usage-slug { color: #374151; }
+.emcp-dash-usage-count { color: #4f46e5; font-variant-numeric: tabular-nums; white-space: nowrap; }
