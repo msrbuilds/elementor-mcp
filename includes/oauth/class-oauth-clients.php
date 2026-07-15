@@ -116,14 +116,21 @@ class EMCP_Tools_OAuth_Clients {
 	 */
 	public static function is_allowed_redirect_uri( string $uri ): bool {
 		$p = parse_url( $uri );
-		if ( ! is_array( $p ) || empty( $p['scheme'] ) || empty( $p['host'] ) || isset( $p['fragment'] ) ) {
+		if ( ! is_array( $p ) || empty( $p['scheme'] ) || isset( $p['fragment'] ) ) {
 			return false;
 		}
-		$scheme = strtolower( $p['scheme'] );
-		$host   = strtolower( trim( $p['host'], '[]' ) );
-		if ( 'https' === $scheme ) {
-			return true;
+		$scheme = strtolower( (string) $p['scheme'] );
+		// Must be a syntactically valid URI scheme (RFC 3986).
+		if ( ! preg_match( '/^[a-z][a-z0-9+.\-]*$/', $scheme ) ) {
+			return false;
 		}
-		return 'http' === $scheme && in_array( $host, array( '127.0.0.1', '::1', 'localhost' ), true );
+		// Plaintext http is allowed only for loopback (RFC 8252 §7.3).
+		if ( 'http' === $scheme ) {
+			$host = isset( $p['host'] ) ? strtolower( trim( $p['host'], '[]' ) ) : '';
+			return in_array( $host, array( '127.0.0.1', '::1', 'localhost' ), true );
+		}
+		// https and private-use / custom app schemes (RFC 8252 §7.1) are allowed —
+		// native MCP clients (Claude Desktop, VS Code, Cursor, …) register these.
+		return true;
 	}
 }
