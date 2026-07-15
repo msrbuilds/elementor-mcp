@@ -194,6 +194,13 @@ class EMCP_Tools_Ability_Registrar {
 			$this->ability_names = array_merge( $this->ability_names, $acf->get_ability_names() );
 		}
 
+		// WooCommerce abilities (Pro) — only when WooCommerce is active.
+		if ( class_exists( 'EMCP_Tools_Woo_Integration' ) && EMCP_Tools_Woo_Integration::woo_active() ) {
+			$woo = new EMCP_Tools_Woo_Integration();
+			$woo->register();
+			$this->ability_names = array_merge( $this->ability_names, $woo->get_ability_names() );
+		}
+
 		// Themes-tab integrations — the framework-agnostic active-theme pack always,
 		// per-framework packs only when that framework is the active theme.
 		$theme_integrations = array();

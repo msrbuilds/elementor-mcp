@@ -373,7 +373,7 @@ class EMCP_Tools_Admin {
 	 *
 	 * @since 1.8.0
 	 */
-	const DEFAULTS_VERSION = 18;
+	const DEFAULTS_VERSION = 19;
 
 	/**
 	 * SEO/A11y Pro MCP tool slugs that ship disabled-by-default (v2 defaults).
@@ -535,6 +535,19 @@ class EMCP_Tools_Admin {
 		return array(
 			'emcp-tools/acf-read',
 			'emcp-tools/acf-write',
+		);
+	}
+
+	/**
+	 * The WooCommerce integration's dispatcher slugs (drift-guard exclusion).
+	 *
+	 * @since 3.4.2
+	 * @return string[]
+	 */
+	public static function woo_tool_slugs(): array {
+		return array(
+			'emcp-tools/woo-read',
+			'emcp-tools/woo-write',
 		);
 	}
 
@@ -708,6 +721,12 @@ class EMCP_Tools_Admin {
 		// (command execution surface). All four are off until the admin opts in.
 		if ( $applied < 18 ) {
 			$add = array_merge( $add, EMCP_Tools_WPCLI_Abilities::slugs() );
+		}
+
+		// v19 — WooCommerce write dispatcher ships disabled-by-default (money +
+		// PII surface). woo-read stays enabled.
+		if ( $applied < 19 ) {
+			$add[] = 'emcp-tools/woo-write';
 		}
 
 		$merged = array_values( array_unique( array_merge( $existing, $add ) ) );
@@ -1974,6 +1993,17 @@ class EMCP_Tools_Admin {
 	}
 
 	/**
+	 * Whether the WooCommerce integration's tools are available (WooCommerce
+	 * installed and active).
+	 *
+	 * @since 3.4.2
+	 * @return bool
+	 */
+	public static function woo_available(): bool {
+		return class_exists( 'WooCommerce' ) || function_exists( 'WC' );
+	}
+
+	/**
 	 * Whether the Spectra Blocks integration's tools are available (the Spectra
 	 * plugin — Ultimate Addons for Gutenberg — is installed and active).
 	 *
@@ -2070,6 +2100,7 @@ class EMCP_Tools_Admin {
 			$emcp_conditional = array_merge(
 				self::themer_php_tool_slugs(),
 				self::acf_tool_slugs(),
+				self::woo_tool_slugs(),
 				self::theme_tool_slugs(),
 				array( 'emcp-tools/resize-media' )
 			);
@@ -2491,6 +2522,29 @@ class EMCP_Tools_Admin {
 							'create-taxonomy',
 							'update-taxonomy',
 						),
+					),
+				),
+			),
+			'wp_woo'           => array(
+				'platform' => 'plugins',
+				'label'    => __( 'WooCommerce', 'emcp-tools' ),
+				'note'     => __( 'WooCommerce is exposed as two tools — one Read, one Write — over the full wc/v3 API (~120 operations). The AI calls a tool with an operation name; toggle a tool to allow or block all of its operations at once. Money/irreversible operations (refunds, deletes, batch) additionally require confirm:true. Requires WooCommerce active.', 'emcp-tools' ),
+				'tools'    => array(
+					'emcp-tools/woo-read'  => array(
+						'label'            => __( 'WooCommerce Read', 'emcp-tools' ),
+						'description'      => __( 'Read products, variations, orders, refunds, customers, coupons, reports, settings, shipping, taxes, webhooks, and system status. Call the tool with no operation to list all read operations.', 'emcp-tools' ),
+						'badges'           => array( 'read-only' ),
+						'operations'       => array( 'list-products', 'get-order', 'list-orders', 'list-customers', 'list-coupons', 'report-sales', 'get-settings', 'list-webhooks', 'system-status', '… ~58 read operations' ),
+						'available'        => self::woo_available(),
+						'unavailable_note' => __( 'Install & activate WooCommerce to enable this tool.', 'emcp-tools' ),
+					),
+					'emcp-tools/woo-write' => array(
+						'label'            => __( 'WooCommerce Write', 'emcp-tools' ),
+						'description'      => __( 'Create, update, and delete products, orders, refunds, customers, coupons, settings, shipping, taxes, and webhooks. Refunds/deletes/batch require confirm:true. Call the tool with no operation to list all write operations.', 'emcp-tools' ),
+						'badges'           => array( 'destructive' ),
+						'operations'       => array( 'create-product', 'update-order', 'create-refund', 'create-customer', 'delete-order', 'update-setting', '… ~59 write operations' ),
+						'available'        => self::woo_available(),
+						'unavailable_note' => __( 'Install & activate WooCommerce to enable this tool.', 'emcp-tools' ),
 					),
 				),
 			),
