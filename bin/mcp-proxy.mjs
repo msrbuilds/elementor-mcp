@@ -90,6 +90,17 @@ function normalizeSite(cfg) {
   };
 }
 
+/**
+ * The site's base path, for WordPress installs that live in a subdirectory
+ * (e.g. `https://example.com/blog` → `/blog`). Root installs → `''`.
+ *
+ * @param {Object} site A normalized site object (has `.parsed`, a URL instance).
+ * @returns {string}
+ */
+export function sitePath(site) {
+  return site.parsed.pathname.replace(/\/$/, '');
+}
+
 /** The two injected site-switching tools. */
 export const META_TOOLS = [
   {
@@ -201,7 +212,7 @@ function runProxy() {
       const options = {
         hostname: site.parsed.hostname,
         port: site.parsed.port || (isHttps ? 443 : 80),
-        path: '/wp-json/', method: 'HEAD', headers: { Accept: 'application/json' },
+        path: `${sitePath(site)}/wp-json/`, method: 'HEAD', headers: { Accept: 'application/json' },
       };
       if (isHttps && site.isLocalDev) options.rejectUnauthorized = false;
       const { statusCode } = await doHttpRequest(site, options, '');
@@ -210,7 +221,8 @@ function runProxy() {
   }
 
   function mcpPath(alias) {
-    return state.permalinks[alias] ? '/wp-json' + MCP_REST_PATH : '/?rest_route=' + encodeURIComponent(MCP_REST_PATH);
+    const basePath = sitePath(state.sites[alias]);
+    return state.permalinks[alias] ? `${basePath}/wp-json${MCP_REST_PATH}` : `${basePath}/?rest_route=${encodeURIComponent(MCP_REST_PATH)}`;
   }
 
   async function sendToSite(alias, message) {
@@ -279,7 +291,7 @@ function runProxy() {
 
       const trimmed = body.trim();
       if (!trimmed) return;
-      let output = trimmed;
+      let output;
       try {
         const parsed = JSON.parse(trimmed);
         if (method === 'initialize' && MCP_PROTOCOL_VERSION && parsed.result?.protocolVersion) {
@@ -287,7 +299,16 @@ function runProxy() {
         }
         if (method === 'tools/list') injectMetaTools(parsed, siteCount);
         output = JSON.stringify(parsed);
-      } catch { /* not JSON — forward as-is */ }
+      } catch {
+        // Never forward non-JSON upstream bodies to stdout — that corrupts the
+        // stdio JSON-RPC framing and kills the connection.
+        logStderr(`Non-JSON upstream response for id=${id}: ${trimmed.slice(0, 2000)}`);
+        output = JSON.stringify({
+          jsonrpc: '2.0',
+          id,
+          error: { code: -32603, message: 'Upstream returned a non-JSON response', data: { body: trimmed.slice(0, 1000) } },
+        });
+      }
       process.stdout.write(output + '\n');
     } catch (err) {
       logStderr(`← error: ${err.message}`);

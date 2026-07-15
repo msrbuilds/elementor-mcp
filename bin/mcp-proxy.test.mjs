@@ -6,7 +6,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
 process.env.EMCP_PROXY_NO_MAIN = '1';
-const { loadSites, META_TOOLS, isMetaCall, injectMetaTools, handleMetaCall } = await import('./mcp-proxy.mjs');
+const { loadSites, META_TOOLS, isMetaCall, injectMetaTools, handleMetaCall, sitePath } = await import('./mcp-proxy.mjs');
 
 test('loadSites: single-site env → one default site', () => {
   const { sites, defaultSite } = loadSites({
@@ -60,6 +60,21 @@ test('injectMetaTools: appends only when >1 site', () => {
   const names = multi.result.tools.map((t) => t.name);
   assert.ok(names.includes('emcp_use_site'));
   assert.equal(multi.result.tools.length, 3);
+});
+
+test('sitePath: root install → empty string', () => {
+  const { sites } = loadSites({ WP_URL: 'https://a.test', WP_USERNAME: 'u', WP_APP_PASSWORD: 'p' });
+  assert.equal(sitePath(sites.default), '');
+});
+
+test('sitePath: subdirectory install → base path without trailing slash', () => {
+  const { sites } = loadSites({ WP_URL: 'https://a.test/claude2wp', WP_USERNAME: 'u', WP_APP_PASSWORD: 'p' });
+  assert.equal(sitePath(sites.default), '/claude2wp');
+});
+
+test('sitePath: nested subdirectory install', () => {
+  const { sites } = loadSites({ WP_URL: 'https://a.test/sites/client-a', WP_USERNAME: 'u', WP_APP_PASSWORD: 'p' });
+  assert.equal(sitePath(sites.default), '/sites/client-a');
 });
 
 test('handleMetaCall: list + switch', () => {
