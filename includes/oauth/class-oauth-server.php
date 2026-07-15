@@ -50,8 +50,10 @@ class EMCP_Tools_OAuth_Server {
 		EMCP_Tools_OAuth_Metadata::init();
 		// REST routes for the OAuth namespace (register / authorize / token …).
 		add_action( 'rest_api_init', array( 'EMCP_Tools_OAuth_Clients', 'register_routes' ) );
-		add_action( 'rest_api_init', array( 'EMCP_Tools_OAuth_Authorize', 'register_routes' ) );
 		add_action( 'rest_api_init', array( 'EMCP_Tools_OAuth_Token', 'register_routes' ) );
+		// The authorize + consent endpoint is served as a normal front-end
+		// request (not REST) so WordPress cookie auth works in the browser.
+		EMCP_Tools_OAuth_Authorize::init();
 		// Emit the WWW-Authenticate discovery challenge on unauthorized MCP responses.
 		add_filter( 'rest_post_dispatch', array( 'EMCP_Tools_OAuth_Bearer', 'maybe_challenge' ), 10, 3 );
 	}

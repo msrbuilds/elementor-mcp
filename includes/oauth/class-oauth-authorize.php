@@ -27,31 +27,70 @@ class EMCP_Tools_OAuth_Authorize {
 	const NONCE_ACTION = 'emcp_oauth_consent';
 
 	/**
-	 * Register the REST route (GET renders consent, POST records the decision).
+	 * The browser-facing authorize path. This is served as a normal front-end
+	 * request (NOT a REST route) so WordPress cookie auth applies — a REST
+	 * endpoint would require a nonce the client's browser navigation can't
+	 * provide, and cookie sessions would never be recognized.
 	 */
-	public static function register_routes(): void {
-		register_rest_route(
-			EMCP_Tools_OAuth_Server::REST_NAMESPACE,
-			'/authorize',
-			array(
-				'methods'             => array( 'GET', 'POST' ),
-				'callback'            => array( __CLASS__, 'handle' ),
-				'permission_callback' => '__return_true',
-			)
-		);
+	const PATH = '/emcp-oauth/authorize';
+
+	/**
+	 * Wire the root-level request interception for the authorize endpoint.
+	 */
+	public static function init(): void {
+		add_action( 'parse_request', array( __CLASS__, 'maybe_serve' ), 0 );
 	}
 
 	/**
-	 * Route dispatcher.
+	 * The absolute authorize endpoint URL (advertised in the AS metadata).
 	 *
-	 * @param WP_REST_Request $request Request.
+	 * @return string
 	 */
-	public static function handle( $request ) {
-		if ( 'POST' === $request->get_method() ) {
-			self::handle_post( $request );
-		} else {
-			self::handle_get( $request );
+	public static function endpoint_url(): string {
+		return home_url( self::PATH );
+	}
+
+	/**
+	 * Serve the authorize endpoint when the request path matches; no-op
+	 * otherwise. Dispatches GET (render consent) vs POST (record decision).
+	 *
+	 * @param WP $wp Current environment (unused).
+	 */
+	public static function maybe_serve( $wp = null ): void {
+		$uri  = isset( $_SERVER['REQUEST_URI'] ) ? (string) wp_unslash( $_SERVER['REQUEST_URI'] ) : '';
+		$path = (string) wp_parse_url( $uri, PHP_URL_PATH );
+		if ( '/' !== $path ) {
+			$path = rtrim( $path, '/' );
 		}
+		if ( self::PATH !== $path ) {
+			return;
+		}
+		if ( ! EMCP_Tools_OAuth_Server::is_enabled() ) {
+			self::error_page( __( 'OAuth sign-in is not enabled on this site.', 'emcp-tools' ) );
+		}
+
+		if ( 'POST' === strtoupper( (string) ( $_SERVER['REQUEST_METHOD'] ?? 'GET' ) ) ) {
+			self::handle_post();
+		} else {
+			self::handle_get();
+		}
+	}
+
+	/**
+	 * Read request params from a superglobal (unslashed, string values only).
+	 * Values are validated / escaped downstream.
+	 *
+	 * @param array $src $_GET or $_POST.
+	 * @return array<string,string>
+	 */
+	private static function request_params( array $src ): array {
+		$out = array();
+		foreach ( $src as $k => $v ) {
+			if ( is_string( $v ) ) {
+				$out[ (string) $k ] = (string) wp_unslash( $v );
+			}
+		}
+		return $out;
 	}
 
 	/**
@@ -67,11 +106,8 @@ class EMCP_Tools_OAuth_Authorize {
 	// GET — validate + login-gate + render consent
 	// ---------------------------------------------------------------------
 
-	/**
-	 * @param WP_REST_Request $request Request.
-	 */
-	private static function handle_get( $request ): void {
-		$params       = $request->get_query_params();
+	private static function handle_get(): void {
+		$params       = self::request_params( $_GET ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- public authorization endpoint; params validated below, no state mutation on GET.
 		$client_id    = (string) ( $params['client_id'] ?? '' );
 		$redirect_uri = (string) ( $params['redirect_uri'] ?? '' );
 		$client       = self::lookup_client( $client_id );
@@ -103,15 +139,12 @@ class EMCP_Tools_OAuth_Authorize {
 	// POST — record the approve/deny decision
 	// ---------------------------------------------------------------------
 
-	/**
-	 * @param WP_REST_Request $request Request.
-	 */
-	private static function handle_post( $request ): void {
+	private static function handle_post(): void {
 		if ( ! is_user_logged_in() || ! current_user_can( self::required_cap() ) ) {
 			self::error_page( __( 'You are not allowed to authorize this connection.', 'emcp-tools' ) );
 		}
 
-		$p     = $request->get_body_params();
+		$p     = self::request_params( $_POST ); // phpcs:ignore WordPress.Security.NonceVerification.Missing -- nonce verified immediately below.
 		$nonce = (string) ( $p['_emcp_oauth_nonce'] ?? '' );
 		if ( ! wp_verify_nonce( $nonce, self::NONCE_ACTION ) ) {
 			self::error_page( __( 'Security check failed. Please start the connection again.', 'emcp-tools' ) );
@@ -235,7 +268,7 @@ class EMCP_Tools_OAuth_Authorize {
 		}
 		$hidden .= '<input type="hidden" name="_emcp_oauth_nonce" value="' . esc_attr( $nonce ) . '" />';
 
-		$action = esc_url( EMCP_Tools_OAuth_Server::base_url() . '/authorize' );
+		$action = esc_url( self::endpoint_url() );
 
 		return '<!doctype html><html><head><meta charset="utf-8" />'
 			. '<meta name="viewport" content="width=device-width, initial-scale=1" />'

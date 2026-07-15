@@ -71,7 +71,7 @@ class EMCP_Tools_OAuth_Metadata {
 		$base = EMCP_Tools_OAuth_Server::base_url();
 		return array(
 			'issuer'                                => self::issuer(),
-			'authorization_endpoint'                => $base . '/authorize',
+			'authorization_endpoint'                => EMCP_Tools_OAuth_Authorize::endpoint_url(),
 			'token_endpoint'                        => $base . '/token',
 			'registration_endpoint'                 => $base . '/register',
 			'revocation_endpoint'                   => $base . '/revoke',
