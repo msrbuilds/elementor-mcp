@@ -4195,3 +4195,9 @@ body.emcp-modal-open { overflow: hidden; }
 body[data-emcp-auth="oauth"] [data-authfor="app-password"] { display: none; }
 body[data-emcp-auth="app-password"] [data-authfor="oauth"] { display: none; }
 @media (max-width: 600px) { .emcp-auth-methods { grid-template-columns: 1fr; } }
+/* OAuth per-client step layout */
+.emcp-oauth-step { margin: 16px 0 6px; font-size: 14px; color: #1e1f2b; }
+.emcp-oauth-step:first-child { margin-top: 0; }
+.emcp-oauth-desc { margin: 0 0 8px; }
+.emcp-oauth-path-label { color: #9497a8; font-size: 12.5px; }
+.emcp-oauth-deeplink { margin-bottom: 6px; }

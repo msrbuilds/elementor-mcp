@@ -1286,22 +1286,74 @@
 		return ( typeof emcpToolsAdmin !== 'undefined' && emcpToolsAdmin.oauthEnabled ) ? 'oauth' : 'app-password';
 	}
 
-	// OAuth setup for a client: the connect command (or connector URL) + a
-	// "sign in" note. No credentials — the browser sign-in supplies auth.
+	// --- OAuth setup rendering (no credentials — browser sign-in supplies auth) ---
+	function emcpFill( tpl, name, endpoint ) {
+		return String( tpl ).replace( /%NAME%/g, name ).replace( /%ENDPOINT%/g, endpoint );
+	}
+	function emcpStep( title, descHtml ) {
+		return '<p class="emcp-oauth-step"><strong>' + emcpEscapeHtml( title ) + '</strong></p>' +
+			( descHtml ? '<p class="description emcp-oauth-desc">' + descHtml + '</p>' : '' );
+	}
+	function emcpSigninText() {
+		return ( typeof emcpToolsAdmin !== 'undefined' && emcpToolsAdmin.oauthSignin ) ||
+			'The next time your AI client connects, your browser opens so you can authorize it. Approve to finish connecting.';
+	}
+	function emcpOAuthDeeplink( kind, name, endpoint, label ) {
+		var url = '';
+		if ( kind === 'cursor' ) {
+			url = 'cursor://anysphere.cursor-deeplink/mcp/install?name=' + encodeURIComponent( name ) +
+				'&config=' + btoa( JSON.stringify( { url: endpoint } ) );
+		} else if ( kind === 'claude-ai' ) {
+			url = 'https://claude.ai/customize/connectors?modal=add-custom-connector&connectorName=' +
+				encodeURIComponent( name ) + '&connectorUrl=' + encodeURIComponent( endpoint );
+		}
+		if ( ! url ) { return ''; }
+		return '<p><a class="button button-primary emcp-oauth-deeplink" href="' + emcpEscapeHtml( url ) + '">' +
+			emcpEscapeHtml( label ) + '</a></p>';
+	}
+
 	function emcpRenderOAuth( client ) {
 		var endpoint = ( window.emcpConn && window.emcpConn.endpoint ) || emcpToolsAdmin.mcpEndpoint;
+		var name = emcpServerName();
+		var o = client.oauth;
 		var out = '';
-		if ( client.oauth ) {
-			var cmd = String( client.oauth ).replace( /%NAME%/g, emcpServerName() ).replace( /%ENDPOINT%/g, endpoint );
-			out += emcpCopyBlock( 'a. Run this in your terminal', cmd );
-		} else {
+
+		if ( ! o || typeof o !== 'object' ) {
 			out += emcpCopyBlock( 'a. Add this site as an HTTP MCP server (paste the URL)', endpoint );
+			return out + emcpStep( 'b. Sign in', emcpEscapeHtml( emcpSigninText() ) );
 		}
-		out += '<div class="emcp-oauth-signin"><p class="emcp-oauth-signin-title"><strong>b. Sign in</strong></p>' +
-			'<p class="description">' +
-			emcpEscapeHtml( ( typeof emcpToolsAdmin !== 'undefined' && emcpToolsAdmin.oauthSignin ) || 'The next time your AI client connects, your browser opens so you can authorize it. Approve to finish connecting.' ) +
-			'</p></div>';
-		return out;
+
+		if ( o.type === 'cmd' ) {
+			out += emcpStep( 'a. Run this in your terminal' );
+			out += emcpCopyBlock( '', emcpFill( o.cmd, name, endpoint ) );
+			return out + emcpStep( 'b. Sign in', emcpEscapeHtml( emcpSigninText() ) );
+		}
+
+		if ( o.type === 'connector' ) {
+			if ( o.deeplink ) { out += emcpOAuthDeeplink( o.deeplink, name, endpoint, 'Add the connector to ' + ( o.app || 'your client' ) ); }
+			if ( o.note ) { out += '<p class="description">' + emcpEscapeHtml( o.note ) + '</p>'; }
+			out += emcpStep( 'a. Open Connectors', emcpEscapeHtml( 'In ' + ( o.app || 'your client' ) + ', open Settings and go to Connectors.' ) );
+			out += emcpStep( 'b. Add a custom connector — give it this name' );
+			out += emcpCopyBlock( '', name );
+			out += emcpStep( 'c. Enter the server URL', emcpEscapeHtml( 'Paste the URL below and save. Leave the OAuth Client ID and Secret (under Advanced settings) empty, then sign in when the browser opens.' ) );
+			out += emcpCopyBlock( '', endpoint );
+			return out;
+		}
+
+		if ( o.type === 'config' ) {
+			if ( o.deeplink ) { out += emcpOAuthDeeplink( o.deeplink, name, endpoint, 'One-click install' ); }
+			var paths = '';
+			( o.paths || [] ).forEach( function ( p ) {
+				paths += '<code>' + emcpEscapeHtml( p.path ) + '</code> <span class="emcp-oauth-path-label">' + emcpEscapeHtml( p.label || '' ) + '</span><br />';
+			} );
+			out += emcpStep( 'a. Open your config', paths );
+			out += emcpStep( 'b. Add this server', emcpEscapeHtml( 'If your config file already has content, merge this into it instead of replacing it.' ) );
+			out += emcpCopyBlock( '', emcpFill( o.template, name, endpoint ) );
+			return out + emcpStep( 'c. Restart and sign in', emcpEscapeHtml( emcpSigninText() ) );
+		}
+
+		out += emcpCopyBlock( 'a. Connector URL', endpoint );
+		return out + emcpStep( 'b. Sign in', emcpEscapeHtml( emcpSigninText() ) );
 	}
 
 	function emcpSelectClient( id ) {

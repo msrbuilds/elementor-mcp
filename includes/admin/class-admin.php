@@ -1770,12 +1770,55 @@ class EMCP_Tools_Admin {
 		$claude_cli = 'claude mcp add --transport http %NAME% "%ENDPOINT%" --header "Authorization: Basic %B64%"';
 		$codex_cli  = 'codex mcp add %NAME% --transport http --url "%ENDPOINT%" --header "Authorization=Basic %B64%"';
 
-		// OAuth-mode commands — same connect step, no credentials (the browser
-		// sign-in supplies auth). `oauth` is a terminal command, or null for
-		// GUI clients where the UI just takes the connector URL.
-		$claude_oauth = 'claude mcp add %NAME% --transport http "%ENDPOINT%"';
-		$codex_oauth  = 'codex mcp add %NAME% --transport http --url "%ENDPOINT%"';
-		$remote_oauth = 'npx -y mcp-remote "%ENDPOINT%"';
+		// OAuth-mode setup per client — the browser sign-in supplies auth, so no
+		// password. Shapes: 'cmd' (terminal command), 'connector' (custom-connector
+		// UI), 'config' (a config-file snippet). %NAME%/%ENDPOINT% are filled in JS.
+		$oauth_claude_code = array(
+			'type' => 'cmd',
+			'cmd'  => 'claude mcp add %NAME% --transport http %ENDPOINT%',
+		);
+		$oauth_claude_desktop = array(
+			'type' => 'connector',
+			'app'  => __( 'Claude Desktop', 'emcp-tools' ),
+		);
+		$oauth_claude_ai = array(
+			'type'     => 'connector',
+			'app'      => 'claude.ai',
+			'deeplink' => 'claude-ai',
+			'note'     => __( 'Works in the browser and in Claude Desktop.', 'emcp-tools' ),
+		);
+		$oauth_cursor = array(
+			'type'     => 'config',
+			'lang'     => 'json',
+			'paths'    => array(
+				array( 'path' => '~/.cursor/mcp.json', 'label' => __( 'Global', 'emcp-tools' ) ),
+				array( 'path' => '.cursor/mcp.json', 'label' => __( 'Project', 'emcp-tools' ) ),
+			),
+			'template' => "{\n    \"mcpServers\": {\n        \"%NAME%\": {\n            \"url\": \"%ENDPOINT%\"\n        }\n    }\n}",
+			'deeplink' => 'cursor',
+		);
+		$oauth_codex = array(
+			'type'     => 'config',
+			'lang'     => 'toml',
+			'paths'    => array(
+				array( 'path' => '~/.codex/config.toml', 'label' => __( 'macOS / Linux', 'emcp-tools' ) ),
+				array( 'path' => '%USERPROFILE%\\.codex\\config.toml', 'label' => __( 'Windows', 'emcp-tools' ) ),
+			),
+			'template' => "[mcp_servers.%NAME%]\nurl = \"%ENDPOINT%\"",
+		);
+		$oauth_antigravity = array(
+			'type'     => 'config',
+			'lang'     => 'json',
+			'paths'    => array(
+				array( 'path' => '~/.gemini/antigravity/mcp_config.json', 'label' => __( 'macOS / Linux', 'emcp-tools' ) ),
+				array( 'path' => '%USERPROFILE%\\.gemini\\antigravity\\mcp_config.json', 'label' => __( 'Windows', 'emcp-tools' ) ),
+			),
+			'template' => "{\n    \"mcpServers\": {\n        \"%NAME%\": {\n            \"command\": \"npx\",\n            \"args\": [\n                \"-y\",\n                \"mcp-remote\",\n                \"%ENDPOINT%\"\n            ]\n        }\n    }\n}",
+		);
+		$oauth_mcp_remote = array(
+			'type' => 'cmd',
+			'cmd'  => 'npx -y mcp-remote %ENDPOINT%',
+		);
 
 		// Codex's "Connect to a custom MCP" UI form — a field-by-field mapping so
 		// users know which Connection value goes where. %ENDPOINT%/%B64% are filled
@@ -1800,7 +1843,15 @@ class EMCP_Tools_Admin {
 				'icon'    => 'desktop',
 				'image'   => 'claude.png',
 				'methods' => array( 'bundle' => true, 'cli' => null, 'ai_prompt' => true, 'json' => array( 'npx', 'http' ) ),
-				'oauth'   => null,
+				'oauth'   => $oauth_claude_desktop,
+			),
+			array(
+				'id'      => 'claude-ai',
+				'label'   => __( 'Claude.ai', 'emcp-tools' ),
+				'icon'    => 'admin-site-alt3',
+				'image'   => 'claude.png',
+				'methods' => array( 'bundle' => false, 'cli' => null, 'ai_prompt' => true, 'json' => array( 'remote' ) ),
+				'oauth'   => $oauth_claude_ai,
 			),
 			array(
 				'id'      => 'claude-code',
@@ -1808,7 +1859,7 @@ class EMCP_Tools_Admin {
 				'icon'    => 'editor-code',
 				'image'   => 'claude.png',
 				'methods' => array( 'bundle' => false, 'cli' => $claude_cli, 'ai_prompt' => false, 'json' => array( 'npx', 'http' ) ),
-				'oauth'   => $claude_oauth,
+				'oauth'   => $oauth_claude_code,
 			),
 			array(
 				'id'      => 'cursor',
@@ -1816,7 +1867,7 @@ class EMCP_Tools_Admin {
 				'icon'    => 'editor-code',
 				'image'   => 'cursor.png',
 				'methods' => array( 'bundle' => false, 'cli' => null, 'ai_prompt' => true, 'json' => array( 'http' ) ),
-				'oauth'   => null,
+				'oauth'   => $oauth_cursor,
 			),
 			array(
 				'id'          => 'codex',
@@ -1826,7 +1877,7 @@ class EMCP_Tools_Admin {
 				'guide_title' => __( 'Using the Codex “Custom MCP” form', 'emcp-tools' ),
 				'guide'       => $codex_guide,
 				'methods'     => array( 'bundle' => false, 'cli' => $codex_cli, 'ai_prompt' => false, 'json' => array( 'toml', 'toml-stdio' ) ),
-				'oauth'       => $codex_oauth,
+				'oauth'       => $oauth_codex,
 			),
 			array(
 				'id'      => 'antigravity',
@@ -1834,14 +1885,14 @@ class EMCP_Tools_Admin {
 				'icon'    => 'editor-code',
 				'image'   => 'antigravity.png',
 				'methods' => array( 'bundle' => false, 'cli' => null, 'ai_prompt' => false, 'json' => array( 'http' ) ),
-				'oauth'   => null,
+				'oauth'   => $oauth_antigravity,
 			),
 			array(
 				'id'      => 'mcp-remote',
 				'label'   => __( 'npx mcp-remote', 'emcp-tools' ),
 				'icon'    => 'admin-links',
 				'methods' => array( 'bundle' => false, 'cli' => null, 'ai_prompt' => false, 'json' => array( 'remote' ) ),
-				'oauth'   => $remote_oauth,
+				'oauth'   => $oauth_mcp_remote,
 			),
 		);
 	}

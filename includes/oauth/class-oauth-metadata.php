@@ -94,12 +94,30 @@ class EMCP_Tools_OAuth_Metadata {
 			return;
 		}
 		$path = self::request_path();
-		if ( self::PATH_PROTECTED_RESOURCE === $path ) {
+
+		// Match both the root well-known path and the resource-scoped variant
+		// clients build by appending the resource path, e.g.
+		// /.well-known/oauth-protected-resource/wp-json/mcp/emcp-tools-server
+		// (RFC 9728 §3.1). Exact-match-only 404s the request real MCP clients
+		// actually make, which silently breaks OAuth discovery.
+		if ( self::path_matches( $path, self::PATH_PROTECTED_RESOURCE ) ) {
 			self::emit( self::protected_resource_document() );
 		}
-		if ( self::PATH_AUTH_SERVER === $path ) {
+		if ( self::path_matches( $path, self::PATH_AUTH_SERVER ) ) {
 			self::emit( self::authorization_server_document() );
 		}
+	}
+
+	/**
+	 * Whether a request path is the given well-known path or a resource-scoped
+	 * variant of it (the well-known path followed by a "/…" resource path).
+	 *
+	 * @param string $path     Request path.
+	 * @param string $wellknown Base well-known path.
+	 * @return bool
+	 */
+	public static function path_matches( string $path, string $wellknown ): bool {
+		return $path === $wellknown || 0 === strpos( $path, $wellknown . '/' );
 	}
 
 	/**
