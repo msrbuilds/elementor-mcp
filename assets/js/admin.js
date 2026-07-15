@@ -519,7 +519,31 @@
 					btn.textContent = original;
 				}, 2000 );
 			} );
+
+			// Best-effort usage ping for premium (website-fetched) prompts only.
+			trackProPromptCopy( btn.closest( '.elementor-mcp-pro-prompt-card' ) );
 		} );
+	}
+
+	/**
+	 * Fire a fire-and-forget "prompt copied" event for a Pro prompt card.
+	 * No-ops for free/bundled prompts (no card / no slug) or missing nonce.
+	 */
+	function trackProPromptCopy( card ) {
+		if ( ! card || typeof emcpToolsAdmin === 'undefined' || ! emcpToolsAdmin.trackPromptNonce ) {
+			return;
+		}
+		var slug = card.getAttribute( 'data-prompt-slug' );
+		var category = card.getAttribute( 'data-category' );
+		if ( ! slug || ! category ) {
+			return;
+		}
+		var body = new FormData();
+		body.append( 'action', 'emcp_tools_track_prompt_copy' );
+		body.append( 'nonce', emcpToolsAdmin.trackPromptNonce );
+		body.append( 'prompt_slug', slug );
+		body.append( 'category_slug', category );
+		fetch( emcpToolsAdmin.ajaxUrl, { method: 'POST', credentials: 'same-origin', body: body } ).catch( function () {} );
 	}
 
 	/**

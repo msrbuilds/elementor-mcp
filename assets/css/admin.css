@@ -4213,3 +4213,4 @@ body[data-emcp-auth="app-password"] [data-authfor="oauth"] { display: none; }
 .emcp-dash-usage-list li { display: flex; justify-content: space-between; gap: 12px; padding: 5px 0; border-bottom: 1px solid #eef0f4; font-size: 13px; }
 .emcp-dash-usage-slug { color: #374151; }
 .emcp-dash-usage-count { color: #4f46e5; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.elementor-mcp-template-usage { display: inline-block; font-size: 11.5px; color: #6b7280; margin: 2px 0 0; }

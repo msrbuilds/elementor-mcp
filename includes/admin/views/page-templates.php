@@ -43,6 +43,9 @@ $emcp_tools_upgrade_url = emcp_tools_upgrade_url();
 	<?php endif; ?>
 
 	<?php if ( $emcp_tools_has_pro && is_array( $emcp_tools_pro_bundle ) ) :
+		// Global per-template usage counts for the "Used N times" card badges.
+		// This also warms the transient the dashboard's cached_counts() reads.
+		$emcp_tools_usage_counts = class_exists( 'EMCP_Tools_Pro_Usage' ) ? EMCP_Tools_Pro_Usage::get_counts() : array();
 		$emcp_tools_total = 0;
 		foreach ( $emcp_tools_pro_bundle['categories'] as $emcp_tools_cat ) {
 			$emcp_tools_total += is_array( $emcp_tools_cat['templates'] ?? null ) ? count( $emcp_tools_cat['templates'] ) : 0;
@@ -156,6 +159,12 @@ $emcp_tools_upgrade_url = emcp_tools_upgrade_url();
 										<h3 class="elementor-mcp-template-title"><?php echo esc_html( $emcp_tools_t_title ); ?></h3>
 										<span class="elementor-mcp-prompt-tag"><?php echo esc_html( $emcp_tools_cat_label ); ?></span>
 									</div>
+										<?php
+										$emcp_tools_used = (int) ( $emcp_tools_usage_counts[ 'template:' . $emcp_tools_t_slug ] ?? 0 );
+										if ( $emcp_tools_used > 0 ) :
+											?>
+											<span class="elementor-mcp-template-usage"><?php echo esc_html( sprintf( /* translators: %s: times applied */ _n( 'Used %s time', 'Used %s times', $emcp_tools_used, 'emcp-tools' ), number_format_i18n( $emcp_tools_used ) ) ); ?></span>
+										<?php endif; ?>
 									<?php if ( '' !== $emcp_tools_t_desc ) : ?>
 										<p class="elementor-mcp-template-desc"><?php echo esc_html( $emcp_tools_t_desc ); ?></p>
 									<?php endif; ?>

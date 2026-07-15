@@ -242,7 +242,7 @@ $emcp_tools_v1_url       = $emcp_tools_v1_available ? EMCP_Tools_Pro_Prompts::v1
 						}
 						$emcp_tools_copy_id = 'elementor-mcp-pro-prompt-' . $emcp_tools_cat_slug . '-' . $emcp_tools_p_slug;
 					?>
-						<div class="elementor-mcp-prompt-card elementor-mcp-pro-prompt-card" data-category="<?php echo esc_attr( $emcp_tools_cat_slug ); ?>">
+						<div class="elementor-mcp-prompt-card elementor-mcp-pro-prompt-card" data-category="<?php echo esc_attr( $emcp_tools_cat_slug ); ?>" data-prompt-slug="<?php echo esc_attr( $emcp_tools_p_slug ); ?>">
 							<div class="elementor-mcp-prompt-header">
 								<h3 class="elementor-mcp-prompt-title"><?php echo esc_html( $emcp_tools_p_title ); ?></h3>
 								<span class="elementor-mcp-prompt-tag"><?php echo esc_html( $emcp_tools_cat_label ); ?></span>

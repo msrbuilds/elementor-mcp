@@ -1152,6 +1152,7 @@ class EMCP_Tools_Admin {
 				'authError'   => __( 'Could not reach the REST API to test. Check the site URL and that the REST API is enabled.', 'emcp-tools' ),
 				'ajaxUrl'       => admin_url( 'admin-ajax.php' ),
 				'createPwNonce' => wp_create_nonce( 'emcp_tools_create_app_password' ),
+				'trackPromptNonce' => wp_create_nonce( 'emcp_tools_track_prompt_copy' ),
 				'generating'    => __( 'Generating…', 'emcp-tools' ),
 				'pwCreated'     => __( 'Application password created — save it below, it is shown only once.', 'emcp-tools' ),
 				'syncing'       => __( 'Syncing…', 'emcp-tools' ),
