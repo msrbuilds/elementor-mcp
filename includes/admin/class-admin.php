@@ -1655,7 +1655,7 @@ class EMCP_Tools_Admin {
 						<span class="dashicons dashicons-backup" aria-hidden="true"></span>
 						<?php esc_html_e( 'Changelog', 'emcp-tools' ); ?>
 					</a>
-					<?php if ( function_exists( 'emcp_tools_fs' ) ) : ?>
+					<?php if ( self::affiliation_page_available() ) : ?>
 						<a class="emcp-appbar-changelog" href="<?php echo esc_url( admin_url( 'admin.php?page=' . self::PAGE_SLUG . '-affiliation' ) ); ?>">
 							<span class="dashicons dashicons-money-alt" aria-hidden="true"></span>
 							<?php esc_html_e( 'Affiliate Program', 'emcp-tools' ); ?>
@@ -2001,6 +2001,29 @@ class EMCP_Tools_Admin {
 	 */
 	public static function woo_available(): bool {
 		return class_exists( 'WooCommerce' ) || function_exists( 'WC' );
+	}
+
+	/**
+	 * Whether Freemius's Affiliation page actually exists right now.
+	 *
+	 * We hide the Affiliation submenu (see the `is_submenu_visible` filter in
+	 * the bootstrap) and link to it from the header instead. Hiding keeps the
+	 * page URL-reachable, BUT Freemius only *registers* its submenu pages when
+	 * `should_add_submenu_or_action_links()` passes — which is false in
+	 * **activation mode**. A fresh install (free especially) sits in activation
+	 * mode until the user opts in or skips, so the page doesn't exist yet and
+	 * linking to it yields "Sorry, you are not allowed to access this page."
+	 * Mirror Freemius's own condition so the link only shows when it works.
+	 *
+	 * @since 3.4.2
+	 * @return bool
+	 */
+	public static function affiliation_page_available(): bool {
+		if ( ! function_exists( 'emcp_tools_fs' ) ) {
+			return false;
+		}
+		$fs = emcp_tools_fs();
+		return $fs->has_affiliate_program() && ! $fs->is_activation_mode();
 	}
 
 	/**
