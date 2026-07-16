@@ -137,6 +137,8 @@ class EMCP_Tools_Bootstrap {
 		add_action( 'init', array( 'EMCP_Tools_Nav_Menu_Shortcode', 'register' ) );
 		// ACF tools (field values + field group discovery/authoring; writes off by default).
 		require_once EMCP_TOOLS_DIR . 'includes/abilities/class-acf-abilities.php';
+		// Meta Box tools (field values + field group discovery; writes off by default).
+		require_once EMCP_TOOLS_DIR . 'includes/abilities/class-metabox-abilities.php';
 
 		// Themes domain: the child-theme builder + the dispatcher base (must load
 		// before its subclasses) + the integrations.

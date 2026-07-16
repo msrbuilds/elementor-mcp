@@ -373,7 +373,7 @@ class EMCP_Tools_Admin {
 	 *
 	 * @since 1.8.0
 	 */
-	const DEFAULTS_VERSION = 18;
+	const DEFAULTS_VERSION = 19;
 
 	/**
 	 * SEO/A11y Pro MCP tool slugs that ship disabled-by-default (v2 defaults).
@@ -535,6 +535,22 @@ class EMCP_Tools_Admin {
 		return array(
 			'emcp-tools/acf-read',
 			'emcp-tools/acf-write',
+		);
+	}
+
+	/**
+	 * The Meta Box dispatcher tool slugs. The domain registers as two dispatcher
+	 * tools (metabox-read enabled by default, metabox-write disabled by default);
+	 * the operations live behind them. Both slugs are excluded from the drift
+	 * guard since the domain only registers when Meta Box is active.
+	 *
+	 * @since 3.4.2
+	 * @return string[]
+	 */
+	public static function metabox_tool_slugs(): array {
+		return array(
+			'emcp-tools/metabox-read',
+			'emcp-tools/metabox-write',
 		);
 	}
 
@@ -708,6 +724,13 @@ class EMCP_Tools_Admin {
 		// (command execution surface). All four are off until the admin opts in.
 		if ( $applied < 18 ) {
 			$add = array_merge( $add, EMCP_Tools_WPCLI_Abilities::slugs() );
+		}
+
+		// v19 — Meta Box is exposed as two dispatcher tools (metabox-read /
+		// metabox-write). The write dispatcher ships disabled-by-default; the
+		// read dispatcher stays on.
+		if ( $applied < 19 ) {
+			$add[] = 'emcp-tools/metabox-write';
 		}
 
 		$merged = array_values( array_unique( array_merge( $existing, $add ) ) );
@@ -2069,6 +2092,7 @@ class EMCP_Tools_Admin {
 			$emcp_conditional = array_merge(
 				self::themer_php_tool_slugs(),
 				self::acf_tool_slugs(),
+				self::metabox_tool_slugs(),
 				self::theme_tool_slugs(),
 				array( 'emcp-tools/resize-media' )
 			);
@@ -2489,6 +2513,31 @@ class EMCP_Tools_Admin {
 							'update-post-type',
 							'create-taxonomy',
 							'update-taxonomy',
+						),
+					),
+				),
+			),
+			'wp_metabox'       => array(
+				'platform' => 'plugins',
+				'label'    => __( 'Meta Box', 'emcp-tools' ),
+				'note'     => __( 'Plugin integrations are exposed as two tools — one Read, one Write. The AI calls a tool with an operation name; each tool bundles the operations listed on its card. Toggle a tool to allow or block all of its operations at once.', 'emcp-tools' ),
+				'tools'    => array(
+					'emcp-tools/metabox-read'  => array(
+						'label'       => __( 'Meta Box Read', 'emcp-tools' ),
+						'description' => __( 'Read Meta Box data — field groups, field definitions, and field values for posts and other supported object types.', 'emcp-tools' ),
+						'badges'      => array( 'read-only' ),
+						'operations'  => array(
+							'list-field-groups',
+							'get-field-group',
+							'get-fields',
+						),
+					),
+					'emcp-tools/metabox-write' => array(
+						'label'       => __( 'Meta Box Write', 'emcp-tools' ),
+						'description' => __( 'Write Meta Box field values. No delete operations; unknown fields are skipped, not created.', 'emcp-tools' ),
+						'badges'      => array(),
+						'operations'  => array(
+							'update-fields',
 						),
 					),
 				),

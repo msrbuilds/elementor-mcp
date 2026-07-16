@@ -194,6 +194,13 @@ class EMCP_Tools_Ability_Registrar {
 			$this->ability_names = array_merge( $this->ability_names, $acf->get_ability_names() );
 		}
 
+		// Meta Box abilities — only when Meta Box (free or extensions) is active.
+		if ( class_exists( 'EMCP_Tools_Meta_Box_Abilities' ) && EMCP_Tools_Meta_Box_Abilities::metabox_active() ) {
+			$metabox = new EMCP_Tools_Meta_Box_Abilities();
+			$metabox->register();
+			$this->ability_names = array_merge( $this->ability_names, $metabox->get_ability_names() );
+		}
+
 		// Themes-tab integrations — the framework-agnostic active-theme pack always,
 		// per-framework packs only when that framework is the active theme.
 		$theme_integrations = array();

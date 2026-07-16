@@ -290,4 +290,55 @@ function emcp_tools_register_ability( string $name, array $args ) {
 	return true;
 }
 
+// ---------------------------------------------------------------------------
+// Meta Box (rwmb_*) stubs, fixture-driven via $GLOBALS['emcp_test']['metabox']
+// ---------------------------------------------------------------------------
+
+if ( ! defined( 'RWMB_VER' ) ) { define( 'RWMB_VER', '5.13.1' ); }
+
+if ( ! class_exists( 'EMCP_Test_MB' ) ) {
+	/** Minimal RW_Meta_Box test double. */
+	class EMCP_Test_MB {
+		public $meta_box;
+		private $object_type;
+		public function __construct( array $meta_box, string $object_type = 'post' ) {
+			$this->meta_box = $meta_box; $this->object_type = $object_type;
+		}
+		public function __get( $k ) { return $this->meta_box[ $k ] ?? null; }
+		public function get_object_type() { return $this->object_type; }
+	}
+}
+if ( ! class_exists( 'EMCP_Test_MB_Registry' ) ) {
+	class EMCP_Test_MB_Registry {
+		public function all() { return $GLOBALS['emcp_test']['metabox']['boxes'] ?? array(); }
+		public function get_by( $filter ) {
+			$ot = $filter['object_type'] ?? null;
+			return array_filter( $this->all(), static function ( $mb ) use ( $ot ) {
+				return null === $ot || $mb->get_object_type() === $ot;
+			} );
+		}
+	}
+}
+if ( ! function_exists( 'rwmb_get_registry' ) ) {
+	function rwmb_get_registry( $type ) { return new EMCP_Test_MB_Registry(); }
+}
+if ( ! function_exists( 'rwmb_meta' ) ) {
+	function rwmb_meta( $key, $args = array(), $object_id = null ) {
+		$ot  = $args['object_type'] ?? 'post';
+		return $GLOBALS['emcp_test']['metabox']['values'][ $ot ][ (string) $object_id ][ $key ] ?? '';
+	}
+}
+if ( ! function_exists( 'rwmb_set_meta' ) ) {
+	function rwmb_set_meta( $object_id, $key, $value, $args = array() ) {
+		$ot = $args['object_type'] ?? 'post';
+		// Emulate MB: no-op for unregistered fields.
+		$known = false;
+		foreach ( $GLOBALS['emcp_test']['metabox']['boxes'] ?? array() as $mb ) {
+			foreach ( (array) $mb->fields as $f ) { if ( ( $f['id'] ?? '' ) === $key ) { $known = true; break 2; } }
+		}
+		if ( $known ) { $GLOBALS['emcp_test']['metabox']['values'][ $ot ][ (string) $object_id ][ $key ] = $value; }
+	}
+}
+
 require_once EMCP_TOOLS_DIR . 'includes/abilities/class-acf-abilities.php';
+require_once EMCP_TOOLS_DIR . 'includes/abilities/class-metabox-abilities.php';
