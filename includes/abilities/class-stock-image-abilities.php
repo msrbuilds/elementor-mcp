@@ -3,7 +3,7 @@
  * Stock image MCP abilities for Elementor.
  *
  * Registers 3 tools for searching, sideloading, and adding stock images
- * from the Openverse API (WordPress.org's Creative Commons image search).
+ * from the configured stock provider (Unsplash, Pexels, or Pixabay).
  *
  * @package EMCP_Tools
  * @since   1.1.0

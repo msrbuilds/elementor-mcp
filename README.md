@@ -66,7 +66,7 @@ A WordPress plugin that extends the [WordPress MCP Adapter](https://github.com/W
 - **Brand Kits** — One-click coordinated color + typography kits. Apply a curated brand kit and the whole site re-skins (system tokens + Theme Style defaults); back up and restore any time. **10 kits are free to apply**; the full 50-kit library and the `apply-brand-kit` MCP tool are Pro
 - **AI Widget Builder (Pro)** — Let an AI agent design custom Elementor widgets from a structured spec — no hand-written PHP. The plugin compiles the spec + an HTML template into a sandboxed `Widget_Base` class (35 control types, optional per-widget CSS/JS) that appears under a "Custom (EMCP)" category in the editor; a runtime safety net keeps a bad widget from breaking the editor
 - **Composite Tools** — Build a complete page from a declarative JSON structure in a single call
-- **Stock Images** — Search Openverse for Creative Commons images, sideload into Media Library, add to pages
+- **Stock Images** — Search Unsplash, Pexels & Pixabay for stock photos, sideload into Media Library, add to pages
 - **SVG Icons** — Upload SVG icons from URL or raw markup for use with Elementor icon widgets
 - **Custom Code** — Add custom CSS (element/page level), inject JavaScript, create site-wide code snippets for head/body injection
 - **Low-tools Mode** — One-click toggle that filters the active tool list to a curated essentials set, for MCP clients with strict tool caps (Antigravity, Gemini API, etc.). After the v3.0.0 widget consolidation the active count already fits most caps, so this is rarely needed now
@@ -494,7 +494,7 @@ These tools only register when Elementor >= 4.0 is detected. Legacy widget tools
 
 | Tool | Description |
 |---|---|
-| `search-images` | Search Openverse for Creative Commons images by keyword |
+| `search-images` | Search Unsplash, Pexels or Pixabay for stock photos by keyword |
 | `sideload-image` | Download an external image URL into the WordPress Media Library |
 | `add-stock-image` | Search + sideload + add image widget to page in one call |
 

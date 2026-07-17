@@ -4,8 +4,8 @@
  *
  * Registers a single read-only tool, `list-media`, that lets an AI agent
  * discover and query images already uploaded to the WordPress Media Library.
- * This fills the gap left by the Openverse search tools: those find generic
- * Creative Commons stock, but can't surface a client's own photos (e.g. 300+
+ * This fills the gap left by the stock-image search tools: those find generic
+ * stock photos, but can't surface a client's own photos (e.g. 300+
  * job-site images already in their library). Backed by a direct WP_Query on
  * attachments — no HTTP round-trip.
  *
@@ -93,7 +93,7 @@ class EMCP_Tools_Media_Library_Abilities {
 			'emcp-tools/list-media',
 			array(
 				'label'               => __( 'List Media', 'emcp-tools' ),
-				'description'         => __( 'Lists and searches images already in the WordPress Media Library. Use this to find a site\'s own uploaded photos (e.g. a client\'s product or job-site images) before reaching for Openverse stock. The optional "search" matches the title, alt text, caption, and description. Returns attachment IDs and URLs you can pass straight to add-free-widget.', 'emcp-tools' ),
+				'description'         => __( 'Lists and searches images already in the WordPress Media Library. Use this to find a site\'s own uploaded photos (e.g. a client\'s product or job-site images) before reaching for stock photos. The optional "search" matches the title, alt text, caption, and description. Returns attachment IDs and URLs you can pass straight to add-free-widget.', 'emcp-tools' ),
 				'category'            => 'emcp-tools',
 				'execute_callback'    => array( $this, 'execute_list_media' ),
 				'permission_callback' => array( $this, 'check_read_permission' ),

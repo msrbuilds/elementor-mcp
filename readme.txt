@@ -37,7 +37,7 @@ As of v3.0.0 the 62 per-widget tools were folded into a catalog-backed model, so
 * **Template Tools**: Save pages or elements as reusable templates, apply templates to pages, theme builder, popups, dynamic tags (Pro).
 * **Global Settings**: Update site-wide color palettes and typography presets.
 * **Composite Tools**: Build a complete page from a declarative JSON structure in a single call.
-* **Stock & Media Images**: Search Openverse for Creative Commons images, sideload into the Media Library, add to pages, plus `list-media` to discover and search the site's own existing uploads (by title, alt text, caption, and description).
+* **Stock & Media Images**: Search Unsplash, Pexels & Pixabay for stock photos, sideload into the Media Library, add to pages, plus `list-media` to discover and search the site's own existing uploads (by title, alt text, caption, and description).
 * **SVG Icons**: Upload SVG icons from URL or raw markup for use with Elementor icon widgets.
 * **Custom Code**: Add custom CSS (element/page level), inject JavaScript, create site-wide code snippets for head/body injection.
 * **AI Widget Builder (Pro)**: Let an AI agent design custom Elementor widgets from a structured spec (no hand-written PHP). The plugin compiles the spec into a sandboxed widget that appears in the Elementor panel: 35 control types, optional CSS/JS, with a runtime safety net so a bad widget can never break the editor.
