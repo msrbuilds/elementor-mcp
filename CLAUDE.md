@@ -67,6 +67,10 @@ Freemius has **no separate free-zip upload** — it auto-generates a free build 
 
 **Free-tier in-dashboard updates (`EMCP_Tools_GitHub_Updater`, `includes/class-github-updater.php`, free tree).** Since free installs get neither wordpress.org nor Freemius updates, this class bridges GitHub releases into WordPress's native plugin-update flow so free users see "update available" on Dashboard → Updates / the Plugins screen and can one-click update (auto-updates too). It hooks `pre_set_site_transient_update_plugins` (inject the update when the latest release tag > `EMCP_TOOLS_VERSION`), `plugins_api` (the "View details" modal, rendered from the release body), and `upgrader_source_selection` (rename the extracted `emcp-tools/` folder to the installed plugin dir). The latest-release lookup (`api.github.com/repos/msrbuilds/elementor-mcp/releases/latest`) is transient-cached (6h ok / 2h on failure) to respect GitHub's unauthenticated rate limit, skips drafts/pre-releases, and selects the `emcp-tools-*.zip` asset (never the Pro zip, which is never on GitHub). **It self-disables on premium builds** (the `.emcp-pro` marker / `emcp_tools_fs()->is_premium()`) so it never fights Freemius. **Release dependency:** every GitHub release MUST attach the built free zip named `emcp-tools-<ver>.zip` (already the documented release step) — the updater keys off that asset name.
 
+### Release finish (always, after tag + GitHub release + Freemius upload)
+
+Every release ends with a **FB launch post + banner copy** — this is a standing part of the release process, not optional. Save it to the session memory as `social-post-X.Y.Z.md`. Format: FB group only, plain-text/emoji (no markdown); the banner is a **sentence-case tagline + a CAPS bullet row** of the headline features; flat design (no gradients — the brand's design rule). Follow the shape of the prior posts. Also push an empty commit to the website repo so Dokploy regenerates the changelog cards from the pushed `CHANGELOG.md`.
+
 ## Repository topology (free/pro split — 2026-07-02)
 
 The plugin is split across **two repos** so no Pro-tier source ships in any free artifact:
