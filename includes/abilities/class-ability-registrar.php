@@ -208,6 +208,32 @@ class EMCP_Tools_Ability_Registrar {
 			$this->ability_names = array_merge( $this->ability_names, $metabox->get_ability_names() );
 		}
 
+		// Forms-tab integrations. CF7 is free; the five entry-storing plugins are
+		// Pro. Each registers only when its plugin is active (is_available()).
+		$form_integrations = array();
+		if ( class_exists( 'EMCP_Tools_CF7_Integration' ) ) {
+			$form_integrations[] = new EMCP_Tools_CF7_Integration();
+		}
+		if ( function_exists( 'emcp_tools_fs' ) && emcp_tools_fs()->can_use_premium_code() ) {
+			foreach ( array(
+				'EMCP_Tools_WPForms_Integration',
+				'EMCP_Tools_GravityForms_Integration',
+				'EMCP_Tools_FluentForms_Integration',
+				'EMCP_Tools_NinjaForms_Integration',
+				'EMCP_Tools_Formidable_Integration',
+			) as $emcp_form_class ) {
+				if ( class_exists( $emcp_form_class ) ) {
+					$form_integrations[] = new $emcp_form_class();
+				}
+			}
+		}
+		foreach ( $form_integrations as $form_integration ) {
+			if ( $form_integration->is_available() ) {
+				$form_integration->register();
+				$this->ability_names = array_merge( $this->ability_names, $form_integration->get_ability_names() );
+			}
+		}
+
 		// Themes-tab integrations — the framework-agnostic active-theme pack always,
 		// per-framework packs only when that framework is the active theme.
 		$theme_integrations = array();
