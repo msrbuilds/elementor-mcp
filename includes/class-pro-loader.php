@@ -30,6 +30,12 @@ final class EMCP_Tools_Pro_Loader {
 		'includes/abilities/class-seo-abilities.php',
 		'includes/abilities/class-a11y-abilities.php',
 		'includes/abilities/class-woo-integration.php',
+		// Forms integrations (Pro adapters; the base + CF7 are free-tree).
+		'includes/abilities/forms/class-wpforms-integration.php',
+		'includes/abilities/forms/class-gravityforms-integration.php',
+		'includes/abilities/forms/class-fluentforms-integration.php',
+		'includes/abilities/forms/class-ninjaforms-integration.php',
+		'includes/abilities/forms/class-formidable-integration.php',
 		'includes/class-skill-catalog.php',
 		'includes/abilities/class-skill-abilities.php',
 		'includes/class-page-snapshot-pro.php',

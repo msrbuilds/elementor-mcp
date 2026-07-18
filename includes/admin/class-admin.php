@@ -2965,9 +2965,9 @@ class EMCP_Tools_Admin {
 					),
 					'emcp-tools/formidable-write' => array(
 						'label'            => __( 'Formidable Forms Write', 'emcp-tools' ),
-						'description'      => __( 'Update Formidable notifications and delete entries (confirm:true).', 'emcp-tools' ),
+						'description'      => __( 'Delete Formidable entries (confirm:true).', 'emcp-tools' ),
 						'badges'           => array( 'destructive' ),
-						'operations'       => array( 'update-notification', 'delete-entry' ),
+						'operations'       => array( 'delete-entry' ),
 						'available'        => self::formidable_available(),
 						'unavailable_note' => __( 'Install & activate Formidable Forms to enable this tool.', 'emcp-tools' ),
 					),

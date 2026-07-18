@@ -34,3 +34,8 @@ assets/css/editor.css
 assets/emcp-prompts-v1.zip
 tests
 tools
+includes/abilities/forms/class-wpforms-integration.php
+includes/abilities/forms/class-gravityforms-integration.php
+includes/abilities/forms/class-fluentforms-integration.php
+includes/abilities/forms/class-ninjaforms-integration.php
+includes/abilities/forms/class-formidable-integration.php
