@@ -340,5 +340,83 @@ if ( ! function_exists( 'rwmb_set_meta' ) ) {
 	}
 }
 
+// ---------------------------------------------------------------------------
+// Contact Form 7 stubs, fixture-driven via $GLOBALS['emcp_test']['cf7']['forms']
+// ---------------------------------------------------------------------------
+
+if ( ! defined( 'WPCF7_VERSION' ) ) { define( 'WPCF7_VERSION', '6.1.6' ); }
+
+if ( ! class_exists( 'WPCF7_FormTag' ) ) {
+	class WPCF7_FormTag {
+		public $name = '';
+		public $type = '';
+		public $basetype = '';
+		public $values = array();
+		public $labels = array();
+		public function __construct( array $d = array() ) {
+			foreach ( $d as $k => $v ) {
+				if ( property_exists( $this, $k ) ) {
+					$this->{$k} = $v;
+				}
+			}
+		}
+		public function is_required(): bool {
+			return str_ends_with( (string) $this->type, '*' );
+		}
+	}
+}
+
+if ( ! class_exists( 'WPCF7_ContactForm' ) ) {
+	class WPCF7_ContactForm {
+		private $id_;
+		public function __construct( $id ) {
+			$this->id_ = (int) $id;
+		}
+		public static function find( $args = array() ) {
+			$out = array();
+			foreach ( array_keys( $GLOBALS['emcp_test']['cf7']['forms'] ?? array() ) as $id ) {
+				$out[] = new self( $id );
+			}
+			return $out;
+		}
+		public static function get_instance( $id ) {
+			$id = (int) ( is_object( $id ) ? ( $id->ID ?? 0 ) : $id );
+			return isset( $GLOBALS['emcp_test']['cf7']['forms'][ $id ] ) ? new self( $id ) : null;
+		}
+		private function store(): array {
+			return $GLOBALS['emcp_test']['cf7']['forms'][ $this->id_ ] ?? array();
+		}
+		public function id() {
+			return $this->id_;
+		}
+		public function name() {
+			return $this->store()['slug'] ?? '';
+		}
+		public function title() {
+			return $this->store()['title'] ?? '';
+		}
+		public function prop( $k ) {
+			return $this->store()['props'][ $k ] ?? '';
+		}
+		public function set_properties( $props ) {
+			foreach ( (array) $props as $k => $v ) {
+				$GLOBALS['emcp_test']['cf7']['forms'][ $this->id_ ]['props'][ $k ] = $v;
+			}
+		}
+		public function save() {
+			return true;
+		}
+		public function scan_form_tags() {
+			$tags = array();
+			foreach ( $this->store()['tags'] ?? array() as $t ) {
+				$tags[] = new WPCF7_FormTag( $t );
+			}
+			return $tags;
+		}
+	}
+}
+
+require_once EMCP_TOOLS_DIR . 'includes/abilities/forms/class-form-integration.php';
+require_once EMCP_TOOLS_DIR . 'includes/abilities/forms/class-cf7-integration.php';
 require_once EMCP_TOOLS_DIR . 'includes/abilities/class-acf-abilities.php';
 require_once EMCP_TOOLS_DIR . 'includes/abilities/class-metabox-abilities.php';
