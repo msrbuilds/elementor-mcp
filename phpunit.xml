@@ -115,6 +115,9 @@
         <testsuite name="Woo">
             <directory>pro/tests/unit/woo</directory>
         </testsuite>
+        <testsuite name="Forms">
+            <directory>pro/tests/unit/forms</directory>
+        </testsuite>
     </testsuites>
 
     <source>
