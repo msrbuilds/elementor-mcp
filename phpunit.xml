@@ -118,6 +118,9 @@
         <testsuite name="Forms">
             <directory>pro/tests/unit/forms</directory>
         </testsuite>
+        <testsuite name="SEOPlugins">
+            <directory>pro/tests/unit/seo-plugins</directory>
+        </testsuite>
     </testsuites>
 
     <source>

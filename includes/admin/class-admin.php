@@ -444,7 +444,7 @@ class EMCP_Tools_Admin {
 	 *
 	 * @since 1.8.0
 	 */
-	const DEFAULTS_VERSION = 21;
+	const DEFAULTS_VERSION = 22;
 
 	/**
 	 * SEO/A11y Pro MCP tool slugs that ship disabled-by-default (v2 defaults).
@@ -834,6 +834,17 @@ class EMCP_Tools_Admin {
 		if ( $applied < 21 ) {
 			$add[] = 'emcp-tools/metform-write';
 			$add[] = 'emcp-tools/sureforms-write';
+		}
+
+		// v22 — SEO-plugin writes disabled-by-default (all 7 plugins).
+		if ( $applied < 22 ) {
+			$add[] = 'emcp-tools/slimseo-write';
+			$add[] = 'emcp-tools/yoast-write';
+			$add[] = 'emcp-tools/rankmath-write';
+			$add[] = 'emcp-tools/aioseo-write';
+			$add[] = 'emcp-tools/seopress-write';
+			$add[] = 'emcp-tools/seoframework-write';
+			$add[] = 'emcp-tools/surerank-write';
 		}
 
 		$merged = array_values( array_unique( array_merge( $existing, $add ) ) );
@@ -1905,6 +1916,10 @@ class EMCP_Tools_Admin {
 				'label' => __( 'Forms', 'emcp-tools' ),
 				'desc'  => __( 'Form definitions and submissions.', 'emcp-tools' ),
 			),
+			'seo'       => array(
+				'label' => __( 'SEO', 'emcp-tools' ),
+				'desc'  => __( 'Read & write the SEO metadata your SEO plugin stores.', 'emcp-tools' ),
+			),
 			'other'     => array(
 				'label' => __( 'Other Integrations', 'emcp-tools' ),
 				'desc'  => __( 'Additional plugin integrations.', 'emcp-tools' ),
@@ -2188,6 +2203,73 @@ class EMCP_Tools_Admin {
 	}
 
 	/**
+	 * SEO-plugin availability — mirrors each adapter's is_active() so the admin
+	 * card greys out its toggles when the plugin is inactive. Reconciled with the
+	 * adapter's own is_active() in the adapter tasks.
+	 *
+	 * @since 3.5.0
+	 */
+	public static function slimseo_available(): bool {
+		return defined( 'SLIM_SEO_VER' ) || class_exists( '\\SlimSEO\\Plugin' );
+	}
+
+	/** @since 3.5.0 */
+	public static function yoast_available(): bool {
+		return defined( 'WPSEO_VERSION' );
+	}
+
+	/** @since 3.5.0 */
+	public static function rankmath_available(): bool {
+		return class_exists( 'RankMath' ) || defined( 'RANK_MATH_VERSION' );
+	}
+
+	/** @since 3.5.0 */
+	public static function aioseo_available(): bool {
+		return function_exists( 'aioseo' ) || defined( 'AIOSEO_VERSION' );
+	}
+
+	/** @since 3.5.0 */
+	public static function seopress_available(): bool {
+		return defined( 'SEOPRESS_VERSION' );
+	}
+
+	/** @since 3.5.0 */
+	public static function seoframework_available(): bool {
+		return defined( 'THE_SEO_FRAMEWORK_VERSION' ) || function_exists( 'tsf' );
+	}
+
+	/** @since 3.5.0 */
+	public static function surerank_available(): bool {
+		return defined( 'SURERANK_VERSION' ) || class_exists( '\\SureRank\\Inc\\Meta_Data' );
+	}
+
+	/**
+	 * The 14 SEO dispatcher slugs — drift-guard exclusion (registered only when
+	 * their plugin is active / Pro).
+	 *
+	 * @since 3.5.0
+	 * @return string[]
+	 */
+	public static function seo_tool_slugs(): array {
+		return array(
+			'emcp-tools/slimseo-read',
+			'emcp-tools/slimseo-write',
+			'emcp-tools/yoast-read',
+			'emcp-tools/yoast-write',
+			'emcp-tools/rankmath-read',
+			'emcp-tools/rankmath-write',
+			'emcp-tools/aioseo-read',
+			'emcp-tools/aioseo-write',
+			'emcp-tools/seopress-read',
+			'emcp-tools/seopress-write',
+			'emcp-tools/seoframework-read',
+			'emcp-tools/seoframework-write',
+			'emcp-tools/surerank-read',
+			'emcp-tools/surerank-write',
+		);
+	}
+
+	/**
 	 * The 12 Forms dispatcher slugs — drift-guard exclusion (registered only when
 	 * their plugin is active / Pro, so the drift guard must not flag them as
 	 * "missing" tools).
@@ -2339,6 +2421,7 @@ class EMCP_Tools_Admin {
 				self::woo_tool_slugs(),
 				self::metabox_tool_slugs(),
 				self::form_tool_slugs(),
+				self::seo_tool_slugs(),
 				self::theme_tool_slugs(),
 				self::seo_a11y_tool_slugs(),
 				self::widget_builder_tool_slugs(),
@@ -3040,6 +3123,180 @@ class EMCP_Tools_Admin {
 						'operations'       => array( 'update-entry-status', 'delete-entry' ),
 						'available'        => self::sureforms_available(),
 						'unavailable_note' => __( 'Install & activate SureForms to enable this tool.', 'emcp-tools' ),
+					),
+				),
+			),
+			'wp_slimseo'       => array(
+				'platform' => 'plugins',
+				'group'    => 'seo',
+				'label'    => __( 'Slim SEO', 'emcp-tools' ),
+				'note'     => __( 'Slim SEO exposed as two tools — one Read, one Write. Read and write the SEO metadata (title, description, canonical, robots, social) Slim SEO stores for posts and terms, plus its site settings.', 'emcp-tools' ),
+				'tools'    => array(
+					'emcp-tools/slimseo-read'  => array(
+						'label'            => __( 'Slim SEO Read', 'emcp-tools' ),
+						'description'      => __( 'Read Slim SEO post/term SEO metadata and site settings.', 'emcp-tools' ),
+						'badges'           => array( 'read-only' ),
+						'operations'       => array( 'get-post-seo', 'get-term-seo', 'get-settings' ),
+						'available'        => self::slimseo_available(),
+						'unavailable_note' => __( 'Install & activate Slim SEO to enable this tool.', 'emcp-tools' ),
+					),
+					'emcp-tools/slimseo-write' => array(
+						'label'            => __( 'Slim SEO Write', 'emcp-tools' ),
+						'description'      => __( 'Update Slim SEO post/term SEO metadata.', 'emcp-tools' ),
+						'badges'           => array(),
+						'operations'       => array( 'update-post-seo', 'update-term-seo' ),
+						'available'        => self::slimseo_available(),
+						'unavailable_note' => __( 'Install & activate Slim SEO to enable this tool.', 'emcp-tools' ),
+					),
+				),
+			),
+			'wp_yoast'         => array(
+				'platform' => 'plugins',
+				'group'    => 'seo',
+				'pro'      => true,
+				'label'    => __( 'Yoast SEO', 'emcp-tools' ),
+				'note'     => __( 'Yoast SEO exposed as two tools — one Read, one Write. Read and write the SEO metadata (title, description, canonical, robots, social, focus keyword) Yoast stores for posts and terms, plus site settings.', 'emcp-tools' ),
+				'tools'    => array(
+					'emcp-tools/yoast-read'  => array(
+						'label'            => __( 'Yoast SEO Read', 'emcp-tools' ),
+						'description'      => __( 'Read Yoast post/term SEO metadata and site settings.', 'emcp-tools' ),
+						'badges'           => array( 'read-only' ),
+						'operations'       => array( 'get-post-seo', 'get-term-seo', 'get-settings' ),
+						'available'        => self::yoast_available(),
+						'unavailable_note' => __( 'Install & activate Yoast SEO to enable this tool.', 'emcp-tools' ),
+					),
+					'emcp-tools/yoast-write' => array(
+						'label'            => __( 'Yoast SEO Write', 'emcp-tools' ),
+						'description'      => __( 'Update Yoast post/term SEO metadata.', 'emcp-tools' ),
+						'badges'           => array(),
+						'operations'       => array( 'update-post-seo', 'update-term-seo' ),
+						'available'        => self::yoast_available(),
+						'unavailable_note' => __( 'Install & activate Yoast SEO to enable this tool.', 'emcp-tools' ),
+					),
+				),
+			),
+			'wp_rankmath'      => array(
+				'platform' => 'plugins',
+				'group'    => 'seo',
+				'pro'      => true,
+				'label'    => __( 'Rank Math', 'emcp-tools' ),
+				'note'     => __( 'Rank Math exposed as two tools — one Read, one Write. Read/write post & term SEO metadata and site settings; also read schema (structured data) and manage redirects.', 'emcp-tools' ),
+				'tools'    => array(
+					'emcp-tools/rankmath-read'  => array(
+						'label'            => __( 'Rank Math Read', 'emcp-tools' ),
+						'description'      => __( 'Read Rank Math post/term SEO metadata, schema, redirects, and site settings.', 'emcp-tools' ),
+						'badges'           => array( 'read-only' ),
+						'operations'       => array( 'get-post-seo', 'get-term-seo', 'get-settings', 'get-schema', 'list-redirects' ),
+						'available'        => self::rankmath_available(),
+						'unavailable_note' => __( 'Install & activate Rank Math to enable this tool.', 'emcp-tools' ),
+					),
+					'emcp-tools/rankmath-write' => array(
+						'label'            => __( 'Rank Math Write', 'emcp-tools' ),
+						'description'      => __( 'Update Rank Math post/term SEO metadata and manage redirects (delete-redirect requires confirm).', 'emcp-tools' ),
+						'badges'           => array( 'destructive' ),
+						'operations'       => array( 'update-post-seo', 'update-term-seo', 'create-redirect', 'delete-redirect' ),
+						'available'        => self::rankmath_available(),
+						'unavailable_note' => __( 'Install & activate Rank Math to enable this tool.', 'emcp-tools' ),
+					),
+				),
+			),
+			'wp_aioseo'        => array(
+				'platform' => 'plugins',
+				'group'    => 'seo',
+				'pro'      => true,
+				'label'    => __( 'All in One SEO', 'emcp-tools' ),
+				'note'     => __( 'All in One SEO exposed as two tools — one Read, one Write. Read/write post & term SEO metadata and site settings; also read schema (structured data).', 'emcp-tools' ),
+				'tools'    => array(
+					'emcp-tools/aioseo-read'  => array(
+						'label'            => __( 'All in One SEO Read', 'emcp-tools' ),
+						'description'      => __( 'Read AIOSEO post/term SEO metadata, schema, and site settings.', 'emcp-tools' ),
+						'badges'           => array( 'read-only' ),
+						'operations'       => array( 'get-post-seo', 'get-term-seo', 'get-settings', 'get-schema' ),
+						'available'        => self::aioseo_available(),
+						'unavailable_note' => __( 'Install & activate All in One SEO to enable this tool.', 'emcp-tools' ),
+					),
+					'emcp-tools/aioseo-write' => array(
+						'label'            => __( 'All in One SEO Write', 'emcp-tools' ),
+						'description'      => __( 'Update AIOSEO post/term SEO metadata.', 'emcp-tools' ),
+						'badges'           => array(),
+						'operations'       => array( 'update-post-seo', 'update-term-seo' ),
+						'available'        => self::aioseo_available(),
+						'unavailable_note' => __( 'Install & activate All in One SEO to enable this tool.', 'emcp-tools' ),
+					),
+				),
+			),
+			'wp_seopress'      => array(
+				'platform' => 'plugins',
+				'group'    => 'seo',
+				'pro'      => true,
+				'label'    => __( 'SEOPress', 'emcp-tools' ),
+				'note'     => __( 'SEOPress exposed as two tools — one Read, one Write. Read/write post & term SEO metadata and site settings; also read schema (structured data).', 'emcp-tools' ),
+				'tools'    => array(
+					'emcp-tools/seopress-read'  => array(
+						'label'            => __( 'SEOPress Read', 'emcp-tools' ),
+						'description'      => __( 'Read SEOPress post/term SEO metadata, schema, and site settings.', 'emcp-tools' ),
+						'badges'           => array( 'read-only' ),
+						'operations'       => array( 'get-post-seo', 'get-term-seo', 'get-settings', 'get-schema' ),
+						'available'        => self::seopress_available(),
+						'unavailable_note' => __( 'Install & activate SEOPress to enable this tool.', 'emcp-tools' ),
+					),
+					'emcp-tools/seopress-write' => array(
+						'label'            => __( 'SEOPress Write', 'emcp-tools' ),
+						'description'      => __( 'Update SEOPress post/term SEO metadata.', 'emcp-tools' ),
+						'badges'           => array(),
+						'operations'       => array( 'update-post-seo', 'update-term-seo' ),
+						'available'        => self::seopress_available(),
+						'unavailable_note' => __( 'Install & activate SEOPress to enable this tool.', 'emcp-tools' ),
+					),
+				),
+			),
+			'wp_seoframework'  => array(
+				'platform' => 'plugins',
+				'group'    => 'seo',
+				'pro'      => true,
+				'label'    => __( 'The SEO Framework', 'emcp-tools' ),
+				'note'     => __( 'The SEO Framework exposed as two tools — one Read, one Write. Read and write the SEO metadata (title, description, canonical, robots, social) it stores for posts and terms.', 'emcp-tools' ),
+				'tools'    => array(
+					'emcp-tools/seoframework-read'  => array(
+						'label'            => __( 'The SEO Framework Read', 'emcp-tools' ),
+						'description'      => __( 'Read The SEO Framework post/term SEO metadata.', 'emcp-tools' ),
+						'badges'           => array( 'read-only' ),
+						'operations'       => array( 'get-post-seo', 'get-term-seo' ),
+						'available'        => self::seoframework_available(),
+						'unavailable_note' => __( 'Install & activate The SEO Framework to enable this tool.', 'emcp-tools' ),
+					),
+					'emcp-tools/seoframework-write' => array(
+						'label'            => __( 'The SEO Framework Write', 'emcp-tools' ),
+						'description'      => __( 'Update The SEO Framework post/term SEO metadata.', 'emcp-tools' ),
+						'badges'           => array(),
+						'operations'       => array( 'update-post-seo', 'update-term-seo' ),
+						'available'        => self::seoframework_available(),
+						'unavailable_note' => __( 'Install & activate The SEO Framework to enable this tool.', 'emcp-tools' ),
+					),
+				),
+			),
+			'wp_surerank'      => array(
+				'platform' => 'plugins',
+				'group'    => 'seo',
+				'pro'      => true,
+				'label'    => __( 'SureRank', 'emcp-tools' ),
+				'note'     => __( 'SureRank exposed as two tools — one Read, one Write. Read and write the SEO metadata (title, description, canonical, robots, social) SureRank stores for posts and terms.', 'emcp-tools' ),
+				'tools'    => array(
+					'emcp-tools/surerank-read'  => array(
+						'label'            => __( 'SureRank Read', 'emcp-tools' ),
+						'description'      => __( 'Read SureRank post/term SEO metadata and site settings.', 'emcp-tools' ),
+						'badges'           => array( 'read-only' ),
+						'operations'       => array( 'get-post-seo', 'get-term-seo', 'get-settings' ),
+						'available'        => self::surerank_available(),
+						'unavailable_note' => __( 'Install & activate SureRank to enable this tool.', 'emcp-tools' ),
+					),
+					'emcp-tools/surerank-write' => array(
+						'label'            => __( 'SureRank Write', 'emcp-tools' ),
+						'description'      => __( 'Update SureRank post/term SEO metadata.', 'emcp-tools' ),
+						'badges'           => array(),
+						'operations'       => array( 'update-post-seo', 'update-term-seo' ),
+						'available'        => self::surerank_available(),
+						'unavailable_note' => __( 'Install & activate SureRank to enable this tool.', 'emcp-tools' ),
 					),
 				),
 			),

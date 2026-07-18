@@ -236,6 +236,33 @@ class EMCP_Tools_Ability_Registrar {
 			}
 		}
 
+		// SEO-plugin integrations. Slim SEO is free; the other 6 are Pro. Each
+		// registers only when its SEO plugin is active.
+		$seo_integrations = array();
+		if ( class_exists( 'EMCP_Tools_SlimSEO_Integration' ) ) {
+			$seo_integrations[] = new EMCP_Tools_SlimSEO_Integration();
+		}
+		if ( function_exists( 'emcp_tools_fs' ) && emcp_tools_fs()->can_use_premium_code() ) {
+			foreach ( array(
+				'EMCP_Tools_Yoast_Integration',
+				'EMCP_Tools_RankMath_Integration',
+				'EMCP_Tools_AIOSEO_Integration',
+				'EMCP_Tools_SeoPress_Integration',
+				'EMCP_Tools_SEOFramework_Integration',
+				'EMCP_Tools_SureRank_Integration',
+			) as $emcp_seo_class ) {
+				if ( class_exists( $emcp_seo_class ) ) {
+					$seo_integrations[] = new $emcp_seo_class();
+				}
+			}
+		}
+		foreach ( $seo_integrations as $seo_integration ) {
+			if ( $seo_integration->is_available() ) {
+				$seo_integration->register();
+				$this->ability_names = array_merge( $this->ability_names, $seo_integration->get_ability_names() );
+			}
+		}
+
 		// Themes-tab integrations — the framework-agnostic active-theme pack always,
 		// per-framework packs only when that framework is the active theme.
 		$theme_integrations = array();

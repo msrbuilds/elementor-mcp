@@ -152,6 +152,11 @@ class EMCP_Tools_Bootstrap {
 		// (WPForms/Gravity/Fluent/Ninja/Formidable) load via EMCP_Tools_Pro_Loader.
 		require_once EMCP_TOOLS_DIR . 'includes/abilities/forms/class-form-integration.php';
 		require_once EMCP_TOOLS_DIR . 'includes/abilities/forms/class-cf7-integration.php';
+		// SEO plugin integrations — abstract base + Slim SEO (free). The 6 Pro SEO
+		// adapters (Yoast/RankMath/AIOSEO/SeoPress/SEOFramework/SureRank) load via
+		// EMCP_Tools_Pro_Loader.
+		require_once EMCP_TOOLS_DIR . 'includes/abilities/seo/class-seo-integration.php';
+		require_once EMCP_TOOLS_DIR . 'includes/abilities/seo/class-slimseo-integration.php';
 		// Performance Analyzer (v3.0.0) — read-only server/WP/page audit.
 		require_once EMCP_TOOLS_DIR . 'includes/performance/class-performance-finding.php';
 		require_once EMCP_TOOLS_DIR . 'includes/performance/class-performance-server-audit.php';
