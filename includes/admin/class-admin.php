@@ -1864,6 +1864,37 @@ class EMCP_Tools_Admin {
 	}
 
 	/**
+	 * Plugin-integration groups, in display order. Categories on the Plugins tab
+	 * carry a `group` key naming one of these; page-tools.php clusters each
+	 * plugin card under its group heading so the tab stays organized as the
+	 * number of integrations grows. A category with no (or an unknown) group
+	 * renders inline, ungrouped.
+	 *
+	 * @since 3.4.3
+	 * @return array<string,array{label:string,desc:string}>
+	 */
+	public static function plugin_groups(): array {
+		return array(
+			'dynamic'   => array(
+				'label' => __( 'Dynamic Content', 'emcp-tools' ),
+				'desc'  => __( 'Custom fields & metadata — read and write dynamic content.', 'emcp-tools' ),
+			),
+			'ecommerce' => array(
+				'label' => __( 'E-Commerce', 'emcp-tools' ),
+				'desc'  => __( 'Stores, products, orders, and customers.', 'emcp-tools' ),
+			),
+			'forms'     => array(
+				'label' => __( 'Forms', 'emcp-tools' ),
+				'desc'  => __( 'Form definitions and submissions.', 'emcp-tools' ),
+			),
+			'other'     => array(
+				'label' => __( 'Other Integrations', 'emcp-tools' ),
+				'desc'  => __( 'Additional plugin integrations.', 'emcp-tools' ),
+			),
+		);
+	}
+
+	/**
 	 * Connection-tab client registry: the single source of truth for the
 	 * client cards grid + per-client reveal. `methods` declares WHICH options
 	 * a client supports; the actual JSON/CLI/prompt strings are assembled
@@ -2633,6 +2664,7 @@ class EMCP_Tools_Admin {
 			),
 			'wp_acf'           => array(
 				'platform' => 'plugins',
+				'group'    => 'dynamic',
 				'label'    => __( 'ACF (Advanced Custom Fields)', 'emcp-tools' ),
 				'note'     => __( 'Plugin integrations are exposed as two tools — one Read, one Write. The AI calls a tool with an operation name; each tool bundles the operations listed on its card. Toggle a tool to allow or block all of its operations at once. Post-type & taxonomy operations need ACF 6.1+.', 'emcp-tools' ),
 				'tools'    => array(
@@ -2669,6 +2701,7 @@ class EMCP_Tools_Admin {
 			),
 			'wp_woo'           => array(
 				'platform' => 'plugins',
+				'group'    => 'ecommerce',
 				'pro'      => true,
 				'label'    => __( 'WooCommerce', 'emcp-tools' ),
 				'note'     => __( 'WooCommerce is exposed as two tools — one Read, one Write — over the full wc/v3 API (~120 operations). The AI calls a tool with an operation name; toggle a tool to allow or block all of its operations at once. Money/irreversible operations (refunds, deletes, batch) additionally require confirm:true. Requires WooCommerce active.', 'emcp-tools' ),
@@ -2693,6 +2726,7 @@ class EMCP_Tools_Admin {
 			),
 			'wp_metabox'       => array(
 				'platform' => 'plugins',
+				'group'    => 'dynamic',
 				'label'    => __( 'Meta Box', 'emcp-tools' ),
 				'note'     => __( 'Plugin integrations are exposed as two tools — one Read, one Write. The AI calls a tool with an operation name; each tool bundles the operations listed on its card. Toggle a tool to allow or block all of its operations at once.', 'emcp-tools' ),
 				'tools'    => array(

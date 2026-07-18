@@ -467,6 +467,71 @@
 	display: none;
 }
 
+/* ---- Plugin integration groups (Plugins tab) ---------------------------- */
+/* Each group clusters related integrations (Dynamic Content, E-Commerce, …);
+   inside a group every plugin becomes a self-contained card so the tab stays
+   organized as integrations grow. */
+.elementor-mcp-plugin-group {
+	margin: 0 0 32px;
+}
+.elementor-mcp-plugin-group:last-child {
+	margin-bottom: 0;
+}
+.elementor-mcp-plugin-group-head {
+	display: flex;
+	align-items: baseline;
+	gap: 10px;
+	flex-wrap: wrap;
+	margin: 0 0 14px;
+}
+.elementor-mcp-plugin-group-title {
+	font-size: 15px;
+	font-weight: 700;
+	letter-spacing: -0.01em;
+	color: var(--mcp-gray-800);
+}
+.elementor-mcp-plugin-group-desc {
+	font-size: 12.5px;
+	color: var(--mcp-gray-500);
+}
+.elementor-mcp-plugin-group-count {
+	margin-left: auto;
+	flex-shrink: 0;
+	font-size: 12px;
+	font-weight: 500;
+	color: var(--mcp-gray-500);
+	font-variant-numeric: tabular-nums;
+	background: var(--mcp-gray-100);
+	padding: 2px 8px;
+	border-radius: 10px;
+}
+/* Two plugin cards per row on wide screens; a lone card fills the row. */
+.elementor-mcp-plugin-group-body {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+	gap: 14px;
+}
+.elementor-mcp-plugin-group-body .elementor-mcp-category {
+	margin: 0;
+	background: var(--mcp-white);
+	border: 1px solid var(--mcp-gray-200);
+	border-radius: var(--mcp-radius-lg);
+	padding: 4px 14px 12px;
+}
+/* Slimmer toggle cards inside a plugin card: stack one-per-row, tighter. */
+.elementor-mcp-plugin-group-body .elementor-mcp-tools-grid.is-two-up {
+	grid-template-columns: 1fr;
+	gap: 10px;
+}
+.elementor-mcp-plugin-group-body .elementor-mcp-tool-card {
+	padding: 12px;
+}
+@media screen and (max-width: 782px) {
+	.elementor-mcp-plugin-group-body {
+		grid-template-columns: 1fr;
+	}
+}
+
 /* Segmented All / None control. */
 .elementor-mcp-cat-toggle-group {
 	display: inline-flex;
@@ -4201,18 +4266,71 @@ body[data-emcp-auth="app-password"] [data-authfor="oauth"] { display: none; }
 .emcp-oauth-desc { margin: 0 0 8px; }
 .emcp-oauth-path-label { color: #9497a8; font-size: 12.5px; }
 .emcp-oauth-deeplink { margin-bottom: 6px; }
-/* Dashboard usage widget (Pro). Flat, no gradients. */
-.emcp-dash-usage { display: flex; flex-wrap: wrap; gap: 28px; align-items: flex-start; }
-.emcp-dash-usage-kpis { display: flex; gap: 28px; }
-.emcp-dash-usage-kpi { display: flex; flex-direction: column; }
-.emcp-dash-usage-num { font-size: 30px; font-weight: 700; line-height: 1.1; color: #1f2430; }
-.emcp-dash-usage-lbl { font-size: 12.5px; color: #6b7280; margin-top: 2px; }
-.emcp-dash-usage-pop { min-width: 240px; }
-.emcp-dash-usage-pop-h { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; color: #6b7280; margin-bottom: 8px; }
-.emcp-dash-usage-list { margin: 0; padding: 0; list-style: none; }
-.emcp-dash-usage-list li { display: flex; justify-content: space-between; gap: 12px; padding: 5px 0; border-bottom: 1px solid #eef0f4; font-size: 13px; }
-.emcp-dash-usage-slug { color: #374151; }
-.emcp-dash-usage-count { color: #4f46e5; font-variant-numeric: tabular-nums; white-space: nowrap; }
+/* Dashboard "Your usage" — 4-card activity grid. Flat, no gradients. */
+.emcp-dash-usage-grid {
+	display: grid;
+	grid-template-columns: repeat(4, minmax(0, 1fr));
+	gap: 16px;
+}
+.emcp-dash-ucard {
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+	padding: 16px 16px 14px;
+	background: var(--mcp-gray-50);
+	border: 1px solid var(--mcp-gray-200);
+	border-radius: 10px;
+	text-decoration: none;
+	transition: border-color .15s ease, background .15s ease, box-shadow .15s ease;
+}
+.emcp-dash-ucard:hover {
+	background: var(--mcp-white);
+	border-color: var(--mcp-primary);
+	box-shadow: 0 1px 2px rgba(16, 24, 40, .06);
+}
+.emcp-dash-ucard:focus-visible { outline: 2px solid var(--mcp-primary); outline-offset: 2px; }
+.emcp-dash-ucard-head { display: flex; align-items: center; gap: 9px; margin-bottom: 12px; }
+.emcp-dash-ucard-ico {
+	width: 28px; height: 28px; flex: none;
+	border-radius: 8px;
+	display: inline-flex; align-items: center; justify-content: center;
+}
+.emcp-dash-ucard-ico .dashicons { font-size: 16px; width: 16px; height: 16px; line-height: 16px; }
+.emcp-dash-ucard-ico--usage   { background: var(--mcp-primary-light); color: var(--mcp-primary); }
+.emcp-dash-ucard-ico--history { background: var(--mcp-success-light); color: var(--mcp-success); }
+.emcp-dash-ucard-ico--tools   { background: #dbeafe; color: #2563eb; }
+.emcp-dash-ucard-ico--sandbox { background: #fef3c7; color: var(--mcp-warning); }
+.emcp-dash-ucard-title {
+	display: flex; align-items: center; gap: 6px;
+	font-size: 12px; font-weight: 600;
+	text-transform: uppercase; letter-spacing: .04em;
+	color: var(--mcp-gray-500);
+}
+.emcp-dash-ucard-num { font-size: 30px; font-weight: 700; line-height: 1; color: #1f2430; font-variant-numeric: tabular-nums; }
+.emcp-dash-ucard-sub { font-size: 12.5px; color: var(--mcp-gray-500); margin-top: 4px; }
+.emcp-dash-ucard-foot { margin-top: auto; padding-top: 12px; font-size: 12px; color: var(--mcp-gray-500); }
+/* KPI pair (Usage card) */
+.emcp-dash-ucard-kpis { display: flex; gap: 22px; }
+.emcp-dash-ucard-kpi { display: flex; flex-direction: column; }
+.emcp-dash-ucard-kpi .emcp-dash-ucard-num { font-size: 26px; }
+/* Most-used list */
+.emcp-dash-ucard-list { margin: 0; padding: 0; list-style: none; width: 100%; }
+.emcp-dash-ucard-list li {
+	display: flex; align-items: baseline; justify-content: space-between; gap: 10px;
+	padding: 5px 0; border-bottom: 1px solid var(--mcp-gray-100);
+	font-size: 12.5px;
+}
+.emcp-dash-ucard-list li:last-child { border-bottom: 0; }
+.emcp-dash-ucard-act { color: #374151; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.emcp-dash-ucard-dom { color: var(--mcp-gray-500); }
+.emcp-dash-ucard-cnt { color: var(--mcp-primary); font-variant-numeric: tabular-nums; white-space: nowrap; flex: none; }
+.emcp-dash-ucard-empty { font-size: 12.5px; color: var(--mcp-gray-500); }
+@media screen and (max-width: 1200px) {
+	.emcp-dash-usage-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media screen and (max-width: 600px) {
+	.emcp-dash-usage-grid { grid-template-columns: 1fr; }
+}
 .elementor-mcp-template-usage { display: inline-block; font-size: 11.5px; color: #6b7280; margin: 2px 0 0; }
 
 /* History: delete one / clear all. */

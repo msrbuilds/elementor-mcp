@@ -203,7 +203,12 @@ $emcp_tools_badge_labels = array(
 					<span><?php echo esc_html( $emcp_tools_tab_note ); ?></span>
 				</p>
 			<?php endif; ?>
-			<?php foreach ( $emcp_tools_tab_cats as $emcp_tools_category_id => $emcp_tools_category ) : ?>
+			<?php
+			// Render one category (the "plugin card"): header + toggle grid.
+			// Defined once and reused for both ungrouped categories (inline) and
+			// grouped ones (nested under a group heading on the Plugins tab).
+			$emcp_tools_render_category = function ( $emcp_tools_category_id, $emcp_tools_category ) use ( $emcp_tools_disabled, $emcp_tools_elementor_active, $emcp_tools_badge_labels, $emcp_tools_is_pro, $emcp_tools_upgrade_url ) {
+				?>
 				<div class="elementor-mcp-category <?php echo esc_attr( ! empty( $emcp_tools_category['danger'] ) ? 'is-danger' : '' ); ?>" data-category="<?php echo esc_attr( $emcp_tools_category_id ); ?>">
 					<?php
 					$emcp_tools_cat_total   = count( $emcp_tools_category['tools'] );
@@ -334,6 +339,69 @@ $emcp_tools_badge_labels = array(
 								</span>
 							</label>
 						<?php endforeach; ?>
+					</div>
+				</div>
+				<?php
+			};
+
+			// Partition this tab's categories into plugin groups. Categories that
+			// carry a 'group' key (the Plugins-tab integrations) cluster under a
+			// group heading; everything else renders inline, ungrouped.
+			$emcp_tools_group_defs = EMCP_Tools_Admin::plugin_groups();
+			$emcp_tools_grouped    = array();
+			$emcp_tools_ungrouped  = array();
+			foreach ( $emcp_tools_tab_cats as $emcp_tools_cid => $emcp_tools_cat ) {
+				if ( ! empty( $emcp_tools_cat['group'] ) && isset( $emcp_tools_group_defs[ $emcp_tools_cat['group'] ] ) ) {
+					$emcp_tools_grouped[ $emcp_tools_cat['group'] ][ $emcp_tools_cid ] = $emcp_tools_cat;
+				} else {
+					$emcp_tools_ungrouped[ $emcp_tools_cid ] = $emcp_tools_cat;
+				}
+			}
+
+			// Ungrouped categories first (unchanged layout for non-Plugins tabs).
+			foreach ( $emcp_tools_ungrouped as $emcp_tools_category_id => $emcp_tools_category ) {
+				$emcp_tools_render_category( $emcp_tools_category_id, $emcp_tools_category );
+			}
+
+			// Then each non-empty group, in registry order.
+			foreach ( $emcp_tools_group_defs as $emcp_tools_gid => $emcp_tools_gdef ) :
+				if ( empty( $emcp_tools_grouped[ $emcp_tools_gid ] ) ) {
+					continue;
+				}
+				$emcp_tools_g_total   = 0;
+				$emcp_tools_g_enabled = 0;
+				foreach ( $emcp_tools_grouped[ $emcp_tools_gid ] as $emcp_tools_gcat ) {
+					foreach ( $emcp_tools_gcat['tools'] as $emcp_tools_gslug => $emcp_tools_gunused ) {
+						$emcp_tools_g_total++;
+						if ( ! in_array( $emcp_tools_gslug, $emcp_tools_disabled, true ) ) {
+							$emcp_tools_g_enabled++;
+						}
+					}
+				}
+				?>
+				<div class="elementor-mcp-plugin-group" data-group="<?php echo esc_attr( $emcp_tools_gid ); ?>">
+					<div class="elementor-mcp-plugin-group-head">
+						<span class="elementor-mcp-plugin-group-title"><?php echo esc_html( $emcp_tools_gdef['label'] ); ?></span>
+						<?php if ( ! empty( $emcp_tools_gdef['desc'] ) ) : ?>
+							<span class="elementor-mcp-plugin-group-desc"><?php echo esc_html( $emcp_tools_gdef['desc'] ); ?></span>
+						<?php endif; ?>
+						<span class="elementor-mcp-plugin-group-count">
+							<?php
+							printf(
+								/* translators: %1$d: enabled, %2$d: total */
+								esc_html__( '%1$d / %2$d', 'emcp-tools' ),
+								(int) $emcp_tools_g_enabled,
+								(int) $emcp_tools_g_total
+							);
+							?>
+						</span>
+					</div>
+					<div class="elementor-mcp-plugin-group-body">
+						<?php
+						foreach ( $emcp_tools_grouped[ $emcp_tools_gid ] as $emcp_tools_category_id => $emcp_tools_category ) {
+							$emcp_tools_render_category( $emcp_tools_category_id, $emcp_tools_category );
+						}
+						?>
 					</div>
 				</div>
 			<?php endforeach; ?>

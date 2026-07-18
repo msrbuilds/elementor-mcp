@@ -140,6 +140,20 @@
 				el.textContent = ce + ' / ' + cbs.length;
 			}
 		} );
+		// Plugin-group counts (Plugins tab): sum across the group's plugin cards.
+		form.querySelectorAll( '.elementor-mcp-plugin-group' ).forEach( function ( grp ) {
+			var cbs = grp.querySelectorAll( '.elementor-mcp-tool-card input[type="checkbox"]' );
+			var ge = 0;
+			cbs.forEach( function ( cb ) {
+				if ( cb.checked ) {
+					ge++;
+				}
+			} );
+			var el = grp.querySelector( '.elementor-mcp-plugin-group-count' );
+			if ( el ) {
+				el.textContent = ge + ' / ' + cbs.length;
+			}
+		} );
 	}
 
 	/**

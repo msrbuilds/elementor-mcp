@@ -174,54 +174,152 @@ $emcp_videos = array(
 	</section>
 
 	<?php
-	// Usage widget (Pro): this site's activity + the globally-popular templates.
-	if ( class_exists( 'EMCP_Tools_Pro_Usage' ) ) :
-		$emcp_usage_local = EMCP_Tools_Pro_Usage::local_summary();
-		// Cached-only — never block the dashboard on a network fetch. The
-		// templates page warms this transient when a Pro user opens it.
-		$emcp_usage_counts = EMCP_Tools_Pro_Usage::cached_counts();
-		// Top 5 templates by global usage.
-		$emcp_pop = array();
-		foreach ( $emcp_usage_counts as $emcp_k => $emcp_n ) {
-			if ( 0 === strpos( $emcp_k, 'template:' ) ) {
-				$emcp_pop[ substr( $emcp_k, 9 ) ] = (int) $emcp_n;
-			}
+	// Activity pulse: usage KPIs (Pro), change-ledger overview, most-used actions,
+	// and the Sandbox item count. History + Most-used + Sandbox are free features,
+	// so the whole section renders on both tiers.
+	$emcp_has_usage   = class_exists( 'EMCP_Tools_Pro_Usage' );
+	$emcp_usage_local = $emcp_has_usage
+		? EMCP_Tools_Pro_Usage::local_summary()
+		: array( 'templates' => 0, 'prompts' => 0 );
+
+	// Change-ledger overview + most-used actions.
+	$emcp_log       = class_exists( 'EMCP_Tools_Change_Log' ) ? EMCP_Tools_Change_Log::all() : array();
+	$emcp_changes   = count( $emcp_log );
+	$emcp_rolled    = 0;
+	$emcp_last_ts   = 0;
+	$emcp_action_ct = array();
+	foreach ( $emcp_log as $emcp_e ) {
+		if ( ! empty( $emcp_e['rolled_back'] ) ) {
+			++$emcp_rolled;
 		}
-		arsort( $emcp_pop );
-		$emcp_pop = array_slice( $emcp_pop, 0, 5, true );
-		?>
-		<section class="emcp-dash-section" aria-labelledby="emcp-dash-usage-h">
-			<div class="emcp-dash-section-head">
-				<h2 id="emcp-dash-usage-h" class="emcp-dash-section-title"><?php esc_html_e( 'Your usage', 'emcp-tools' ); ?></h2>
-				<p class="emcp-dash-section-sub"><?php esc_html_e( 'What you have applied on this site, plus what is popular across everyone.', 'emcp-tools' ); ?></p>
-			</div>
-			<div class="emcp-dash-usage">
-				<div class="emcp-dash-usage-kpis">
-					<div class="emcp-dash-usage-kpi">
-						<span class="emcp-dash-usage-num"><?php echo esc_html( number_format_i18n( $emcp_usage_local['templates'] ) ); ?></span>
-						<span class="emcp-dash-usage-lbl"><?php esc_html_e( 'templates applied', 'emcp-tools' ); ?></span>
-					</div>
-					<div class="emcp-dash-usage-kpi">
-						<span class="emcp-dash-usage-num"><?php echo esc_html( number_format_i18n( $emcp_usage_local['prompts'] ) ); ?></span>
-						<span class="emcp-dash-usage-lbl"><?php esc_html_e( 'prompts copied', 'emcp-tools' ); ?></span>
-					</div>
-				</div>
-				<?php if ( ! empty( $emcp_pop ) ) : ?>
-					<div class="emcp-dash-usage-pop">
-						<div class="emcp-dash-usage-pop-h"><?php esc_html_e( 'Popular templates', 'emcp-tools' ); ?></div>
-						<ul class="emcp-dash-usage-list">
-							<?php foreach ( $emcp_pop as $emcp_slug => $emcp_used ) : ?>
-								<li>
-									<span class="emcp-dash-usage-slug"><?php echo esc_html( $emcp_slug ); ?></span>
-									<span class="emcp-dash-usage-count"><?php echo esc_html( sprintf( /* translators: %s: number of uses */ _n( '%s use', '%s uses', $emcp_used, 'emcp-tools' ), number_format_i18n( $emcp_used ) ) ); ?></span>
-								</li>
-							<?php endforeach; ?>
-						</ul>
-					</div>
+		if ( isset( $emcp_e['ts'] ) && (int) $emcp_e['ts'] > $emcp_last_ts ) {
+			$emcp_last_ts = (int) $emcp_e['ts'];
+		}
+		$emcp_dom = isset( $emcp_e['domain'] ) ? (string) $emcp_e['domain'] : '';
+		$emcp_act = isset( $emcp_e['action'] ) ? (string) $emcp_e['action'] : '';
+		if ( '' === $emcp_dom && '' === $emcp_act ) {
+			continue;
+		}
+		$emcp_key = $emcp_dom . '|' . $emcp_act;
+		if ( ! isset( $emcp_action_ct[ $emcp_key ] ) ) {
+			$emcp_action_ct[ $emcp_key ] = 0;
+		}
+		++$emcp_action_ct[ $emcp_key ];
+	}
+	arsort( $emcp_action_ct );
+	$emcp_top_actions = array_slice( $emcp_action_ct, 0, 4, true );
+
+	// Sandbox items (PHP snippet CPT): active = publish, drafts = draft.
+	$emcp_snip        = function_exists( 'wp_count_posts' ) ? wp_count_posts( 'emcp_php_snippet' ) : null;
+	$emcp_snip_active = ( $emcp_snip && isset( $emcp_snip->publish ) ) ? (int) $emcp_snip->publish : 0;
+	$emcp_snip_draft  = ( $emcp_snip && isset( $emcp_snip->draft ) ) ? (int) $emcp_snip->draft : 0;
+	$emcp_snip_total  = $emcp_snip_active + $emcp_snip_draft;
+
+	$emcp_url_prompts = admin_url( 'admin.php?page=' . $emcp_page . '-prompts' );
+	$emcp_url_history = admin_url( 'admin.php?page=' . $emcp_page . '-history' );
+	$emcp_url_sandbox = admin_url( 'admin.php?page=' . $emcp_page . '-widgets' );
+	?>
+	<section class="emcp-dash-section" aria-labelledby="emcp-dash-usage-h">
+		<div class="emcp-dash-section-head">
+			<h2 id="emcp-dash-usage-h" class="emcp-dash-section-title"><?php esc_html_e( 'Your usage', 'emcp-tools' ); ?></h2>
+			<p class="emcp-dash-section-sub"><?php esc_html_e( 'A quick pulse on what your AI has done on this site.', 'emcp-tools' ); ?></p>
+		</div>
+		<div class="emcp-dash-usage-grid">
+
+			<!-- Usage KPIs -->
+			<a class="emcp-dash-ucard" href="<?php echo esc_url( $emcp_url_prompts ); ?>">
+				<span class="emcp-dash-ucard-head">
+					<span class="emcp-dash-ucard-ico emcp-dash-ucard-ico--usage"><span class="dashicons dashicons-chart-bar" aria-hidden="true"></span></span>
+					<span class="emcp-dash-ucard-title">
+						<?php esc_html_e( 'Usage', 'emcp-tools' ); ?>
+						<?php if ( ! $emcp_has_usage ) : ?>
+							<span class="emcp-dash-badge emcp-dash-badge--pro"><?php esc_html_e( 'Pro', 'emcp-tools' ); ?></span>
+						<?php endif; ?>
+					</span>
+				</span>
+				<span class="emcp-dash-ucard-kpis">
+					<span class="emcp-dash-ucard-kpi">
+						<span class="emcp-dash-ucard-num"><?php echo esc_html( number_format_i18n( $emcp_usage_local['templates'] ) ); ?></span>
+						<span class="emcp-dash-ucard-sub"><?php esc_html_e( 'templates applied', 'emcp-tools' ); ?></span>
+					</span>
+					<span class="emcp-dash-ucard-kpi">
+						<span class="emcp-dash-ucard-num"><?php echo esc_html( number_format_i18n( $emcp_usage_local['prompts'] ) ); ?></span>
+						<span class="emcp-dash-ucard-sub"><?php esc_html_e( 'prompts copied', 'emcp-tools' ); ?></span>
+					</span>
+				</span>
+			</a>
+
+			<!-- History overview -->
+			<a class="emcp-dash-ucard" href="<?php echo esc_url( $emcp_url_history ); ?>">
+				<span class="emcp-dash-ucard-head">
+					<span class="emcp-dash-ucard-ico emcp-dash-ucard-ico--history"><span class="dashicons dashicons-undo" aria-hidden="true"></span></span>
+					<span class="emcp-dash-ucard-title"><?php esc_html_e( 'History', 'emcp-tools' ); ?></span>
+				</span>
+				<span class="emcp-dash-ucard-num"><?php echo esc_html( number_format_i18n( $emcp_changes ) ); ?></span>
+				<span class="emcp-dash-ucard-sub"><?php esc_html_e( 'changes recorded', 'emcp-tools' ); ?></span>
+				<span class="emcp-dash-ucard-foot">
+					<?php
+					if ( $emcp_last_ts > 0 ) {
+						printf(
+							/* translators: 1: rolled-back count, 2: human-readable time since last change */
+							esc_html__( '%1$s rolled back · last %2$s ago', 'emcp-tools' ),
+							esc_html( number_format_i18n( $emcp_rolled ) ),
+							esc_html( human_time_diff( $emcp_last_ts, time() ) )
+						);
+					} else {
+						esc_html_e( 'No changes recorded yet', 'emcp-tools' );
+					}
+					?>
+				</span>
+			</a>
+
+			<!-- Most used actions -->
+			<a class="emcp-dash-ucard" href="<?php echo esc_url( $emcp_url_history ); ?>">
+				<span class="emcp-dash-ucard-head">
+					<span class="emcp-dash-ucard-ico emcp-dash-ucard-ico--tools"><span class="dashicons dashicons-admin-tools" aria-hidden="true"></span></span>
+					<span class="emcp-dash-ucard-title"><?php esc_html_e( 'Most used', 'emcp-tools' ); ?></span>
+				</span>
+				<?php if ( ! empty( $emcp_top_actions ) ) : ?>
+					<ul class="emcp-dash-ucard-list">
+						<?php
+						foreach ( $emcp_top_actions as $emcp_key => $emcp_cnt ) :
+							$emcp_parts = explode( '|', $emcp_key, 2 );
+							$emcp_dom   = $emcp_parts[0];
+							$emcp_act   = isset( $emcp_parts[1] ) ? $emcp_parts[1] : '';
+							?>
+							<li>
+								<span class="emcp-dash-ucard-act"><?php if ( '' !== $emcp_dom ) : ?><span class="emcp-dash-ucard-dom"><?php echo esc_html( $emcp_dom ); ?> </span><?php endif; ?><?php echo esc_html( $emcp_act ); ?></span>
+								<span class="emcp-dash-ucard-cnt"><?php echo esc_html( number_format_i18n( $emcp_cnt ) ); ?></span>
+							</li>
+						<?php endforeach; ?>
+					</ul>
+				<?php else : ?>
+					<span class="emcp-dash-ucard-empty"><?php esc_html_e( 'No activity yet', 'emcp-tools' ); ?></span>
 				<?php endif; ?>
-			</div>
-		</section>
-	<?php endif; ?>
+			</a>
+
+			<!-- Sandbox items -->
+			<a class="emcp-dash-ucard" href="<?php echo esc_url( $emcp_url_sandbox ); ?>">
+				<span class="emcp-dash-ucard-head">
+					<span class="emcp-dash-ucard-ico emcp-dash-ucard-ico--sandbox"><span class="dashicons dashicons-editor-code" aria-hidden="true"></span></span>
+					<span class="emcp-dash-ucard-title"><?php esc_html_e( 'Sandbox', 'emcp-tools' ); ?></span>
+				</span>
+				<span class="emcp-dash-ucard-num"><?php echo esc_html( number_format_i18n( $emcp_snip_total ) ); ?></span>
+				<span class="emcp-dash-ucard-sub"><?php esc_html_e( 'PHP snippets', 'emcp-tools' ); ?></span>
+				<span class="emcp-dash-ucard-foot">
+					<?php
+					printf(
+						/* translators: 1: active snippet count, 2: draft snippet count */
+						esc_html__( '%1$s active · %2$s drafts', 'emcp-tools' ),
+						esc_html( number_format_i18n( $emcp_snip_active ) ),
+						esc_html( number_format_i18n( $emcp_snip_draft ) )
+					);
+					?>
+				</span>
+			</a>
+
+		</div>
+	</section>
 
 	<!-- Feature sneak peek -->
 	<section class="emcp-dash-section" aria-labelledby="emcp-dash-features-h">
