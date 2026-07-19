@@ -223,8 +223,26 @@ class EMCP_Tools_Data {
 			);
 		}
 
-		if ( ! $result ) {
-			// Fallback: direct meta write for non-browser contexts (CLI, REST proxy).
+		// Verify the native save actually persisted our elements. Elementor's
+		// Document::save() can return a truthy value in some 4.x / atomic / REST
+		// contexts yet drop the elements so `_elementor_data` ends up empty —
+		// a silent write failure the caller never sees (issue #98). Re-read and,
+		// if we sent real elements but nothing landed, force the direct meta write
+		// below rather than reporting a phantom success.
+		$needs_fallback = ! $result;
+		if ( ! $needs_fallback && ! empty( $data ) ) {
+			$persisted_raw = get_post_meta( $post_id, '_elementor_data', true );
+			$persisted     = ( is_string( $persisted_raw ) && '' !== $persisted_raw )
+				? json_decode( $persisted_raw, true )
+				: null;
+			if ( empty( $persisted ) || ! is_array( $persisted ) ) {
+				$needs_fallback = true;
+			}
+		}
+
+		if ( $needs_fallback ) {
+			// Fallback: direct meta write for non-browser contexts (CLI, REST proxy)
+			// and for the silent-drop case above.
 			$json = wp_json_encode( $data );
 
 			if ( false === $json ) {
@@ -397,12 +415,9 @@ class EMCP_Tools_Data {
 	 */
 	public function reassign_ids( array $elements ): array {
 		foreach ( $elements as &$element ) {
-			$element['id'] = EMCP_Tools_Id_Generator::generate();
-
-			if ( ! empty( $element['elements'] ) && is_array( $element['elements'] ) ) {
-				$element['elements'] = $this->reassign_ids( $element['elements'] );
-			}
+			$element = $this->reassign_element_ids( $element );
 		}
+		unset( $element );
 
 		return $elements;
 	}
@@ -417,6 +432,14 @@ class EMCP_Tools_Data {
 	 */
 	public function reassign_element_ids( array $element ): array {
 		$element['id'] = EMCP_Tools_Id_Generator::generate();
+
+		// v4 atomic elements: local style classes are named `e-<id>-<hash>` and
+		// belong to a single element. A fresh element id must get fresh local
+		// classes, or the duplicate shares the source's local classes — causing
+		// cross-element style bleed and Style Origin doubling (issue #97).
+		if ( class_exists( 'EMCP_Tools_Atomic_Styles' ) ) {
+			EMCP_Tools_Atomic_Styles::remap_local_classes( $element );
+		}
 
 		if ( ! empty( $element['elements'] ) && is_array( $element['elements'] ) ) {
 			$element['elements'] = $this->reassign_ids( $element['elements'] );
