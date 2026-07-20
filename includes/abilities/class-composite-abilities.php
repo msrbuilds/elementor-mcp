@@ -38,6 +38,14 @@ class EMCP_Tools_Composite_Abilities {
 	private $elements_created = 0;
 
 	/**
+	 * Non-fatal notes from the last build — shorthand coercions and skipped
+	 * nodes — so build-page never reports a silent partial success.
+	 *
+	 * @var string[]
+	 */
+	private $warnings = array();
+
+	/**
 	 * Constructor.
 	 *
 	 * @since 1.0.0
@@ -119,13 +127,13 @@ class EMCP_Tools_Composite_Abilities {
 						),
 						'structure'     => array(
 							'type'        => 'array',
-							'description' => __( 'Declarative element tree. Each item has type (container|widget), settings, and optionally children (for containers) or widget_type (for widgets).', 'emcp-tools' ),
+							'description' => __( 'Declarative element tree. Each item is type:"container" (with children) or type:"widget" (with widget_type + settings). Shorthand is accepted and coerced: type:"heading" is read as a heading widget, and any node with children is treated as a container — but the response lists these coercions under "warnings", so prefer the explicit shape. Every widget needs a widget_type; a widget with none is skipped and reported.', 'emcp-tools' ),
 							'items'       => array(
 								'type'       => 'object',
 								'properties' => array(
 									'type'        => array(
-										'type' => 'string',
-										'enum' => array( 'container', 'widget' ),
+										'type'        => 'string',
+										'description' => __( 'Preferably "container" or "widget". A widget name (e.g. "heading") is accepted as shorthand and coerced, with a note in "warnings".', 'emcp-tools' ),
 									),
 									'widget_type' => array( 'type' => 'string' ),
 									'settings'    => array( 'type' => 'object' ),
@@ -145,6 +153,11 @@ class EMCP_Tools_Composite_Abilities {
 						'edit_url'         => array( 'type' => 'string' ),
 						'preview_url'      => array( 'type' => 'string' ),
 						'elements_created' => array( 'type' => 'integer' ),
+						'warnings'         => array(
+							'type'        => 'array',
+							'description' => __( 'Non-fatal notes: nodes that were coerced from shorthand or skipped. If present, some elements did not land exactly as written — fix and rebuild or patch with the layout/widget tools.', 'emcp-tools' ),
+							'items'       => array( 'type' => 'string' ),
+						),
 					),
 				),
 				'meta'                => array(
@@ -202,6 +215,7 @@ class EMCP_Tools_Composite_Abilities {
 
 		// 2. Build the Elementor element tree from the declarative structure.
 		$this->elements_created = 0;
+		$this->warnings         = array();
 		$elements               = $this->build_elements( $structure );
 
 		// 3. Save the element data.
@@ -219,13 +233,19 @@ class EMCP_Tools_Composite_Abilities {
 		$edit_url    = admin_url( 'post.php?post=' . $post_id . '&action=elementor' );
 		$preview_url = get_permalink( $post_id );
 
-		return array(
+		$out = array(
 			'post_id'          => $post_id,
 			'title'            => $title,
 			'edit_url'         => $edit_url,
 			'preview_url'      => $preview_url ? $preview_url : '',
 			'elements_created' => $this->elements_created,
 		);
+		// Surface coercions/skips so the caller learns a node didn't land as
+		// written, instead of a silent partial success (cf. the empty-column case).
+		if ( ! empty( $this->warnings ) ) {
+			$out['warnings'] = array_values( array_unique( $this->warnings ) );
+		}
+		return $out;
 	}
 
 	// -------------------------------------------------------------------------
@@ -252,6 +272,51 @@ class EMCP_Tools_Composite_Abilities {
 	 * @param string $parent_direction The parent container's flex_direction.
 	 * @return array The Elementor element tree.
 	 */
+	/**
+	 * Normalises a shorthand node into the canonical {type, widget_type} shape.
+	 *
+	 * Weaker models routinely write `{ "type": "heading", ... }` instead of
+	 * `{ "type": "widget", "widget_type": "heading" }`, or give a container a
+	 * `type` other than "container" while still supplying `children`. Rather than
+	 * silently dropping those (which is how a request "succeeds" yet renders empty
+	 * columns), coerce the obvious intent and note it in the warnings.
+	 *
+	 * @param array $item One declarative node.
+	 * @return array The node with a canonical `type` (and `widget_type` for widgets).
+	 */
+	private function normalize_node( array $item ): array {
+		$type = isset( $item['type'] ) ? (string) $item['type'] : '';
+
+		if ( 'container' === $type || 'widget' === $type ) {
+			return $item;
+		}
+
+		$has_children = isset( $item['children'] ) && is_array( $item['children'] ) && ! empty( $item['children'] );
+
+		// Anything carrying children is a container regardless of its label.
+		if ( $has_children ) {
+			if ( '' !== $type ) {
+				$this->warnings[] = sprintf( 'Treated node type "%s" as a container because it has children.', $type );
+			}
+			$item['type'] = 'container';
+			return $item;
+		}
+
+		// A non-container/widget type with no children is a widget shorthand:
+		// the type IS the widget type (e.g. "heading", "button", "image").
+		if ( '' !== $type ) {
+			if ( empty( $item['widget_type'] ) ) {
+				$item['widget_type'] = $type;
+				$this->warnings[]    = sprintf( 'Interpreted "type":"%1$s" as a "%1$s" widget — prefer {"type":"widget","widget_type":"%1$s"}.', $type );
+			} else {
+				$this->warnings[] = sprintf( 'Node had type "%1$s" and widget_type "%2$s"; used widget_type "%2$s".', $type, (string) $item['widget_type'] );
+			}
+			$item['type'] = 'widget';
+		}
+
+		return $item;
+	}
+
 	private function build_elements( array $items, bool $is_inner = false, string $parent_direction = '' ): array {
 		$elements  = array();
 		$is_in_row = ( 'row' === $parent_direction || 'row-reverse' === $parent_direction );
@@ -263,6 +328,10 @@ class EMCP_Tools_Composite_Abilities {
 		}
 
 		foreach ( $items as $item ) {
+			if ( ! is_array( $item ) ) {
+				continue;
+			}
+			$item = $this->normalize_node( $item );
 			$type = $item['type'] ?? '';
 
 			if ( 'container' === $type ) {
@@ -303,7 +372,9 @@ class EMCP_Tools_Composite_Abilities {
 				$widget_type = $item['widget_type'] ?? '';
 				$settings    = $item['settings'] ?? array();
 
-				if ( ! empty( $widget_type ) ) {
+				if ( empty( $widget_type ) ) {
+					$this->warnings[] = 'Skipped a widget with no widget_type — give each widget a widget_type (e.g. "heading", "button", "image").';
+				} else {
 					$widget = $this->factory->create_widget( $widget_type, $settings );
 					$this->elements_created++;
 
