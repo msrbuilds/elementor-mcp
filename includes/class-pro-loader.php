@@ -54,6 +54,8 @@ final class EMCP_Tools_Pro_Loader {
 		'includes/ai-chat/class-ai-chat-provider.php',
 		'includes/ai-chat/class-ai-chat-store.php',
 		'includes/ai-chat/class-ai-chat-tool-groups.php',
+		// Settings depends on Tool_Groups (it validates group ids against it).
+		'includes/ai-chat/class-ai-chat-settings.php',
 		'includes/ai-chat/class-ai-chat-prompt.php',
 		'includes/ai-chat/class-ai-chat-web-fetch.php',
 		'includes/ai-chat/class-ai-chat-controller.php',
