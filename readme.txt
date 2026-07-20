@@ -3,7 +3,7 @@ Contributors: mianshahzadraza
 Tags: elementor, mcp, ai, page-builder, automation
 Requires at least: 6.9
 Tested up to: 7.0
-Stable tag: 3.5.0
+Stable tag: 3.5.1
 Requires PHP: 8.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -171,6 +171,18 @@ The plugin enforces WordPress capability checks on every tool. Read operations r
 2. Connection configuration page with copy-paste configs.
 
 == Changelog ==
+
+= 3.5.1 =
+A redesigned AI Chat (local models, vision, skills) + three connectivity/builder fixes.
+* Added: AI Chat gets a full-width two-column settings screen (built-in controls + default model on the left, providers on the right). (Pro)
+* Added: AI Chat providers DeepSeek, Moonshot, Z.ai, plus local runtimes Ollama and LM Studio — auto-detected on localhost, no API key needed. Refresh-models button; remembers your last provider/model. (Pro)
+* Added: AI Chat loads the EMCP agent skills, and handles images for text-only models via a local vision model or a built-in dependency-free image reader. (Pro)
+* Changed: AI Chat hardened for small local models — lean tool schemas, capped tool results, empty-turn recovery, reasoning-stream capture, one-page-per-request and background-format guidance; list-skills is now a compact catalog. (Pro)
+* Fixed: #99 — a different MCP-adapter version bundled by another active plugin (e.g. Rank Math) caused "McpServerError: Session terminated"; EMCP now serves the whole WP\MCP namespace from its bundled copy so the server starts regardless of load order.
+* Fixed: #97 — duplicating a v4 atomic element now re-mints its local style classes so the copy keeps its styling.
+* Fixed: #98 — verify-and-fallback when Elementor's document save reports success but persists nothing (CLI/proxy), so edits aren't silently lost.
+* Fixed: backgrounds emitted as a nested/array shorthand now render — the factory coerces them to Elementor's flat keys and adds the required classic activator (the "sideloaded photo doesn't show" cause).
+* Fixed: build-page no longer silently drops shorthand nodes (accepts them, returns warnings); sideload-image resolves api.unsplash.com download URLs with actionable errors; clearer web-fetch SSL/timeout errors.
 
 = 3.5.0 =
 Forms + SEO plugin integrations — 15 plugins over MCP.

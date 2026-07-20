@@ -2,6 +2,30 @@
 
 All notable changes to MCP Tools for Elementor are documented in this file.
 
+## [3.5.1]
+
+> A redesigned AI Chat with local models, vision, and skills — plus three connectivity/builder fixes.
+
+### Added
+- **AI Chat: a full-width, two-column settings screen (Pro).** Left column holds the built-in controls (capability & safety switches, tool-group access toggles, and the default-model selector); right column holds the providers. Cleaner, and it scales as providers grow.
+- **AI Chat: more providers + local runtimes (Pro).** Added **DeepSeek**, **Moonshot**, and **Z.ai** as hosted providers, plus **Ollama** and **LM Studio** as **local runtimes** — auto-detected on `localhost`, no API key needed. Run a fully private model against your own site.
+- **AI Chat: refresh-models button (Pro).** Pull a provider's current model list on demand — newly installed local models show up without reconnecting.
+- **AI Chat: remembers your last provider & model (Pro).** Your selection persists across reloads instead of resetting to the default each time.
+- **AI Chat: EMCP skills in the chat (Pro).** The bundled agent skills (page-building playbooks, per-plugin guides) are loaded into the chat so the assistant follows the field-tested patterns.
+- **AI Chat: vision for text-only models (Pro).** When the selected model has no vision, images are handled two ways — a local vision model (private, if you have one) describes them, and a **built-in image reader** (dependency-free: dimensions, format, transparency, dominant-colour palette) always provides usable context as a fallback.
+
+### Changed
+- **AI Chat: hardened for small local models (Pro).** Lean/compact tool schemas and capped oversized tool results keep the context window under control; empty-turn recovery and reasoning-stream capture stop "thinking" models from stalling; a one-page-per-request rule and explicit background-format guidance keep builds on track. `list-skills` returns a compact catalog and `emcp-skills` was split into a lean core plus on-demand sub-skills.
+
+### Fixed
+- **Mixed MCP-adapter versions no longer break the server (#99).** When another active plugin (e.g. Rank Math) bundles a different version of the WordPress MCP Adapter, PHP's one-class-per-name rule caused a namespace shear that surfaced as `McpServerError: Session terminated`. EMCP now serves the entire `WP\MCP\` namespace from its own bundled copy, so the server initialises regardless of load order. Opt out with `EMCP_TOOLS_NO_ADAPTER_PRELOAD`.
+- **Duplicating a v4 atomic element no longer drops its styles (#97).** `duplicate-element` now re-mints the element's local style classes (`e-<id>-<hash>`) so the copy keeps its own styling instead of colliding with the original.
+- **Silent-save guard (#98).** When Elementor's document save returns success but persists nothing (CLI/proxy contexts), the data layer now verifies the write and falls back so page edits aren't silently lost.
+- **Backgrounds set as a nested/array shorthand now render.** Agents commonly emit a container/widget background as a nested `background: { background_image: [{id,url}], … }` group without the `background_background: "classic"` activator — which Elementor silently ignores, so a sideloaded photo never appeared. The factory now coerces this to the flat keys Elementor reads (single image object + activator).
+- **`build-page` no longer silently drops shorthand nodes.** It accepts intuitive widget/container shorthand and returns warnings for anything it had to coerce, instead of quietly skipping it.
+- **`sideload-image` resolves Unsplash download URLs.** Passing an `api.unsplash.com/photos/<id>/download` URL (which 401s without a key) is now resolved to the real image when a key is present, with actionable errors that steer to the direct `search-images` URL or the `add-stock-image` composite.
+- **Clearer web-fetch errors.** SSL/timeout failures now return actionable guidance, with an opt-out for dev boxes with broken CA bundles.
+
 ## [3.5.0]
 
 > Forms + SEO plugin integrations (15 plugins), clearer Pro tool sections, a redesigned Dashboard usage panel, and an organized Plugins tab.
