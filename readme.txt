@@ -3,7 +3,7 @@ Contributors: mianshahzadraza
 Tags: elementor, mcp, ai, page-builder, automation
 Requires at least: 6.9
 Tested up to: 7.0
-Stable tag: 3.5.1
+Stable tag: 3.6.0
 Requires PHP: 8.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -171,6 +171,15 @@ The plugin enforces WordPress capability checks on every tool. Read operations r
 2. Connection configuration page with copy-paste configs.
 
 == Changelog ==
+
+= 3.6.0 =
+Elementor addon plugins over MCP, plus a fix for a fatal that could lock you out of wp-admin.
+* Added: Elementor Addons domain. Essential Addons and Premium Addons get a discovery tool each (their widgets are placed with the ordinary add-free-widget); Ultimate Addons for Elementor, formerly Header Footer Elementor, gets a read/write pair covering both its widgets and its header/footer templates with display conditions. (Pro)
+* Added: filtered widget schemas. A single addon widget can report 400 to 700 controls, so get-widget-schema returns content-bearing controls by default and reports total_controls vs shown; pass full:true for everything. (Pro)
+* Added: EMCP Themer / Ultimate Addons conflict handling. Both build headers and footers into the same slots, so an admin notice explains the clash and EMCP Themer takes priority per slot until you pick one. Any slot Themer does not claim still renders from Ultimate Addons.
+* Added: new agent skill emcp-plugins/addons covering the discover, inspect, place workflow and the template-record versus template-content split. (Pro)
+* Fixed: #100, fatal error on every wp-admin page load and REST request. Server-side malware scanners were quarantining our malware-audit file, because a malware scanner necessarily contains the webshell signatures it looks for. Signature literals are now assembled at runtime, so no intact signature sits on disk; detection is byte-identical.
+* Fixed: a missing class can no longer take down the site. The security scanner builds its audits lazily and ability registration is guarded, so one unavailable tool group degrades to those tools being absent instead of fataling wp-admin.
 
 = 3.5.1 =
 A redesigned AI Chat (local models, vision, skills) + three connectivity/builder fixes.

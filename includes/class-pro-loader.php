@@ -38,6 +38,12 @@ final class EMCP_Tools_Pro_Loader {
 		'includes/abilities/forms/class-formidable-integration.php',
 		'includes/abilities/forms/class-metform-integration.php',
 		'includes/abilities/forms/class-sureforms-integration.php',
+		// Elementor addon widget packs (discovery + curation only; placement
+		// stays on the generic add-free-widget tool).
+		'includes/abilities/addons/class-addon-pack-integration.php',
+		'includes/abilities/addons/class-essential-addons-integration.php',
+		'includes/abilities/addons/class-premium-addons-integration.php',
+		'includes/abilities/addons/class-uae-integration.php',
 		// SEO integrations (Pro adapters; the base + Slim SEO are free-tree).
 		'includes/abilities/seo/class-yoast-integration.php',
 		'includes/abilities/seo/class-rankmath-integration.php',

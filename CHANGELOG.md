@@ -2,6 +2,22 @@
 
 All notable changes to MCP Tools for Elementor are documented in this file.
 
+## [3.6.0]
+
+> Elementor addon plugins over MCP, plus a fix for a fatal that could lock you out of wp-admin.
+
+### Added
+- **Elementor Addons domain (Pro), 3 plugins, 4 tools.** A new **Elementor Addons** section on the Tools tab. Addon widgets were previously invisible to AI agents: `list-widgets` serves the curated core catalog, so an agent had no way to learn that `eael-pricing-table` or `premium-addon-banner` exist. These tools close that gap.
+  - **Essential Addons for Elementor** (`essential-addons-read`) and **Premium Addons for Elementor** (`premium-addons-read`), discovery only. Their widgets register into Elementor's own registry, so they are placed with the ordinary `add-free-widget`. There is deliberately no second placement path.
+  - **Ultimate Addons for Elementor** (`uae-read` / `uae-write`), formerly Header Footer Elementor. UAE is both a widget pack and a template plugin, so its read tool discovers widgets **and** lists header/footer/block templates with their display conditions, while the write tool creates, updates, retargets and deletes templates. Template content is built with the normal Elementor tools against the returned `template_id`.
+- **Filtered widget schemas.** A single addon widget can report 400 to 700 controls, which would flood an agent's context. `get-widget-schema` returns only content-bearing controls by default and reports `total_controls` vs `shown`; pass `full: true` for everything including styling.
+- **EMCP Themer / Ultimate Addons conflict handling (free).** Both build headers and footers into the same render slots, so a page could end up with two headers. EMCP Tools now shows an admin notice explaining the clash and, until you pick one system, gives **EMCP Themer priority per slot**: where Themer resolves a template, UAE's render for that slot is suppressed. Any slot Themer does not claim still renders from UAE, so an existing UAE-only footer keeps working.
+- **New agent skill `emcp-plugins/addons`.** Covers the discover/inspect/place workflow, why addon schemas are filtered, the rule against guessing control names, and the UAE template-record versus template-content split.
+
+### Fixed
+- **Fatal error on every wp-admin page load and REST request ([#100](https://github.com/msrbuilds/elementor-mcp/issues/100)).** Server-side malware scanners were quarantining `class-security-malware-audit.php`, because a malware scanner necessarily contains the webshell signatures it looks for, and that file spelled them out verbatim. Quarantining zeroes a file in place, so `require_once` still succeeded but the class was never declared, and ability registration then threw an uncaught error that took down the whole admin. Signature literals are now assembled from fragments at runtime, so no intact signature sits on disk. Detection behaviour is unchanged: the compiled patterns are byte-identical.
+- **A missing class can no longer take down the site.** Two independent guards, because the fix above addresses one cause and this addresses the whole class of failure. The security scanner now builds its audit engines lazily, so registering a tool never instantiates them, and ability registration is wrapped so that one unavailable tool group degrades to those tools being absent instead of fataling wp-admin. No single tool group is worth locking an admin out of their own site.
+
 ## [3.5.1]
 
 > A redesigned AI Chat with local models, vision, and skills, plus three connectivity/builder fixes.

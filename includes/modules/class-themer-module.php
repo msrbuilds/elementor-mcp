@@ -68,6 +68,12 @@ class EMCP_Tools_Themer_Module extends EMCP_Tools_Module {
 		$cpt = new EMCP_Tools_Themer_CPT();
 		$cpt->register();
 
+		// Header Footer Elementor builds the same header/footer slots. Warn the
+		// admin and, until they pick one system, let Themer win deterministically.
+		if ( class_exists( 'EMCP_Tools_Themer_HFE_Conflict' ) ) {
+			EMCP_Tools_Themer_HFE_Conflict::init();
+		}
+
 		EMCP_Tools_Themer_Index::register_hooks();
 
 		// One-time heal: a prior build could leave the condition index empty (the

@@ -444,7 +444,7 @@ class EMCP_Tools_Admin {
 	 *
 	 * @since 1.8.0
 	 */
-	const DEFAULTS_VERSION = 22;
+	const DEFAULTS_VERSION = 23;
 
 	/**
 	 * SEO/A11y Pro MCP tool slugs that ship disabled-by-default (v2 defaults).
@@ -845,6 +845,13 @@ class EMCP_Tools_Admin {
 			$add[] = 'emcp-tools/seopress-write';
 			$add[] = 'emcp-tools/seoframework-write';
 			$add[] = 'emcp-tools/surerank-write';
+		}
+
+		// v23 — Elementor addon domain. Only UAE has a write tool; Essential and
+		// Premium Addons are discovery-only (placement stays on add-free-widget),
+		// so there is nothing of theirs to disable.
+		if ( $applied < 23 ) {
+			$add[] = 'emcp-tools/uae-write';
 		}
 
 		$merged = array_values( array_unique( array_merge( $existing, $add ) ) );
@@ -1920,6 +1927,10 @@ class EMCP_Tools_Admin {
 				'label' => __( 'SEO', 'emcp-tools' ),
 				'desc'  => __( 'Read & write the SEO metadata your SEO plugin stores.', 'emcp-tools' ),
 			),
+			'addons'    => array(
+				'label' => __( 'Elementor Addons', 'emcp-tools' ),
+				'desc'  => __( 'Discover addon widget packs, and manage Ultimate Addons for Elementor templates.', 'emcp-tools' ),
+			),
 			'other'     => array(
 				'label' => __( 'Other Integrations', 'emcp-tools' ),
 				'desc'  => __( 'Additional plugin integrations.', 'emcp-tools' ),
@@ -2277,6 +2288,59 @@ class EMCP_Tools_Admin {
 	 * @since 3.5.0
 	 * @return string[]
 	 */
+	/**
+	 * Elementor addon-domain tool slugs (Pro).
+	 *
+	 * The two widget packs contribute a single read tool each: they exist for
+	 * discovery and curation, because their widgets are placed with the generic
+	 * add-free-widget tool. HFE is a data plugin and keeps the read/write pair.
+	 *
+	 * @since 3.6.0
+	 * @return string[]
+	 */
+	public static function addon_tool_slugs(): array {
+		return array(
+			'emcp-tools/essential-addons-read',
+			'emcp-tools/premium-addons-read',
+			'emcp-tools/uae-read',
+			'emcp-tools/uae-write',
+		);
+	}
+
+	/**
+	 * True when Essential Addons (Lite or Pro) is active.
+	 *
+	 * @since 3.6.0
+	 * @return bool
+	 */
+	public static function essential_addons_available(): bool {
+		return defined( 'EAEL_PLUGIN_VERSION' )
+			|| class_exists( '\Essential_Addons_Elementor\Classes\Bootstrap' );
+	}
+
+	/**
+	 * True when Premium Addons is active.
+	 *
+	 * @since 3.6.0
+	 * @return bool
+	 */
+	public static function premium_addons_available(): bool {
+		return defined( 'PREMIUM_ADDONS_VERSION' )
+			|| defined( 'PREMIUM_ADDONS_FILE' )
+			|| class_exists( 'PremiumAddons\Includes\Addons_Integration' );
+	}
+
+	/**
+	 * True when Ultimate Addons for Elementor (formerly Header Footer
+	 * Elementor) is active. Its own identifiers still say HFE.
+	 *
+	 * @since 3.6.0
+	 * @return bool
+	 */
+	public static function uae_available(): bool {
+		return class_exists( 'Header_Footer_Elementor' ) || post_type_exists( 'elementor-hf' );
+	}
+
 	public static function form_tool_slugs(): array {
 		return array(
 			'emcp-tools/cf7-read',
@@ -2422,6 +2486,7 @@ class EMCP_Tools_Admin {
 				self::metabox_tool_slugs(),
 				self::form_tool_slugs(),
 				self::seo_tool_slugs(),
+				self::addon_tool_slugs(),
 				self::theme_tool_slugs(),
 				self::seo_a11y_tool_slugs(),
 				self::widget_builder_tool_slugs(),
@@ -2924,6 +2989,65 @@ class EMCP_Tools_Admin {
 						'operations'  => array(
 							'update-fields',
 						),
+					),
+				),
+			),
+			'wp_ea'            => array(
+				'platform' => 'plugins',
+				'group'    => 'addons',
+				'pro'      => true,
+				'label'    => __( 'Essential Addons for Elementor', 'emcp-tools' ),
+				'note'     => __( 'Discovery for the Essential Addons widget pack. Its widgets are placed with the standard Add Free Widget tool, so this adds no widget-adding tool of its own, just the catalog and a readable schema (an addon widget can carry 400+ controls).', 'emcp-tools' ),
+				'tools'    => array(
+					'emcp-tools/essential-addons-read' => array(
+						'label'            => __( 'Essential Addons Read', 'emcp-tools' ),
+						'description'      => __( 'List Essential Addons widgets registered on this site and inspect a widget\'s content controls.', 'emcp-tools' ),
+						'badges'           => array( 'read-only' ),
+						'operations'       => array( 'list-widgets', 'get-widget-schema' ),
+						'available'        => self::essential_addons_available(),
+						'unavailable_note' => __( 'Install & activate Essential Addons for Elementor to enable this tool.', 'emcp-tools' ),
+					),
+				),
+			),
+			'wp_premium'       => array(
+				'platform' => 'plugins',
+				'group'    => 'addons',
+				'pro'      => true,
+				'label'    => __( 'Premium Addons for Elementor', 'emcp-tools' ),
+				'note'     => __( 'Discovery for the Premium Addons widget pack. As with Essential Addons, widgets are placed with the standard Add Free Widget tool; this supplies the catalog and a curated schema.', 'emcp-tools' ),
+				'tools'    => array(
+					'emcp-tools/premium-addons-read' => array(
+						'label'            => __( 'Premium Addons Read', 'emcp-tools' ),
+						'description'      => __( 'List Premium Addons widgets registered on this site and inspect a widget\'s content controls.', 'emcp-tools' ),
+						'badges'           => array( 'read-only' ),
+						'operations'       => array( 'list-widgets', 'get-widget-schema' ),
+						'available'        => self::premium_addons_available(),
+						'unavailable_note' => __( 'Install & activate Premium Addons for Elementor to enable this tool.', 'emcp-tools' ),
+					),
+				),
+			),
+			'wp_uae'           => array(
+				'platform' => 'plugins',
+				'group'    => 'addons',
+				'pro'      => true,
+				'label'    => __( 'Ultimate Addons for Elementor', 'emcp-tools' ),
+				'note'     => __( 'Ultimate Addons for Elementor (UAE, formerly Header Footer Elementor) exposed as two tools, one Read, one Write. UAE is both a widget pack and a template plugin: reads discover its widgets and list header/footer templates with their display conditions; writes create, update, retarget and delete templates. Widgets are placed, and template content built, with the normal Elementor tools. Delete requires confirm:true.', 'emcp-tools' ),
+				'tools'    => array(
+					'emcp-tools/uae-read'  => array(
+						'label'            => __( 'Ultimate Addons for Elementor Read', 'emcp-tools' ),
+						'description'      => __( 'Discover UAE widgets, and list its header/footer/block templates with their type, status and display conditions.', 'emcp-tools' ),
+						'badges'           => array( 'read-only' ),
+						'operations'       => array( 'list-widgets', 'get-widget-schema', 'list-templates', 'get-template' ),
+						'available'        => self::uae_available(),
+						'unavailable_note' => __( 'Install & activate Ultimate Addons for Elementor to enable this tool.', 'emcp-tools' ),
+					),
+					'emcp-tools/uae-write' => array(
+						'label'            => __( 'Ultimate Addons for Elementor Write', 'emcp-tools' ),
+						'description'      => __( 'Create, update, retarget and delete UAE templates. These render site-wide, so this tool is off by default and delete needs confirmation.', 'emcp-tools' ),
+						'badges'           => array( 'destructive' ),
+						'operations'       => array( 'create-template', 'update-template', 'set-display-conditions', 'delete-template' ),
+						'available'        => self::uae_available(),
+						'unavailable_note' => __( 'Install & activate Ultimate Addons for Elementor to enable this tool.', 'emcp-tools' ),
 					),
 				),
 			),

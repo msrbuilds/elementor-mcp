@@ -25,25 +25,65 @@ class EMCP_Tools_Security_Scanner {
 
 	const ALL_CHECKS = array( 'malware', 'integrity', 'hardening', 'software' );
 
-	/** @var EMCP_Tools_Security_Malware_Audit */
+	/** @var EMCP_Tools_Security_Malware_Audit|null Built on first use. */
 	private $malware;
-	/** @var EMCP_Tools_Security_Integrity_Audit */
+	/** @var EMCP_Tools_Security_Integrity_Audit|null Built on first use. */
 	private $integrity;
-	/** @var EMCP_Tools_Security_Hardening_Audit */
+	/** @var EMCP_Tools_Security_Hardening_Audit|null Built on first use. */
 	private $hardening;
-	/** @var EMCP_Tools_Security_Software_Audit */
+	/** @var EMCP_Tools_Security_Software_Audit|null Built on first use. */
 	private $software;
 
+	/**
+	 * Audits are built lazily, on the first scan that needs them.
+	 *
+	 * Registering the scan-security tool must not instantiate the audit engine.
+	 * Ability registration runs on every admin page load and every REST request,
+	 * so eagerly constructing the audits here meant a single unavailable audit
+	 * class turned tool registration into a site-wide fatal (issue #100, where a
+	 * host malware scanner had quarantined the malware-audit file). Deferring
+	 * construction keeps that failure inside the one tool that needs the class.
+	 *
+	 * Passing instances still works and is what the tests inject.
+	 */
 	public function __construct(
 		?EMCP_Tools_Security_Malware_Audit $malware = null,
 		?EMCP_Tools_Security_Integrity_Audit $integrity = null,
 		?EMCP_Tools_Security_Hardening_Audit $hardening = null,
 		?EMCP_Tools_Security_Software_Audit $software = null
 	) {
-		$this->malware   = $malware ?: new EMCP_Tools_Security_Malware_Audit();
-		$this->integrity = $integrity ?: new EMCP_Tools_Security_Integrity_Audit();
-		$this->hardening = $hardening ?: new EMCP_Tools_Security_Hardening_Audit();
-		$this->software  = $software ?: new EMCP_Tools_Security_Software_Audit();
+		$this->malware   = $malware;
+		$this->integrity = $integrity;
+		$this->hardening = $hardening;
+		$this->software  = $software;
+	}
+
+	private function malware(): EMCP_Tools_Security_Malware_Audit {
+		if ( null === $this->malware ) {
+			$this->malware = new EMCP_Tools_Security_Malware_Audit();
+		}
+		return $this->malware;
+	}
+
+	private function integrity(): EMCP_Tools_Security_Integrity_Audit {
+		if ( null === $this->integrity ) {
+			$this->integrity = new EMCP_Tools_Security_Integrity_Audit();
+		}
+		return $this->integrity;
+	}
+
+	private function hardening(): EMCP_Tools_Security_Hardening_Audit {
+		if ( null === $this->hardening ) {
+			$this->hardening = new EMCP_Tools_Security_Hardening_Audit();
+		}
+		return $this->hardening;
+	}
+
+	private function software(): EMCP_Tools_Security_Software_Audit {
+		if ( null === $this->software ) {
+			$this->software = new EMCP_Tools_Security_Software_Audit();
+		}
+		return $this->software;
 	}
 
 	/**
@@ -93,7 +133,7 @@ class EMCP_Tools_Security_Scanner {
 		);
 
 		if ( in_array( 'malware', $checks, true ) ) {
-			$m = $this->malware->run( $deep, $max_files, $max_seconds );
+			$m = $this->malware()->run( $deep, $max_files, $max_seconds );
 			$findings = array_merge( $findings, $m['findings'] );
 			$scan_meta['files_scanned']      = (int) $m['stats']['files_scanned'];
 			$scan_meta['files_skipped_size'] = (int) $m['stats']['files_skipped_size'];
@@ -101,17 +141,17 @@ class EMCP_Tools_Security_Scanner {
 			$scan_meta['truncated_reason']   = $m['stats']['truncated_reason'];
 		}
 		if ( in_array( 'integrity', $checks, true ) ) {
-			$i = $this->integrity->run();
+			$i = $this->integrity()->run();
 			$findings = array_merge( $findings, $i['findings'] );
 			$scan_meta['integrity_api'] = $i['api'];
 		}
 		if ( in_array( 'hardening', $checks, true ) ) {
-			$h = $this->hardening->run();
+			$h = $this->hardening()->run();
 			$findings = array_merge( $findings, $h['findings'] );
 			$scan_meta['headers_fetch'] = $h['headers_fetch'];
 		}
 		if ( in_array( 'software', $checks, true ) ) {
-			$findings = array_merge( $findings, $this->software->run() );
+			$findings = array_merge( $findings, $this->software()->run() );
 		}
 
 		$summary               = $this->summarize( $findings );

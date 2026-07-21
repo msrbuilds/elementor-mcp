@@ -89,6 +89,48 @@ class EMCP_Tools_Ability_Registrar {
 	 * @return string[] Array of registered ability names.
 	 */
 	public function register_all( bool $elementor_active = true ): array {
+		try {
+			$this->register_groups( $elementor_active );
+		} catch ( \Throwable $e ) {
+			// Ability registration runs on every admin page load and every REST
+			// request, so an exception here is a site-wide fatal: wp-admin becomes
+			// unreachable and the owner has to recover the site (issue #100, where a
+			// host malware scanner had quarantined one of our class files, leaving
+			// require_once satisfied but the class undeclared).
+			//
+			// No single tool group is worth locking an admin out of their own site.
+			// Keep whatever registered before the failure and carry on; the tools
+			// from the failed group are simply absent.
+			if ( function_exists( 'error_log' ) ) {
+				error_log( 'EMCP Tools: ability registration stopped early: ' . $e->getMessage() );
+			}
+		}
+
+		/**
+		 * Filters the registered ability names.
+		 *
+		 * @since 1.0.0
+		 *
+		 * @param string[] $ability_names The registered ability names.
+		 */
+		$this->ability_names = apply_filters( 'emcp_tools_ability_names', $this->ability_names );
+
+		// F-013: emcp_tools_ability_names is a public seam, so a third-party
+		// callback can hand back non-strings or names that don't match the MCP
+		// ability-name grammar. Drop anything invalid before the list reaches
+		// create_server(), which would otherwise register broken/undefined tools.
+		$this->ability_names = self::sanitize_ability_names( $this->ability_names );
+
+		return $this->ability_names;
+	}
+
+	/**
+	 * Registers every ability group. Called through register_all()'s guard.
+	 *
+	 * @param bool $elementor_active Whether the Elementor-dependent groups load.
+	 * @return void
+	 */
+	private function register_groups( bool $elementor_active = true ): void {
 		// ---- Always-on: pure-WordPress tool groups (no Elementor needed) ----
 
 		// Media Library query ability (list/search the site's own uploads).
@@ -282,6 +324,34 @@ class EMCP_Tools_Ability_Registrar {
 			}
 		}
 
+		// Elementor addon widget packs (Pro). Each pack contributes ONE read
+		// tool for discovery + curation; widgets are placed with the generic
+		// add-free-widget tool, so there is deliberately no write tool here.
+		$addon_packs = array();
+		foreach ( array( 'EMCP_Tools_EssentialAddons_Integration', 'EMCP_Tools_PremiumAddons_Integration' ) as $emcp_addon_class ) {
+			if ( class_exists( $emcp_addon_class ) ) {
+				$addon_packs[] = new $emcp_addon_class();
+			}
+		}
+		foreach ( $addon_packs as $addon_pack ) {
+			if ( $addon_pack->is_available() ) {
+				$addon_pack->register();
+				$this->ability_names = array_merge( $this->ability_names, $addon_pack->get_ability_names() );
+			}
+		}
+
+		// Ultimate Addons for Elementor (Pro), formerly Header Footer Elementor.
+		// Both a widget pack AND a data plugin, so unlike the pure packs it keeps
+		// the house read/write dispatcher pair: discovery + templates on read,
+		// templates on write.
+		if ( class_exists( 'EMCP_Tools_UAE_Integration' ) ) {
+			$emcp_uae = new EMCP_Tools_UAE_Integration();
+			if ( $emcp_uae->is_available() ) {
+				$emcp_uae->register();
+				$this->ability_names = array_merge( $this->ability_names, $emcp_uae->get_ability_names() );
+			}
+		}
+
 		// Performance Analyzer (read-only).
 		$performance = new EMCP_Tools_Performance_Abilities();
 		$performance->register();
@@ -430,23 +500,6 @@ class EMCP_Tools_Ability_Registrar {
 			$skills->register();
 			$this->ability_names = array_merge( $this->ability_names, $skills->get_ability_names() );
 		}
-
-		/**
-		 * Filters the registered ability names.
-		 *
-		 * @since 1.0.0
-		 *
-		 * @param string[] $ability_names The registered ability names.
-		 */
-		$this->ability_names = apply_filters( 'emcp_tools_ability_names', $this->ability_names );
-
-		// F-013: emcp_tools_ability_names is a public seam, so a third-party
-		// callback can hand back non-strings or names that don't match the MCP
-		// ability-name grammar. Drop anything invalid before the list reaches
-		// create_server(), which would otherwise register broken/undefined tools.
-		$this->ability_names = self::sanitize_ability_names( $this->ability_names );
-
-		return $this->ability_names;
 	}
 
 	/**
