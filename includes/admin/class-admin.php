@@ -2331,14 +2331,41 @@ class EMCP_Tools_Admin {
 	}
 
 	/**
-	 * True when Ultimate Addons for Elementor (formerly Header Footer
-	 * Elementor) is active. Its own identifiers still say HFE.
+	 * True when the free Ultimate Addons for Elementor plugin (formerly Header
+	 * Footer Elementor) is active. Its own identifiers still say HFE.
+	 *
+	 * This is what gates TEMPLATES: the `elementor-hf` CPT and its `ehf_*`
+	 * display-condition meta belong to the free plugin.
+	 *
+	 * @since 3.6.2
+	 * @return bool
+	 */
+	public static function uae_templates_available(): bool {
+		return class_exists( 'Header_Footer_Elementor' ) || post_type_exists( 'elementor-hf' );
+	}
+
+	/**
+	 * True when UAE Pro is active.
+	 *
+	 * UAE Pro ("Ultimate Addons for Elementor Pro", slug `ultimate-elementor`)
+	 * is a SEPARATE standalone plugin, not an add-on to the free one, and can be
+	 * installed on its own.
+	 *
+	 * @since 3.6.2
+	 * @return bool
+	 */
+	public static function uae_pro_available(): bool {
+		return defined( 'UAEL_VER' ) || class_exists( 'UAEL_Loader' );
+	}
+
+	/**
+	 * True when either UAE plugin is active.
 	 *
 	 * @since 3.6.0
 	 * @return bool
 	 */
 	public static function uae_available(): bool {
-		return class_exists( 'Header_Footer_Elementor' ) || post_type_exists( 'elementor-hf' );
+		return self::uae_templates_available() || self::uae_pro_available();
 	}
 
 	public static function form_tool_slugs(): array {
@@ -3035,9 +3062,13 @@ class EMCP_Tools_Admin {
 				'tools'    => array(
 					'emcp-tools/uae-read'  => array(
 						'label'            => __( 'Ultimate Addons for Elementor Read', 'emcp-tools' ),
-						'description'      => __( 'Discover UAE widgets, and list its header/footer/block templates with their type, status and display conditions.', 'emcp-tools' ),
+						'description'      => self::uae_templates_available()
+							? __( 'Discover UAE widgets, and list its header/footer/block templates with their type, status and display conditions.', 'emcp-tools' )
+							: __( 'Discover the UAE widgets registered on this site and inspect the content controls of a widget.', 'emcp-tools' ),
 						'badges'           => array( 'read-only' ),
-						'operations'       => array( 'list-widgets', 'get-widget-schema', 'list-templates', 'get-template' ),
+						'operations'       => self::uae_templates_available()
+							? array( 'list-widgets', 'get-widget-schema', 'list-templates', 'get-template' )
+							: array( 'list-widgets', 'get-widget-schema' ),
 						'available'        => self::uae_available(),
 						'unavailable_note' => __( 'Install & activate Ultimate Addons for Elementor to enable this tool.', 'emcp-tools' ),
 					),
@@ -3046,8 +3077,10 @@ class EMCP_Tools_Admin {
 						'description'      => __( 'Create, update, retarget and delete UAE templates. These render site-wide, so this tool is off by default and delete needs confirmation.', 'emcp-tools' ),
 						'badges'           => array( 'destructive' ),
 						'operations'       => array( 'create-template', 'update-template', 'set-display-conditions', 'delete-template' ),
-						'available'        => self::uae_available(),
-						'unavailable_note' => __( 'Install & activate Ultimate Addons for Elementor to enable this tool.', 'emcp-tools' ),
+						'available'        => self::uae_templates_available(),
+						'unavailable_note' => self::uae_pro_available()
+							? __( 'UAE templates come from the free Ultimate Addons for Elementor plugin. UAE Pro on its own supplies widgets, which the Read tool already covers.', 'emcp-tools' )
+							: __( 'Install & activate Ultimate Addons for Elementor to enable this tool.', 'emcp-tools' ),
 					),
 				),
 			),
