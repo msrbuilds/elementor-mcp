@@ -12,6 +12,7 @@
             <file>pro/tests/unit/PhpSnippetValidatorTest.php</file>
             <file>pro/tests/unit/SiteContextTest.php</file>
             <file>pro/tests/unit/WidgetGeneratorTest.php</file>
+            <file>pro/tests/unit/StructuredContentNormalizationTest.php</file>
         </testsuite>
         <testsuite name="Security">
             <directory>pro/tests/unit/Security</directory>

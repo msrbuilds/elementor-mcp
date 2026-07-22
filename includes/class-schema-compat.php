@@ -53,7 +53,77 @@ class EMCP_Tools_Schema_Compat {
 		if ( isset( $args['output_schema'] ) && is_array( $args['output_schema'] ) ) {
 			$args['output_schema'] = self::sanitize( $args['output_schema'] );
 		}
+
+		if ( isset( $args['execute_callback'] ) && is_callable( $args['execute_callback'] ) ) {
+			$args['execute_callback'] = self::wrap_execute_callback( $args['execute_callback'] );
+		}
+
 		return wp_register_ability( $name, $args );
+	}
+
+	/**
+	 * Wraps a tool's execute callback so its return value is always a shape the
+	 * MCP `structuredContent` field accepts.
+	 *
+	 * The MCP schema types `structuredContent` as `{ [key: string]: unknown }`,
+	 * a JSON object. The adapter passes a tool's return value straight through
+	 * to that field, so a tool returning a JSON *list* produces a response that
+	 * strict clients reject with a dictionary-validation error.
+	 *
+	 * This bites any tool that forwards another API's payload verbatim. The
+	 * WooCommerce dispatcher returns `WP_REST_Response::get_data()` as-is, and
+	 * plenty of `wc/v3` routes answer with a top-level array (product lists,
+	 * order lists, `reports/products/totals`, and so on).
+	 *
+	 * Fixing it here rather than in the vendored adapter means it survives
+	 * `composer update`, and it covers every ability rather than the one route
+	 * someone happened to hit. Reported against 3.6.0 with `woo-read`,
+	 * `report-products-totals`.
+	 *
+	 * @since 3.6.1
+	 *
+	 * @param callable $callback The ability's execute callback.
+	 * @return callable
+	 */
+	protected static function wrap_execute_callback( callable $callback ): callable {
+		return static function () use ( $callback ) {
+			return self::normalize_result( $callback( ...func_get_args() ) );
+		};
+	}
+
+	/**
+	 * Coerces a tool result into a JSON object, leaving anything already
+	 * object-shaped untouched.
+	 *
+	 * Associative arrays and objects pass through unchanged, which is what the
+	 * overwhelming majority of abilities return. Lists, scalars and null are
+	 * wrapped in a `data` key. `WP_Error` is returned untouched so the adapter's
+	 * error handling still sees it.
+	 *
+	 * Note that PHP cannot distinguish an empty list from an empty map, so
+	 * `array()` is wrapped too. That is deliberate: unwrapped it serialises to
+	 * `[]`, which is exactly the invalid shape this guards against.
+	 *
+	 * @since 3.6.1
+	 *
+	 * @param mixed $result The raw ability result.
+	 * @return mixed
+	 */
+	public static function normalize_result( $result ) {
+		if ( is_wp_error( $result ) ) {
+			return $result;
+		}
+
+		// Already a JSON object: a string-keyed array, or any object that is not
+		// an error. Leave the shape the ability intended.
+		if ( is_array( $result ) && ! array_is_list( $result ) ) {
+			return $result;
+		}
+		if ( is_object( $result ) ) {
+			return $result;
+		}
+
+		return array( 'data' => $result );
 	}
 
 	/**
