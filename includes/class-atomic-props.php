@@ -316,6 +316,8 @@ class EMCP_Tools_Atomic_Props {
 			return $settings;
 		}
 
+		$settings = self::apply_prop_aliases( $schema, $settings );
+
 		foreach ( $settings as $key => $value ) {
 			$prop = $schema[ $key ] ?? null;
 			if ( ! is_object( $prop ) || ! method_exists( $prop, 'validate' ) ) {
@@ -323,6 +325,70 @@ class EMCP_Tools_Atomic_Props {
 			}
 
 			$settings[ $key ] = self::coerce_against_prop( $prop, $value );
+		}
+
+		return $settings;
+	}
+
+	/**
+	 * Renames alias keys onto the prop name Elementor actually stores.
+	 *
+	 * Elementor's atomic widgets declare alternative names for their content
+	 * prop, e.g. `e-paragraph`'s `paragraph` accepts `text` and `content`, and
+	 * `e-heading`'s `title` accepts `text`, `content` and `heading`. Those names
+	 * are the obvious guesses, and an agent writing `content` on a paragraph is
+	 * guessing exactly what Elementor itself advertises.
+	 *
+	 * Nothing on the PHP save path consumes those aliases. Worse, Elementor's
+	 * Props_Parser SILENTLY DISCARDS keys it does not recognise and still
+	 * reports the result as valid, so an aliased key is not rejected, it is
+	 * deleted along with its text. That only became visible once saves started
+	 * succeeding again: before, an unrelated invalid prop blocked the whole
+	 * save, so the bad key survived in the database untouched (issue #102).
+	 *
+	 * Renaming here, before Elementor sees the settings, preserves the content.
+	 * The alias list is read from Elementor's own prop metadata rather than
+	 * hardcoded, so widgets that gain aliases later are covered automatically.
+	 *
+	 * A canonical value already present always wins; an alias never overwrites
+	 * it, since the canonical key is what Elementor will actually render.
+	 *
+	 * @since 3.6.2
+	 *
+	 * @param array $schema   Map of prop name => Elementor prop type.
+	 * @param array $settings Settings to rewrite.
+	 * @return array
+	 */
+	private static function apply_prop_aliases( array $schema, array $settings ): array {
+		foreach ( $schema as $canonical => $prop ) {
+			if ( ! is_object( $prop ) || ! method_exists( $prop, 'get_meta_item' ) ) {
+				continue;
+			}
+
+			// Already supplied under its real name: nothing to recover.
+			if ( array_key_exists( $canonical, $settings ) ) {
+				continue;
+			}
+
+			$aliases = $prop->get_meta_item( 'aliases' );
+			if ( ! is_array( $aliases ) ) {
+				continue;
+			}
+
+			foreach ( $aliases as $alias ) {
+				if ( ! is_string( $alias ) || ! array_key_exists( $alias, $settings ) ) {
+					continue;
+				}
+
+				// An alias that is itself a real prop belongs to that prop.
+				if ( isset( $schema[ $alias ] ) ) {
+					continue;
+				}
+
+				$settings[ $canonical ] = $settings[ $alias ];
+				unset( $settings[ $alias ] );
+				break;
+			}
 		}
 
 		return $settings;
