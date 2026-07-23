@@ -150,19 +150,67 @@ class EMCP_Tools_Atomic_Props {
 	 * `image-attachment-id`, not a plain `number`. Passing both (or a `number`
 	 * id) makes Elementor reject the value with `image: invalid_value` (#74).
 	 *
+	 * Alt text belongs INSIDE this shape, as `src.alt`. There is no top-level
+	 * `alt` prop on `e-image`, so writing one is silently discarded along with
+	 * the text, the same trap as issue #102. For an attachment, Elementor
+	 * ignores `src.alt` entirely and renders the media library's own alt text
+	 * (`_wp_attachment_image_alt`), so the caller must write it there instead.
+	 *
+	 * @since 3.6.2 Accepts alt text.
+	 *
 	 * @param int    $image_id  The attachment ID (0 to use a url instead).
 	 * @param string $image_url The image URL (used only when $image_id is 0).
+	 * @param string $alt       Alt text; only reaches the markup for a url image.
 	 * @return array Typed image prop.
 	 */
-	public static function image( int $image_id, string $image_url = '' ): array {
+	public static function image( int $image_id, string $image_url = '', string $alt = '' ): array {
+		$src = self::image_src_value( $image_id, $image_url );
+
+		if ( '' !== $alt ) {
+			$src['alt'] = self::string( $alt );
+		}
+
 		return array(
 			'$$type' => 'image',
 			'value'  => array(
 				'src' => array(
 					'$$type' => 'image-src',
-					'value'  => self::image_src_value( $image_id, $image_url ),
+					'value'  => $src,
 				),
 			),
+		);
+	}
+
+	/**
+	 * Wraps a video reference for the atomic `e-self-hosted-video` widget.
+	 *
+	 * Its `source` prop is a `video-src` SHAPE (`id` XOR `url`), not the plain
+	 * `url` that `e-youtube`'s `source` takes. Passing a bare url envelope made
+	 * Elementor reject the element outright with `source: invalid_value`, so
+	 * add-atomic-video could not place a video at all on Elementor 4.2.
+	 *
+	 * Video_Src_Prop_Type requires EXACTLY ONE of the two keys to be non-empty,
+	 * so the unused one is omitted rather than sent as null.
+	 *
+	 * @since 3.6.2
+	 *
+	 * @param int    $video_id  The attachment ID (0 to use a url instead).
+	 * @param string $video_url The video URL (used only when $video_id is 0).
+	 * @return array Typed video-src prop.
+	 */
+	public static function video_src( int $video_id, string $video_url = '' ): array {
+		$value = $video_id > 0
+			? array(
+				'id' => array(
+					'$$type' => 'video-attachment-id',
+					'value'  => $video_id,
+				),
+			)
+			: array( 'url' => self::url( $video_url ) );
+
+		return array(
+			'$$type' => 'video-src',
+			'value'  => $value,
 		);
 	}
 

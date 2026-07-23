@@ -432,15 +432,20 @@ class EMCP_Tools_Atomic_Widget_Abilities {
 
 				$image_id  = absint( $input['image_id'] ?? 0 );
 				$image_url = esc_url_raw( $input['image_url'] ?? '' );
+				$alt       = isset( $input['alt'] ) ? sanitize_text_field( $input['alt'] ) : '';
 
 				if ( $image_id ) {
-					$settings['image'] = EMCP_Tools_Atomic_Props::image( $image_id );
-				} elseif ( $image_url ) {
-					$settings['image'] = EMCP_Tools_Atomic_Props::image( 0, $image_url );
-				}
+					$settings['image'] = EMCP_Tools_Atomic_Props::image( $image_id, '', $alt );
 
-				if ( ! empty( $input['alt'] ) ) {
-					$settings['alt'] = EMCP_Tools_Atomic_Props::string( sanitize_text_field( $input['alt'] ) );
+					// For an attachment Elementor renders the media library's own
+					// alt text, so that is the only place setting it has any
+					// effect. `e-image` has no top-level `alt` prop: writing one
+					// was silently discarded (the issue #102 trap).
+					if ( '' !== $alt ) {
+						update_post_meta( $image_id, '_wp_attachment_image_alt', $alt );
+					}
+				} elseif ( $image_url ) {
+					$settings['image'] = EMCP_Tools_Atomic_Props::image( 0, $image_url, $alt );
 				}
 				if ( ! empty( $input['link'] ) ) {
 					$settings['link'] = EMCP_Tools_Atomic_Props::link( esc_url_raw( $input['link'] ) );
@@ -534,11 +539,12 @@ class EMCP_Tools_Atomic_Widget_Abilities {
 				$video_id  = absint( $input['video_id'] ?? 0 );
 				$video_url = esc_url_raw( $input['video_url'] ?? '' );
 
+				// `source` is a video-src shape, not a plain url. Sending a url
+				// envelope made Elementor refuse the whole element.
 				if ( $video_id ) {
-					$url = wp_get_attachment_url( $video_id );
-					$settings['source'] = EMCP_Tools_Atomic_Props::url( $url ?: '' );
+					$settings['source'] = EMCP_Tools_Atomic_Props::video_src( $video_id );
 				} elseif ( $video_url ) {
-					$settings['source'] = EMCP_Tools_Atomic_Props::url( $video_url );
+					$settings['source'] = EMCP_Tools_Atomic_Props::video_src( 0, $video_url );
 				}
 
 				if ( ! empty( $input['css_id'] ) ) {
