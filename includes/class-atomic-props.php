@@ -78,6 +78,66 @@ class EMCP_Tools_Atomic_Props {
 	}
 
 	/**
+	 * Wraps a color into a typed prop.
+	 *
+	 * Elementor's `color` style prop is a Color_Prop_Type, so it needs the
+	 * `color` envelope, NOT `string`. A plain string envelope is rejected and
+	 * the color is dropped.
+	 *
+	 * @since 3.6.2
+	 *
+	 * @param string $color A CSS color (hex/rgb/rgba/named).
+	 * @return array Typed prop: { $$type: "color", value: "..." }
+	 */
+	public static function color( string $color ): array {
+		return array(
+			'$$type' => 'color',
+			'value'  => $color,
+		);
+	}
+
+	/**
+	 * Builds the `background` style prop from a color.
+	 *
+	 * Elementor stores background as a Background_Prop_Type whose `color` field
+	 * is a color prop. There is no `background-color` style prop, so writing one
+	 * is silently discarded.
+	 *
+	 * @since 3.6.2
+	 *
+	 * @param string $color A CSS color.
+	 * @return array Typed `background` prop.
+	 */
+	public static function background_color( string $color ): array {
+		return array(
+			'$$type' => 'background',
+			'value'  => array(
+				'color' => self::color( $color ),
+			),
+		);
+	}
+
+	/**
+	 * Builds a `dimensions` prop (four sides) from typed size values.
+	 *
+	 * Used for the `padding`/`margin` shorthand style props, whose union accepts
+	 * a dimensions shape keyed block-start / block-end / inline-start /
+	 * inline-end. Elementor has no per-side `padding-block-start` style prop, so
+	 * writing those individually is discarded.
+	 *
+	 * @since 3.6.2
+	 *
+	 * @param array $sides Map with any of block-start|block-end|inline-start|inline-end => size prop.
+	 * @return array Typed prop: { $$type: "dimensions", value: {...} }
+	 */
+	public static function dimensions( array $sides ): array {
+		return array(
+			'$$type' => 'dimensions',
+			'value'  => $sides,
+		);
+	}
+
+	/**
 	 * Wraps text content into an html-v3 typed prop.
 	 *
 	 * @param string $text Plain text content.

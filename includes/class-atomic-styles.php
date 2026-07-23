@@ -178,16 +178,11 @@ class EMCP_Tools_Atomic_Styles {
 	public static function build_common_props( array $params ): array {
 		$props = array();
 
+		// These are real Elementor style props that take a plain size value.
 		$size_mappings = array(
-			'padding_top'    => 'padding-block-start',
-			'padding_right'  => 'padding-inline-end',
-			'padding_bottom' => 'padding-block-end',
-			'padding_left'   => 'padding-inline-start',
-			'margin_top'     => 'margin-block-start',
-			'margin_bottom'  => 'margin-block-end',
-			'width'          => 'width',
-			'min_height'     => 'min-height',
-			'border_radius'  => 'border-radius',
+			'width'         => 'width',
+			'min_height'    => 'min-height',
+			'border_radius' => 'border-radius',
 		);
 
 		foreach ( $size_mappings as $input_key => $css_prop ) {
@@ -200,24 +195,92 @@ class EMCP_Tools_Atomic_Styles {
 			}
 		}
 
-		if ( isset( $params['padding'] ) ) {
-			$unit = $params['padding_unit'] ?? 'px';
-			$size_val = EMCP_Tools_Atomic_Props::size( (float) $params['padding'], $unit );
-			$props['padding-block-start']  = $size_val;
-			$props['padding-block-end']    = $size_val;
-			$props['padding-inline-start'] = $size_val;
-			$props['padding-inline-end']   = $size_val;
+		// Padding and margin are `dimensions` shorthands. Elementor has no
+		// per-side `padding-block-start` style prop, so building those keys
+		// individually is silently discarded on save. A single `padding` value
+		// sets all four sides; the *_top/_right/_bottom/_left inputs set them
+		// per side. `padding` shorthand overrides any per-side padding input.
+		$padding = self::build_dimensions(
+			$params,
+			'padding',
+			array(
+				'block-start'  => 'padding_top',
+				'block-end'    => 'padding_bottom',
+				'inline-start' => 'padding_left',
+				'inline-end'   => 'padding_right',
+			)
+		);
+		if ( null !== $padding ) {
+			$props['padding'] = $padding;
 		}
 
+		$margin = self::build_dimensions(
+			$params,
+			'margin',
+			array(
+				'block-start'  => 'margin_top',
+				'block-end'    => 'margin_bottom',
+				'inline-start' => 'margin_left',
+				'inline-end'   => 'margin_right',
+			)
+		);
+		if ( null !== $margin ) {
+			$props['margin'] = $margin;
+		}
+
+		// Elementor stores background as a `background` prop with a color field,
+		// not a `background-color` prop, and the color must be a color prop.
 		if ( isset( $params['background_color'] ) ) {
-			$props['background-color'] = EMCP_Tools_Atomic_Props::string( $params['background_color'] );
+			$props['background'] = EMCP_Tools_Atomic_Props::background_color( (string) $params['background_color'] );
 		}
 
+		// The `color` style prop is a Color_Prop_Type: it needs a color
+		// envelope, not a string one.
 		if ( isset( $params['color'] ) ) {
-			$props['color'] = EMCP_Tools_Atomic_Props::string( $params['color'] );
+			$props['color'] = EMCP_Tools_Atomic_Props::color( (string) $params['color'] );
 		}
 
 		return $props;
+	}
+
+	/**
+	 * Builds a `padding`/`margin` dimensions prop from AI input.
+	 *
+	 * A single shorthand value (`padding`) sets all four sides; per-side inputs
+	 * (`padding_top`, …) fill individual sides. The shorthand wins if both are
+	 * present. Returns null when neither is supplied.
+	 *
+	 * @since 3.6.2
+	 *
+	 * @param array  $params     Raw input params.
+	 * @param string $shorthand  Input key for the all-sides value, e.g. 'padding'.
+	 * @param array  $side_map   Map of dimension side => input key.
+	 * @return array|null Typed dimensions prop, or null when nothing was set.
+	 */
+	private static function build_dimensions( array $params, string $shorthand, array $side_map ): ?array {
+		if ( isset( $params[ $shorthand ] ) ) {
+			$unit = $params[ $shorthand . '_unit' ] ?? 'px';
+			$val  = EMCP_Tools_Atomic_Props::size( (float) $params[ $shorthand ], $unit );
+
+			return EMCP_Tools_Atomic_Props::dimensions(
+				array(
+					'block-start'  => $val,
+					'block-end'    => $val,
+					'inline-start' => $val,
+					'inline-end'   => $val,
+				)
+			);
+		}
+
+		$sides = array();
+		foreach ( $side_map as $dim_side => $input_key ) {
+			if ( isset( $params[ $input_key ] ) ) {
+				$unit               = $params[ $input_key . '_unit' ] ?? 'px';
+				$sides[ $dim_side ] = EMCP_Tools_Atomic_Props::size( (float) $params[ $input_key ], $unit );
+			}
+		}
+
+		return empty( $sides ) ? null : EMCP_Tools_Atomic_Props::dimensions( $sides );
 	}
 
 	/**
