@@ -332,19 +332,7 @@ class EMCP_Tools_Atomic_Widget_Abilities {
 			array(),
 			'e-heading',
 			function ( $input ) {
-				$settings = array();
-				$settings['title'] = EMCP_Tools_Atomic_Props::html( sanitize_text_field( $input['title'] ?? 'Heading' ) );
-				$settings['tag']   = EMCP_Tools_Atomic_Props::string( sanitize_text_field( $input['tag'] ?? 'h2' ) );
-
-				if ( ! empty( $input['link'] ) ) {
-					$settings['link'] = EMCP_Tools_Atomic_Props::link( esc_url_raw( $input['link'] ) );
-				}
-				if ( ! empty( $input['css_id'] ) ) {
-					$settings['_cssid'] = EMCP_Tools_Atomic_Props::string( sanitize_text_field( $input['css_id'] ) );
-				}
-
-				$settings['classes'] = EMCP_Tools_Atomic_Props::classes();
-				return $settings;
+				return EMCP_Tools_Atomic_Widget_Map::settings( 'e-heading', $input );
 			}
 		);
 	}
@@ -362,22 +350,7 @@ class EMCP_Tools_Atomic_Widget_Abilities {
 			array(),
 			'e-paragraph',
 			function ( $input ) {
-				$settings = array();
-				// The e-paragraph widget's content prop is named `paragraph`
-				// (Html_V3), not `text` — see Elementor atomic-paragraph.php
-				// define_props_schema() / render ($settings['paragraph']). Writing
-				// `text` silently dropped the content (issue #56).
-				$settings['paragraph'] = EMCP_Tools_Atomic_Props::html( sanitize_text_field( $input['content'] ?? 'Paragraph text' ) );
-
-				if ( ! empty( $input['link'] ) ) {
-					$settings['link'] = EMCP_Tools_Atomic_Props::link( esc_url_raw( $input['link'] ) );
-				}
-				if ( ! empty( $input['css_id'] ) ) {
-					$settings['_cssid'] = EMCP_Tools_Atomic_Props::string( sanitize_text_field( $input['css_id'] ) );
-				}
-
-				$settings['classes'] = EMCP_Tools_Atomic_Props::classes();
-				return $settings;
+				return EMCP_Tools_Atomic_Widget_Map::settings( 'e-paragraph', $input );
 			}
 		);
 	}
@@ -396,19 +369,7 @@ class EMCP_Tools_Atomic_Widget_Abilities {
 			array(),
 			'e-button',
 			function ( $input ) {
-				$settings = array();
-				$settings['text'] = EMCP_Tools_Atomic_Props::html( sanitize_text_field( $input['text'] ?? 'Click Here' ) );
-
-				if ( ! empty( $input['link'] ) ) {
-					$target_blank = ! empty( $input['target_blank'] );
-					$settings['link'] = EMCP_Tools_Atomic_Props::link( esc_url_raw( $input['link'] ), $target_blank );
-				}
-				if ( ! empty( $input['css_id'] ) ) {
-					$settings['_cssid'] = EMCP_Tools_Atomic_Props::string( sanitize_text_field( $input['css_id'] ) );
-				}
-
-				$settings['classes'] = EMCP_Tools_Atomic_Props::classes();
-				return $settings;
+				return EMCP_Tools_Atomic_Widget_Map::settings( 'e-button', $input );
 			}
 		);
 	}
@@ -428,34 +389,7 @@ class EMCP_Tools_Atomic_Widget_Abilities {
 			array(),
 			'e-image',
 			function ( $input ) {
-				$settings = array();
-
-				$image_id  = absint( $input['image_id'] ?? 0 );
-				$image_url = esc_url_raw( $input['image_url'] ?? '' );
-				$alt       = isset( $input['alt'] ) ? sanitize_text_field( $input['alt'] ) : '';
-
-				if ( $image_id ) {
-					$settings['image'] = EMCP_Tools_Atomic_Props::image( $image_id, '', $alt );
-
-					// For an attachment Elementor renders the media library's own
-					// alt text, so that is the only place setting it has any
-					// effect. `e-image` has no top-level `alt` prop: writing one
-					// was silently discarded (the issue #102 trap).
-					if ( '' !== $alt ) {
-						update_post_meta( $image_id, '_wp_attachment_image_alt', $alt );
-					}
-				} elseif ( $image_url ) {
-					$settings['image'] = EMCP_Tools_Atomic_Props::image( 0, $image_url, $alt );
-				}
-				if ( ! empty( $input['link'] ) ) {
-					$settings['link'] = EMCP_Tools_Atomic_Props::link( esc_url_raw( $input['link'] ) );
-				}
-				if ( ! empty( $input['css_id'] ) ) {
-					$settings['_cssid'] = EMCP_Tools_Atomic_Props::string( sanitize_text_field( $input['css_id'] ) );
-				}
-
-				$settings['classes'] = EMCP_Tools_Atomic_Props::classes();
-				return $settings;
+				return EMCP_Tools_Atomic_Widget_Map::settings( 'e-image', $input );
 			}
 		);
 	}
@@ -473,23 +407,7 @@ class EMCP_Tools_Atomic_Widget_Abilities {
 			array(),
 			'e-svg',
 			function ( $input ) {
-				$settings = array();
-
-				$svg_id  = absint( $input['svg_id'] ?? 0 );
-				$svg_url = esc_url_raw( $input['svg_url'] ?? '' );
-
-				if ( $svg_id ) {
-					$settings['svg'] = EMCP_Tools_Atomic_Props::svg( $svg_id );
-				} elseif ( $svg_url ) {
-					$settings['svg'] = EMCP_Tools_Atomic_Props::svg( 0, $svg_url );
-				}
-
-				if ( ! empty( $input['css_id'] ) ) {
-					$settings['_cssid'] = EMCP_Tools_Atomic_Props::string( sanitize_text_field( $input['css_id'] ) );
-				}
-
-				$settings['classes'] = EMCP_Tools_Atomic_Props::classes();
-				return $settings;
+				return EMCP_Tools_Atomic_Widget_Map::settings( 'e-svg', $input );
 			}
 		);
 	}
@@ -506,17 +424,7 @@ class EMCP_Tools_Atomic_Widget_Abilities {
 			array( 'video_url' ),
 			'e-youtube',
 			function ( $input ) {
-				$settings = array();
-				// e-youtube's video prop is `source` (a String prop), not `url`
-				// (issue #56 class).
-				$settings['source'] = EMCP_Tools_Atomic_Props::string( esc_url_raw( $input['video_url'] ?? '' ) );
-
-				if ( ! empty( $input['css_id'] ) ) {
-					$settings['_cssid'] = EMCP_Tools_Atomic_Props::string( sanitize_text_field( $input['css_id'] ) );
-				}
-
-				$settings['classes'] = EMCP_Tools_Atomic_Props::classes();
-				return $settings;
+				return EMCP_Tools_Atomic_Widget_Map::settings( 'e-youtube', $input );
 			}
 		);
 	}
@@ -534,25 +442,7 @@ class EMCP_Tools_Atomic_Widget_Abilities {
 			array(),
 			'e-self-hosted-video',
 			function ( $input ) {
-				$settings = array();
-
-				$video_id  = absint( $input['video_id'] ?? 0 );
-				$video_url = esc_url_raw( $input['video_url'] ?? '' );
-
-				// `source` is a video-src shape, not a plain url. Sending a url
-				// envelope made Elementor refuse the whole element.
-				if ( $video_id ) {
-					$settings['source'] = EMCP_Tools_Atomic_Props::video_src( $video_id );
-				} elseif ( $video_url ) {
-					$settings['source'] = EMCP_Tools_Atomic_Props::video_src( 0, $video_url );
-				}
-
-				if ( ! empty( $input['css_id'] ) ) {
-					$settings['_cssid'] = EMCP_Tools_Atomic_Props::string( sanitize_text_field( $input['css_id'] ) );
-				}
-
-				$settings['classes'] = EMCP_Tools_Atomic_Props::classes();
-				return $settings;
+				return EMCP_Tools_Atomic_Widget_Map::settings( 'e-self-hosted-video', $input );
 			}
 		);
 	}
@@ -568,14 +458,7 @@ class EMCP_Tools_Atomic_Widget_Abilities {
 			array(),
 			'e-divider',
 			function ( $input ) {
-				$settings = array();
-
-				if ( ! empty( $input['css_id'] ) ) {
-					$settings['_cssid'] = EMCP_Tools_Atomic_Props::string( sanitize_text_field( $input['css_id'] ) );
-				}
-
-				$settings['classes'] = EMCP_Tools_Atomic_Props::classes();
-				return $settings;
+				return EMCP_Tools_Atomic_Widget_Map::settings( 'e-divider', $input );
 			}
 		);
 	}

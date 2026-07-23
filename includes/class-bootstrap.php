@@ -206,6 +206,7 @@ class EMCP_Tools_Bootstrap {
 		// Atomic elements support (Elementor 4.0+).
 		require_once EMCP_TOOLS_DIR . 'includes/class-atomic-props.php';
 		require_once EMCP_TOOLS_DIR . 'includes/class-atomic-styles.php';
+		require_once EMCP_TOOLS_DIR . 'includes/class-atomic-widget-map.php';
 		require_once EMCP_TOOLS_DIR . 'includes/abilities/class-atomic-widget-abilities.php';
 		require_once EMCP_TOOLS_DIR . 'includes/abilities/class-atomic-layout-abilities.php';
 		// Global Classes (Class Manager) reader — self-gates on Elementor 4.0+.

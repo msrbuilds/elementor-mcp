@@ -375,7 +375,7 @@ class EMCP_Tools_Composite_Abilities {
 				if ( empty( $widget_type ) ) {
 					$this->warnings[] = 'Skipped a widget with no widget_type, give each widget a widget_type (e.g. "heading", "button", "image").';
 				} else {
-					$widget = $this->factory->create_widget( $widget_type, $settings );
+					$widget = $this->build_widget( $widget_type, $settings );
 					$this->elements_created++;
 
 					// Widgets placed directly inside a row container must be
@@ -404,6 +404,48 @@ class EMCP_Tools_Composite_Abilities {
 		}
 
 		return $elements;
+	}
+
+	/**
+	 * Builds a widget element for build-page, atomic-aware.
+	 *
+	 * For an Elementor 4.0+ atomic widget type this routes the node's settings
+	 * through the SAME convenience mapping the add-atomic-* tools use
+	 * (EMCP_Tools_Atomic_Widget_Map), so friendly params like `content`,
+	 * `image_url`/`alt` and `video_url` become the typed props Elementor stores
+	 * instead of being discarded. Any style params on the node (padding,
+	 * background_color, …) are applied as a local class, exactly as the
+	 * individual atomic tools do. Everything else falls back to the legacy
+	 * raw-settings widget.
+	 *
+	 * @since 3.6.2
+	 *
+	 * @param string $widget_type Widget type.
+	 * @param array  $settings    Node settings (convenience params for atomic widgets).
+	 * @return array Widget element structure.
+	 */
+	private function build_widget( string $widget_type, array $settings ): array {
+		if (
+			class_exists( 'EMCP_Tools_Atomic_Widget_Map' )
+			&& EMCP_Tools_Atomic_Widget_Map::is_atomic( $widget_type )
+		) {
+			$mapped  = EMCP_Tools_Atomic_Widget_Map::settings( $widget_type, $settings );
+			$element = $this->factory->create_atomic_widget( $widget_type, $mapped );
+
+			// Style params (padding, background_color, min_height, …) become a
+			// local class, mirroring the add-atomic-* tools.
+			if ( class_exists( 'EMCP_Tools_Atomic_Styles' ) ) {
+				$common = EMCP_Tools_Atomic_Styles::build_common_props( $settings );
+				if ( ! empty( $common ) ) {
+					$style = EMCP_Tools_Atomic_Styles::create_local_class( $element['id'], $common );
+					EMCP_Tools_Atomic_Styles::apply_to_element( $element, $style['class_id'], $style['style_def'] );
+				}
+			}
+
+			return $element;
+		}
+
+		return $this->factory->create_widget( $widget_type, $settings );
 	}
 
 }
