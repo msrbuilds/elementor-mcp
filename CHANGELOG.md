@@ -4,6 +4,8 @@ All notable changes to MCP Tools for Elementor are documented in this file.
 
 ## [3.6.2]
 
+> Atomic-widget fixes found by auditing every atomic element, UAE Pro support, and a refreshed upgrade banner.
+
 ### Changed
 - **Refreshed the dashboard upgrade banner.** It now reflects what Pro has grown into, AI Chat in the editor, the plugin integrations (ACF, WooCommerce, SEO and forms), the SEO & Accessibility toolkit, the Widget Builder, premium prompts and the templates library, instead of the old landing-pages-only pitch. Also flattened its gradient to a solid color to match the rest of the admin, and corrected the feature list (Brand Kits is a free feature, not a Pro one).
 

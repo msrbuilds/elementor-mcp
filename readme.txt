@@ -3,7 +3,7 @@ Contributors: mianshahzadraza
 Tags: elementor, mcp, ai, page-builder, automation
 Requires at least: 6.9
 Tested up to: 7.0
-Stable tag: 3.6.1
+Stable tag: 3.6.2
 Requires PHP: 8.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -171,6 +171,16 @@ The plugin enforces WordPress capability checks on every tool. Read operations r
 2. Connection configuration page with copy-paste configs.
 
 == Changelog ==
+
+= 3.6.2 =
+Atomic-widget fixes found by auditing every atomic element, UAE Pro support, and a refreshed upgrade banner.
+* Fixed: #102, paragraph text written under an alias name (content) was dropped. Elementor advertises alternative prop names but discards unrecognised keys without error, so the text vanished the first time a page saved successfully. Alias names are now mapped onto the name Elementor stores before saving.
+* Fixed: whole-page repair. 3.6.1 only converted the widget you edited, but Elementor validates the entire page on save, so one un-converted widget elsewhere blocked the repair. Conversion now runs across the whole element tree, and legacy button links are mapped to the shape Elementor expects.
+* Fixed: self-hosted video could not be placed at all, and image alt text was discarded. The video source needed a typed shape rather than a plain URL, and alt belongs inside the image, not at the top level. Both were found by sweeping every atomic element.
+* Fixed: container background, padding, margin and text colour were discarded because they used names that are not Elementor style props. They now use the correct names and shapes and render.
+* Fixed: the Ultimate Addons for Elementor tools were missing on sites running UAE Pro, which is a separate standalone plugin from the free one. Either plugin now activates the integration; template tools appear only when the free plugin (which owns the templates) is present. (Pro)
+* Added: build-page now builds Elementor v4 atomic widgets from the same friendly params the add-atomic-* tools accept, so images and videos are no longer skipped.
+* Changed: the dashboard upgrade banner now reflects the current Pro feature set (AI Chat, plugin integrations, SEO and accessibility, the widget builder, prompts and templates) instead of the old landing-pages pitch.
 
 = 3.6.1 =
 Two fixes for problems that could block real work.
