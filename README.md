@@ -1,3 +1,5 @@
+[![MCP Toplist](https://mcptoplist.com/badge/pulsemcp%2Fmsrbuilds-elementor.svg)](https://mcptoplist.com/server/pulsemcp%2Fmsrbuilds-elementor)
+
 <h1 align="center">
   <img src="assets/img/icon-sm.png" width="72" alt="EMCP Tools logo"><br>
   MCP Tools for WordPress &amp; Page Builders
