@@ -151,39 +151,42 @@ class EMCP_Tools_Global_Abilities {
 			return new \WP_Error( 'kit_not_found', __( 'Active Elementor kit not found.', 'emcp-tools' ) );
 		}
 
-		// Get current kit settings.
-		$kit_settings = $kit->get_settings();
+		// Merge the incoming colors into the kit's four SYSTEM slots (the ones
+		// widgets actually inherit via `globals/colors?id=<slot>`), keyed by _id.
+		// `custom_colors` is a separate, additive palette that no widget uses by
+		// default — writing there does not rebrand anything.
+		$kit_settings    = $kit->get_settings();
+		$existing_colors = $kit_settings['system_colors'] ?? array();
+		$slot_map        = array();
 
-		// Merge colors: update existing by _id, add new ones.
-		$existing_colors = $kit_settings['custom_colors'] ?? array();
-		$existing_map    = array();
-
-		foreach ( $existing_colors as $index => $existing ) {
-			if ( isset( $existing['_id'] ) ) {
-				$existing_map[ $existing['_id'] ] = $index;
+		foreach ( $existing_colors as $slot ) {
+			if ( isset( $slot['_id'] ) ) {
+				$slot_map[ $slot['_id'] ] = array(
+					'title' => $slot['title'] ?? '',
+					'color' => $slot['color'] ?? '',
+				);
 			}
 		}
 
 		foreach ( $colors as $color ) {
 			$color_id = sanitize_text_field( $color['_id'] ?? '' );
-			if ( empty( $color_id ) ) {
+			if ( empty( $color_id ) || ! in_array( $color_id, EMCP_Tools_System_Kit_Writer::SYSTEM_SLOTS, true ) ) {
 				continue;
 			}
 
-			$color_entry = array(
-				'_id'   => $color_id,
-				'title' => sanitize_text_field( $color['title'] ?? '' ),
-				'color' => sanitize_hex_color( $color['color'] ?? '' ),
+			$slot_map[ $color_id ] = array(
+				'title' => sanitize_text_field( $color['title'] ?? ( $slot_map[ $color_id ]['title'] ?? '' ) ),
+				'color' => sanitize_hex_color( $color['color'] ?? '' ) ?: ( $slot_map[ $color_id ]['color'] ?? '' ),
 			);
-
-			if ( isset( $existing_map[ $color_id ] ) ) {
-				$existing_colors[ $existing_map[ $color_id ] ] = $color_entry;
-			} else {
-				$existing_colors[] = $color_entry;
-			}
 		}
 
-		$kit->update_settings( array( 'custom_colors' => $existing_colors ) );
+		$result = EMCP_Tools_System_Kit_Writer::replace_system_colors( $slot_map );
+
+		if ( is_wp_error( $result ) ) {
+			return $result;
+		}
+
+		$this->maybe_apply_theme_style( $kit );
 
 		return array( 'success' => true );
 	}
@@ -284,54 +287,112 @@ class EMCP_Tools_Global_Abilities {
 			return new \WP_Error( 'kit_not_found', __( 'Active Elementor kit not found.', 'emcp-tools' ) );
 		}
 
-		$kit_settings      = $kit->get_settings();
-		$existing_typo     = $kit_settings['custom_typography'] ?? array();
-		$existing_map      = array();
+		// Merge the incoming typography into the kit's four SYSTEM slots, keyed
+		// by _id, the same way execute_update_global_colors merges into
+		// system_colors — see the comment there for why `custom_typography`
+		// alone does not rebrand anything.
+		//
+		// EMCP_Tools_System_Kit_Writer::replace_system_typography() expects each
+		// slot's fields WITHOUT the `typography_` prefix (title, font_family,
+		// font_weight, ...); this tool's public input/output uses the prefixed
+		// shape (typography_font_family, ...) to match Elementor's own kit
+		// settings shape. Translate both ways here.
+		$kit_settings  = $kit->get_settings();
+		$existing_typo = $kit_settings['system_typography'] ?? array();
+		$slot_map      = array();
 
-		foreach ( $existing_typo as $index => $existing ) {
-			if ( isset( $existing['_id'] ) ) {
-				$existing_map[ $existing['_id'] ] = $index;
+		foreach ( $existing_typo as $slot ) {
+			$slot_id = $slot['_id'] ?? '';
+			if ( '' === $slot_id ) {
+				continue;
 			}
+			$slot_map[ $slot_id ] = $this->unprefix_typography_entry( $slot );
 		}
-
-		$allowed_keys = array(
-			'_id', 'title', 'typography_typography',
-			'typography_font_family', 'typography_font_size',
-			'typography_font_weight', 'typography_text_transform',
-			'typography_font_style', 'typography_text_decoration',
-			'typography_line_height', 'typography_letter_spacing',
-			'typography_word_spacing',
-		);
 
 		foreach ( $typography as $typo ) {
 			$typo_id = sanitize_text_field( $typo['_id'] ?? '' );
-			if ( empty( $typo_id ) ) {
+			if ( empty( $typo_id ) || ! in_array( $typo_id, EMCP_Tools_System_Kit_Writer::SYSTEM_SLOTS, true ) ) {
 				continue;
 			}
 
-			// Build a sanitized entry with only allowed keys.
-			$typo_entry = array();
-			foreach ( $allowed_keys as $key ) {
-				if ( isset( $typo[ $key ] ) ) {
-					$typo_entry[ $key ] = $typo[ $key ];
-				}
-			}
+			$incoming = $this->unprefix_typography_entry( $typo );
+			$slot_map[ $typo_id ] = array_merge( $slot_map[ $typo_id ] ?? array(), $incoming );
+		}
 
-			// Ensure typography_typography is set to 'custom' to activate overrides.
-			$typo_entry['typography_typography'] = 'custom';
+		$result = EMCP_Tools_System_Kit_Writer::replace_system_typography( $slot_map );
 
-			if ( isset( $existing_map[ $typo_id ] ) ) {
-				$existing_typo[ $existing_map[ $typo_id ] ] = array_merge(
-					$existing_typo[ $existing_map[ $typo_id ] ],
-					$typo_entry
-				);
-			} else {
-				$existing_typo[] = $typo_entry;
+		if ( is_wp_error( $result ) ) {
+			return $result;
+		}
+
+		$this->maybe_apply_theme_style( $kit );
+
+		return array( 'success' => true );
+	}
+
+	/**
+	 * Strips the `typography_` prefix from a system-typography entry's field
+	 * names, keeping only the keys `EMCP_Tools_System_Kit_Writer` understands
+	 * (title, plus its `TYPO_FIELDS` list).
+	 *
+	 * @since 1.9.1
+	 *
+	 * @param array $entry Prefixed entry, e.g. as stored in `system_typography`
+	 *                     or as received from this tool's `typography` input.
+	 * @return array Unprefixed entry, e.g. `[ 'title' => ..., 'font_family' => ... ]`.
+	 */
+	private function unprefix_typography_entry( array $entry ): array {
+		$unprefixed = array();
+
+		if ( isset( $entry['title'] ) ) {
+			$unprefixed['title'] = $entry['title'];
+		}
+
+		foreach ( array_keys( EMCP_Tools_System_Kit_Writer::TYPO_FIELDS ) as $field ) {
+			$prefixed_key = 'typography_' . $field;
+			if ( isset( $entry[ $prefixed_key ] ) ) {
+				$unprefixed[ $field ] = $entry[ $prefixed_key ];
 			}
 		}
 
-		$kit->update_settings( array( 'custom_typography' => $existing_typo ) );
+		return $unprefixed;
+	}
 
-		return array( 'success' => true );
+	/**
+	 * If both system_colors and system_typography now have all four slots
+	 * filled, apply them to the kit's Theme Style defaults (body/h1-h6/links)
+	 * so the rebrand is actually visible on the site — not just stored as
+	 * inert globals. No-ops (and never errors the caller) while the palette
+	 * is still incomplete, e.g. after a tool call that only touched colors.
+	 *
+	 * @since 1.9.1
+	 *
+	 * @param \Elementor\Core\Kits\Documents\Kit $kit The active kit document.
+	 */
+	private function maybe_apply_theme_style( $kit ): void {
+		$settings   = $kit->get_settings();
+		$colors     = array();
+		$typography = array();
+
+		foreach ( $settings['system_colors'] ?? array() as $slot ) {
+			if ( isset( $slot['_id'] ) ) {
+				$colors[ $slot['_id'] ] = $slot;
+			}
+		}
+		foreach ( $settings['system_typography'] ?? array() as $slot ) {
+			if ( isset( $slot['_id'] ) ) {
+				$typography[ $slot['_id'] ] = $this->unprefix_typography_entry( $slot );
+			}
+		}
+
+		foreach ( EMCP_Tools_System_Kit_Writer::SYSTEM_SLOTS as $slot_id ) {
+			if ( empty( $colors[ $slot_id ]['color'] ) || empty( $typography[ $slot_id ]['font_family'] ) ) {
+				return;
+			}
+		}
+
+		// Best-effort: a failure here (e.g. a slot missing its font/color)
+		// leaves system_colors/system_typography already persisted intact.
+		EMCP_Tools_System_Kit_Writer::apply_theme_style( $colors, $typography );
 	}
 }
