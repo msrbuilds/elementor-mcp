@@ -304,7 +304,7 @@ class EMCP_Tools_Atomic_Layout_Abilities {
 				'category'            => 'emcp-tools',
 				'execute_callback'    => function () {
 					$core_version = defined( 'ELEMENTOR_VERSION' ) ? ELEMENTOR_VERSION : 'unknown';
-					$pro_version  = defined( 'ELEMENTOR_PRO_VERSION' ) ? ELEMENTOR_PRO_VERSION : null;
+					$pro_version  = defined( 'ELEMENTOR_PRO_VERSION' ) ? ELEMENTOR_PRO_VERSION : '';
 
 					$supports_atomic    = EMCP_Tools_Atomic_Props::is_atomic_supported();
 					$supports_container = EMCP_Tools_Atomic_Props::is_container_supported();
