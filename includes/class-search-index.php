@@ -27,6 +27,16 @@ class EMCP_Tools_Search_Index {
 	const OBJECT_TYPES      = array( 'page', 'template', 'widget', 'global_color', 'global_font', 'global_class' );
 
 	/**
+	 * Re-entrancy guard for on_save_post(). Indexing an unconverted/empty
+	 * Elementor document makes get_elements_data() call Document::save(),
+	 * which fires save_post again — without this guard the nested call
+	 * re-enters on_save_post() and loops until PHP exhausts memory (#119).
+	 *
+	 * @var bool
+	 */
+	private static $reindexing = false;
+
+	/**
 	 * The index table name.
 	 *
 	 * @return string
@@ -321,6 +331,12 @@ class EMCP_Tools_Search_Index {
 	 * @param WP_Post|null $post    Post object.
 	 */
 	public static function on_save_post( $post_id, $post = null ): void {
+		// Indexing can itself trigger a nested save_post (see the guard note on
+		// the $reindexing property above) - bail immediately on re-entry rather
+		// than recursing until PHP runs out of memory.
+		if ( self::$reindexing ) {
+			return;
+		}
 		$post_id = (int) $post_id;
 		if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
 			return;
@@ -338,17 +354,22 @@ class EMCP_Tools_Search_Index {
 		if ( class_exists( 'EMCP_Tools_Data' ) && ! EMCP_Tools_Data::elementor_documents_ready() ) {
 			return;
 		}
-		// The active kit stores global colours + typography — re-index those when
-		// it is saved (a global-settings change), not the kit as a template.
-		if ( $post_id > 0 && $post_id === (int) get_option( 'elementor_active_kit', 0 ) ) {
-			self::index_globals();
-			return;
-		}
-		$ptype = $post && isset( $post->post_type ) ? $post->post_type : ( function_exists( 'get_post_type' ) ? get_post_type( $post_id ) : '' );
-		if ( 'elementor_library' === $ptype ) {
-			self::index_post_ids( array( $post_id ), 'template' );
-		} elseif ( in_array( $ptype, array( 'page', 'post' ), true ) && 'builder' === get_post_meta( $post_id, '_elementor_edit_mode', true ) ) {
-			self::index_post_ids( array( $post_id ), 'page' );
+		self::$reindexing = true;
+		try {
+			// The active kit stores global colours + typography — re-index those when
+			// it is saved (a global-settings change), not the kit as a template.
+			if ( $post_id > 0 && $post_id === (int) get_option( 'elementor_active_kit', 0 ) ) {
+				self::index_globals();
+				return;
+			}
+			$ptype = $post && isset( $post->post_type ) ? $post->post_type : ( function_exists( 'get_post_type' ) ? get_post_type( $post_id ) : '' );
+			if ( 'elementor_library' === $ptype ) {
+				self::index_post_ids( array( $post_id ), 'template' );
+			} elseif ( in_array( $ptype, array( 'page', 'post' ), true ) && 'builder' === get_post_meta( $post_id, '_elementor_edit_mode', true ) ) {
+				self::index_post_ids( array( $post_id ), 'page' );
+			}
+		} finally {
+			self::$reindexing = false;
 		}
 	}
 
