@@ -200,6 +200,11 @@ class EMCP_Tools_Global_Classes_Write_Abilities {
 		}
 		list( $items, $order ) = $state;
 
+		$variant_props = $this->build_variant_props( $input );
+		if ( is_wp_error( $variant_props ) ) {
+			return $variant_props;
+		}
+
 		$id = $this->mint_id( $items );
 		$items[ $id ] = array(
 			'id'       => $id,
@@ -208,7 +213,7 @@ class EMCP_Tools_Global_Classes_Write_Abilities {
 			'variants' => array(
 				array(
 					'meta'  => $this->variant_meta( $input ),
-					'props' => $this->build_variant_props( $input ),
+					'props' => $variant_props,
 				),
 			),
 		);
@@ -249,8 +254,11 @@ class EMCP_Tools_Global_Classes_Write_Abilities {
 
 		$has_styles = ( isset( $input['styles'] ) && is_array( $input['styles'] ) ) || ( isset( $input['props'] ) && is_array( $input['props'] ) );
 		if ( $has_styles ) {
-			$meta     = $this->variant_meta( $input );
+			$meta      = $this->variant_meta( $input );
 			$new_props = $this->build_variant_props( $input );
+			if ( is_wp_error( $new_props ) ) {
+				return $new_props;
+			}
 			$variants = isset( $item['variants'] ) ? (array) $item['variants'] : array();
 			$idx      = $this->find_variant_index( $variants, $meta );
 			$replace  = ! empty( $input['replace_variant'] );
@@ -482,25 +490,141 @@ class EMCP_Tools_Global_Classes_Write_Abilities {
 	}
 
 	/**
+	 * Longhand / CSS names Elementor stores under a different schema key.
+	 *
+	 * @var array<string, string>
+	 */
+	const PROP_ALIASES = array(
+		'padding-top'          => 'padding',
+		'padding-right'        => 'padding',
+		'padding-bottom'       => 'padding',
+		'padding-left'         => 'padding',
+		'padding-block-start'  => 'padding',
+		'padding-block-end'    => 'padding',
+		'padding-inline-start' => 'padding',
+		'padding-inline-end'   => 'padding',
+		'margin-top'           => 'margin',
+		'margin-right'         => 'margin',
+		'margin-bottom'        => 'margin',
+		'margin-left'          => 'margin',
+		'margin-block-start'   => 'margin',
+		'margin-block-end'     => 'margin',
+		'margin-inline-start'  => 'margin',
+		'margin-inline-end'    => 'margin',
+		'border-top-width'     => 'border-width',
+		'border-right-width'   => 'border-width',
+		'border-bottom-width'  => 'border-width',
+		'border-left-width'    => 'border-width',
+		'border-top-style'     => 'border-style',
+		'border-right-style'   => 'border-style',
+		'border-bottom-style'  => 'border-style',
+		'border-left-style'    => 'border-style',
+		'border-top-color'     => 'border-color',
+		'border-right-color'   => 'border-color',
+		'border-bottom-color'  => 'border-color',
+		'border-left-color'    => 'border-color',
+		'flex-grow'            => 'flex',
+		'flex-shrink'          => 'flex',
+		'flex-basis'           => 'flex',
+		'background-color'     => 'background',
+	);
+
+	/**
 	 * Build a variant's props from friendly `styles` + raw `props`.
 	 *
 	 * @param array $input Tool input.
-	 * @return array CSS prop => $$type map.
+	 * @return array|\WP_Error CSS prop => $$type map.
 	 */
-	private function build_variant_props( array $input ): array {
+	private function build_variant_props( array $input ) {
 		$styles = ( isset( $input['styles'] ) && is_array( $input['styles'] ) ) ? $input['styles'] : array();
 		$props  = array();
 		if ( ! empty( $styles ) && class_exists( 'EMCP_Tools_Atomic_Styles' ) ) {
-			$props = array_merge(
-				EMCP_Tools_Atomic_Styles::build_common_props( $styles ),
-				EMCP_Tools_Atomic_Styles::build_flex_props( $styles )
-			);
+			$common = EMCP_Tools_Atomic_Styles::build_common_props( $styles );
+			if ( is_wp_error( $common ) ) {
+				return $common;
+			}
+			$flex = EMCP_Tools_Atomic_Styles::build_flex_props( $styles );
+			if ( is_wp_error( $flex ) ) {
+				return $flex;
+			}
+			$props = array_merge( $common, $flex );
 		}
 		if ( isset( $input['props'] ) && is_array( $input['props'] ) ) {
+			$rejected = $this->rejected_style_props( $input['props'] );
+			if ( ! empty( $rejected ) ) {
+				return new \WP_Error(
+					'unsupported_style_props',
+					sprintf(
+						/* translators: %s: property names and hints */
+						__( 'These style properties are not in Elementor\'s Global Class schema and would be silently discarded: %s', 'emcp-tools' ),
+						implode( '; ', $rejected )
+					),
+					array( 'status' => 400, 'rejected' => array_keys( $rejected ) )
+				);
+			}
 			// Raw escape hatch wins over built styles for the same key.
 			$props = array_merge( $props, $input['props'] );
 		}
+
 		return $props;
+	}
+
+	/**
+	 * Keys Elementor will keep when compiling Global Class CSS.
+	 *
+	 * @return string[]
+	 */
+	public static function allowed_style_prop_keys(): array {
+		if ( class_exists( '\\Elementor\\Modules\\AtomicWidgets\\Styles\\Style_Schema' ) ) {
+			$schema = \Elementor\Modules\AtomicWidgets\Styles\Style_Schema::get();
+			if ( is_array( $schema ) && ! empty( $schema ) ) {
+				return array_keys( $schema );
+			}
+		}
+
+		return array(
+			'width', 'height', 'min-width', 'min-height', 'max-width', 'max-height',
+			'overflow', 'aspect-ratio', 'object-fit', 'object-position',
+			'position', 'inset-block-start', 'inset-inline-end', 'inset-block-end', 'inset-inline-start',
+			'z-index', 'scroll-margin-top',
+			'font-family', 'font-weight', 'font-size', 'color', 'letter-spacing', 'word-spacing',
+			'column-count', 'column-gap', 'line-height', 'text-align', 'font-style',
+			'text-decoration', 'text-transform', 'direction', 'stroke', 'all', 'cursor',
+			'padding', 'margin',
+			'border-radius', 'border-width', 'border-color', 'border-style',
+			'outline-width', 'outline-color', 'outline-style', 'outline-offset',
+			'background',
+			'mix-blend-mode', 'box-shadow', 'opacity', 'filter', 'backdrop-filter', 'transform', 'transition',
+			'display', 'flex-direction', 'gap', 'flex-wrap', 'flex',
+			'grid-template-columns', 'grid-template-rows', 'grid-auto-flow', 'grid-auto-rows',
+			'grid-auto-columns', 'grid-column', 'grid-row',
+			'justify-content', 'justify-items', 'align-items', 'align-self', 'align-content',
+		);
+	}
+
+	/**
+	 * Human-readable reasons for props Elementor would drop.
+	 *
+	 * @param array $props Built variant props.
+	 * @return array<string, string> rejected key => hint
+	 */
+	public function rejected_style_props( array $props ): array {
+		$allowed  = array_fill_keys( self::allowed_style_prop_keys(), true );
+		$rejected = array();
+
+		foreach ( array_keys( $props ) as $key ) {
+			$key = (string) $key;
+			if ( isset( $allowed[ $key ] ) ) {
+				continue;
+			}
+			if ( isset( self::PROP_ALIASES[ $key ] ) ) {
+				$rejected[ $key ] = sprintf( '%s (use "%s")', $key, self::PROP_ALIASES[ $key ] );
+				continue;
+			}
+			$rejected[ $key ] = sprintf( '%s (not in the atomic style schema)', $key );
+		}
+
+		return $rejected;
 	}
 
 	/**

@@ -254,6 +254,79 @@ class EMCP_Tools_Atomic_Props {
 	}
 
 	/**
+	 * Parse a friendly size (number, "100%", or clamp()/var()) into { size, unit }.
+	 *
+	 * Casting every string through `(float)` used to turn `100%` into `100px`
+	 * and `clamp(...)` into `0`. Callers must treat null as "unparseable".
+	 *
+	 * @since 3.14.0
+	 *
+	 * @param mixed  $value         Raw input.
+	 * @param string $explicit_unit Optional unit from a sibling `*_unit` key.
+	 * @return array{size:int|float|string,unit:string}|null
+	 */
+	public static function parse_size_input( $value, string $explicit_unit = '' ): ?array {
+		if ( is_array( $value ) ) {
+			if ( isset( $value['$$type'], $value['value'] ) && is_array( $value['value'] ) && isset( $value['value']['size'] ) ) {
+				$unit = (string) ( $value['value']['unit'] ?? ( '' !== $explicit_unit ? $explicit_unit : 'px' ) );
+				return array(
+					'size' => $value['value']['size'],
+					'unit' => $unit,
+				);
+			}
+			if ( isset( $value['size'] ) ) {
+				return array(
+					'size' => $value['size'],
+					'unit' => (string) ( $value['unit'] ?? ( '' !== $explicit_unit ? $explicit_unit : 'px' ) ),
+				);
+			}
+			return null;
+		}
+
+		if ( is_int( $value ) || is_float( $value ) ) {
+			return array(
+				'size' => $value,
+				'unit' => '' !== $explicit_unit ? $explicit_unit : 'px',
+			);
+		}
+
+		if ( ! is_string( $value ) ) {
+			return null;
+		}
+
+		$raw = trim( $value );
+		if ( '' === $raw ) {
+			return null;
+		}
+
+		if ( 'custom' === $explicit_unit || preg_match( '/^(clamp|min|max|calc|var)\s*\(/i', $raw ) ) {
+			return array(
+				'size' => $raw,
+				'unit' => 'custom',
+			);
+		}
+
+		if ( preg_match( '/^([+-]?\d*\.?\d+)\s*(px|%|em|rem|vh|vw|vmin|vmax|ch|ex|cm|mm|in|pt|pc|svw|svh|lvw|lvh|dvw|dvh|fr)?$/i', $raw, $matches ) ) {
+			$unit = ( isset( $matches[2] ) && '' !== $matches[2] )
+				? $matches[2]
+				: ( '' !== $explicit_unit ? $explicit_unit : 'px' );
+			return array(
+				'size' => (float) $matches[1],
+				'unit' => $unit,
+			);
+		}
+
+		if ( is_numeric( $raw ) ) {
+			return array(
+				'size' => (float) $raw,
+				'unit' => '' !== $explicit_unit ? $explicit_unit : 'px',
+			);
+		}
+
+		return null;
+	}
+
+	/**
 	 * Wraps a color into a typed prop.
 	 *
 	 * Elementor's `color` style prop is a Color_Prop_Type, so it needs the

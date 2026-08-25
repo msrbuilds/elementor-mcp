@@ -131,7 +131,7 @@ class EMCP_Tools_Atomic_Styles {
 	 * @param array $params Flat layout parameters from AI agent input.
 	 * @return array CSS props in $$type format (e.g., flex-direction, justify-content, etc.)
 	 */
-	public static function build_flex_props( array $params ): array {
+	public static function build_flex_props( array $params ) {
 		$props = array();
 
 		$string_mappings = array(
@@ -151,19 +151,15 @@ class EMCP_Tools_Atomic_Styles {
 			}
 		}
 
-		if ( isset( $params['gap'] ) ) {
-			$unit = $params['gap_unit'] ?? 'px';
-			$props['gap'] = EMCP_Tools_Atomic_Props::size( (float) $params['gap'], $unit );
-		}
-
-		if ( isset( $params['row_gap'] ) ) {
-			$unit = $params['row_gap_unit'] ?? 'px';
-			$props['row-gap'] = EMCP_Tools_Atomic_Props::size( (float) $params['row_gap'], $unit );
-		}
-
-		if ( isset( $params['column_gap'] ) ) {
-			$unit = $params['column_gap_unit'] ?? 'px';
-			$props['column-gap'] = EMCP_Tools_Atomic_Props::size( (float) $params['column_gap'], $unit );
+		foreach ( array( 'gap' => 'gap', 'row_gap' => 'row-gap', 'column_gap' => 'column-gap' ) as $input_key => $css_prop ) {
+			if ( ! isset( $params[ $input_key ] ) ) {
+				continue;
+			}
+			$parsed = self::size_or_error( $params, $input_key );
+			if ( is_wp_error( $parsed ) ) {
+				return $parsed;
+			}
+			$props[ $css_prop ] = $parsed;
 		}
 
 		return $props;
@@ -173,9 +169,9 @@ class EMCP_Tools_Atomic_Styles {
 	 * Builds common style props (padding, margin, background, etc.) from AI input.
 	 *
 	 * @param array $params Flat style parameters.
-	 * @return array CSS props in $$type format.
+	 * @return array|\WP_Error CSS props in $$type format.
 	 */
-	public static function build_common_props( array $params ): array {
+	public static function build_common_props( array $params ) {
 		$props = array();
 
 		// These are real Elementor style props that take a plain size value.
@@ -186,13 +182,14 @@ class EMCP_Tools_Atomic_Styles {
 		);
 
 		foreach ( $size_mappings as $input_key => $css_prop ) {
-			if ( isset( $params[ $input_key ] ) ) {
-				$unit = $params[ $input_key . '_unit' ] ?? 'px';
-				$props[ $css_prop ] = EMCP_Tools_Atomic_Props::size(
-					(float) $params[ $input_key ],
-					$unit
-				);
+			if ( ! isset( $params[ $input_key ] ) ) {
+				continue;
 			}
+			$parsed = self::size_or_error( $params, $input_key );
+			if ( is_wp_error( $parsed ) ) {
+				return $parsed;
+			}
+			$props[ $css_prop ] = $parsed;
 		}
 
 		// Padding and margin are `dimensions` shorthands. Elementor has no
@@ -210,6 +207,9 @@ class EMCP_Tools_Atomic_Styles {
 				'inline-end'   => 'padding_right',
 			)
 		);
+		if ( is_wp_error( $padding ) ) {
+			return $padding;
+		}
 		if ( null !== $padding ) {
 			$props['padding'] = $padding;
 		}
@@ -224,6 +224,9 @@ class EMCP_Tools_Atomic_Styles {
 				'inline-end'   => 'margin_right',
 			)
 		);
+		if ( is_wp_error( $margin ) ) {
+			return $margin;
+		}
 		if ( null !== $margin ) {
 			$props['margin'] = $margin;
 		}
@@ -257,10 +260,12 @@ class EMCP_Tools_Atomic_Styles {
 	 * @param array  $side_map   Map of dimension side => input key.
 	 * @return array|null Typed dimensions prop, or null when nothing was set.
 	 */
-	private static function build_dimensions( array $params, string $shorthand, array $side_map ): ?array {
+	private static function build_dimensions( array $params, string $shorthand, array $side_map ) {
 		if ( isset( $params[ $shorthand ] ) ) {
-			$unit = $params[ $shorthand . '_unit' ] ?? 'px';
-			$val  = EMCP_Tools_Atomic_Props::size( (float) $params[ $shorthand ], $unit );
+			$val = self::size_or_error( $params, $shorthand );
+			if ( is_wp_error( $val ) ) {
+				return $val;
+			}
 
 			return EMCP_Tools_Atomic_Props::dimensions(
 				array(
@@ -274,13 +279,42 @@ class EMCP_Tools_Atomic_Styles {
 
 		$sides = array();
 		foreach ( $side_map as $dim_side => $input_key ) {
-			if ( isset( $params[ $input_key ] ) ) {
-				$unit               = $params[ $input_key . '_unit' ] ?? 'px';
-				$sides[ $dim_side ] = EMCP_Tools_Atomic_Props::size( (float) $params[ $input_key ], $unit );
+			if ( ! isset( $params[ $input_key ] ) ) {
+				continue;
 			}
+			$parsed = self::size_or_error( $params, $input_key );
+			if ( is_wp_error( $parsed ) ) {
+				return $parsed;
+			}
+			$sides[ $dim_side ] = $parsed;
 		}
 
 		return empty( $sides ) ? null : EMCP_Tools_Atomic_Props::dimensions( $sides );
+	}
+
+	/**
+	 * Build a size prop from a friendly key, or an error if the value would be corrupted.
+	 *
+	 * @param array  $params    Raw input.
+	 * @param string $input_key Friendly key (width, padding_top, …).
+	 * @return array|\WP_Error
+	 */
+	private static function size_or_error( array $params, string $input_key ) {
+		$explicit_unit = isset( $params[ $input_key . '_unit' ] ) ? (string) $params[ $input_key . '_unit' ] : '';
+		$parsed        = EMCP_Tools_Atomic_Props::parse_size_input( $params[ $input_key ], $explicit_unit );
+		if ( null === $parsed ) {
+			return new \WP_Error(
+				'invalid_size',
+				sprintf(
+					/* translators: %s: style input key */
+					__( 'Friendly style "%s" is not a number, a length like "100%%", or a CSS function (clamp/min/max/calc/var). Use raw "props" with a $$type size value instead.', 'emcp-tools' ),
+					$input_key
+				),
+				array( 'status' => 400, 'key' => $input_key )
+			);
+		}
+
+		return EMCP_Tools_Atomic_Props::size( $parsed['size'], $parsed['unit'] );
 	}
 
 	/**
