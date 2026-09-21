@@ -339,5 +339,13 @@ final class EMCP_Tools_Pro_Loader {
 				$registry->register( new EMCP_Tools_GSAP_Module() );
 			}
 		}
+
+		$export_path = self::path( 'includes/modules/class-plugin-export-module.php' );
+		if ( '' !== $export_path ) {
+			require_once $export_path;
+			if ( class_exists( 'EMCP_Tools_Plugin_Export_Module' ) ) {
+				$registry->register( new EMCP_Tools_Plugin_Export_Module() );
+			}
+		}
 	}
 }

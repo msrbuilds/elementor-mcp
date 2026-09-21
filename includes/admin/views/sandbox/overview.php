@@ -96,6 +96,23 @@ $emcp_sb_cards = array(
 		'note'        => __( 'Needs permission', 'emcp-tools' ),
 	),
 );
+
+// Export as plugin (Pro module, shown only while it is switched on).
+if ( class_exists( 'EMCP_Tools_Plugin_Export_Module' ) && EMCP_Tools_Plugin_Export_Module::is_enabled() ) {
+	$emcp_sb_cards[] = array(
+		'view'        => 'export',
+		'label'       => __( 'Export as plugin', 'emcp-tools' ),
+		'badge'       => 'pro',
+		'badge_label' => __( 'PRO', 'emcp-tools' ),
+		'icon'        => 'dashicons-download',
+		'ico_mod'     => 'usage',
+		'desc'        => __( 'Package every active widget, block and snippet as a standalone plugin that keeps working after EMCP Tools is removed.', 'emcp-tools' ),
+		'available'   => true,
+		'active'      => $emcp_sb_bl_active + $emcp_sb_wd_active + $emcp_sb_sn_active,
+		'draft'       => $emcp_sb_bl_draft + $emcp_sb_wd_draft + $emcp_sb_sn_draft,
+		'note'        => '',
+	);
+}
 ?>
 
 <div class="emcp-sandbox-overview">

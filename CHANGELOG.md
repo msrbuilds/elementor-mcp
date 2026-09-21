@@ -2,6 +2,10 @@
 
 All notable changes to MCP Tools for Elementor are documented in this file.
 
+## [3.18.0] (in progress, unreleased)
+
+- New: **Sandbox Plugin Export (Pro module, off by default).** Sandbox > Export as plugin packages every ACTIVE Sandbox widget, block and PHP snippet as a standalone WordPress plugin ZIP that keeps working after EMCP Tools is deactivated. Widget types, block names, snippet functions, the `[emcp_snippet]` shortcode, asset handles and the `emcp-custom` category are preserved verbatim, so existing pages keep rendering. Widgets that use the `query`, `shortcode` or `remote` controls get the runtime they call bundled under `includes/lib/`; remote API keys are read from `EMCP_TOOLS_REMOTE_KEY_*` constants (placeholders in `config.php`, embedding is opt-in). The exported plugin decides ownership on `plugins_loaded` (priority 50): it stays dormant while EMCP Tools is active or another export owns the site, and takes over on the first request after EMCP is deactivated. The ZIP is built in a directory verified to sit outside every web-served path, streamed once and deleted. Enable it on the Modules tab; the Sandbox overview then shows a fourth card.
+
 ## [3.17.1]
 
 > Patch release: three data-safety fixes for Elementor writes, a Cloud gateway reconnect fix, an OAuth discovery fix for sites running a second MCP plugin, and a community-contributed Visibility SEO integration.

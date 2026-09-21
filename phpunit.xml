@@ -71,6 +71,9 @@
         <testsuite name="Database">
             <directory>pro/tests/unit/Database</directory>
         </testsuite>
+        <testsuite name="Export">
+            <directory>pro/tests/unit/export</directory>
+        </testsuite>
         <testsuite name="Bootstrap">
             <directory>pro/tests/unit/Bootstrap</directory>
         </testsuite>

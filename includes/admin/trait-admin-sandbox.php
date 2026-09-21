@@ -25,12 +25,12 @@ trait EMCP_Tools_Admin_Sandbox_Trait {
 	 *
 	 * @since 3.7.0
 	 *
-	 * @return string One of 'overview' | 'blocks' | 'widgets' | 'snippets'.
+	 * @return string One of 'overview' | 'blocks' | 'widgets' | 'snippets' | 'export'.
 	 */
 	public static function sandbox_view(): string {
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only view switch, no state change.
 		$view = isset( $_GET['view'] ) ? sanitize_key( wp_unslash( $_GET['view'] ) ) : 'overview';
-		return in_array( $view, array( 'overview', 'blocks', 'widgets', 'snippets' ), true ) ? $view : 'overview';
+		return in_array( $view, array( 'overview', 'blocks', 'widgets', 'snippets', 'export' ), true ) ? $view : 'overview';
 	}
 
 	/**

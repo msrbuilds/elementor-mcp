@@ -26,6 +26,18 @@ $emcp_map  = array(
 );
 $emcp_file = EMCP_TOOLS_DIR . 'includes/admin/views/' . ( $emcp_map[ $emcp_view ] ?? $emcp_map['overview'] );
 
+// Export as plugin (Pro module): the view ships in the Pro overlay and only
+// resolves while the module is switched on; otherwise fall back to the overview.
+if ( 'export' === $emcp_view ) {
+	$emcp_file = '';
+	if ( class_exists( 'EMCP_Tools_Plugin_Export_Module' ) && EMCP_Tools_Plugin_Export_Module::is_enabled() && class_exists( 'EMCP_Tools_Pro_Loader' ) ) {
+		$emcp_file = EMCP_Tools_Pro_Loader::path( 'includes/admin/views/sandbox/export.php' );
+	}
+	if ( '' === $emcp_file ) {
+		$emcp_file = EMCP_TOOLS_DIR . 'includes/admin/views/' . $emcp_map['overview'];
+	}
+}
+
 if ( file_exists( $emcp_file ) ) {
 	include $emcp_file;
 } else {

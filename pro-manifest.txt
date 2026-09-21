@@ -34,6 +34,9 @@ includes/modules/class-memory-module.php
 includes/admin/views/page-memory.php
 includes/gsap/class-gsap-assets.php
 includes/modules/class-gsap-module.php
+includes/modules/class-plugin-export-module.php
+includes/export
+includes/admin/views/sandbox/export.php
 includes/abilities/class-gsap-abilities.php
 assets/vendor/gsap
 skills
