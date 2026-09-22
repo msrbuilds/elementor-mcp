@@ -5,7 +5,9 @@
  * One script and one stylesheet, plus Swiper for carousels: Elementor's own
  * `swiper` handle when it is registered (front end and editor preview), else
  * a bundled Swiper 8. One handle decides at enqueue time, so a page never
- * loads two copies.
+ * loads two copies. `enqueue()` must be called from an element's own render,
+ * not from an early `wp_enqueue_scripts` callback, because the handle choice
+ * depends on Elementor having already registered its `swiper` handle by then.
  *
  * @package EMCP_Tools
  * @since   3.18.0
@@ -46,18 +48,30 @@ class EMCP_Tools_Themer_Loop_Assets {
 
 		$dir = defined( 'EMCP_TOOLS_DIR' ) ? EMCP_TOOLS_DIR : '';
 		$url = defined( 'EMCP_TOOLS_URL' ) ? EMCP_TOOLS_URL : '';
-		$ver = defined( 'EMCP_TOOLS_VERSION' ) ? EMCP_TOOLS_VERSION : '0';
-		if ( defined( 'WP_DEBUG' ) && WP_DEBUG && '' !== $dir && file_exists( $dir . 'assets/js/themer-loop.js' ) ) {
-			$ver = (string) filemtime( $dir . 'assets/js/themer-loop.js' );
+		$fallback_ver = defined( 'EMCP_TOOLS_VERSION' ) ? EMCP_TOOLS_VERSION : '0';
+		$script_ver   = $fallback_ver;
+		$style_ver    = $fallback_ver;
+		if ( defined( 'WP_DEBUG' ) && WP_DEBUG && '' !== $dir ) {
+			if ( file_exists( $dir . 'assets/js/themer-loop.js' ) ) {
+				$script_ver = (string) filemtime( $dir . 'assets/js/themer-loop.js' );
+			}
+			if ( file_exists( $dir . 'assets/css/themer-loop.css' ) ) {
+				$style_ver = (string) filemtime( $dir . 'assets/css/themer-loop.css' );
+			}
 		}
 
+		// Each fallback is gated on its own Elementor handle: a `swiper`
+		// script does not guarantee a `swiper` style is registered too, and
+		// the reverse, so the two are decided independently.
 		if ( ! wp_script_is( 'swiper', 'registered' ) ) {
 			wp_register_script( self::SWIPER_FALLBACK, $url . 'assets/lib/swiper/swiper-bundle.min.js', array(), self::SWIPER_VERSION, true );
+		}
+		if ( ! wp_style_is( 'swiper', 'registered' ) ) {
 			wp_register_style( self::SWIPER_FALLBACK, $url . 'assets/lib/swiper/swiper-bundle.min.css', array(), self::SWIPER_VERSION );
 		}
 
-		wp_register_style( self::STYLE, $url . 'assets/css/themer-loop.css', array(), $ver );
-		wp_register_script( self::SCRIPT, $url . 'assets/js/themer-loop.js', array(), $ver, true );
+		wp_register_style( self::STYLE, $url . 'assets/css/themer-loop.css', array(), $style_ver );
+		wp_register_script( self::SCRIPT, $url . 'assets/js/themer-loop.js', array(), $script_ver, true );
 		wp_localize_script( self::SCRIPT, 'emcpThemerLoop', self::localize_data() );
 	}
 
