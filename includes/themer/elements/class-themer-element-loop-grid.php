@@ -67,7 +67,7 @@ class EMCP_Tools_Themer_Element_Loop_Grid extends EMCP_Tools_Themer_Element_Loop
 			// to a reload too. %#% stands for the page number.
 			$scheme = self::url_scheme( $p );
 			$attrs .= ' data-emcp-url="' . esc_attr( str_replace( '%_%', $scheme['format'], $scheme['base'] ) ) . '"'
-				. ' data-emcp-url-first="' . esc_attr( str_replace( '%_%', '', $scheme['base'] ) ) . '"';
+				. ' data-emcp-url-first="' . esc_attr( $scheme['first'] ) . '"';
 		}
 		if ( self::truthy( $args['inline_vars'] ) ) {
 			$attrs .= ' style="' . esc_attr( self::style_vars( $args ) ) . '"';
@@ -227,32 +227,79 @@ class EMCP_Tools_Themer_Element_Loop_Grid extends EMCP_Tools_Themer_Element_Loop
 	 * ?paged=N); every other source by the per-element query var.
 	 *
 	 * @param array $p Prepared render (needs query.source and uid).
-	 * @return array{base:string,format:string}
+	 * @return array{base:string,format:string,first:string}
 	 */
 	public static function url_scheme( array $p ): array {
 		// Core only substitutes format into base at a literal %_% placeholder;
-		// a base built with %#% directly (the earlier approach here) leaves
+		// a base built with %#% directly (an earlier approach here) leaves
 		// format inert and never special-cases page one, so page one links to
 		// /page/1/ and takes a redirect. Building base with %_% and letting
 		// format supply the page segment is how paginate_links() itself
 		// composes its own defaults.
 		if ( 'current' === (string) ( $p['query']['source'] ?? 'posts' ) ) {
-			// Reuses whatever pagination scheme get_pagenum_link() already
-			// resolves (pretty or plain permalinks) instead of guessing it.
-			$clean  = untrailingslashit( (string) get_pagenum_link( 1 ) );
-			$tagged = (string) get_pagenum_link( 2 );
-			$suffix = ( 0 === strpos( $tagged, $clean ) ) ? substr( $tagged, strlen( $clean ) ) : '?paged=2';
-			return array(
-				'base'   => $clean . '%_%',
-				'format' => str_replace( '2', '%#%', $suffix ),
-			);
+			return self::current_url_scheme();
 		}
 		$page_var = self::page_var( (string) ( $p['uid'] ?? '' ) );
 		$clean    = (string) remove_query_arg( $page_var );
 		$sep      = ( false === strpos( $clean, '?' ) ) ? '?' : '&';
+		$base     = $clean . '%_%' . '#emcp-loop-' . ( $p['uid'] ?? '' );
 		return array(
-			'base'   => $clean . '%_%' . '#emcp-loop-' . ( $p['uid'] ?? '' ),
+			'base'   => $base,
 			'format' => $sep . $page_var . '=%#%',
+			'first'  => str_replace( '%_%', '', $base ),
+		);
+	}
+
+	/**
+	 * The main query's own pagination scheme, read from get_pagenum_link()
+	 * (pretty or plain permalinks) instead of guessing it.
+	 *
+	 * The query string is split off both links first: with pretty
+	 * permalinks page one is /path/?s=foo and page two /path/page/2/?s=foo,
+	 * so comparing the whole URLs would never find the page segment. The
+	 * page segment is taken relative to page one's own path, so page one
+	 * keeps its canonical form (trailing slash included) and never takes a
+	 * redirect. Under plain permalinks the page is one more query argument
+	 * (paged, or page on a static front page), appended with & when a query
+	 * already exists.
+	 *
+	 * @return array{base:string,format:string,first:string}
+	 */
+	private static function current_url_scheme(): array {
+		$first = (string) get_pagenum_link( 1, false );
+		$two   = (string) get_pagenum_link( 2, false );
+		list( $path1, $qs1 ) = array_pad( explode( '?', $first, 2 ), 2, '' );
+		list( $path2, $qs2 ) = array_pad( explode( '?', $two, 2 ), 2, '' );
+		$query = '' !== $qs1 ? '?' . $qs1 : '';
+
+		if ( $path2 !== $path1 && 0 === strpos( $path2, $path1 ) ) {
+			// Pretty permalinks: the page is a path segment after page one's path.
+			$suffix = substr( $path2, strlen( $path1 ) );
+			return array(
+				'base'   => $path1 . '%_%' . $query,
+				'format' => (string) preg_replace( '/2(?!.*2)/', '%#%', $suffix ),
+				'first'  => $first,
+			);
+		}
+
+		// Plain permalinks: the page is the one query argument page two adds.
+		$key = 'paged';
+		if ( $path2 === $path1 ) {
+			$args1 = array();
+			$args2 = array();
+			parse_str( $qs1, $args1 );
+			parse_str( $qs2, $args2 );
+			foreach ( $args2 as $k => $v ) {
+				if ( ! array_key_exists( $k, $args1 ) && '2' === (string) $v ) {
+					$key = (string) $k;
+					break;
+				}
+			}
+		}
+		return array(
+			'base'   => $path1 . $query . '%_%',
+			'format' => ( '' !== $query ? '&' : '?' ) . $key . '=%#%',
+			'first'  => $first,
 		);
 	}
 

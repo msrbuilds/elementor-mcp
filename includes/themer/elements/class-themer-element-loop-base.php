@@ -33,9 +33,30 @@ abstract class EMCP_Tools_Themer_Element_Loop_Base extends EMCP_Tools_Themer_Ele
 	/** @var array<string,int> Occurrence counter per "scope|local_id". */
 	private static $instances = array();
 
+	/** @var bool|null Test override for is_rest_request(); null = read REST_REQUEST. */
+	private static $rest_override = null;
+
 	/** Test seam. */
 	public static function reset_instances_for_tests(): void {
-		self::$instances = array();
+		self::$instances     = array();
+		self::$rest_override = null;
+	}
+
+	/**
+	 * Test seam: pretend this render is (or is not) inside a REST request.
+	 *
+	 * @param bool|null $on Override, or null to read REST_REQUEST again.
+	 */
+	public static function force_rest_request_for_tests( ?bool $on ): void {
+		self::$rest_override = $on;
+	}
+
+	/** @return bool Whether this render runs inside a REST request. */
+	protected static function is_rest_request(): bool {
+		if ( null !== self::$rest_override ) {
+			return self::$rest_override;
+		}
+		return defined( 'REST_REQUEST' ) && REST_REQUEST;
 	}
 
 	/**
@@ -139,6 +160,12 @@ abstract class EMCP_Tools_Themer_Element_Loop_Base extends EMCP_Tools_Themer_Ele
 		// branch would warn on every caller that omits the key.
 		$pagination_raw = (string) ( $args['pagination'] ?? 'none' );
 		$pagination     = in_array( $pagination_raw, self::PAGINATION, true ) ? $pagination_raw : 'none';
+		// A loop nested in a card that the loop REST route renders would build
+		// its page URLs from the REST request URI, which is no page a visitor
+		// can open. It shows its first page only, with no pagination.
+		if ( 'none' !== $pagination && self::is_rest_request() ) {
+			$pagination = 'none';
+		}
 		if ( in_array( $pagination, self::APPEND_MODES, true ) ) {
 			$ajax = true; // load more and infinite scroll are AJAX by nature.
 		}
@@ -250,7 +277,7 @@ abstract class EMCP_Tools_Themer_Element_Loop_Base extends EMCP_Tools_Themer_Ele
 		// relies on the containing page having already loaded these assets
 		// on its first render; enqueueing here for that case would also load
 		// a second Swiper into a response that is not a full page.
-		if ( class_exists( 'EMCP_Tools_Themer_Loop_Assets' ) && ! ( defined( 'REST_REQUEST' ) && REST_REQUEST ) ) {
+		if ( class_exists( 'EMCP_Tools_Themer_Loop_Assets' ) && ! self::is_rest_request() ) {
 			EMCP_Tools_Themer_Loop_Assets::enqueue( 'carousel' === $kind );
 		}
 

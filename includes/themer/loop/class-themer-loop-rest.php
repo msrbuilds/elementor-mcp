@@ -253,16 +253,19 @@ class EMCP_Tools_Themer_Loop_REST {
 				}
 				$external = '';
 				if ( ! empty( $item->src ) ) {
-					$external = '<script src="' . esc_url( self::src_url( $item, $scripts, (string) $handle, 'script_loader_src' ) ) . '" id="' . esc_attr( $handle ) . '-js"></script>';
-					// A script's translations are part of its external markup.
-					// Guarded by method_exists so the test stub, which does not
-					// implement it, is never called.
+					// A script's translations are part of its external markup,
+					// printed BEFORE the file as core prints them (the file reads
+					// its locale data as it runs). print_translations() with
+					// $display false returns bare JS, not a tag, so it is wrapped
+					// here with core's own id. Guarded by method_exists so a
+					// dependencies stub without it is never called.
 					if ( method_exists( $scripts, 'print_translations' ) ) {
 						$translations = $scripts->print_translations( $handle, false );
-						if ( is_string( $translations ) && '' !== $translations ) {
-							$external .= $translations;
+						if ( is_string( $translations ) && '' !== trim( $translations ) ) {
+							$external .= wp_get_inline_script_tag( $translations, array( 'id' => $handle . '-js-translations' ) );
 						}
 					}
+					$external .= '<script src="' . esc_url( self::src_url( $item, $scripts, (string) $handle, 'script_loader_src' ) ) . '" id="' . esc_attr( $handle ) . '-js"></script>';
 				}
 				$assets[] = array( 'handle' => (string) $handle, 'type' => 'script', 'external' => $external, 'config' => $config, 'init' => $init );
 			}
