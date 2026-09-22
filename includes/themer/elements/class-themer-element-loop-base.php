@@ -230,7 +230,13 @@ abstract class EMCP_Tools_Themer_Element_Loop_Base extends EMCP_Tools_Themer_Ele
 		$items = EMCP_Tools_Themer_Loop_Renderer::render_items(
 			$template_id,
 			$result['posts'],
-			array( 'uid' => $uid, 'index_base' => ( $page - 1 ) * $per_page, 'tag' => $tag, 'config' => $config )
+			array(
+				'uid'          => $uid,
+				'index_base'   => ( $page - 1 ) * $per_page,
+				'tag'          => $tag,
+				'config'       => $config,
+				'item_classes' => static::item_classes( $args ),
+			)
 		);
 
 		return array(
@@ -280,6 +286,20 @@ abstract class EMCP_Tools_Themer_Element_Loop_Base extends EMCP_Tools_Themer_Ele
 	 * @return array
 	 */
 	protected static function layout_config( array $args ): array {
+		return array();
+	}
+
+	/**
+	 * Extra classes a subclass wants on each of ITS OWN items' outer wrapper
+	 * (the carousel needs 'swiper-slide'). Scoped to this render_items() call
+	 * alone: a card that itself contains a nested Loop Grid or Carousel calls
+	 * render_items() again from scratch for that nested render, so it never
+	 * inherits classes meant for the outer carousel's slides.
+	 *
+	 * @param array $args Element args.
+	 * @return string[]
+	 */
+	protected static function item_classes( array $args ): array {
 		return array();
 	}
 

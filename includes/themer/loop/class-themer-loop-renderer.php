@@ -37,7 +37,7 @@ class EMCP_Tools_Themer_Loop_Renderer {
 	 *
 	 * @param int   $template_id Loop Item id.
 	 * @param array $posts       WP_Post objects or ids.
-	 * @param array $opts        uid, index_base, tag, config.
+	 * @param array $opts        uid, index_base, tag, config, item_classes.
 	 * @return string[] One HTML string per post, in order.
 	 */
 	public static function render_items( int $template_id, array $posts, array $opts = array() ): array {
@@ -60,7 +60,12 @@ class EMCP_Tools_Themer_Loop_Renderer {
 	 * @param int    $template_id Loop Item id.
 	 * @param object $post        The card's post.
 	 * @param int    $index       Position within this render (0-based).
-	 * @param array  $opts        uid, index_base, tag, config.
+	 * @param array  $opts        uid, index_base, tag, config, item_classes (extra
+	 *                            classes for THIS call's own outer wrapper only,
+	 *                            e.g. a carousel's 'swiper-slide'; never inherited
+	 *                            by a nested render_items() call inside a card,
+	 *                            since that call builds its own $opts from
+	 *                            scratch).
 	 * @return string
 	 */
 	public static function render_item( int $template_id, $post, int $index, array $opts = array() ): string {
@@ -95,6 +100,17 @@ class EMCP_Tools_Themer_Loop_Renderer {
 		$classes = array( self::ITEM_CLASS, 'emcp-loop-item-' . $post_id, self::ITEM_CLASS . '--' . ( $abs + 1 ) );
 		if ( 0 === $abs ) {
 			$classes[] = 'is-first';
+		}
+		// Extra classes THIS render_items() call wants on its own items' outer
+		// wrapper (a carousel's 'swiper-slide'). Merged before the filter below
+		// so a filter callback still sees and can adjust the full class list.
+		// Sanitised per entry: this can carry caller input by the time a later
+		// REST route reaches it.
+		foreach ( (array) ( $opts['item_classes'] ?? array() ) as $extra ) {
+			$extra = sanitize_html_class( (string) $extra );
+			if ( '' !== $extra ) {
+				$classes[] = $extra;
+			}
 		}
 		/**
 		 * Filter the item wrapper classes.

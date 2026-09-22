@@ -80,10 +80,16 @@ class EMCP_Tools_Themer_Element_Loop_Carousel extends EMCP_Tools_Themer_Element_
 		if ( ! $p['items'] ) {
 			return $html . self::empty_html( $args ) . '</div>';
 		}
-		// The renderer wraps each item in the configured tag; Swiper needs the
-		// slide class on that wrapper, so it is injected here.
-		$slides = str_replace( 'class="' . EMCP_Tools_Themer_Loop_Renderer::ITEM_CLASS . ' ', 'class="swiper-slide ' . EMCP_Tools_Themer_Loop_Renderer::ITEM_CLASS . ' ', $p['items'] );
-		$html  .= '<div class="swiper"><div class="swiper-wrapper">' . implode( '', $slides ) . '</div></div>';
+		// The renderer already stamped 'swiper-slide' onto each of THIS call's
+		// own items via item_classes() below (never onto a card's own nested
+		// Loop Grid/Carousel, which builds its items through a separate call).
+		// Swiper reads RTL only from the container's own dir attribute or
+		// computed CSS direction, never from an init option, so it is set here.
+		$swiper_attrs = 'class="swiper"';
+		if ( 'rtl' === (string) $args['direction'] ) {
+			$swiper_attrs .= ' dir="' . esc_attr( 'rtl' ) . '"';
+		}
+		$html .= '<div ' . $swiper_attrs . '><div class="swiper-wrapper">' . self::items_html( $p ) . '</div></div>';
 		if ( self::truthy( $args['arrows'] ) ) {
 			$html .= '<button type="button" class="emcp-loop__arrow emcp-loop__arrow--prev" aria-label="' . esc_attr__( 'Previous', 'emcp-tools' ) . '">' . self::svg( (string) $args['arrow_prev_svg'], self::PREV_SVG ) . '</button>';
 			$html .= '<button type="button" class="emcp-loop__arrow emcp-loop__arrow--next" aria-label="' . esc_attr__( 'Next', 'emcp-tools' ) . '">' . self::svg( (string) $args['arrow_next_svg'], self::NEXT_SVG ) . '</button>';
@@ -117,6 +123,19 @@ class EMCP_Tools_Themer_Element_Loop_Carousel extends EMCP_Tools_Themer_Element_
 	}
 
 	/**
+	 * Swiper needs its slide class on the outer wrapper of each of THIS
+	 * carousel's own items (never a card's own nested loop, which renders its
+	 * items through a separate render_items() call and never sees this).
+	 *
+	 * @param array $args Element args (unused; every carousel item is a slide).
+	 * @return string[]
+	 */
+	protected static function item_classes( array $args ): array {
+		unset( $args );
+		return array( 'swiper-slide' );
+	}
+
+	/**
 	 * Swiper 8 options (only keys common to Swiper 8 and 11).
 	 *
 	 * @param array $args Merged args.
@@ -130,11 +149,13 @@ class EMCP_Tools_Themer_Element_Loop_Carousel extends EMCP_Tools_Themer_Element_
 		}
 		$o = array(
 			'slidesPerView'  => $slides,
-			'slidesPerGroup' => max( 1, min( 10, (int) $args['slides_to_scroll'] ) ),
+			'slidesPerGroup' => self::slides_to_scroll_value( $args['slides_to_scroll'] ),
 			'spaceBetween'   => max( 0, (int) $args['gap'] ),
 			'speed'          => max( 100, min( 5000, (int) $args['speed'] ) ),
 			'loop'           => self::truthy( $args['loop'] ),
-			'dir'            => 'rtl' === (string) $args['direction'] ? 'rtl' : 'ltr',
+			// No 'dir' key: Swiper has no such init option in any version. It
+			// detects RTL only from the container element's own dir attribute
+			// or computed CSS direction, which render() sets on .swiper.
 			'centeredSlides' => self::truthy( $args['centered'] ),
 			'effect'         => $effect,
 			'autoHeight'     => 'equal' !== (string) $args['height'],
@@ -142,17 +163,17 @@ class EMCP_Tools_Themer_Element_Loop_Carousel extends EMCP_Tools_Themer_Element_
 			'breakpoints'    => array(
 				0   => array(
 					'slidesPerView'  => 'fade' === $effect ? 1 : self::slides_value( $args['slides_mobile'], 1 ),
-					'slidesPerGroup' => max( 1, (int) $args['slides_to_scroll_mobile'] ),
+					'slidesPerGroup' => self::slides_to_scroll_value( $args['slides_to_scroll_mobile'] ),
 					'spaceBetween'   => max( 0, (int) $args['gap_mobile'] ),
 				),
 				768 => array(
 					'slidesPerView'  => 'fade' === $effect ? 1 : self::slides_value( $args['slides_tablet'], 2 ),
-					'slidesPerGroup' => max( 1, (int) $args['slides_to_scroll_tablet'] ),
+					'slidesPerGroup' => self::slides_to_scroll_value( $args['slides_to_scroll_tablet'] ),
 					'spaceBetween'   => max( 0, (int) $args['gap_tablet'] ),
 				),
 				1025 => array(
 					'slidesPerView'  => $slides,
-					'slidesPerGroup' => max( 1, min( 10, (int) $args['slides_to_scroll'] ) ),
+					'slidesPerGroup' => self::slides_to_scroll_value( $args['slides_to_scroll'] ),
 					'spaceBetween'   => max( 0, (int) $args['gap'] ),
 				),
 			),
@@ -197,6 +218,19 @@ class EMCP_Tools_Themer_Element_Loop_Carousel extends EMCP_Tools_Themer_Element_
 		}
 		$n = (int) $v;
 		return $n >= 1 && $n <= 10 ? $n : $default;
+	}
+
+	/**
+	 * Slides-to-scroll (slidesPerGroup), clamped 1..10 the same way at every
+	 * breakpoint: it was previously only floored at 1 for mobile and tablet,
+	 * so a caller-supplied value above 10 escaped the desktop-and-top-level
+	 * ceiling on those two.
+	 *
+	 * @param mixed $v Slides-to-scroll setting.
+	 * @return int
+	 */
+	private static function slides_to_scroll_value( $v ): int {
+		return max( 1, min( 10, (int) $v ) );
 	}
 
 	/**
