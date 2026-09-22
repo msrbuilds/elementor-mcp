@@ -110,16 +110,14 @@ if ( ! class_exists( 'EMCP_Tools_Themer_Widget_Loop_Base' ) && class_exists( '\E
 		}
 
 		/**
-		 * Whether option lists are needed. Elementor builds a widget's controls
-		 * on the front end too (to resolve settings), where option lists are
-		 * never shown; the panel config is only built in wp-admin (the editor
-		 * page and its admin-ajax calls). Skipping the term, user and Loop
-		 * Item queries elsewhere keeps a page view free of them.
+		 * Whether option lists are needed: in wp-admin, over REST and under
+		 * WP-CLI (where MCP agents read the schema), never on a front-end
+		 * page view. See EMCP_Tools_Themer_Loop_Widget_Map::options_needed().
 		 *
 		 * @return bool
 		 */
 		protected static function emcp_needs_options(): bool {
-			return is_admin();
+			return EMCP_Tools_Themer_Loop_Widget_Map::options_needed();
 		}
 
 		// ---- selectors -----------------------------------------------------
@@ -411,6 +409,7 @@ if ( ! class_exists( 'EMCP_Tools_Themer_Widget_Loop_Base' ) && class_exists( '\E
 					'placeholder' => '12, 44, 7',
 					'description' => __( 'Comma separated. With Manual selection this is also the display order.', 'emcp-tools' ),
 					'label_block' => true,
+					'condition'   => array( 'emcp_source!' => 'current' ),
 				)
 			);
 			$this->add_control(
@@ -420,7 +419,7 @@ if ( ! class_exists( 'EMCP_Tools_Themer_Widget_Loop_Base' ) && class_exists( '\E
 					'type'        => \Elementor\Controls_Manager::TEXT,
 					'placeholder' => '9, 10',
 					'label_block' => true,
-					'condition'   => array( 'emcp_source!' => 'manual' ),
+					'condition'   => array( 'emcp_source!' => array( 'current', 'manual' ) ),
 				)
 			);
 			$this->add_control(
@@ -429,7 +428,18 @@ if ( ! class_exists( 'EMCP_Tools_Themer_Widget_Loop_Base' ) && class_exists( '\E
 					'label'     => __( 'Exclude current post', 'emcp-tools' ),
 					'type'      => \Elementor\Controls_Manager::SWITCHER,
 					'default'   => '',
-					'condition' => array( 'emcp_source!' => array( 'current', 'manual' ) ),
+					'condition' => array( 'emcp_source' => array( 'posts', 'products' ) ),
+				)
+			);
+			// Related has its own switcher, on by default: the post being
+			// viewed is rarely one of its own related posts.
+			$this->add_control(
+				'emcp_related_exclude_current',
+				array(
+					'label'     => __( 'Exclude current post', 'emcp-tools' ),
+					'type'      => \Elementor\Controls_Manager::SWITCHER,
+					'default'   => 'yes',
+					'condition' => array( 'emcp_source' => 'related' ),
 				)
 			);
 			$this->add_control(

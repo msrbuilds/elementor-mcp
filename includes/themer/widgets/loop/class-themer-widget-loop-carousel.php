@@ -379,7 +379,10 @@ if ( ! class_exists( 'EMCP_Tools_Themer_Widget_Loop_Carousel' ) && class_exists(
 				array(
 					'label'     => __( 'Active slide', 'emcp-tools' ),
 					'tab'       => \Elementor\Controls_Manager::TAB_STYLE,
-					'condition' => array( 'emcp_centered' => 'yes' ),
+					'condition' => array(
+						'emcp_centered' => 'yes',
+						'emcp_effect'   => 'slide',
+					),
 				)
 			);
 			$this->add_control(
@@ -388,12 +391,16 @@ if ( ! class_exists( 'EMCP_Tools_Themer_Widget_Loop_Carousel' ) && class_exists(
 					'label'     => __( 'Active slide scale', 'emcp-tools' ),
 					'type'      => \Elementor\Controls_Manager::SLIDER,
 					'range'     => self::emcp_px( 1, 1.3, 0.01 ),
-					// Swiper puts its active class on the item itself.
+					// Swiper puts its active class on the item itself. Slide
+					// effect only: fade and coverflow write inline transforms.
 					'selectors' => array(
 						EMCP_Tools_Themer_Loop_Widget_Map::selector( '> .swiper > .swiper-wrapper > .emcp-loop__item.swiper-slide-active' ) => 'transform: scale({{SIZE}});',
 						EMCP_Tools_Themer_Loop_Widget_Map::selector( '> .swiper > .swiper-wrapper > .emcp-loop__item' ) => 'transition: transform 300ms ease;',
 					),
-					'condition' => array( 'emcp_centered' => 'yes' ),
+					'condition' => array(
+						'emcp_centered' => 'yes',
+						'emcp_effect'   => 'slide',
+					),
 				)
 			);
 			$this->end_controls_section();

@@ -51,6 +51,9 @@ class EMCP_Tools_Themer_Loop_Widget_Map {
 		'taxonomies' => array( 'emcp_related_taxonomy' ),
 	);
 
+	/** Parts after which a descendant combinator is allowed (no loop inside). */
+	const DESCENDANT_OK_AFTER = array( '.emcp-loop__pagination' );
+
 	/**
 	 * The widget's own loop root, never a loop nested inside one of its
 	 * cards. Elementor 4's optimized markup drops .elementor-widget-container;
@@ -94,11 +97,31 @@ class EMCP_Tools_Themer_Loop_Widget_Map {
 		$parts = array();
 		foreach ( self::split_top_level( $suffix ) as $part ) {
 			if ( in_array( $part[0], array( '>', '+', '~' ), true ) ) {
-				$parts[] = $part;
+				$bad = false;
+				foreach ( self::descendant_offsets( $part ) as $at ) {
+					$before = rtrim( substr( $part, 0, $at ) );
+					$ok     = false;
+					foreach ( self::DESCENDANT_OK_AFTER as $safe ) {
+						$ok = $ok || substr( $before, -strlen( $safe ) ) === $safe;
+					}
+					$bad = $bad || ! $ok;
+				}
+				if ( ! $bad ) {
+					$parts[] = $part;
+					continue;
+				}
+				// '> .emcp-loop__items .emcp-loop__item' reaches a nested
+				// loop's items too. Only the pagination, which holds no
+				// loop, may be followed by a descendant.
+				_doing_it_wrong(
+					__METHOD__,
+					sprintf( 'Loop widget selector part "%s" uses a descendant combinator outside the pagination; use > so it cannot reach a nested loop.', esc_html( $part ) ),
+					'3.18.0'
+				);
 				continue;
 			}
 			if ( in_array( $part[0], array( ':', '.', '[', '#' ), true ) ) {
-				if ( ! self::has_descendant_combinator( $part ) ) {
+				if ( ! self::descendant_offsets( $part ) ) {
 					$parts[] = $part;
 					continue;
 				}
@@ -132,14 +155,15 @@ class EMCP_Tools_Themer_Loop_Widget_Map {
 	}
 
 	/**
-	 * Whether a selector uses a whitespace (descendant) combinator outside
-	 * parentheses, brackets and quotes. Whitespace next to an explicit
-	 * combinator (`>`, `+`, `~`) is only padding and does not count.
+	 * Offsets of every whitespace (descendant) combinator in a selector,
+	 * outside parentheses, brackets and quotes. Whitespace next to an
+	 * explicit combinator (`>`, `+`, `~`) is only padding and does not count.
 	 *
-	 * @param string $sel Selector part.
-	 * @return bool
+	 * @param string $sel Selector part (trimmed).
+	 * @return int[]
 	 */
-	private static function has_descendant_combinator( string $sel ): bool {
+	private static function descendant_offsets( string $sel ): array {
+		$found = array();
 		$sel   = trim( $sel );
 		$len   = strlen( $sel );
 		$depth = 0;
@@ -168,12 +192,31 @@ class EMCP_Tools_Themer_Loop_Widget_Map {
 				$prev = $sel[ $i - 1 ] ?? '';
 				$next = $sel[ $j ] ?? '';
 				if ( ! in_array( $prev, array( '>', '+', '~' ), true ) && ! in_array( $next, array( '>', '+', '~' ), true ) ) {
-					return true;
+					$found[] = $i;
 				}
 				$i = $j - 1;
 			}
 		}
-		return false;
+		return $found;
+	}
+
+	/**
+	 * Whether the widgets' option lists (Loop Items, terms, authors) must be
+	 * built. Elementor builds a widget's controls on front-end page views
+	 * too, where the lists are never shown; they are needed in wp-admin
+	 * (the editor and its admin-ajax calls), and over REST and WP-CLI, where
+	 * MCP agents read the full control schema.
+	 *
+	 * @param bool|null $cli Test seam; null reads the WP_CLI constant.
+	 * @return bool
+	 */
+	public static function options_needed( ?bool $cli = null ): bool {
+		if ( null === $cli ) {
+			$cli = defined( 'WP_CLI' ) && WP_CLI;
+		}
+		return is_admin()
+			|| ( function_exists( 'wp_is_serving_rest_request' ) && wp_is_serving_rest_request() )
+			|| $cli;
 	}
 
 	/**
@@ -384,7 +427,8 @@ class EMCP_Tools_Themer_Loop_Widget_Map {
 	 * Query settings (EMCP_Tools_Themer_Loop_Query::sanitize() input).
 	 *
 	 * exclude_current and ignore_sticky are only set when the switcher is
-	 * present: the query's own defaults for them depend on the source.
+	 * present and not null (Elementor sends a hidden control as null): the
+	 * query's own defaults for them depend on the source.
 	 *
 	 * @param array $s Widget settings.
 	 * @return array
@@ -411,10 +455,15 @@ class EMCP_Tools_Themer_Loop_Widget_Map {
 			'on_sale_only'      => self::flag( $s, 'emcp_on_sale_only', false ),
 			'featured_only'     => self::flag( $s, 'emcp_featured_only', false ),
 		);
-		if ( array_key_exists( 'emcp_exclude_current', $s ) ) {
-			$q['exclude_current'] = self::flag( $s, 'emcp_exclude_current', false );
+		// Related has its own switcher (default on); posts and products
+		// share the other (default off). Elementor sends a hidden control as
+		// null, so a null value is omitted and the query's own source-aware
+		// default applies.
+		$exclude_key = 'related' === $q['source'] ? 'emcp_related_exclude_current' : 'emcp_exclude_current';
+		if ( isset( $s[ $exclude_key ] ) ) {
+			$q['exclude_current'] = self::flag( $s, $exclude_key, false );
 		}
-		if ( array_key_exists( 'emcp_ignore_sticky', $s ) ) {
+		if ( isset( $s['emcp_ignore_sticky'] ) ) {
 			$q['ignore_sticky'] = self::flag( $s, 'emcp_ignore_sticky', true );
 		}
 		return $q;

@@ -259,8 +259,10 @@ class EMCP_Tools_Themer_Loop_Query {
 				return $args;
 			}
 			$tax_query[] = array( 'taxonomy' => $q['related_taxonomy'], 'field' => 'term_id', 'terms' => $terms, 'operator' => 'IN' );
-			$not_in[]    = $current;
-		} elseif ( $q['exclude_current'] && $current > 0 ) {
+		}
+		// Related defaults to excluding the current post (sanitize()), and
+		// now honours an explicit choice to keep it, like every other source.
+		if ( $q['exclude_current'] && $current > 0 ) {
 			$not_in[] = $current;
 		}
 
