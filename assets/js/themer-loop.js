@@ -879,6 +879,8 @@
 			var url = pageUrl( el, page );
 			if ( url ) {
 				win.location.href = url;
+			} else {
+				warnOnce( 'fallback-url', 'EMCP Loop Grid: could not load the page, and its reload URL is not on the origin of this page, so nothing happened.' );
 			}
 			return false;
 		} );
@@ -955,6 +957,7 @@
 		// An unsafe URL scheme (another origin, javascript:, data:) means no
 		// AJAX pagination at all; the server-rendered links stay as they are.
 		if ( ! pageUrl( el, 1 ) || ! pageUrl( el, 2 ) ) {
+			warnOnce( 'nav-url', 'EMCP Loop Grid: the pagination URL is not on the origin of this page; AJAX pagination is off and the links reload the page.' );
 			return;
 		}
 		// Delegated, so the links of a rebuilt nav work too.

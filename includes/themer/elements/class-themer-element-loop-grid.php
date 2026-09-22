@@ -268,8 +268,13 @@ class EMCP_Tools_Themer_Element_Loop_Grid extends EMCP_Tools_Themer_Element_Loop
 	 * @return array{base:string,format:string,first:string}
 	 */
 	private static function current_url_scheme(): array {
-		$first = (string) get_pagenum_link( 1, false );
-		$two   = (string) get_pagenum_link( 2, false );
+		// Root-relative: get_pagenum_link() builds from the home option's
+		// host and is_ssl()'s scheme, which differ from the page's own origin
+		// on an alias host or behind a TLS-terminating proxy, and the script
+		// only follows same-origin URLs. The query-var source already builds
+		// from the request itself.
+		$first = self::root_relative( (string) get_pagenum_link( 1, false ) );
+		$two   = self::root_relative( (string) get_pagenum_link( 2, false ) );
 		list( $path1, $qs1 ) = array_pad( explode( '?', $first, 2 ), 2, '' );
 		list( $path2, $qs2 ) = array_pad( explode( '?', $two, 2 ), 2, '' );
 		$query = '' !== $qs1 ? '?' . $qs1 : '';
@@ -303,6 +308,17 @@ class EMCP_Tools_Themer_Element_Loop_Grid extends EMCP_Tools_Themer_Element_Loop
 			'format' => ( '' !== $query ? '&' : '?' ) . $key . '=%#%',
 			'first'  => $first,
 		);
+	}
+
+	/**
+	 * A URL without its scheme and host ('/' when nothing is left).
+	 *
+	 * @param string $url URL.
+	 * @return string
+	 */
+	private static function root_relative( string $url ): string {
+		$rel = (string) wp_make_link_relative( $url );
+		return '' === $rel ? '/' : $rel;
 	}
 
 	/**
