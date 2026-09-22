@@ -2,7 +2,8 @@
 /**
  * Loop Grid element: a Loop Item once per post in a responsive grid, with
  * masonry, equal height, first-item span, hover and entrance effects, and
- * five pagination styles.
+ * six pagination styles: none, numbers, previous/next, numbers with
+ * previous/next, load more, and infinite scroll.
  *
  * @package EMCP_Tools
  * @since   3.18.0
