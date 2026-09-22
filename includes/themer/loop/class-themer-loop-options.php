@@ -4,7 +4,8 @@
  *
  * One source, so an Elementor control and a block inspector cannot drift.
  * Everything is capped and memoised per request: a site with 40k terms must
- * not turn a widget panel into a timeout.
+ * not turn a widget panel into a timeout. Labels are plain text; the
+ * consumer escapes them.
  *
  * @package EMCP_Tools
  * @since   3.18.0
@@ -22,8 +23,33 @@ class EMCP_Tools_Themer_Loop_Options {
 	const MAX_TERMS   = 500;
 	const MAX_AUTHORS = 200;
 
+	/** Terms each taxonomy is offered at least, while the total cap allows. */
+	const MIN_TERMS_PER_TAXONOMY = 50;
+
 	/** @var array<string,mixed> */
 	private static $cache = array();
+
+	/** @var bool */
+	private static $booted = false;
+
+	/**
+	 * Drop the memo whenever something it lists changes. Idempotent.
+	 */
+	public static function init(): void {
+		if ( self::$booted ) {
+			return;
+		}
+		self::$booted = true;
+		$hooks        = array( 'save_post_' . EMCP_Tools_Themer_CPT::POST_TYPE, 'created_term', 'edited_term', 'delete_term', 'profile_update', 'user_register' );
+		foreach ( $hooks as $hook ) {
+			add_action( $hook, array( __CLASS__, 'flush' ) );
+		}
+	}
+
+	/** Forget every memoised list. */
+	public static function flush(): void {
+		self::$cache = array();
+	}
 
 	/**
 	 * Published Loop Items.
@@ -53,7 +79,7 @@ class EMCP_Tools_Themer_Loop_Options {
 			if ( $id <= 0 ) {
 				continue;
 			}
-			$title = (string) get_the_title( $id );
+			$title = self::plain( get_the_title( $id ) );
 			/* translators: %d: template id */
 			$out[ $id ] = '' !== trim( $title ) ? $title : sprintf( __( 'Loop Item %d', 'emcp-tools' ), $id );
 		}
@@ -73,14 +99,18 @@ class EMCP_Tools_Themer_Loop_Options {
 		$out = array();
 		foreach ( EMCP_Tools_Themer_Loop_Query::allowed_post_types() as $slug ) {
 			$obj          = get_post_type_object( $slug );
-			$out[ $slug ] = $obj && isset( $obj->label ) ? (string) $obj->label : $slug;
+			$out[ $slug ] = $obj && isset( $obj->label ) ? self::plain( $obj->label ) : $slug;
 		}
 		self::$cache['types'] = $out;
 		return $out;
 	}
 
 	/**
-	 * Public taxonomies with their terms, capped.
+	 * Public taxonomies with their terms, capped at MAX_TERMS in total.
+	 *
+	 * Each taxonomy first gets a fair share (at least MIN_TERMS_PER_TAXONOMY)
+	 * so one huge taxonomy cannot starve the rest; the budget a small
+	 * taxonomy leaves unused then goes to the ones that filled their share.
 	 *
 	 * Term keys are the `taxonomy:term_id` refs the loop query accepts. A
 	 * taxonomy whose name that format cannot express is skipped, so every
@@ -92,47 +122,96 @@ class EMCP_Tools_Themer_Loop_Options {
 		if ( isset( self::$cache['terms'] ) ) {
 			return self::$cache['terms'];
 		}
-		$out       = array();
-		$remaining = self::MAX_TERMS;
+		$taxes = array();
 		foreach ( get_taxonomies( array( 'public' => true ), 'objects' ) as $tax ) {
-			if ( $remaining <= 0 ) {
-				break;
-			}
 			$name = is_object( $tax ) ? (string) ( $tax->name ?? '' ) : '';
-			if ( ! preg_match( '/^[a-z0-9_-]+$/', $name ) ) {
-				continue;
+			if ( preg_match( '/^[a-z0-9_-]+$/', $name ) ) {
+				$taxes[ $name ] = self::plain( $tax->label ?? $name );
 			}
-			$terms = get_terms(
-				array(
-					'taxonomy'   => $name,
-					'hide_empty' => false,
-					'number'     => $remaining,
-					'orderby'    => 'name',
-				)
-			);
-			if ( is_wp_error( $terms ) || ! is_array( $terms ) || ! $terms ) {
-				continue;
-			}
-			$rows = array();
-			foreach ( $terms as $t ) {
+		}
+		$out = array();
+		if ( $taxes ) {
+			$share     = max( self::MIN_TERMS_PER_TAXONOMY, (int) floor( self::MAX_TERMS / count( $taxes ) ) );
+			$remaining = self::MAX_TERMS;
+			$rows      = array();
+			$full      = array();
+
+			// Pass 1: a fair share each.
+			foreach ( $taxes as $name => $label ) {
 				if ( $remaining <= 0 ) {
 					break;
 				}
-				$term_id = (int) ( is_object( $t ) ? ( $t->term_id ?? 0 ) : 0 );
-				if ( $term_id <= 0 ) {
+				$want          = min( $share, $remaining );
+				$rows[ $name ] = self::fetch_terms( $name, $want, 0 );
+				$remaining    -= count( $rows[ $name ] );
+				if ( count( $rows[ $name ] ) >= $want ) {
+					$full[] = $name; // Filled its share, so it may have more.
+				}
+			}
+
+			// Pass 2: the unused budget goes to taxonomies that filled theirs.
+			foreach ( $full as $name ) {
+				if ( $remaining <= 0 ) {
+					break;
+				}
+				$more          = self::fetch_terms( $name, $remaining, count( $rows[ $name ] ) );
+				$rows[ $name ] = $rows[ $name ] + $more;
+				$remaining    -= count( $more );
+			}
+
+			foreach ( $taxes as $name => $label ) {
+				if ( empty( $rows[ $name ] ) ) {
 					continue;
 				}
-				$rows[ $name . ':' . $term_id ] = (string) ( $t->name ?? '' );
-				--$remaining;
-			}
-			if ( $rows ) {
+				$terms = array();
+				foreach ( $rows[ $name ] as $term_id => $term_name ) {
+					$terms[ $name . ':' . $term_id ] = $term_name;
+				}
 				$out[ $name ] = array(
-					'label' => (string) ( $tax->label ?? $name ),
-					'terms' => $rows,
+					'label' => $label,
+					'terms' => $terms,
 				);
 			}
 		}
 		self::$cache['terms'] = $out;
+		return $out;
+	}
+
+	/**
+	 * One page of a taxonomy's terms.
+	 *
+	 * @param string $taxonomy Taxonomy.
+	 * @param int    $number   How many at most.
+	 * @param int    $offset   How many to skip.
+	 * @return array<int,string> term id => plain name, at most $number entries.
+	 */
+	private static function fetch_terms( string $taxonomy, int $number, int $offset ): array {
+		if ( $number <= 0 ) {
+			return array();
+		}
+		$terms = get_terms(
+			array(
+				'taxonomy'               => $taxonomy,
+				'hide_empty'             => false,
+				'number'                 => $number,
+				'offset'                 => $offset,
+				'orderby'                => 'name',
+				'update_term_meta_cache' => false,
+			)
+		);
+		if ( is_wp_error( $terms ) || ! is_array( $terms ) ) {
+			return array();
+		}
+		$out = array();
+		foreach ( $terms as $t ) {
+			if ( count( $out ) >= $number ) {
+				break;
+			}
+			$term_id = (int) ( is_object( $t ) ? ( $t->term_id ?? 0 ) : 0 );
+			if ( $term_id > 0 ) {
+				$out[ $term_id ] = self::plain( $t->name ?? '' );
+			}
+		}
 		return $out;
 	}
 
@@ -175,7 +254,7 @@ class EMCP_Tools_Themer_Loop_Options {
 		foreach ( (array) $users as $u ) {
 			$id = (int) ( is_object( $u ) ? ( $u->ID ?? 0 ) : 0 );
 			if ( $id > 0 ) {
-				$out[ $id ] = (string) ( $u->display_name ?? ( '#' . $id ) );
+				$out[ $id ] = self::plain( $u->display_name ?? ( '#' . $id ) );
 			}
 		}
 		self::$cache['authors'] = $out;
@@ -224,8 +303,19 @@ class EMCP_Tools_Themer_Loop_Options {
 		);
 	}
 
+	/**
+	 * Plain text for an option label (the consumer escapes it).
+	 *
+	 * @param mixed $raw Label.
+	 * @return string
+	 */
+	private static function plain( $raw ): string {
+		return wp_specialchars_decode( wp_strip_all_tags( (string) $raw ), ENT_QUOTES );
+	}
+
 	/** Test seam. */
 	public static function reset_for_tests(): void {
-		self::$cache = array();
+		self::$cache  = array();
+		self::$booted = false;
 	}
 }

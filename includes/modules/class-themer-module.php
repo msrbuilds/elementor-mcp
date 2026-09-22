@@ -94,6 +94,10 @@ class EMCP_Tools_Themer_Module extends EMCP_Tools_Module {
 		if ( class_exists( 'EMCP_Tools_Themer_Loop_REST' ) ) {
 			EMCP_Tools_Themer_Loop_REST::init();
 		}
+		// The option lists both loop builders offer, memoised per request.
+		if ( class_exists( 'EMCP_Tools_Themer_Loop_Options' ) ) {
+			EMCP_Tools_Themer_Loop_Options::init();
+		}
 
 		// One-time heal: a prior build could leave the condition index empty (the
 		// rebuild raced the metabox meta writes), so existing templates silently

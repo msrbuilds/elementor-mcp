@@ -25,6 +25,9 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class EMCP_Tools_Themer_Loop_Widget_Map {
 
+	/** Largest uploaded arrow SVG read without Elementor (100 KB). */
+	const MAX_SVG_BYTES = 102400;
+
 	/**
 	 * Arguments the loop element base reads for both kinds, in addition to
 	 * each element's own defaults(): identity (template, query, anchor,
@@ -59,19 +62,35 @@ class EMCP_Tools_Themer_Loop_Widget_Map {
 	 * A selector below (or on) the widget's own loop root.
 	 *
 	 * The suffix is applied to every root branch. A suffix that is itself a
-	 * comma list is crossed with the branches. A part starting with a
-	 * combinator (`>`, `+`, `~`) is joined with a space; anything else (a
-	 * pseudo-class, a class or an attribute on the root itself) is appended
-	 * directly. Write child chains that match the stylesheet's own, so the
-	 * selector never reaches a nested loop.
+	 * comma list (split on top-level commas only, so `:is(.a, .b)` stays
+	 * whole) is crossed with the branches. A part starting with a
+	 * combinator (`>`, `+`, `~`) is joined with a space; a part starting
+	 * with `:`, `.`, `[` or `#` (a pseudo-class, class, attribute or id on
+	 * the root itself) is appended directly. Any other part would be a
+	 * descendant selector that also reaches nested loops: it is skipped and
+	 * reported with _doing_it_wrong(). Write child chains that match the
+	 * stylesheet's own.
 	 *
 	 * @param string $suffix For example '> .emcp-loop__items > .emcp-loop__item'.
 	 * @return string
 	 */
 	public static function selector( string $suffix = '' ): string {
-		$parts = array_filter( array_map( 'trim', explode( ',', $suffix ) ), 'strlen' );
+		$parts = array();
+		foreach ( self::split_top_level( $suffix ) as $part ) {
+			if ( in_array( $part[0], array( '>', '+', '~', ':', '.', '[', '#' ), true ) ) {
+				$parts[] = $part;
+				continue;
+			}
+			_doing_it_wrong(
+				__METHOD__,
+				sprintf( 'Loop widget selector part "%s" must start with a combinator (>, +, ~) or with :, ., [ or #.', esc_html( $part ) ),
+				'3.18.0'
+			);
+		}
 		if ( ! $parts ) {
-			return self::root_selector();
+			// An empty suffix means the root; a suffix whose every part was
+			// refused means nothing, never the root by accident.
+			return '' === trim( $suffix ) ? self::root_selector() : '';
 		}
 		$out = array();
 		foreach ( self::ROOT_BRANCHES as $root ) {
@@ -80,6 +99,34 @@ class EMCP_Tools_Themer_Loop_Widget_Map {
 			}
 		}
 		return implode( ', ', $out );
+	}
+
+	/**
+	 * Split a selector list on commas outside parentheses.
+	 *
+	 * @param string $list Selector list.
+	 * @return string[] Trimmed, non-empty parts.
+	 */
+	private static function split_top_level( string $list ): array {
+		$parts = array();
+		$buf   = '';
+		$depth = 0;
+		$len   = strlen( $list );
+		for ( $i = 0; $i < $len; $i++ ) {
+			$c = $list[ $i ];
+			if ( '(' === $c ) {
+				++$depth;
+			} elseif ( ')' === $c && $depth > 0 ) {
+				--$depth;
+			} elseif ( ',' === $c && 0 === $depth ) {
+				$parts[] = $buf;
+				$buf     = '';
+				continue;
+			}
+			$buf .= $c;
+		}
+		$parts[] = $buf;
+		return array_values( array_filter( array_map( 'trim', $parts ), 'strlen' ) );
 	}
 
 	/**
@@ -124,6 +171,63 @@ class EMCP_Tools_Themer_Loop_Widget_Map {
 	}
 
 	/**
+	 * A date control. Elementor's DATE_TIME control can carry a time part
+	 * ("2026-01-01 00:00"); the query takes Y-m-d, so keep the date part.
+	 *
+	 * @param array  $s   Settings.
+	 * @param string $key Key.
+	 * @return string Y-m-d, or the trimmed raw value (the query blanks it).
+	 */
+	private static function date( array $s, string $key ): string {
+		$raw = trim( self::text( $s, $key, '' ) );
+		return preg_match( '/^(\d{4}-\d{2}-\d{2})/', $raw, $m ) ? $m[1] : $raw;
+	}
+
+	/**
+	 * One control value, or null when it is empty ('' , null, or a slider
+	 * whose size is empty).
+	 *
+	 * @param mixed $raw        Control value.
+	 * @param bool  $allow_auto Whether the string 'auto' is a value.
+	 * @return int|string|null
+	 */
+	private static function present( $raw, bool $allow_auto ) {
+		if ( $allow_auto && 'auto' === $raw ) {
+			return 'auto';
+		}
+		if ( is_array( $raw ) ) {
+			$raw = $raw['size'] ?? null;
+		}
+		if ( null === $raw || '' === $raw || ! is_scalar( $raw ) ) {
+			return null;
+		}
+		return (int) $raw;
+	}
+
+	/**
+	 * A responsive control's desktop, tablet and mobile values.
+	 *
+	 * Mirrors Elementor's getResponsiveControlValue(): an empty device value
+	 * means "use the next larger device", so tablet inherits a set desktop
+	 * value and mobile inherits the resolved tablet value. Only when nothing
+	 * at or above a device is set does that device take the element default.
+	 *
+	 * @param array $s          Settings.
+	 * @param string $key       Desktop key; `{$key}_tablet` / `{$key}_mobile` follow.
+	 * @param array $defaults   Element defaults: [desktop, tablet, mobile].
+	 * @param bool  $allow_auto Whether 'auto' is a value (slides per view).
+	 * @return array{0:int|string,1:int|string,2:int|string}
+	 */
+	private static function responsive( array $s, string $key, array $defaults, bool $allow_auto = false ): array {
+		$d = self::present( $s[ $key ] ?? null, $allow_auto );
+		$t = self::present( $s[ $key . '_tablet' ] ?? null, $allow_auto );
+		$m = self::present( $s[ $key . '_mobile' ] ?? null, $allow_auto );
+		$t = $t ?? $d;
+		$m = $m ?? $t;
+		return array( $d ?? $defaults[0], $t ?? $defaults[1], $m ?? $defaults[2] );
+	}
+
+	/**
 	 * Query settings (EMCP_Tools_Themer_Loop_Query::sanitize() input).
 	 *
 	 * exclude_current and ignore_sticky are only set when the switcher is
@@ -147,8 +251,8 @@ class EMCP_Tools_Themer_Loop_Widget_Map {
 			'include_ids'       => self::text( $s, 'emcp_include_ids', '' ),
 			'exclude_ids'       => self::text( $s, 'emcp_exclude_ids', '' ),
 			'date'              => self::text( $s, 'emcp_date', 'all' ),
-			'after'             => self::text( $s, 'emcp_after', '' ),
-			'before'            => self::text( $s, 'emcp_before', '' ),
+			'after'             => self::date( $s, 'emcp_after' ),
+			'before'            => self::date( $s, 'emcp_before' ),
 			'related_taxonomy'  => self::text( $s, 'emcp_related_taxonomy', 'category' ),
 			'hide_out_of_stock' => self::flag( $s, 'emcp_hide_out_of_stock', false ),
 			'on_sale_only'      => self::flag( $s, 'emcp_on_sale_only', false ),
@@ -190,13 +294,14 @@ class EMCP_Tools_Themer_Loop_Widget_Map {
 	 * @return array
 	 */
 	public static function grid( array $s, string $uid ): array {
-		$d = EMCP_Tools_Themer_Element_Loop_Grid::defaults();
+		$d    = EMCP_Tools_Themer_Element_Loop_Grid::defaults();
+		$cols = self::responsive( $s, 'emcp_columns', array( (int) $d['columns'], (int) $d['columns_tablet'], (int) $d['columns_mobile'] ) );
 		return array_merge(
 			self::common( $s, $uid ),
 			array(
-				'columns'         => self::size( $s['emcp_columns'] ?? '', (int) $d['columns'] ),
-				'columns_tablet'  => self::size( $s['emcp_columns_tablet'] ?? '', (int) $d['columns_tablet'] ),
-				'columns_mobile'  => self::size( $s['emcp_columns_mobile'] ?? '', (int) $d['columns_mobile'] ),
+				'columns'         => $cols[0],
+				'columns_tablet'  => $cols[1],
+				'columns_mobile'  => $cols[2],
 				'gap_x'           => self::size( $s['emcp_gap_x'] ?? '', (int) $d['gap_x'] ),
 				'gap_y'           => self::size( $s['emcp_gap_y'] ?? '', (int) $d['gap_y'] ),
 				'masonry'         => self::flag( $s, 'emcp_masonry', (bool) $d['masonry'] ),
@@ -229,19 +334,22 @@ class EMCP_Tools_Themer_Loop_Widget_Map {
 	 * @return array
 	 */
 	public static function carousel( array $s, string $uid ): array {
-		$d = EMCP_Tools_Themer_Element_Loop_Carousel::defaults();
+		$d      = EMCP_Tools_Themer_Element_Loop_Carousel::defaults();
+		$slides = self::responsive( $s, 'emcp_slides', array( (int) $d['slides'], (int) $d['slides_tablet'], (int) $d['slides_mobile'] ), true );
+		$scroll = self::responsive( $s, 'emcp_slides_to_scroll', array( (int) $d['slides_to_scroll'], (int) $d['slides_to_scroll_tablet'], (int) $d['slides_to_scroll_mobile'] ) );
+		$gap    = self::responsive( $s, 'emcp_gap', array( (int) $d['gap'], (int) $d['gap_tablet'], (int) $d['gap_mobile'] ) );
 		return array_merge(
 			self::common( $s, $uid ),
 			array(
-				'slides'                  => self::slides( $s['emcp_slides'] ?? '', (int) $d['slides'] ),
-				'slides_tablet'           => self::slides( $s['emcp_slides_tablet'] ?? '', (int) $d['slides_tablet'] ),
-				'slides_mobile'           => self::slides( $s['emcp_slides_mobile'] ?? '', (int) $d['slides_mobile'] ),
-				'slides_to_scroll'        => self::size( $s['emcp_slides_to_scroll'] ?? '', (int) $d['slides_to_scroll'] ),
-				'slides_to_scroll_tablet' => self::size( $s['emcp_slides_to_scroll_tablet'] ?? '', (int) $d['slides_to_scroll_tablet'] ),
-				'slides_to_scroll_mobile' => self::size( $s['emcp_slides_to_scroll_mobile'] ?? '', (int) $d['slides_to_scroll_mobile'] ),
-				'gap'                     => self::size( $s['emcp_gap'] ?? '', (int) $d['gap'] ),
-				'gap_tablet'              => self::size( $s['emcp_gap_tablet'] ?? '', (int) $d['gap_tablet'] ),
-				'gap_mobile'              => self::size( $s['emcp_gap_mobile'] ?? '', (int) $d['gap_mobile'] ),
+				'slides'                  => $slides[0],
+				'slides_tablet'           => $slides[1],
+				'slides_mobile'           => $slides[2],
+				'slides_to_scroll'        => $scroll[0],
+				'slides_to_scroll_tablet' => $scroll[1],
+				'slides_to_scroll_mobile' => $scroll[2],
+				'gap'                     => $gap[0],
+				'gap_tablet'              => $gap[1],
+				'gap_mobile'              => $gap[2],
 				'height'                  => self::text( $s, 'emcp_height', (string) $d['height'] ),
 				'autoplay'                => self::flag( $s, 'emcp_autoplay', (bool) $d['autoplay'] ),
 				'autoplay_delay'          => self::size( $s['emcp_autoplay_delay'] ?? '', (int) $d['autoplay_delay'] ),
@@ -297,23 +405,14 @@ class EMCP_Tools_Themer_Loop_Widget_Map {
 	}
 
 	/**
-	 * Slides per view: an int or the string 'auto'.
+	 * Inline SVG from an Elementor ICONS control, when the icon is an
+	 * uploaded SVG (the widget offers SVG upload only). Any other library,
+	 * or a failed read, returns '' and the element prints its default arrow.
 	 *
-	 * @param mixed $raw     Value.
-	 * @param int   $default Fallback.
-	 * @return int|string
-	 */
-	private static function slides( $raw, int $default ) {
-		if ( 'auto' === $raw ) {
-			return 'auto';
-		}
-		return self::size( $raw, $default );
-	}
-
-	/**
-	 * Inline SVG from an Elementor ICONS control, when the icon is an uploaded SVG.
-	 *
-	 * The element sanitizes it (wp_kses allowlist) before printing.
+	 * With Elementor loaded, its own Svg::get_inline_svg() reads and
+	 * sanitizes the file (and caches it). Without it, the attachment must be
+	 * an SVG by mime type and at most MAX_SVG_BYTES. The element sanitizes
+	 * the result again (wp_kses allowlist) before printing.
 	 *
 	 * @param mixed $icon Control value.
 	 * @return string
@@ -326,11 +425,23 @@ class EMCP_Tools_Themer_Loop_Widget_Map {
 		if ( $id <= 0 ) {
 			return '';
 		}
-		$path = get_attached_file( $id );
-		if ( ! $path || ! is_readable( $path ) ) {
-			return '';
+		if ( class_exists( '\Elementor\Core\Files\File_Types\Svg' ) ) {
+			$svg = \Elementor\Core\Files\File_Types\Svg::get_inline_svg( $id );
+			$svg = is_string( $svg ) ? $svg : '';
+		} else {
+			if ( 'image/svg+xml' !== (string) get_post_mime_type( $id ) ) {
+				return '';
+			}
+			$path = (string) get_attached_file( $id );
+			if ( '' === $path || ! is_file( $path ) || ! is_readable( $path ) ) {
+				return '';
+			}
+			$bytes = filesize( $path );
+			if ( false === $bytes || $bytes > self::MAX_SVG_BYTES ) {
+				return '';
+			}
+			$svg = (string) file_get_contents( $path ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- local attachment, size-capped, sanitized by the element.
 		}
-		$svg = (string) file_get_contents( $path ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- local attachment, sanitized by the element.
-		return false !== stripos( $svg, '<svg' ) ? $svg : '';
+		return strlen( $svg ) <= self::MAX_SVG_BYTES && false !== stripos( $svg, '<svg' ) ? $svg : '';
 	}
 }

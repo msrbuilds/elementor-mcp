@@ -29,6 +29,43 @@ class EMCP_Tools_Themer_Loop_Query {
 	const DATE_RANGES      = array( 'all', 'past_day', 'past_week', 'past_month', 'past_quarter', 'past_year', 'custom' );
 
 	/**
+	 * Public post types that are not content: media, and page builders'
+	 * own template and library types (several register as public). Seen
+	 * public on live installs: elementor_library, e-floating-buttons,
+	 * bricks_template. The rest are other builders' library types, listed
+	 * defensively (a slug that is not registered excludes nothing), and
+	 * Themer's own CPT (registered non-public, listed as a guard).
+	 */
+	const EXCLUDED_POST_TYPES = array(
+		'attachment',
+		'emcp_theme_template',
+		'emcp_theme_php',
+		'elementor_library',
+		'e-floating-buttons',
+		'elementor-hf',
+		'bricks_template',
+		'fl-builder-template',
+		'fl-theme-layout',
+		'et_pb_layout',
+		'et_template',
+		'ct_template',
+		'oxy_user_library',
+		'brizy_template',
+		'kadence_element',
+		'ct_content_block',
+		'breakdance_template',
+		'breakdance_header',
+		'breakdance_footer',
+		'breakdance_block',
+		'fusion_template',
+		'fusion_element',
+		'wp_block',
+		'wp_template',
+		'wp_template_part',
+		'wp_navigation',
+	);
+
+	/**
 	 * Main-query vars a snapshot keeps. Constraints expressed anywhere else
 	 * (SQL filters gated on is_main_query()) cannot be captured; replay_matches()
 	 * is the heuristic that catches the common cases.
@@ -57,7 +94,14 @@ class EMCP_Tools_Themer_Loop_Query {
 	public static function allowed_post_types(): array {
 		$types = get_post_types( array( 'public' => true ), 'names' );
 		$types = is_array( $types ) ? array_values( array_map( 'strval', $types ) ) : array();
-		return array_values( array_diff( $types, array( 'attachment' ) ) );
+		/**
+		 * Post types a loop never lists even though they are public.
+		 *
+		 * @since 3.18.0
+		 * @param string[] $excluded Post type slugs.
+		 */
+		$excluded = (array) apply_filters( 'emcp_themer_loop_excluded_post_types', self::EXCLUDED_POST_TYPES );
+		return array_values( array_diff( $types, array_map( 'strval', $excluded ) ) );
 	}
 
 	/**
