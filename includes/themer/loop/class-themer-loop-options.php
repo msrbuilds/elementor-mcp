@@ -34,13 +34,16 @@ class EMCP_Tools_Themer_Loop_Options {
 
 	/**
 	 * Drop the memo whenever something it lists changes. Idempotent.
+	 *
+	 * deleted_post covers a Loop Item deleted outright (skipping the trash),
+	 * which fires no save_post.
 	 */
 	public static function init(): void {
 		if ( self::$booted ) {
 			return;
 		}
 		self::$booted = true;
-		$hooks        = array( 'save_post_' . EMCP_Tools_Themer_CPT::POST_TYPE, 'created_term', 'edited_term', 'delete_term', 'profile_update', 'user_register' );
+		$hooks        = array( 'save_post_' . EMCP_Tools_Themer_CPT::POST_TYPE, 'deleted_post', 'created_term', 'edited_term', 'delete_term', 'profile_update', 'user_register' );
 		foreach ( $hooks as $hook ) {
 			add_action( $hook, array( __CLASS__, 'flush' ) );
 		}
@@ -108,8 +111,9 @@ class EMCP_Tools_Themer_Loop_Options {
 	/**
 	 * Public taxonomies with their terms, capped at MAX_TERMS in total.
 	 *
-	 * Each taxonomy first gets a fair share (at least MIN_TERMS_PER_TAXONOMY)
-	 * so one huge taxonomy cannot starve the rest; the budget a small
+	 * Each taxonomy first gets a fair share (at least MIN_TERMS_PER_TAXONOMY
+	 * while the cap allows that for every taxonomy, else an equal split) so
+	 * one huge taxonomy cannot starve the rest; the budget a small
 	 * taxonomy leaves unused then goes to the ones that filled their share.
 	 *
 	 * Term keys are the `taxonomy:term_id` refs the loop query accepts. A
@@ -131,7 +135,14 @@ class EMCP_Tools_Themer_Loop_Options {
 		}
 		$out = array();
 		if ( $taxes ) {
-			$share     = max( self::MIN_TERMS_PER_TAXONOMY, (int) floor( self::MAX_TERMS / count( $taxes ) ) );
+			// The floor only applies while every taxonomy can have it: with
+			// more than MAX_TERMS / MIN_TERMS_PER_TAXONOMY taxonomies, a floor
+			// would spend the whole budget on the first few and starve the rest.
+			$count = count( $taxes );
+			$share = max( 1, (int) floor( self::MAX_TERMS / $count ) );
+			if ( $count * self::MIN_TERMS_PER_TAXONOMY <= self::MAX_TERMS ) {
+				$share = max( self::MIN_TERMS_PER_TAXONOMY, $share );
+			}
 			$remaining = self::MAX_TERMS;
 			$rows      = array();
 			$full      = array();

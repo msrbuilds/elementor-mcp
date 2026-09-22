@@ -66,7 +66,8 @@ class EMCP_Tools_Themer_Loop_Widget_Map {
 	 * whole) is crossed with the branches. A part starting with a
 	 * combinator (`>`, `+`, `~`) is joined with a space; a part starting
 	 * with `:`, `.`, `[` or `#` (a pseudo-class, class, attribute or id on
-	 * the root itself) is appended directly. Any other part would be a
+	 * the root itself) is appended directly, unless it goes on to use a
+	 * whitespace descendant combinator. Any other part would be a
 	 * descendant selector that also reaches nested loops: it is skipped and
 	 * reported with _doing_it_wrong(). Write child chains that match the
 	 * stylesheet's own.
@@ -77,8 +78,22 @@ class EMCP_Tools_Themer_Loop_Widget_Map {
 	public static function selector( string $suffix = '' ): string {
 		$parts = array();
 		foreach ( self::split_top_level( $suffix ) as $part ) {
-			if ( in_array( $part[0], array( '>', '+', '~', ':', '.', '[', '#' ), true ) ) {
+			if ( in_array( $part[0], array( '>', '+', '~' ), true ) ) {
 				$parts[] = $part;
+				continue;
+			}
+			if ( in_array( $part[0], array( ':', '.', '[', '#' ), true ) ) {
+				if ( ! self::has_descendant_combinator( $part ) ) {
+					$parts[] = $part;
+					continue;
+				}
+				// '.is-masonry .emcp-loop__item' starts on the root but then
+				// reaches every descendant, nested loops included.
+				_doing_it_wrong(
+					__METHOD__,
+					sprintf( 'Loop widget selector part "%s" uses a descendant combinator; use > (or + / ~) so it cannot reach a nested loop.', esc_html( $part ) ),
+					'3.18.0'
+				);
 				continue;
 			}
 			_doing_it_wrong(
@@ -99,6 +114,51 @@ class EMCP_Tools_Themer_Loop_Widget_Map {
 			}
 		}
 		return implode( ', ', $out );
+	}
+
+	/**
+	 * Whether a selector uses a whitespace (descendant) combinator outside
+	 * parentheses, brackets and quotes. Whitespace next to an explicit
+	 * combinator (`>`, `+`, `~`) is only padding and does not count.
+	 *
+	 * @param string $sel Selector part.
+	 * @return bool
+	 */
+	private static function has_descendant_combinator( string $sel ): bool {
+		$sel   = trim( $sel );
+		$len   = strlen( $sel );
+		$depth = 0;
+		$quote = '';
+		for ( $i = 0; $i < $len; $i++ ) {
+			$c = $sel[ $i ];
+			if ( '' !== $quote ) {
+				if ( '\\' === $c ) {
+					++$i;
+				} elseif ( $c === $quote ) {
+					$quote = '';
+				}
+				continue;
+			}
+			if ( '"' === $c || "'" === $c ) {
+				$quote = $c;
+			} elseif ( '(' === $c || '[' === $c ) {
+				++$depth;
+			} elseif ( ( ')' === $c || ']' === $c ) && $depth > 0 ) {
+				--$depth;
+			} elseif ( 0 === $depth && ctype_space( $c ) ) {
+				$j = $i;
+				while ( $j < $len && ctype_space( $sel[ $j ] ) ) {
+					++$j;
+				}
+				$prev = $sel[ $i - 1 ] ?? '';
+				$next = $sel[ $j ] ?? '';
+				if ( ! in_array( $prev, array( '>', '+', '~' ), true ) && ! in_array( $next, array( '>', '+', '~' ), true ) ) {
+					return true;
+				}
+				$i = $j - 1;
+			}
+		}
+		return false;
 	}
 
 	/**
