@@ -109,12 +109,15 @@ class EMCP_Tools_Themer_Loop_Renderer {
 		$tag_opt  = (string) ( $opts['tag'] ?? 'div' );
 		$tag      = in_array( $tag_opt, self::TAGS, true ) ? $tag_opt : 'div';
 
-		$saved = self::enter( $post );
+		// snapshot() only reads globals, so it cannot throw and is safe to run
+		// before the try. apply() mutates them (and runs setup_postdata() and,
+		// for a product, the third-party wc_get_product()), so it and push()
+		// run as the first statements inside the try: a throw from either one
+		// is still covered by the finally that calls leave().
+		$saved = self::snapshot();
 		$inner = '';
 		try {
-			// push() itself, and anything after it that can throw, must stay
-			// inside the try: enter() has already overwritten $GLOBALS['post'],
-			// so a throw before pop()/leave() run would leak it into the caller.
+			self::apply( $post );
 			EMCP_Tools_Themer_Loop_Context::push( $post_id, $tid, $abs, $uid );
 			$inner = self::render_template_content( $tid );
 			if ( 'elementor' === self::builder( $tid ) && false !== strpos( $inner, 'elementor-' . $tid ) ) {
@@ -226,12 +229,12 @@ class EMCP_Tools_Themer_Loop_Renderer {
 	// ---- internals ---------------------------------------------------------
 
 	/**
-	 * Make a post current and return what to restore.
+	 * Snapshot the globals about to be overwritten. Read-only, so this cannot
+	 * throw and is safe to call before the try in render_item().
 	 *
-	 * @param object $post The post.
 	 * @return array
 	 */
-	private static function enter( $post ): array {
+	private static function snapshot(): array {
 		$saved = array(
 			'post'    => $GLOBALS['post'] ?? null,
 			'product' => $GLOBALS['product'] ?? null,
@@ -239,17 +242,26 @@ class EMCP_Tools_Themer_Loop_Renderer {
 		foreach ( self::POSTDATA_GLOBALS as $g ) {
 			$saved[ $g ] = $GLOBALS[ $g ] ?? null;
 		}
-		$GLOBALS['post'] = $post; // setup_postdata() does not assign this.
-		setup_postdata( $post );
-		// TEMP-DISABLED-FOR-VERIFICATION
-		if ( 'product' === (string) ( $post->post_type ?? '' ) && function_exists( 'wc_get_product' ) ) {
-			$GLOBALS['product'] = wc_get_product( $post );
-		}
 		return $saved;
 	}
 
 	/**
-	 * @param array $saved What enter() returned.
+	 * Make a post current. Mutates globals and calls setup_postdata() and,
+	 * for a product, the third-party wc_get_product(); callers must run this
+	 * inside a try whose finally calls leave(), since either call can throw.
+	 *
+	 * @param object $post The post.
+	 */
+	private static function apply( $post ): void {
+		$GLOBALS['post'] = $post; // setup_postdata() does not assign this.
+		setup_postdata( $post );
+		if ( 'product' === (string) ( $post->post_type ?? '' ) && function_exists( 'wc_get_product' ) ) {
+			$GLOBALS['product'] = wc_get_product( $post );
+		}
+	}
+
+	/**
+	 * @param array $saved What snapshot() returned.
 	 */
 	private static function leave( array $saved ): void {
 		$GLOBALS['post']    = $saved['post'];
