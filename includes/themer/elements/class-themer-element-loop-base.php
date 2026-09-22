@@ -242,9 +242,14 @@ abstract class EMCP_Tools_Themer_Element_Loop_Base extends EMCP_Tools_Themer_Ele
 		// Called from render, not an early wp_enqueue_scripts callback: the
 		// Swiper handle choice depends on Elementor having already registered
 		// its own 'swiper' handle, which is only guaranteed by the time an
-		// element actually renders. A REST-served later page enqueues nothing
-		// here; its script/style needs travel back in the response's own
-		// asset list instead (collect_assets() in the REST route).
+		// element actually renders. Skipped entirely on a REST request: this
+		// element is never the top-level thing being rendered there (the REST
+		// route renders Loop Items, not this element), so nothing here is
+		// ever enqueued for a REST-served page. Known limitation: a Loop Grid
+		// or Carousel nested inside a card that a later REST page renders
+		// relies on the containing page having already loaded these assets
+		// on its first render; enqueueing here for that case would also load
+		// a second Swiper into a response that is not a full page.
 		if ( class_exists( 'EMCP_Tools_Themer_Loop_Assets' ) && ! ( defined( 'REST_REQUEST' ) && REST_REQUEST ) ) {
 			EMCP_Tools_Themer_Loop_Assets::enqueue( 'carousel' === $kind );
 		}

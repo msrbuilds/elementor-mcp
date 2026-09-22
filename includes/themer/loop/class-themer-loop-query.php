@@ -160,6 +160,10 @@ class EMCP_Tools_Themer_Loop_Query {
 			if ( empty( $args['posts_per_page'] ) || (int) $args['posts_per_page'] < 1 ) {
 				$args['posts_per_page'] = (int) get_option( 'posts_per_page', 10 );
 			}
+			// The snapshot (the site's own posts_per_page option, or whatever a
+			// main-query-only filter set it to) is not bound by the per-page cap
+			// every other source honours; enforce it here too.
+			$args['posts_per_page'] = min( self::MAX_PER_PAGE, (int) $args['posts_per_page'] );
 			if ( isset( $args['offset'] ) ) {
 				// A main query with an offset paginates by hand, like everything else here.
 				$args['offset'] = (int) $args['offset'] + ( $page - 1 ) * (int) $args['posts_per_page'];

@@ -214,7 +214,7 @@ class EMCP_Tools_Themer_Loop_REST {
 				}
 				$external = '';
 				if ( ! empty( $item->src ) ) {
-					$external = '<link rel="stylesheet" id="' . esc_attr( $handle ) . '-css" href="' . esc_url( self::src_url( $item, $styles ) ) . '" media="all">';
+					$external = '<link rel="stylesheet" id="' . esc_attr( $handle ) . '-css" href="' . esc_url( self::src_url( $item, $styles, (string) $handle, 'style_loader_src' ) ) . '" media="all">';
 				}
 				$after    = $styles->get_data( $handle, 'after' );
 				$assets[] = array(
@@ -253,7 +253,7 @@ class EMCP_Tools_Themer_Loop_REST {
 				}
 				$external = '';
 				if ( ! empty( $item->src ) ) {
-					$external = '<script src="' . esc_url( self::src_url( $item, $scripts ) ) . '" id="' . esc_attr( $handle ) . '-js"></script>';
+					$external = '<script src="' . esc_url( self::src_url( $item, $scripts, (string) $handle, 'script_loader_src' ) ) . '" id="' . esc_attr( $handle ) . '-js"></script>';
 					// A script's translations are part of its external markup.
 					// Guarded by method_exists so the test stub, which does not
 					// implement it, is never called.
@@ -274,20 +274,33 @@ class EMCP_Tools_Themer_Loop_REST {
 	/**
 	 * A handle's URL with its version, as WordPress would print it.
 	 *
-	 * @param object $item Registered dependency.
-	 * @param object $deps The WP_Dependencies instance.
+	 * Mirrors WP_Scripts::do_item() / WP_Styles::do_item(): a $ver of exactly
+	 * null means no ver argument at all (the dependency opts out of
+	 * cache-busting on purpose); false or '' falls back to the dependencies
+	 * object's own default_version. The result is run through the same
+	 * script_loader_src / style_loader_src filter core runs it through, by
+	 * handle, so a site rewriting asset URLs (a CDN, an offloader) rewrites
+	 * these the same way it rewrites a normally-printed tag.
+	 *
+	 * @param object $item   Registered dependency.
+	 * @param object $deps   The WP_Dependencies instance.
+	 * @param string $handle The handle.
+	 * @param string $filter 'script_loader_src' or 'style_loader_src'.
 	 * @return string
 	 */
-	private static function src_url( $item, $deps ): string {
+	private static function src_url( $item, $deps, string $handle, string $filter ): string {
 		$src = (string) $item->src;
 		if ( '' !== $src && 0 !== strpos( $src, 'http' ) && 0 !== strpos( $src, '//' ) && isset( $deps->base_url ) ) {
 			$src = (string) $deps->base_url . $src;
 		}
 		$ver = isset( $item->ver ) ? $item->ver : false;
-		if ( null !== $ver && false !== $ver ) {
-			$src = add_query_arg( 'ver', '' === $ver ? ( defined( 'EMCP_TOOLS_VERSION' ) ? EMCP_TOOLS_VERSION : '' ) : (string) $ver, $src );
+		if ( null !== $ver ) {
+			$ver = $ver ? $ver : ( isset( $deps->default_version ) ? (string) $deps->default_version : '' );
+			if ( '' !== $ver ) {
+				$src = add_query_arg( 'ver', (string) $ver, $src );
+			}
 		}
-		return $src;
+		return (string) apply_filters( $filter, $src, $handle );
 	}
 
 	/**
