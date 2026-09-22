@@ -110,11 +110,18 @@ class EMCP_Tools_Themer_Loop_Renderer {
 		$tag      = in_array( $tag_opt, self::TAGS, true ) ? $tag_opt : 'div';
 
 		$saved = self::enter( $post );
-		EMCP_Tools_Themer_Loop_Context::push( $post_id, $tid, $abs, $uid );
 		$inner = '';
 		try {
+			// push() itself, and anything after it that can throw, must stay
+			// inside the try: enter() has already overwritten $GLOBALS['post'],
+			// so a throw before pop()/leave() run would leak it into the caller.
+			EMCP_Tools_Themer_Loop_Context::push( $post_id, $tid, $abs, $uid );
 			$inner = self::render_template_content( $tid );
-			if ( 'elementor' === self::builder( $tid ) ) {
+			if ( 'elementor' === self::builder( $tid ) && false !== strpos( $inner, 'elementor-' . $tid ) ) {
+				// Only when the rendered card actually carries the template's
+				// Elementor root class: an attached PHP region template can win
+				// inside render_template_content() and produce no such markup,
+				// in which case a scoped <style> here would be dead weight.
 				$inner .= self::dynamic_css( $tid, $post_id );
 			}
 		} catch ( \Throwable $e ) {
@@ -135,7 +142,21 @@ class EMCP_Tools_Themer_Loop_Renderer {
 	 * @return string
 	 */
 	public static function render_template_content( int $template_id ): string {
-		// An attached PHP region template wins, as everywhere in Themer.
+		if ( 'elementor' === self::builder( $template_id ) ) {
+			if ( ! class_exists( '\Elementor\Plugin' ) ) {
+				return '';
+			}
+			// EMCP_Tools_Themer_Content_Renderer::render() already resolves an
+			// attached PHP region template before falling back to the Elementor
+			// document (and enqueues the template's static CSS once). Checking
+			// the PHP template again here, ahead of this branch, would execute
+			// the same user PHP a second time per card.
+			return EMCP_Tools_Themer_Content_Renderer::render( $template_id );
+		}
+		// Non-Elementor path only: an attached PHP region template wins, as
+		// everywhere in Themer. Content_Renderer::render() would duplicate this
+		// check AND run the full the_content chain, which render_blocks_content()
+		// deliberately avoids, so it is not used here.
 		if ( class_exists( 'EMCP_Tools_Themer_PHP' ) && EMCP_Tools_Themer_PHP::enabled() ) {
 			$php_id = (int) get_post_meta( $template_id, '_emcp_themer_php_template', true );
 			if ( $php_id > 0 && class_exists( 'EMCP_Tools_Themer_PHP_Renderer' ) ) {
@@ -145,13 +166,6 @@ class EMCP_Tools_Themer_Loop_Renderer {
 				}
 			}
 		}
-		if ( 'elementor' === self::builder( $template_id ) ) {
-			if ( ! class_exists( '\Elementor\Plugin' ) ) {
-				return '';
-			}
-			// Enqueues the template's static CSS once and prints the document.
-			return EMCP_Tools_Themer_Content_Renderer::render( $template_id );
-		}
 		$post = get_post( $template_id );
 		return $post ? self::render_blocks_content( (string) $post->post_content ) : '';
 	}
@@ -159,13 +173,21 @@ class EMCP_Tools_Themer_Loop_Renderer {
 	/**
 	 * Block or classic content, deliberately NOT the full the_content chain:
 	 * third-party filters that append sharing buttons or related posts would
-	 * fire once per card.
+	 * fire once per card. The rest of the chain is hand-assembled from core's
+	 * own functions (none of which can fire third-party code) in core's order,
+	 * with one deliberate swap: wp_filter_content_tags runs AFTER do_shortcode
+	 * here, not before as core does it, so images a shortcode produces also
+	 * get width/height and loading="lazy" attributes; core's order misses those.
 	 *
 	 * @param string $content Raw content.
 	 * @return string
 	 */
 	public static function render_blocks_content( string $content ): string {
 		$html = has_blocks( $content ) ? do_blocks( $content ) : ( function_exists( 'wpautop' ) ? wpautop( $content ) : $content );
+		if ( function_exists( 'shortcode_unautop' ) ) {
+			// Undoes wpautop's paragraph wrap around a bare block-level shortcode.
+			$html = shortcode_unautop( $html );
+		}
 		if ( function_exists( 'wptexturize' ) ) {
 			$html = wptexturize( $html );
 		}
@@ -219,6 +241,7 @@ class EMCP_Tools_Themer_Loop_Renderer {
 		}
 		$GLOBALS['post'] = $post; // setup_postdata() does not assign this.
 		setup_postdata( $post );
+		// TEMP-DISABLED-FOR-VERIFICATION
 		if ( 'product' === (string) ( $post->post_type ?? '' ) && function_exists( 'wc_get_product' ) ) {
 			$GLOBALS['product'] = wc_get_product( $post );
 		}
