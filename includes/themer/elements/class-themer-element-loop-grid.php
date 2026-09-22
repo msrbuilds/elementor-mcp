@@ -59,6 +59,16 @@ class EMCP_Tools_Themer_Element_Loop_Grid extends EMCP_Tools_Themer_Element_Loop
 			return self::admin_comment( 'no_template', 'choose a published Loop Item' );
 		}
 		$attrs = 'class="' . esc_attr( implode( ' ', self::class_list( $args ) ) ) . '" id="emcp-loop-' . esc_attr( $p['uid'] ) . '" ' . self::data_attributes( $p );
+		if ( 'none' !== $p['pagination'] ) {
+			// The page URL scheme, for the script: it turns a pagination link
+			// into a page number, rebuilds the numbers nav after an AJAX
+			// replace, and builds the reload-fallback URL. Printed for every
+			// pagination type, since load more and infinite scroll fall back
+			// to a reload too. %#% stands for the page number.
+			$scheme = self::url_scheme( $p );
+			$attrs .= ' data-emcp-url="' . esc_attr( str_replace( '%_%', $scheme['format'], $scheme['base'] ) ) . '"'
+				. ' data-emcp-url-first="' . esc_attr( str_replace( '%_%', '', $scheme['base'] ) ) . '"';
+		}
 		if ( self::truthy( $args['inline_vars'] ) ) {
 			$attrs .= ' style="' . esc_attr( self::style_vars( $args ) ) . '"';
 		}
@@ -165,29 +175,9 @@ class EMCP_Tools_Themer_Element_Loop_Grid extends EMCP_Tools_Themer_Element_Loop
 			return $p['page'] >= $pages ? '' : '<div class="emcp-loop__sentinel" data-offset="' . max( 0, (int) ( $args['infinite_offset'] ?? 200 ) ) . '" hidden></div>';
 		}
 
-		$is_current = 'current' === $p['query']['source'];
-
-		// Core only substitutes format into base at a literal %_% placeholder;
-		// a base built with %#% directly (the earlier approach here) leaves
-		// format inert and never special-cases page one, so page one links to
-		// /page/1/ and takes a redirect. Building base with %_% and letting
-		// format supply the page segment is how paginate_links() itself
-		// composes its own defaults.
-		if ( $is_current ) {
-			// Reuses whatever pagination scheme get_pagenum_link() already
-			// resolves (pretty or plain permalinks) instead of guessing it.
-			$clean  = untrailingslashit( (string) get_pagenum_link( 1 ) );
-			$tagged = (string) get_pagenum_link( 2 );
-			$suffix = ( 0 === strpos( $tagged, $clean ) ) ? substr( $tagged, strlen( $clean ) ) : '?paged=2';
-			$base   = $clean . '%_%';
-			$format = str_replace( '2', '%#%', $suffix );
-		} else {
-			$page_var = self::page_var( $p['uid'] );
-			$clean    = (string) remove_query_arg( $page_var );
-			$sep      = ( false === strpos( $clean, '?' ) ) ? '?' : '&';
-			$base     = $clean . '%_%' . '#emcp-loop-' . $p['uid'];
-			$format   = $sep . $page_var . '=%#%';
-		}
+		$scheme  = self::url_scheme( $p );
+		$shorten = self::truthy( $args['shorten'] ?? false );
+		$labels  = self::nav_labels( $args );
 
 		$links = paginate_links(
 			array(
@@ -195,13 +185,13 @@ class EMCP_Tools_Themer_Element_Loop_Grid extends EMCP_Tools_Themer_Element_Loop
 				'total'     => $pages,
 				'current'   => $p['page'],
 				'show_all'  => false,
-				'end_size'  => self::truthy( $args['shorten'] ?? false ) ? 1 : 2,
-				'mid_size'  => self::truthy( $args['shorten'] ?? false ) ? 1 : 2,
+				'end_size'  => $shorten ? 1 : 2,
+				'mid_size'  => $shorten ? 1 : 2,
 				'prev_next' => 'numbers' !== $type,
-				'prev_text' => '' !== trim( (string) ( $args['prev_label'] ?? '' ) ) ? (string) $args['prev_label'] : __( 'Previous', 'emcp-tools' ),
-				'next_text' => '' !== trim( (string) ( $args['next_label'] ?? '' ) ) ? (string) $args['next_label'] : __( 'Next', 'emcp-tools' ),
-				'format'    => $format,
-				'base'      => $base,
+				'prev_text' => $labels['prev'],
+				'next_text' => $labels['next'],
+				'format'    => $scheme['format'],
+				'base'      => $scheme['base'],
 				'add_args'  => false,
 			)
 		);
@@ -216,6 +206,77 @@ class EMCP_Tools_Themer_Element_Loop_Grid extends EMCP_Tools_Themer_Element_Loop
 				return '';
 			}
 		}
-		return '<nav class="emcp-loop__pagination" aria-label="' . esc_attr__( 'Pagination', 'emcp-tools' ) . '">' . implode( '', array_map( 'wp_kses_post', $links ) ) . '</nav>';
+		// What the script needs to rebuild this nav after an AJAX replace the
+		// way paginate_links() would: the kind, the window sizes and the
+		// resolved labels as plain text (the script inserts them with
+		// textContent, never as markup).
+		$nav_attrs = ' data-kind="' . esc_attr( $type ) . '"'
+			. ' data-end="' . ( $shorten ? 1 : 2 ) . '" data-mid="' . ( $shorten ? 1 : 2 ) . '"'
+			. ' data-prev="' . esc_attr( self::plain_text( $labels['prev'] ) ) . '"'
+			. ' data-next="' . esc_attr( self::plain_text( $labels['next'] ) ) . '"';
+		return '<nav class="emcp-loop__pagination" aria-label="' . esc_attr__( 'Pagination', 'emcp-tools' ) . '"' . $nav_attrs . '>' . implode( '', array_map( 'wp_kses_post', $links ) ) . '</nav>';
+	}
+
+	/**
+	 * The pagination URL scheme, as paginate_links() takes it: a base with a
+	 * literal %_% where the page segment goes, and a format holding %#% for
+	 * the number. The single source for both pagination_html() and the
+	 * data-emcp-url attributes, so the links and the script always agree.
+	 *
+	 * The current source paginates the way the main query does (/page/N/ or
+	 * ?paged=N); every other source by the per-element query var.
+	 *
+	 * @param array $p Prepared render (needs query.source and uid).
+	 * @return array{base:string,format:string}
+	 */
+	public static function url_scheme( array $p ): array {
+		// Core only substitutes format into base at a literal %_% placeholder;
+		// a base built with %#% directly (the earlier approach here) leaves
+		// format inert and never special-cases page one, so page one links to
+		// /page/1/ and takes a redirect. Building base with %_% and letting
+		// format supply the page segment is how paginate_links() itself
+		// composes its own defaults.
+		if ( 'current' === (string) ( $p['query']['source'] ?? 'posts' ) ) {
+			// Reuses whatever pagination scheme get_pagenum_link() already
+			// resolves (pretty or plain permalinks) instead of guessing it.
+			$clean  = untrailingslashit( (string) get_pagenum_link( 1 ) );
+			$tagged = (string) get_pagenum_link( 2 );
+			$suffix = ( 0 === strpos( $tagged, $clean ) ) ? substr( $tagged, strlen( $clean ) ) : '?paged=2';
+			return array(
+				'base'   => $clean . '%_%',
+				'format' => str_replace( '2', '%#%', $suffix ),
+			);
+		}
+		$page_var = self::page_var( (string) ( $p['uid'] ?? '' ) );
+		$clean    = (string) remove_query_arg( $page_var );
+		$sep      = ( false === strpos( $clean, '?' ) ) ? '?' : '&';
+		return array(
+			'base'   => $clean . '%_%' . '#emcp-loop-' . ( $p['uid'] ?? '' ),
+			'format' => $sep . $page_var . '=%#%',
+		);
+	}
+
+	/**
+	 * The previous and next labels, resolved.
+	 *
+	 * @param array $args Element args.
+	 * @return array{prev:string,next:string}
+	 */
+	protected static function nav_labels( array $args ): array {
+		return array(
+			'prev' => '' !== trim( (string) ( $args['prev_label'] ?? '' ) ) ? (string) $args['prev_label'] : __( 'Previous', 'emcp-tools' ),
+			'next' => '' !== trim( (string) ( $args['next_label'] ?? '' ) ) ? (string) $args['next_label'] : __( 'Next', 'emcp-tools' ),
+		);
+	}
+
+	/**
+	 * A label as plain text: tags stripped, entities decoded (esc_attr then
+	 * encodes it once for the attribute).
+	 *
+	 * @param string $label Label.
+	 * @return string
+	 */
+	private static function plain_text( string $label ): string {
+		return trim( html_entity_decode( wp_strip_all_tags( $label ), ENT_QUOTES | ENT_HTML5, 'UTF-8' ) );
 	}
 }

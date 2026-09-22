@@ -74,22 +74,25 @@ class EMCP_Tools_Themer_Element_Loop_Carousel extends EMCP_Tools_Themer_Element_
 			return self::admin_comment( 'no_template', 'choose a published Loop Item' );
 		}
 		$attrs = 'class="' . esc_attr( implode( ' ', self::class_list( $args ) ) ) . '" id="emcp-loop-' . esc_attr( $p['uid'] ) . '" ' . self::data_attributes( $p )
-			. ' data-emcp-carousel="' . esc_attr( (string) wp_json_encode( self::swiper_options( $args ) ) ) . '"'
-			. ' style="--emcp-offset:' . max( 0, (int) $args['offset_width'] ) . 'px;--emcp-gap:' . max( 0, (int) $args['gap'] ) . 'px"';
-		$html  = '<div ' . $attrs . '>' . implode( '', $p['notes'] );
+			. ' data-emcp-carousel="' . esc_attr( (string) wp_json_encode( self::swiper_options( $args ) ) ) . '"';
+		// Swiper reads RTL only from the container's own dir attribute or its
+		// computed CSS direction, never from an init option. The attribute
+		// sits on this outer wrapper, not on .swiper: computed direction
+		// inherits, so Swiper still runs in RTL, and the arrows and dots
+		// (siblings of .swiper) follow it too. Only rtl prints anything, so
+		// an RTL site stays RTL when the carousel is left at ltr.
+		if ( 'rtl' === (string) $args['direction'] ) {
+			$attrs .= ' dir="rtl"';
+		}
+		$attrs .= ' style="' . esc_attr( self::style_vars( $args ) ) . '"';
+		$html   = '<div ' . $attrs . '>' . implode( '', $p['notes'] );
 		if ( ! $p['items'] ) {
 			return $html . self::empty_html( $args ) . '</div>';
 		}
 		// The renderer already stamped 'swiper-slide' onto each of THIS call's
 		// own items via item_classes() below (never onto a card's own nested
 		// Loop Grid/Carousel, which builds its items through a separate call).
-		// Swiper reads RTL only from the container's own dir attribute or
-		// computed CSS direction, never from an init option, so it is set here.
-		$swiper_attrs = 'class="swiper"';
-		if ( 'rtl' === (string) $args['direction'] ) {
-			$swiper_attrs .= ' dir="' . esc_attr( 'rtl' ) . '"';
-		}
-		$html .= '<div ' . $swiper_attrs . '><div class="swiper-wrapper">' . self::items_html( $p ) . '</div></div>';
+		$html .= '<div class="swiper"><div class="swiper-wrapper">' . self::items_html( $p ) . '</div></div>';
 		if ( self::truthy( $args['arrows'] ) ) {
 			$html .= '<button type="button" class="emcp-loop__arrow emcp-loop__arrow--prev" aria-label="' . esc_attr__( 'Previous', 'emcp-tools' ) . '">' . self::svg( (string) $args['arrow_prev_svg'], self::PREV_SVG ) . '</button>';
 			$html .= '<button type="button" class="emcp-loop__arrow emcp-loop__arrow--next" aria-label="' . esc_attr__( 'Next', 'emcp-tools' ) . '">' . self::svg( (string) $args['arrow_next_svg'], self::NEXT_SVG ) . '</button>';
@@ -123,6 +126,61 @@ class EMCP_Tools_Themer_Element_Loop_Carousel extends EMCP_Tools_Themer_Element_
 	}
 
 	/**
+	 * The custom properties the stylesheet reads: the offset, and the slide
+	 * counts and gaps per breakpoint for the static row shown before Swiper
+	 * runs. Same values as swiper_options(), from the same helper. A slides
+	 * value of 'auto' is left out, so the stylesheet falls back to sizing
+	 * that slide by its content.
+	 *
+	 * @param array $args Merged args.
+	 * @return string
+	 */
+	public static function style_vars( array $args ): string {
+		$r    = self::responsive( $args );
+		$vars = array(
+			'--emcp-offset'   => max( 0, (int) ( $args['offset_width'] ?? 40 ) ) . 'px',
+			'--emcp-gap'      => $r['gap']['d'] . 'px',
+			'--emcp-gap-t'    => $r['gap']['t'] . 'px',
+			'--emcp-gap-m'    => $r['gap']['m'] . 'px',
+			'--emcp-slides'   => $r['slides']['d'],
+			'--emcp-slides-t' => $r['slides']['t'],
+			'--emcp-slides-m' => $r['slides']['m'],
+		);
+		$out  = array();
+		foreach ( $vars as $name => $value ) {
+			if ( 'auto' === $value ) {
+				continue;
+			}
+			$out[] = $name . ':' . $value;
+		}
+		return implode( ';', $out );
+	}
+
+	/**
+	 * Slides per view and gap at each breakpoint (d = 1025px and up,
+	 * t = 768px to 1024px, m = below 768px). Fade shows one slide at every
+	 * breakpoint. The single source for swiper_options() and style_vars().
+	 *
+	 * @param array $args Merged args.
+	 * @return array{slides:array{d:int|string,t:int|string,m:int|string},gap:array{d:int,t:int,m:int}}
+	 */
+	private static function responsive( array $args ): array {
+		$fade = 'fade' === (string) ( $args['effect'] ?? 'slide' );
+		return array(
+			'slides' => array(
+				'd' => $fade ? 1 : self::slides_value( $args['slides'] ?? 3, 3 ),
+				't' => $fade ? 1 : self::slides_value( $args['slides_tablet'] ?? 2, 2 ),
+				'm' => $fade ? 1 : self::slides_value( $args['slides_mobile'] ?? 1, 1 ),
+			),
+			'gap'    => array(
+				'd' => max( 0, (int) ( $args['gap'] ?? 24 ) ),
+				't' => max( 0, (int) ( $args['gap_tablet'] ?? 20 ) ),
+				'm' => max( 0, (int) ( $args['gap_mobile'] ?? 16 ) ),
+			),
+		);
+	}
+
+	/**
 	 * Swiper needs its slide class on the outer wrapper of each of THIS
 	 * carousel's own items (never a card's own nested loop, which renders its
 	 * items through a separate render_items() call and never sees this).
@@ -143,38 +201,36 @@ class EMCP_Tools_Themer_Element_Loop_Carousel extends EMCP_Tools_Themer_Element_
 	 */
 	public static function swiper_options( array $args ): array {
 		$effect = in_array( (string) $args['effect'], self::EFFECTS, true ) ? (string) $args['effect'] : 'slide';
-		$slides = self::slides_value( $args['slides'], 3 );
-		if ( 'fade' === $effect ) {
-			$slides = 1;
-		}
-		$o = array(
-			'slidesPerView'  => $slides,
+		$r      = self::responsive( $args );
+		$o      = array(
+			'slidesPerView'  => $r['slides']['d'],
 			'slidesPerGroup' => self::slides_to_scroll_value( $args['slides_to_scroll'] ),
-			'spaceBetween'   => max( 0, (int) $args['gap'] ),
+			'spaceBetween'   => $r['gap']['d'],
 			'speed'          => max( 100, min( 5000, (int) $args['speed'] ) ),
 			'loop'           => self::truthy( $args['loop'] ),
 			// No 'dir' key: Swiper has no such init option in any version. It
 			// detects RTL only from the container element's own dir attribute
-			// or computed CSS direction, which render() sets on .swiper.
+			// or computed CSS direction; render() sets dir on the outer
+			// wrapper and .swiper inherits the computed direction.
 			'centeredSlides' => self::truthy( $args['centered'] ),
 			'effect'         => $effect,
 			'autoHeight'     => 'equal' !== (string) $args['height'],
 			'autoplay'       => false,
 			'breakpoints'    => array(
-				0   => array(
-					'slidesPerView'  => 'fade' === $effect ? 1 : self::slides_value( $args['slides_mobile'], 1 ),
+				0    => array(
+					'slidesPerView'  => $r['slides']['m'],
 					'slidesPerGroup' => self::slides_to_scroll_value( $args['slides_to_scroll_mobile'] ),
-					'spaceBetween'   => max( 0, (int) $args['gap_mobile'] ),
+					'spaceBetween'   => $r['gap']['m'],
 				),
-				768 => array(
-					'slidesPerView'  => 'fade' === $effect ? 1 : self::slides_value( $args['slides_tablet'], 2 ),
+				768  => array(
+					'slidesPerView'  => $r['slides']['t'],
 					'slidesPerGroup' => self::slides_to_scroll_value( $args['slides_to_scroll_tablet'] ),
-					'spaceBetween'   => max( 0, (int) $args['gap_tablet'] ),
+					'spaceBetween'   => $r['gap']['t'],
 				),
 				1025 => array(
-					'slidesPerView'  => $slides,
+					'slidesPerView'  => $r['slides']['d'],
 					'slidesPerGroup' => self::slides_to_scroll_value( $args['slides_to_scroll'] ),
-					'spaceBetween'   => max( 0, (int) $args['gap'] ),
+					'spaceBetween'   => $r['gap']['d'],
 				),
 			),
 		);
