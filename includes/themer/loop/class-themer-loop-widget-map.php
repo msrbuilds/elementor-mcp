@@ -207,10 +207,17 @@ class EMCP_Tools_Themer_Loop_Widget_Map {
 	 * (the editor and its admin-ajax calls), and over REST and WP-CLI, where
 	 * MCP agents read the full control schema.
 	 *
+	 * Never while the loop REST route renders cards: a loop widget nested in
+	 * a card that AJAX pagination renders would otherwise run the Loop Item,
+	 * term and author queries on a visitor's request (that route is REST).
+	 *
 	 * @param bool|null $cli Test seam; null reads the WP_CLI constant.
 	 * @return bool
 	 */
 	public static function options_needed( ?bool $cli = null ): bool {
+		if ( class_exists( 'EMCP_Tools_Themer_Loop_REST' ) && EMCP_Tools_Themer_Loop_REST::is_rendering() ) {
+			return false;
+		}
 		if ( null === $cli ) {
 			$cli = defined( 'WP_CLI' ) && WP_CLI;
 		}
