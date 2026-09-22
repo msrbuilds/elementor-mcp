@@ -1,0 +1,353 @@
+/**
+ * EMCP Themer Loop Grid and Loop Carousel.
+ *
+ * Layout only, driven by custom properties the element prints. The Loop Item
+ * itself carries its own design. Flat colours, no gradients.
+ *
+ * Every structural rule uses child combinators from the element root, so a
+ * Loop Grid or Carousel nested inside a card is never styled by its parent.
+ */
+
+/* ---- Grid ------------------------------------------------------------ */
+.emcp-loop--grid > .emcp-loop__items {
+	display: grid;
+	grid-template-columns: repeat(var(--emcp-cols, 3), minmax(0, 1fr));
+	column-gap: var(--emcp-gap-x, 24px);
+	row-gap: var(--emcp-gap-y, 24px);
+	align-items: start;
+}
+@media (max-width: 1024px) {
+	.emcp-loop--grid > .emcp-loop__items {
+		grid-template-columns: repeat(var(--emcp-cols-t, 2), minmax(0, 1fr));
+	}
+}
+@media (max-width: 767px) {
+	.emcp-loop--grid > .emcp-loop__items {
+		grid-template-columns: repeat(var(--emcp-cols-m, 1), minmax(0, 1fr));
+	}
+}
+.emcp-loop__item {
+	min-width: 0;
+	position: relative;
+}
+
+/*
+ * Equal height. Items become flex columns and the card content grows: the
+ * .elementor root for an Elementor card (its per-item <style> sits after it),
+ * the last element child for a block-built card. Masonry and equal height
+ * contradict each other; masonry wins.
+ */
+.emcp-loop--grid.is-equal-height:not(.is-masonry) > .emcp-loop__items {
+	align-items: stretch;
+}
+.emcp-loop--carousel.is-equal-height > .swiper > .swiper-wrapper > .swiper-slide {
+	height: auto;
+}
+.emcp-loop--grid.is-equal-height:not(.is-masonry) > .emcp-loop__items > .emcp-loop__item,
+.emcp-loop--carousel.is-equal-height:not(.is-masonry) > .swiper > .swiper-wrapper > .emcp-loop__item {
+	display: flex;
+	flex-direction: column;
+}
+.emcp-loop--grid.is-equal-height:not(.is-masonry) > .emcp-loop__items > .emcp-loop__item > .elementor,
+.emcp-loop--grid.is-equal-height:not(.is-masonry) > .emcp-loop__items > .emcp-loop__item > :last-child:not(style),
+.emcp-loop--carousel.is-equal-height:not(.is-masonry) > .swiper > .swiper-wrapper > .emcp-loop__item > .elementor,
+.emcp-loop--carousel.is-equal-height:not(.is-masonry) > .swiper > .swiper-wrapper > .emcp-loop__item > :last-child:not(style) {
+	flex-grow: 1;
+}
+/* A block card that ends in a <style>: grow the last element before it. Kept
+ * in its own rule so a browser without :has() drops only this rule. */
+.emcp-loop--grid.is-equal-height:not(.is-masonry) > .emcp-loop__items > .emcp-loop__item > :not(style):not(:has(~ :not(style))),
+.emcp-loop--carousel.is-equal-height:not(.is-masonry) > .swiper > .swiper-wrapper > .emcp-loop__item > :not(style):not(:has(~ :not(style))) {
+	flex-grow: 1;
+}
+/* Inside an Elementor card, the last top-level container fills the card. */
+.emcp-loop.is-equal-height:not(.is-masonry) .emcp-loop__item > .elementor {
+	display: flex;
+	flex-direction: column;
+}
+.emcp-loop.is-equal-height:not(.is-masonry) .emcp-loop__item > .elementor > :last-child {
+	flex-grow: 1;
+}
+
+/* First item span (desktop only; the span is clamped to the column count). */
+.emcp-loop--grid.has-first-span > .emcp-loop__items > .emcp-loop__item.is-first {
+	grid-column: span var(--emcp-first-span, 1);
+}
+@media (max-width: 1024px) {
+	.emcp-loop--grid.has-first-span > .emcp-loop__items > .emcp-loop__item.is-first {
+		grid-column: auto;
+	}
+}
+/* Pro alternate templates print .span-N on an item. */
+.emcp-loop--grid > .emcp-loop__items > .emcp-loop__item.span-2 { grid-column: span 2; }
+.emcp-loop--grid > .emcp-loop__items > .emcp-loop__item.span-3 { grid-column: span 3; }
+.emcp-loop--grid > .emcp-loop__items > .emcp-loop__item.span-4 { grid-column: span 4; }
+.emcp-loop--grid > .emcp-loop__items > .emcp-loop__item.span-5 { grid-column: span 5; }
+.emcp-loop--grid > .emcp-loop__items > .emcp-loop__item.span-6 { grid-column: span 6; }
+@media (max-width: 767px) {
+	.emcp-loop--grid > .emcp-loop__items > .emcp-loop__item[class*="span-"] { grid-column: auto; }
+}
+
+/* Masonry: the script sets grid-row-end per item. */
+.emcp-loop--grid.is-masonry > .emcp-loop__items {
+	grid-auto-rows: 1px;
+	row-gap: 0;
+}
+.emcp-loop--grid.is-masonry > .emcp-loop__items > .emcp-loop__item {
+	margin-bottom: var(--emcp-gap-y, 24px);
+}
+
+/* Hover effects */
+.emcp-loop[class*="has-hover-"] > .emcp-loop__items > .emcp-loop__item {
+	transition: transform var(--emcp-hover-duration, 250ms) ease, box-shadow var(--emcp-hover-duration, 250ms) ease;
+}
+.emcp-loop.has-hover-lift > .emcp-loop__items > .emcp-loop__item:hover {
+	transform: translateY(calc(-1 * var(--emcp-lift, 6px)));
+}
+.emcp-loop.has-hover-zoom > .emcp-loop__items > .emcp-loop__item:hover {
+	transform: scale(var(--emcp-zoom, 1.03));
+}
+.emcp-loop.has-hover-shadow > .emcp-loop__items > .emcp-loop__item:hover {
+	box-shadow: 0 12px 32px rgba(0, 0, 0, 0.14);
+}
+
+/* Entrance animations: the script adds .is-visible and sets
+ * --emcp-anim-delay per item from the element's --emcp-anim-step. */
+.emcp-loop[class*="has-anim-"] > .emcp-loop__items > .emcp-loop__item {
+	opacity: 0;
+	transition: opacity var(--emcp-anim-duration, 500ms) ease, transform var(--emcp-anim-duration, 500ms) ease;
+	transition-delay: var(--emcp-anim-delay, 0ms);
+}
+.emcp-loop.has-anim-fade-up > .emcp-loop__items > .emcp-loop__item { transform: translateY(24px); }
+.emcp-loop.has-anim-zoom-in > .emcp-loop__items > .emcp-loop__item { transform: scale(0.92); }
+.emcp-loop[class*="has-anim-"] > .emcp-loop__items > .emcp-loop__item.is-visible {
+	opacity: 1;
+	transform: none;
+}
+@media (prefers-reduced-motion: reduce) {
+	.emcp-loop[class*="has-anim-"] > .emcp-loop__items > .emcp-loop__item {
+		opacity: 1;
+		transform: none;
+		transition: none;
+	}
+}
+
+/* Pagination */
+.emcp-loop > .emcp-loop__pagination {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: var(--emcp-pagination-align, center);
+	gap: var(--emcp-pagination-gap, 8px);
+	margin-top: var(--emcp-pagination-margin, 32px);
+}
+.emcp-loop > .emcp-loop__pagination[hidden] {
+	display: none;
+}
+.emcp-loop > .emcp-loop__pagination .page-numbers {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 2.25em;
+	padding: 0.4em 0.75em;
+	border: 1px solid currentColor;
+	border-radius: 4px;
+	text-decoration: none;
+	line-height: 1;
+}
+.emcp-loop > .emcp-loop__pagination .page-numbers.current {
+	border-color: var(--emcp-pagination-active-bg, #1d2327);
+	background: var(--emcp-pagination-active-bg, #1d2327);
+	color: var(--emcp-pagination-active-color, #ffffff);
+}
+.emcp-loop > .emcp-loop__pagination .page-numbers.dots {
+	border: 0;
+}
+.emcp-loop.is-loading > .emcp-loop__items {
+	opacity: 0.5;
+	pointer-events: none;
+}
+/* The script focuses the element (or a new card) programmatically after a
+ * load; no ring for a mouse user, the usual one for a keyboard user. */
+.emcp-loop[tabindex="-1"]:focus:not(:focus-visible),
+.emcp-loop__item[tabindex="-1"]:focus:not(:focus-visible) {
+	outline: none;
+}
+
+/* Load more */
+.emcp-loop > .emcp-loop__more {
+	display: flex;
+	justify-content: var(--emcp-more-align, center);
+	margin-top: var(--emcp-more-margin, 32px);
+}
+.emcp-loop__more-btn {
+	cursor: pointer;
+	padding: 0.75em 1.75em;
+	border: 1px solid currentColor;
+	border-radius: 4px;
+	background: transparent;
+	color: inherit;
+	font: inherit;
+}
+.emcp-loop__more-btn[disabled] {
+	opacity: 0.6;
+	cursor: default;
+}
+.emcp-loop__more-btn.is-loading::after {
+	content: "";
+	display: inline-block;
+	width: 0.85em;
+	height: 0.85em;
+	margin-inline-start: 0.6em;
+	border: 2px solid currentColor;
+	border-right-color: transparent;
+	border-radius: 50%;
+	animation: emcp-loop-spin 0.7s linear infinite;
+	vertical-align: middle;
+}
+@keyframes emcp-loop-spin {
+	to { transform: rotate(360deg); }
+}
+
+/* Empty */
+.emcp-loop__empty {
+	margin: 0;
+	padding: 1em 0;
+	text-align: var(--emcp-empty-align, start);
+}
+
+/* ---- Carousel ---------------------------------------------------------- */
+.emcp-loop--carousel {
+	position: relative;
+	/* Reset, so a nested carousel whose slides value is auto (and therefore
+	 * printed nothing) does not inherit its parent's count. */
+	--emcp-slides: initial;
+	--emcp-slides-t: initial;
+	--emcp-slides-m: initial;
+}
+.emcp-loop--carousel > .swiper {
+	overflow: hidden;
+}
+/* Offsets name a physical side, so they stay physical. */
+.emcp-loop--carousel.offset-both > .swiper { padding-left: var(--emcp-offset, 40px); padding-right: var(--emcp-offset, 40px); }
+.emcp-loop--carousel.offset-left > .swiper { padding-left: var(--emcp-offset, 40px); }
+.emcp-loop--carousel.offset-right > .swiper { padding-right: var(--emcp-offset, 40px); }
+
+/*
+ * Before Swiper runs, show a static row with the real slide counts and gaps
+ * so nothing jumps. Breakpoints match Swiper's exactly: below 768px,
+ * 768px to 1024px, 1025px and up. A slides value of auto prints no
+ * property, so --emcp-basis is invalid and the slide sizes to its content.
+ */
+.emcp-loop--carousel:not(.is-ready) > .swiper > .swiper-wrapper {
+	display: flex;
+	gap: var(--emcp-gap-m, 16px);
+}
+.emcp-loop--carousel:not(.is-ready) > .swiper > .swiper-wrapper > .swiper-slide {
+	--emcp-basis: calc((100% - (var(--emcp-slides-m) - 1) * var(--emcp-gap-m, 16px)) / var(--emcp-slides-m));
+	flex: 0 0 var(--emcp-basis, auto);
+}
+@media (min-width: 768px) {
+	.emcp-loop--carousel:not(.is-ready) > .swiper > .swiper-wrapper {
+		gap: var(--emcp-gap-t, 20px);
+	}
+	.emcp-loop--carousel:not(.is-ready) > .swiper > .swiper-wrapper > .swiper-slide {
+		--emcp-basis: calc((100% - (var(--emcp-slides-t) - 1) * var(--emcp-gap-t, 20px)) / var(--emcp-slides-t));
+	}
+}
+@media (min-width: 1025px) {
+	.emcp-loop--carousel:not(.is-ready) > .swiper > .swiper-wrapper {
+		gap: var(--emcp-gap, 24px);
+	}
+	.emcp-loop--carousel:not(.is-ready) > .swiper > .swiper-wrapper > .swiper-slide {
+		--emcp-basis: calc((100% - (var(--emcp-slides) - 1) * var(--emcp-gap, 24px)) / var(--emcp-slides));
+	}
+}
+
+/* Arrows: logical properties, so prev sits on the start side in RTL too. */
+.emcp-loop--carousel > .emcp-loop__arrow {
+	position: absolute;
+	top: 50%;
+	z-index: 2;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: var(--emcp-arrow-size, 44px);
+	height: var(--emcp-arrow-size, 44px);
+	padding: 0;
+	border: 1px solid var(--emcp-arrow-border, transparent);
+	border-radius: var(--emcp-arrow-radius, 50%);
+	background: var(--emcp-arrow-bg, #ffffff);
+	color: var(--emcp-arrow-color, #1d2327);
+	cursor: pointer;
+	transform: translateY(-50%);
+}
+.emcp-loop--carousel > .emcp-loop__arrow svg {
+	width: 55%;
+	height: 55%;
+}
+.emcp-loop--carousel > .emcp-loop__arrow:dir(rtl) svg {
+	transform: scaleX(-1);
+}
+.emcp-loop--carousel > .emcp-loop__arrow--prev { inset-inline-start: var(--emcp-arrow-offset, 8px); }
+.emcp-loop--carousel > .emcp-loop__arrow--next { inset-inline-end: var(--emcp-arrow-offset, 8px); }
+.emcp-loop--carousel.arrows-outside {
+	padding-inline: calc(var(--emcp-arrow-size, 44px) + 16px);
+}
+.emcp-loop--carousel.arrows-outside > .emcp-loop__arrow--prev { inset-inline-start: 0; }
+.emcp-loop--carousel.arrows-outside > .emcp-loop__arrow--next { inset-inline-end: 0; }
+.emcp-loop--carousel.arrows-bottom {
+	padding-bottom: calc(var(--emcp-arrow-size, 44px) + 16px);
+}
+.emcp-loop--carousel.arrows-bottom > .emcp-loop__arrow { top: auto; bottom: 0; transform: none; }
+.emcp-loop--carousel.arrows-bottom > .emcp-loop__arrow--prev { inset-inline-start: calc(50% - var(--emcp-arrow-size, 44px) - 8px); }
+.emcp-loop--carousel.arrows-bottom > .emcp-loop__arrow--next { inset-inline-end: calc(50% - var(--emcp-arrow-size, 44px) - 8px); }
+.emcp-loop--carousel > .emcp-loop__arrow.swiper-button-disabled { opacity: 0.35; cursor: default; }
+
+/* Dots */
+.emcp-loop--carousel > .emcp-loop__dots.swiper-pagination {
+	position: relative;
+	bottom: auto;
+	left: auto;
+	margin-top: var(--emcp-dots-offset, 16px);
+	text-align: center;
+}
+.emcp-loop--carousel.dots-inside > .emcp-loop__dots.swiper-pagination {
+	position: absolute;
+	bottom: var(--emcp-dots-offset, 16px);
+	left: 0;
+	right: 0;
+	margin: 0;
+}
+.emcp-loop--carousel > .emcp-loop__dots .swiper-pagination-bullet {
+	width: var(--emcp-dot-size, 8px);
+	height: var(--emcp-dot-size, 8px);
+	margin: 0 calc(var(--emcp-dot-gap, 8px) / 2);
+	background: var(--emcp-dot-color, #1d2327);
+	opacity: 0.35;
+	transition: width 200ms ease, opacity 200ms ease;
+}
+.emcp-loop--carousel > .emcp-loop__dots .swiper-pagination-bullet-active {
+	width: var(--emcp-dot-active-width, var(--emcp-dot-size, 8px));
+	border-radius: var(--emcp-dot-size, 8px);
+	background: var(--emcp-dot-active-color, var(--emcp-dot-color, #1d2327));
+	opacity: 1;
+}
+.emcp-loop--carousel > .emcp-loop__dots.swiper-pagination-fraction {
+	color: var(--emcp-dot-color, #1d2327);
+}
+.emcp-loop--carousel > .emcp-loop__dots.swiper-pagination-progressbar {
+	height: var(--emcp-progress-height, 4px);
+	background: var(--emcp-progress-track, rgba(0, 0, 0, 0.12));
+}
+.emcp-loop--carousel > .emcp-loop__dots.swiper-pagination-progressbar .swiper-pagination-progressbar-fill {
+	background: var(--emcp-progress-fill, #1d2327);
+}
+
+/* ---- Editor placeholder (Plan 2b) --------------------------------------- */
+.emcp-loop__placeholder {
+	padding: 24px;
+	border: 1px dashed #c3c4c7;
+	border-radius: 4px;
+	text-align: center;
+	color: #50575e;
+}
