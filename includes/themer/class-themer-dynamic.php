@@ -57,6 +57,14 @@ class EMCP_Tools_Themer_Dynamic {
 	}
 
 	private static function queried_id(): int {
+		// Inside a Loop Grid / Carousel, the card's post wins over the queried
+		// object, which is the page or archive around the grid.
+		if ( class_exists( 'EMCP_Tools_Themer_Loop_Context' ) ) {
+			$loop_post = EMCP_Tools_Themer_Loop_Context::current_post_id();
+			if ( $loop_post > 0 ) {
+				return $loop_post;
+			}
+		}
 		$obj = get_queried_object();
 		if ( $obj instanceof WP_Post ) {
 			return (int) $obj->ID;
