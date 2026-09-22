@@ -110,15 +110,19 @@ class EMCP_Tools_Themer_Loop_Renderer {
 		$tag      = in_array( $tag_opt, self::TAGS, true ) ? $tag_opt : 'div';
 
 		// snapshot() only reads globals, so it cannot throw and is safe to run
-		// before the try. apply() mutates them (and runs setup_postdata() and,
-		// for a product, the third-party wc_get_product()), so it and push()
-		// run as the first statements inside the try: a throw from either one
-		// is still covered by the finally that calls leave().
+		// before the try. push() runs first inside the try, before apply():
+		// push() is a single array append with no failure mode, so it cannot
+		// throw and leave the stack unbalanced, and if apply() throws (it runs
+		// setup_postdata() and, for a product, the third-party wc_get_product())
+		// the finally's pop() must have a frame to pop, or a nested loop's
+		// failing inner item would pop the OUTER card's context instead of its
+		// own. apply() mutates globals, so a throw from it is still covered by
+		// the finally that calls leave().
 		$saved = self::snapshot();
 		$inner = '';
 		try {
-			self::apply( $post );
 			EMCP_Tools_Themer_Loop_Context::push( $post_id, $tid, $abs, $uid );
+			self::apply( $post );
 			$inner = self::render_template_content( $tid );
 			if ( 'elementor' === self::builder( $tid ) && false !== strpos( $inner, 'elementor-' . $tid ) ) {
 				// Only when the rendered card actually carries the template's
@@ -249,6 +253,8 @@ class EMCP_Tools_Themer_Loop_Renderer {
 	 * Make a post current. Mutates globals and calls setup_postdata() and,
 	 * for a product, the third-party wc_get_product(); callers must run this
 	 * inside a try whose finally calls leave(), since either call can throw.
+	 * Call AFTER Loop_Context::push(): if this throws, the finally's pop()
+	 * must already have a frame to pop.
 	 *
 	 * @param object $post The post.
 	 */
