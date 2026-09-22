@@ -4,7 +4,9 @@
  *
  * The signature authenticates the configuration (what the page already
  * rendered), never the visitor. The route only accepts a config this site
- * signed, so it cannot be used as a general query API.
+ * signed, so it cannot be used as a general query API. A signed
+ * configuration has no expiry (unlike a WordPress nonce), which is safe
+ * because it only ever describes content the page already rendered publicly.
  *
  * @package EMCP_Tools
  * @since   3.18.0
@@ -22,12 +24,31 @@ class EMCP_Tools_Themer_Loop_Config {
 	const VERSION = 1;
 
 	/**
+	 * Recursively sort an array at all levels for canonical JSON encoding.
+	 *
+	 * Numerically indexed arrays (lists) keep their order because their keys
+	 * already ascend, preserving the meaningful sequence.
+	 *
+	 * @param array $arr Array to sort.
+	 * @return array Sorted array with recursively sorted subarrays.
+	 */
+	private static function sort_recursive( array $arr ): array {
+		ksort( $arr );
+		foreach ( $arr as &$val ) {
+			if ( is_array( $val ) ) {
+				$val = self::sort_recursive( $val );
+			}
+		}
+		return $arr;
+	}
+
+	/**
 	 * @param array $config Config.
 	 * @return string base64 JSON.
 	 */
 	public static function encode( array $config ): string {
 		$config['v'] = self::VERSION;
-		ksort( $config );
+		$config = self::sort_recursive( $config );
 		return base64_encode( (string) wp_json_encode( $config ) );
 	}
 
