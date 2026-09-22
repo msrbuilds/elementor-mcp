@@ -156,10 +156,110 @@
 		return page >= 1 ? page : null;
 	}
 
+	/**
+	 * A URL this script may navigate to or put in an href: http(s) on this
+	 * page's own origin only, else null. Every data attribute is page
+	 * markup an author can write, so a URL read from one is never trusted.
+	 */
+	function safeUrl( u ) {
+		if ( ! u || 'function' !== typeof win.URL || ! win.location ) {
+			return null;
+		}
+		var x;
+		try {
+			x = new win.URL( String( u ), win.location.href );
+		} catch ( e ) {
+			return null;
+		}
+		if ( ( 'http:' !== x.protocol && 'https:' !== x.protocol ) || x.origin !== win.location.origin ) {
+			return null;
+		}
+		return x.href;
+	}
+
+	function clampInt( v, min, max, fallback ) {
+		var n = parseInt( v, 10 );
+		if ( isNaN( n ) ) {
+			return fallback;
+		}
+		return Math.max( min, Math.min( max, n ) );
+	}
+
+	function slidesValue( v, fallback ) {
+		return 'auto' === v ? 'auto' : clampInt( v, 1, 10, fallback );
+	}
+
+	function breakpoint( raw, fallback ) {
+		raw = raw && 'object' === typeof raw ? raw : {};
+		return {
+			slidesPerView: slidesValue( raw.slidesPerView, fallback.slidesPerView ),
+			slidesPerGroup: clampInt( raw.slidesPerGroup, 1, 10, 1 ),
+			spaceBetween: clampInt( raw.spaceBetween, 0, 10000, fallback.spaceBetween ),
+		};
+	}
+
+	/**
+	 * Swiper options rebuilt from an allowlist, never passed through: the
+	 * data attribute is author-writable markup, and Swiper builds pagination
+	 * markup from its *Class and *Element options. Ranges match the PHP.
+	 * Element references (navigation, pagination.el) are added by the caller
+	 * from the carousel's own children.
+	 */
+	function sanitizeSwiperOptions( raw ) {
+		raw = raw && 'object' === typeof raw ? raw : {};
+		var effect = [ 'slide', 'fade', 'coverflow' ].indexOf( raw.effect ) !== -1 ? raw.effect : 'slide';
+		var o = {
+			slidesPerView: slidesValue( raw.slidesPerView, 3 ),
+			slidesPerGroup: clampInt( raw.slidesPerGroup, 1, 10, 1 ),
+			spaceBetween: clampInt( raw.spaceBetween, 0, 10000, 24 ),
+			speed: clampInt( raw.speed, 100, 5000, 500 ),
+			loop: true === raw.loop,
+			centeredSlides: true === raw.centeredSlides,
+			autoHeight: true === raw.autoHeight,
+			effect: effect,
+			autoplay: false,
+		};
+		var bp = raw.breakpoints && 'object' === typeof raw.breakpoints ? raw.breakpoints : {};
+		o.breakpoints = {
+			0: breakpoint( bp[ 0 ], { slidesPerView: 1, spaceBetween: 16 } ),
+			768: breakpoint( bp[ 768 ], { slidesPerView: 2, spaceBetween: 20 } ),
+			1025: breakpoint( bp[ 1025 ], { slidesPerView: o.slidesPerView, spaceBetween: o.spaceBetween } ),
+		};
+		if ( raw.autoplay && 'object' === typeof raw.autoplay ) {
+			o.autoplay = {
+				delay: clampInt( raw.autoplay.delay, 500, 3600000, 5000 ),
+				disableOnInteraction: true === raw.autoplay.disableOnInteraction,
+				pauseOnMouseEnter: true === raw.autoplay.pauseOnMouseEnter,
+			};
+		}
+		if ( 'fade' === effect ) {
+			o.fadeEffect = { crossFade: true };
+		}
+		if ( 'coverflow' === effect ) {
+			o.coverflowEffect = { rotate: 30, stretch: 0, depth: 100, modifier: 1, slideShadows: false };
+		}
+		if ( raw.keyboard ) {
+			o.keyboard = { enabled: true };
+		}
+		if ( raw.mousewheel ) {
+			o.mousewheel = { forceToAxis: true };
+		}
+		if ( raw.pagination && 'object' === typeof raw.pagination ) {
+			var type = [ 'bullets', 'fraction', 'progressbar' ].indexOf( raw.pagination.type ) !== -1 ? raw.pagination.type : 'bullets';
+			o.pagination = { type: type, clickable: true };
+		}
+		if ( raw.navigation ) {
+			o.navigation = true;
+		}
+		return o;
+	}
+
 	win.emcpThemerLoopInternals = {
 		navItems: navItems,
 		urlForPage: urlForPage,
 		pageFromUrl: pageFromUrl,
+		safeUrl: safeUrl,
+		sanitizeSwiperOptions: sanitizeSwiperOptions,
 	};
 
 	if ( ! doc || ! doc.querySelectorAll ) {
@@ -386,9 +486,9 @@
 		var tpl = el.getAttribute( 'data-emcp-url' );
 		var first = el.getAttribute( 'data-emcp-url-first' );
 		if ( ! tpl ) {
-			return '';
+			return null;
 		}
-		return urlForPage( tpl, first || tpl.split( '%#%' ).join( '1' ), page );
+		return safeUrl( urlForPage( tpl, first || tpl.split( '%#%' ).join( '1' ), page ) );
 	}
 
 	/* ---- state and teardown --------------------------------------------- */
@@ -472,7 +572,9 @@
 		ownAll( el, '.emcp-loop__items > .emcp-loop__item' ).forEach( function ( item ) {
 			// The item's own bottom margin is the row gap the stylesheet gives it.
 			var gap = parseFloat( win.getComputedStyle( item ).marginBottom ) || 0;
-			item.style.gridRowEnd = 'span ' + Math.max( 1, Math.ceil( item.getBoundingClientRect().height + gap ) );
+			// offsetHeight is the layout height: a zoom-in entrance transform
+			// (scale) would shrink getBoundingClientRect() and overlap rows.
+			item.style.gridRowEnd = 'span ' + Math.max( 1, Math.ceil( item.offsetHeight + gap ) );
 		} );
 	}
 
@@ -805,7 +907,10 @@
 			} else {
 				node = doc.createElement( 'a' );
 				node.className = 'prev' === it.type ? 'prev page-numbers' : ( 'next' === it.type ? 'next page-numbers' : 'page-numbers' );
-				node.setAttribute( 'href', urlForPage( tpl, first, it.page ) );
+				var href = safeUrl( urlForPage( tpl, first, it.page ) );
+				if ( href ) {
+					node.setAttribute( 'href', href );
+				}
 				node.textContent = 'prev' === it.type ? ( nav.getAttribute( 'data-prev' ) || '' ) : ( 'next' === it.type ? ( nav.getAttribute( 'data-next' ) || '' ) : String( it.page ) );
 			}
 			nav.appendChild( node );
@@ -845,6 +950,11 @@
 		var el = st.el;
 		var nav = own( el, '.emcp-loop__pagination' );
 		if ( ! nav || '1' !== el.getAttribute( 'data-emcp-ajax' ) || 'replace' !== el.getAttribute( 'data-emcp-mode' ) || ! el.getAttribute( 'data-emcp-url' ) ) {
+			return;
+		}
+		// An unsafe URL scheme (another origin, javascript:, data:) means no
+		// AJAX pagination at all; the server-rendered links stay as they are.
+		if ( ! pageUrl( el, 1 ) || ! pageUrl( el, 2 ) ) {
 			return;
 		}
 		// Delegated, so the links of a rebuilt nav work too.
@@ -935,12 +1045,13 @@
 
 	function startSwiper( st ) {
 		var el = st.el;
-		var opts;
+		var raw;
 		try {
-			opts = JSON.parse( el.getAttribute( 'data-emcp-carousel' ) || '{}' );
+			raw = JSON.parse( el.getAttribute( 'data-emcp-carousel' ) || '{}' );
 		} catch ( e ) {
-			opts = {};
+			raw = {};
 		}
+		var opts = sanitizeSwiperOptions( raw );
 		if ( opts.navigation ) {
 			opts.navigation = { prevEl: own( el, '.emcp-loop__arrow--prev' ), nextEl: own( el, '.emcp-loop__arrow--next' ) };
 		}
