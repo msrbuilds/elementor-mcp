@@ -30,13 +30,21 @@ class EMCP_Tools_Themer_Loop_Assets {
 	/** @var bool */
 	private static $registered = false;
 
-	/** Hook registration on every surface that renders a loop. */
+	/**
+	 * Hook registration on every surface that renders a loop.
+	 *
+	 * Deliberately NOT rest_api_init: that fires before a cookie-but-no-nonce
+	 * request is demoted to anonymous, and building the scripts object that
+	 * early is exactly the first link in the nonce-leak chain the loop REST
+	 * route now guards against (see the comment in
+	 * EMCP_Tools_Themer_Loop_REST::handle()). The REST route already calls
+	 * register() itself, after that guard has run.
+	 */
 	public static function init(): void {
 		add_action( 'wp_enqueue_scripts', array( __CLASS__, 'register' ), 5 );
 		add_action( 'elementor/frontend/after_register_scripts', array( __CLASS__, 'register' ) );
 		add_action( 'elementor/editor/after_enqueue_scripts', array( __CLASS__, 'register' ) );
 		add_action( 'enqueue_block_editor_assets', array( __CLASS__, 'register' ) );
-		add_action( 'rest_api_init', array( __CLASS__, 'register' ) );
 	}
 
 	/** Register handles (idempotent). */
