@@ -469,8 +469,9 @@
 		if ( ! el.classList.contains( 'is-masonry' ) ) {
 			return;
 		}
-		var gap = parseFloat( win.getComputedStyle( el ).getPropertyValue( '--emcp-gap-y' ) ) || 0;
 		ownAll( el, '.emcp-loop__items > .emcp-loop__item' ).forEach( function ( item ) {
+			// The item's own bottom margin is the row gap the stylesheet gives it.
+			var gap = parseFloat( win.getComputedStyle( item ).marginBottom ) || 0;
 			item.style.gridRowEnd = 'span ' + Math.max( 1, Math.ceil( item.getBoundingClientRect().height + gap ) );
 		} );
 	}
@@ -531,29 +532,62 @@
 		} );
 	}
 
+	/**
+	 * Reveal one item. The stagger delay is cleared on the item's first
+	 * transitionend (or a timer, for reduced motion), and .is-anim-done
+	 * hands the transition back to the hover rules, so a later hover is
+	 * never delayed.
+	 */
+	function reveal( item, delay, duration ) {
+		var finished = false;
+		var onEnd;
+		var finish = function () {
+			if ( finished ) {
+				return;
+			}
+			finished = true;
+			item.removeEventListener( 'transitionend', onEnd );
+			item.style.removeProperty( '--emcp-anim-delay' );
+			item.classList.add( 'is-anim-done' );
+		};
+		onEnd = function ( e ) {
+			if ( e.target === item ) {
+				finish();
+			}
+		};
+		item.style.setProperty( '--emcp-anim-delay', delay + 'ms' );
+		item.addEventListener( 'transitionend', onEnd );
+		item.classList.add( 'is-visible' );
+		win.setTimeout( finish, delay + duration + 200 );
+	}
+
 	function animate( st, items ) {
 		var el = st.el;
 		if ( ! /(^|\s)has-anim-/.test( el.className ) ) {
 			return;
 		}
+		// Items are hidden only from here on, so a page whose script never
+		// runs shows every card.
+		el.classList.add( 'is-anim-ready' );
 		items = ( items || ownItems( el ) ).filter( function ( i ) {
 			return ! i.classList.contains( 'is-visible' );
 		} );
+		var cs = win.getComputedStyle( el );
+		var step = parseInt( cs.getPropertyValue( '--emcp-anim-step' ), 10 ) || 0;
+		var duration = parseInt( cs.getPropertyValue( '--emcp-anim-duration' ), 10 ) || 500;
 		if ( 'function' !== typeof win.IntersectionObserver ) {
 			items.forEach( function ( i ) {
-				i.classList.add( 'is-visible' );
+				reveal( i, 0, duration );
 			} );
 			return;
 		}
-		var step = parseInt( win.getComputedStyle( el ).getPropertyValue( '--emcp-anim-step' ), 10 ) || 0;
 		if ( ! st.animIo ) {
 			st.animIo = new win.IntersectionObserver( function ( entries ) {
 				entries.filter( function ( e ) {
 					return e.isIntersecting;
 				} ).forEach( function ( e, i ) {
-					e.target.style.setProperty( '--emcp-anim-delay', ( i * step ) + 'ms' );
-					e.target.classList.add( 'is-visible' );
 					st.animIo.unobserve( e.target );
+					reveal( e.target, i * step, duration );
 				} );
 			}, { rootMargin: '0px 0px -10% 0px' } );
 			st.observers.push( st.animIo );
@@ -587,7 +621,14 @@
 		var box = itemsContainer( el );
 		var nodes = parseNodes( data.html );
 		if ( 'replace' === mode ) {
+			var st = el._emcpLoop;
 			toArray( box.children ).forEach( function ( c ) {
+				if ( st && st.ro ) {
+					st.ro.unobserve( c );
+				}
+				if ( st && st.animIo ) {
+					st.animIo.unobserve( c );
+				}
 				teardownTree( c );
 				box.removeChild( c );
 			} );
@@ -693,12 +734,22 @@
 		return fetchPage( el, page, mode ).then( function ( data ) {
 			return applyBefore( data.assets ).then( function () {
 				if ( st.dead ) {
+					done();
 					return false;
 				}
 				var nodes = insert( el, data, mode );
-				afterInsert( st, nodes, data, mode );
-				if ( 'append' === mode && endReached( st, data ) ) {
-					removeAppendControls( st );
+				// The page is in. Anything failing from here on is logged, never
+				// answered with the reload fallback, which would throw the
+				// inserted cards away.
+				try {
+					afterInsert( st, nodes, data, mode );
+					if ( 'append' === mode && endReached( st, data ) ) {
+						removeAppendControls( st );
+					}
+				} catch ( err ) {
+					if ( win.console && win.console.error ) {
+						win.console.error( 'EMCP Loop Grid: after-insert step failed.', err );
+					}
 				}
 				done();
 				if ( 'more' === trigger ) {
@@ -708,6 +759,9 @@
 			} );
 		} ).catch( function () {
 			done();
+			if ( st.dead ) {
+				return false;
+			}
 			if ( 'infinite' === trigger ) {
 				// Never navigate on a failure the visitor did not click for.
 				if ( st.infIo ) {
@@ -759,6 +813,34 @@
 		nav.hidden = 0 === items.length;
 	}
 
+	/**
+	 * Second guard for replaceState: a per-element query-var URL only ever
+	 * changes the query, so its path must be this document's path; one
+	 * that is not (a URL built from some other request) is left out of the
+	 * address bar. The current source paginates by path (/page/N/), so its
+	 * path legitimately changes and only the origin is checked.
+	 */
+	function sameDocumentPath( el, href ) {
+		if ( 'function' !== typeof win.URL || ! win.location ) {
+			return false;
+		}
+		var target;
+		try {
+			target = new win.URL( href, win.location.href );
+		} catch ( e ) {
+			return false;
+		}
+		if ( target.origin !== win.location.origin ) {
+			return false;
+		}
+		var pageVar = el.getAttribute( 'data-emcp-page-var' ) || '';
+		var tpl = el.getAttribute( 'data-emcp-url' ) || '';
+		if ( pageVar && -1 !== tpl.indexOf( pageVar + '=' ) ) {
+			return target.pathname === win.location.pathname;
+		}
+		return true;
+	}
+
 	function wireNav( st ) {
 		var el = st.el;
 		var nav = own( el, '.emcp-loop__pagination' );
@@ -776,7 +858,9 @@
 			}
 			var href = a.getAttribute( 'href' ) || '';
 			var page = pageFromUrl( href, el.getAttribute( 'data-emcp-url' ), el.getAttribute( 'data-emcp-url-first' ) );
-			if ( null === page ) {
+			if ( null === page || st.loading ) {
+				// Not one of this loop's pages, or a load is already running:
+				// let the browser follow the link.
 				return;
 			}
 			ev.preventDefault();
@@ -784,7 +868,7 @@
 				if ( ! data ) {
 					return;
 				}
-				if ( win.history && win.history.replaceState ) {
+				if ( win.history && win.history.replaceState && sameDocumentPath( el, href ) ) {
 					try {
 						win.history.replaceState( win.history.state, '', normalize( href ) );
 					} catch ( e ) {}

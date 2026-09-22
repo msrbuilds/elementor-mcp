@@ -61,11 +61,13 @@
 	flex-grow: 1;
 }
 /* Inside an Elementor card, the last top-level container fills the card. */
-.emcp-loop.is-equal-height:not(.is-masonry) .emcp-loop__item > .elementor {
+.emcp-loop--grid.is-equal-height:not(.is-masonry) > .emcp-loop__items > .emcp-loop__item > .elementor,
+.emcp-loop--carousel.is-equal-height:not(.is-masonry) > .swiper > .swiper-wrapper > .emcp-loop__item > .elementor {
 	display: flex;
 	flex-direction: column;
 }
-.emcp-loop.is-equal-height:not(.is-masonry) .emcp-loop__item > .elementor > :last-child {
+.emcp-loop--grid.is-equal-height:not(.is-masonry) > .emcp-loop__items > .emcp-loop__item > .elementor > :last-child,
+.emcp-loop--carousel.is-equal-height:not(.is-masonry) > .swiper > .swiper-wrapper > .emcp-loop__item > .elementor > :last-child {
 	flex-grow: 1;
 }
 
@@ -101,35 +103,45 @@
 .emcp-loop[class*="has-hover-"] > .emcp-loop__items > .emcp-loop__item {
 	transition: transform var(--emcp-hover-duration, 250ms) ease, box-shadow var(--emcp-hover-duration, 250ms) ease;
 }
-.emcp-loop.has-hover-lift > .emcp-loop__items > .emcp-loop__item:hover {
-	transform: translateY(calc(-1 * var(--emcp-lift, 6px)));
-}
-.emcp-loop.has-hover-zoom > .emcp-loop__items > .emcp-loop__item:hover {
-	transform: scale(var(--emcp-zoom, 1.03));
-}
-.emcp-loop.has-hover-shadow > .emcp-loop__items > .emcp-loop__item:hover {
-	box-shadow: 0 12px 32px rgba(0, 0, 0, 0.14);
-}
 
-/* Entrance animations: the script adds .is-visible and sets
- * --emcp-anim-delay per item from the element's --emcp-anim-step. */
-.emcp-loop[class*="has-anim-"] > .emcp-loop__items > .emcp-loop__item {
+/*
+ * Entrance animations. Items are hidden only once the script has run
+ * (it adds .is-anim-ready), so a page without the script shows every card.
+ * The script then adds .is-visible with a per-item --emcp-anim-delay, and
+ * .is-anim-done (clearing the delay) after the first transitionend. The
+ * hidden state carries the only transform, so a visible item has none and
+ * a hover transform below always applies.
+ */
+.emcp-loop.is-anim-ready[class*="has-anim-"] > .emcp-loop__items > .emcp-loop__item:not(.is-visible) {
 	opacity: 0;
-	transition: opacity var(--emcp-anim-duration, 500ms) ease, transform var(--emcp-anim-duration, 500ms) ease;
-	transition-delay: var(--emcp-anim-delay, 0ms);
 }
-.emcp-loop.has-anim-fade-up > .emcp-loop__items > .emcp-loop__item { transform: translateY(24px); }
-.emcp-loop.has-anim-zoom-in > .emcp-loop__items > .emcp-loop__item { transform: scale(0.92); }
-.emcp-loop[class*="has-anim-"] > .emcp-loop__items > .emcp-loop__item.is-visible {
-	opacity: 1;
-	transform: none;
+.emcp-loop.is-anim-ready.has-anim-fade-up > .emcp-loop__items > .emcp-loop__item:not(.is-visible) { transform: translateY(24px); }
+.emcp-loop.is-anim-ready.has-anim-zoom-in > .emcp-loop__items > .emcp-loop__item:not(.is-visible) { transform: scale(0.92); }
+/* While the entrance runs, box-shadow keeps its hover timing and no delay. */
+.emcp-loop.is-anim-ready[class*="has-anim-"] > .emcp-loop__items > .emcp-loop__item:not(.is-anim-done) {
+	transition:
+		opacity var(--emcp-anim-duration, 500ms) ease var(--emcp-anim-delay, 0ms),
+		transform var(--emcp-anim-duration, 500ms) ease var(--emcp-anim-delay, 0ms),
+		box-shadow var(--emcp-hover-duration, 250ms) ease;
 }
 @media (prefers-reduced-motion: reduce) {
-	.emcp-loop[class*="has-anim-"] > .emcp-loop__items > .emcp-loop__item {
+	.emcp-loop.is-anim-ready[class*="has-anim-"] > .emcp-loop__items > .emcp-loop__item:not(.is-visible) {
 		opacity: 1;
 		transform: none;
+	}
+	.emcp-loop.is-anim-ready[class*="has-anim-"] > .emcp-loop__items > .emcp-loop__item:not(.is-anim-done) {
 		transition: none;
 	}
+}
+
+.emcp-loop.has-hover-lift > .emcp-loop__items > .emcp-loop__item.emcp-loop__item:hover {
+	transform: translateY(calc(-1 * var(--emcp-lift, 6px)));
+}
+.emcp-loop.has-hover-zoom > .emcp-loop__items > .emcp-loop__item.emcp-loop__item:hover {
+	transform: scale(var(--emcp-zoom, 1.03));
+}
+.emcp-loop.has-hover-shadow > .emcp-loop__items > .emcp-loop__item.emcp-loop__item:hover {
+	box-shadow: 0 12px 32px rgba(0, 0, 0, 0.14);
 }
 
 /* Pagination */
