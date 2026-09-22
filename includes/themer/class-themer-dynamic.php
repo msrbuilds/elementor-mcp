@@ -856,6 +856,10 @@ class EMCP_Tools_Themer_Dynamic {
 				return EMCP_Tools_Themer_Element_Post_Navigation::render( $args );
 			case 'author-box':
 				return EMCP_Tools_Themer_Element_Author_Box::render( $args );
+			case 'loop-grid':
+				return EMCP_Tools_Themer_Element_Loop_Grid::render( $args );
+			case 'loop-carousel':
+				return EMCP_Tools_Themer_Element_Loop_Carousel::render( $args );
 		}
 		return '';
 	}

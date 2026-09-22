@@ -133,7 +133,12 @@ abstract class EMCP_Tools_Themer_Element_Loop_Base extends EMCP_Tools_Themer_Ele
 		$q = EMCP_Tools_Themer_Loop_Query::sanitize( is_array( $args['query'] ?? null ) ? $args['query'] : array() );
 		$notes = array();
 		$ajax  = ! empty( $args['ajax'] ) && self::truthy( $args['ajax'] );
-		$pagination = in_array( (string) ( $args['pagination'] ?? 'none' ), self::PAGINATION, true ) ? (string) $args['pagination'] : 'none';
+		// The carousel does not declare 'pagination' among its own args (it has no
+		// pagination feature), so the raw value must be captured once here: a
+		// second, uncoalesced read of $args['pagination'] in the ternary's true
+		// branch would warn on every caller that omits the key.
+		$pagination_raw = (string) ( $args['pagination'] ?? 'none' );
+		$pagination     = in_array( $pagination_raw, self::PAGINATION, true ) ? $pagination_raw : 'none';
 		if ( in_array( $pagination, self::APPEND_MODES, true ) ) {
 			$ajax = true; // load more and infinite scroll are AJAX by nature.
 		}
@@ -200,7 +205,10 @@ abstract class EMCP_Tools_Themer_Element_Loop_Base extends EMCP_Tools_Themer_Ele
 		$result['max_pages'] = $available;
 
 		$per_page = 'current' === $q['source'] ? max( 1, (int) ( $q['current_snapshot']['posts_per_page'] ?? get_option( 'posts_per_page', 10 ) ) ) : $q['per_page'];
-		$tag      = in_array( (string) ( $args['tag'] ?? 'div' ), EMCP_Tools_Themer_Loop_Renderer::TAGS, true ) ? (string) $args['tag'] : 'div';
+		// Same reasoning as $pagination_raw above: the carousel does not declare
+		// 'tag' among its own args, so this must not re-read $args['tag'] raw.
+		$tag_raw  = (string) ( $args['tag'] ?? 'div' );
+		$tag      = in_array( $tag_raw, EMCP_Tools_Themer_Loop_Renderer::TAGS, true ) ? $tag_raw : 'div';
 
 		$config = array(
 			'uid'         => $uid,

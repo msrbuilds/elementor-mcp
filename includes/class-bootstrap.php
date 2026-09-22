@@ -270,6 +270,7 @@ class EMCP_Tools_Bootstrap {
 		require_once EMCP_TOOLS_DIR . 'includes/themer/loop/class-themer-loop-context.php';
 		require_once EMCP_TOOLS_DIR . 'includes/themer/loop/class-themer-loop-query.php';
 		require_once EMCP_TOOLS_DIR . 'includes/themer/loop/class-themer-loop-renderer.php';
+		require_once EMCP_TOOLS_DIR . 'includes/themer/loop/class-themer-loop-config.php';
 		require_once EMCP_TOOLS_DIR . 'includes/themer/class-themer-content-renderer.php';
 		require_once EMCP_TOOLS_DIR . 'includes/themer/class-themer-theme-adapters.php';
 		require_once EMCP_TOOLS_DIR . 'includes/themer/class-themer-render-controller.php';
@@ -283,6 +284,9 @@ class EMCP_Tools_Bootstrap {
 		require_once EMCP_TOOLS_DIR . 'includes/themer/elements/class-themer-element-post-comments.php';
 		require_once EMCP_TOOLS_DIR . 'includes/themer/elements/class-themer-element-post-navigation.php';
 		require_once EMCP_TOOLS_DIR . 'includes/themer/elements/class-themer-element-author-box.php';
+		require_once EMCP_TOOLS_DIR . 'includes/themer/elements/class-themer-element-loop-base.php';
+		require_once EMCP_TOOLS_DIR . 'includes/themer/elements/class-themer-element-loop-grid.php';
+		require_once EMCP_TOOLS_DIR . 'includes/themer/elements/class-themer-element-loop-carousel.php';
 		require_once EMCP_TOOLS_DIR . 'includes/themer/dynamic/class-themer-dynamic-catalog.php';
 		require_once EMCP_TOOLS_DIR . 'includes/themer/class-themer-dynamic.php';
 		require_once EMCP_TOOLS_DIR . 'includes/themer/dynamic/class-themer-elementor-tags.php';
