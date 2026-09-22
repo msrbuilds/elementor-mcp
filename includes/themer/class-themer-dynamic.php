@@ -82,15 +82,14 @@ class EMCP_Tools_Themer_Dynamic {
 	 *
 	 * There is no queried post inside the Themer editor, so without this every
 	 * dynamic field renders blank. The sample is chosen at render time and is
-	 * never persisted into the template.
+	 * never persisted into the template. Most free template types sample the
+	 * latest published post; a Loop Item instead samples its own configured
+	 * preview post (see the loop-preview branch below).
 	 *
 	 * @since 3.13.0
-	 * @param string $template_type Themer template type, when known. Accepted so a
-	 *                              later task can sample a matching CPT; every free
-	 *                              template type samples a post.
 	 * @return int Post id, or 0 outside preview.
 	 */
-	public static function preview_post_id( string $template_type = '' ): int {
+	public static function preview_post_id(): int {
 		if ( ! self::is_preview_context() ) {
 			return 0;
 		}
@@ -98,7 +97,7 @@ class EMCP_Tools_Themer_Dynamic {
 		// previews over REST, where nothing is queried and no loop is running).
 		if ( class_exists( 'EMCP_Tools_Themer_CPT' ) ) {
 			$tpl_id = EMCP_Tools_Themer_CPT::current_template_id();
-			if ( $tpl_id > 0 && ( 'loop' === $template_type || 'loop' === EMCP_Tools_Themer_CPT::template_type( $tpl_id ) ) ) {
+			if ( $tpl_id > 0 && 'loop' === EMCP_Tools_Themer_CPT::template_type( $tpl_id ) ) {
 				$sample = EMCP_Tools_Themer_CPT::loop_preview_post_id( $tpl_id );
 				if ( $sample > 0 ) {
 					return $sample;

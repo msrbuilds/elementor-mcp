@@ -31,13 +31,27 @@ class EMCP_Tools_Themer_Loop_Context {
 	/** @var bool */
 	private static $hooked = false;
 
-	/** Register the block context injector once. */
+	/**
+	 * Register the block context injector once.
+	 *
+	 * Priority 0, not the default 10. WordPress core's own `core/post-template`
+	 * block adds a `render_block_context` filter at priority 1 for each post it
+	 * iterates, renders that one inner block, then removes its filter (core's
+	 * source comment explains the early priority: it lets other filters see its
+	 * values). At priority 0 we run first: inside a `post-template` subtree,
+	 * core's priority-1 filter runs after ours and wins with the nearer,
+	 * more specific post; outside that subtree core has already removed its
+	 * filter, so our value stands. Priority 10 would run after core and
+	 * overwrite the correct per-item post with the card's own post, so a core
+	 * Query Loop nested inside a Loop Item card would wrongly render every
+	 * inner post as the card's post. Do not raise this back to 10.
+	 */
 	public static function init(): void {
 		if ( self::$hooked ) {
 			return;
 		}
 		self::$hooked = true;
-		add_filter( 'render_block_context', array( __CLASS__, 'inject_block_context' ), 10, 1 );
+		add_filter( 'render_block_context', array( __CLASS__, 'inject_block_context' ), 0, 1 );
 	}
 
 	/**

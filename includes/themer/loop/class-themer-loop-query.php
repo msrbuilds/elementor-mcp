@@ -148,9 +148,15 @@ class EMCP_Tools_Themer_Loop_Query {
 
 		if ( 'current' === $q['source'] ) {
 			$args = array_merge( $q['current_snapshot'], $forced );
-			if ( empty( $args['post_type'] ) ) {
-				$args['post_type'] = 'post';
-			}
+
+			// The snapshot's post_type must still be forced to public types, the
+			// same guarantee every other source honours; a snapshot can carry a
+			// string or an array.
+			$snapshot_types = isset( $args['post_type'] ) ? (array) $args['post_type'] : array();
+			$snapshot_types = array_values( array_map( 'strval', $snapshot_types ) );
+			$allowed_types  = array_values( array_intersect( $snapshot_types, self::allowed_post_types() ) );
+
+			$args['post_type'] = $allowed_types ? $allowed_types : 'post';
 			if ( empty( $args['posts_per_page'] ) || (int) $args['posts_per_page'] < 1 ) {
 				$args['posts_per_page'] = (int) get_option( 'posts_per_page', 10 );
 			}

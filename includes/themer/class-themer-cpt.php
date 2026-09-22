@@ -351,9 +351,6 @@ class EMCP_Tools_Themer_CPT {
 	 */
 	private static function type_hint_from_title( string $title ): ?string {
 		$t = strtolower( $title );
-		if ( preg_match( '/\bloop\b/', $t ) ) {
-			return 'loop';
-		}
 		if ( false !== strpos( $t, 'header' ) ) {
 			return 'header';
 		}
@@ -371,6 +368,14 @@ class EMCP_Tools_Themer_CPT {
 		}
 		if ( preg_match( '/\bsingle\b/', $t ) ) {
 			return 'single';
+		}
+		// Checked last: "loop" is common wording inside archive-template names
+		// (an existing "Blog Loop" or "Post Loop" archive template must not
+		// start showing the mismatch warning after upgrade), so a more specific
+		// keyword above always wins. Only a title with no other signal falls
+		// through to "loop".
+		if ( preg_match( '/\bloop\b/', $t ) ) {
+			return 'loop';
 		}
 		return null;
 	}
