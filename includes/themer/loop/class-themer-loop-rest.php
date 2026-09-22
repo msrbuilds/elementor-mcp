@@ -37,6 +37,29 @@ class EMCP_Tools_Themer_Loop_REST {
 	const ROUTE     = '/themer/loop';
 	const MODES     = array( 'append', 'replace' );
 
+	/** @var bool True while this route renders a page of Loop Items. */
+	private static $rendering = false;
+
+	/**
+	 * Whether the current render is one this route is making. A loop element
+	 * nested in a card checks this (never REST_REQUEST alone, which is also
+	 * true for the block renderer's editor previews).
+	 *
+	 * @return bool
+	 */
+	public static function is_rendering(): bool {
+		return self::$rendering;
+	}
+
+	/**
+	 * Test seam.
+	 *
+	 * @param bool $on Flag value.
+	 */
+	public static function set_rendering_for_tests( bool $on ): void {
+		self::$rendering = $on;
+	}
+
 	/** Hook route registration. */
 	public static function init(): void {
 		add_action( 'rest_api_init', array( __CLASS__, 'register_route' ) );
@@ -165,19 +188,26 @@ class EMCP_Tools_Themer_Loop_REST {
 			return array( 'html' => '', 'page' => $page, 'max_pages' => $available, 'count' => 0 );
 		}
 
-		$tag          = in_array( (string) ( $layout['tag'] ?? 'div' ), EMCP_Tools_Themer_Loop_Renderer::TAGS, true ) ? (string) $layout['tag'] : 'div';
+		$tag_raw      = (string) ( $layout['tag'] ?? 'div' );
+		$tag          = in_array( $tag_raw, EMCP_Tools_Themer_Loop_Renderer::TAGS, true ) ? $tag_raw : 'div';
 		$item_classes = 'carousel' === (string) ( $layout['kind'] ?? 'grid' ) ? array( 'swiper-slide' ) : array();
-		$items        = EMCP_Tools_Themer_Loop_Renderer::render_items(
-			$template_id,
-			$result['posts'],
-			array(
-				'uid'          => $uid,
-				'index_base'   => 'append' === $mode ? ( $page - 1 ) * $per_page : 0,
-				'tag'          => $tag,
-				'config'       => $config,
-				'item_classes' => $item_classes,
-			)
-		);
+		$was          = self::$rendering;
+		self::$rendering = true;
+		try {
+			$items = EMCP_Tools_Themer_Loop_Renderer::render_items(
+				$template_id,
+				$result['posts'],
+				array(
+					'uid'          => $uid,
+					'index_base'   => 'append' === $mode ? ( $page - 1 ) * $per_page : 0,
+					'tag'          => $tag,
+					'config'       => $config,
+					'item_classes' => $item_classes,
+				)
+			);
+		} finally {
+			self::$rendering = $was;
+		}
 		return array(
 			'html'      => implode( '', $items ),
 			'page'      => $page,

@@ -117,8 +117,10 @@
 }
 .emcp-loop.is-anim-ready.has-anim-fade-up > .emcp-loop__items > .emcp-loop__item:not(.is-visible) { transform: translateY(24px); }
 .emcp-loop.is-anim-ready.has-anim-zoom-in > .emcp-loop__items > .emcp-loop__item:not(.is-visible) { transform: scale(0.92); }
-/* While the entrance runs, box-shadow keeps its hover timing and no delay. */
-.emcp-loop.is-anim-ready[class*="has-anim-"] > .emcp-loop__items > .emcp-loop__item:not(.is-anim-done) {
+/* While the entrance runs, box-shadow keeps its hover timing and no delay.
+ * Revealed items only: hiding (adding .is-anim-ready) must be instant, or
+ * cards already painted would animate out before animating back in. */
+.emcp-loop.is-anim-ready[class*="has-anim-"] > .emcp-loop__items > .emcp-loop__item.is-visible:not(.is-anim-done) {
 	transition:
 		opacity var(--emcp-anim-duration, 500ms) ease var(--emcp-anim-delay, 0ms),
 		transform var(--emcp-anim-duration, 500ms) ease var(--emcp-anim-delay, 0ms),
@@ -129,7 +131,7 @@
 		opacity: 1;
 		transform: none;
 	}
-	.emcp-loop.is-anim-ready[class*="has-anim-"] > .emcp-loop__items > .emcp-loop__item:not(.is-anim-done) {
+	.emcp-loop.is-anim-ready[class*="has-anim-"] > .emcp-loop__items > .emcp-loop__item.is-visible:not(.is-anim-done) {
 		transition: none;
 	}
 }

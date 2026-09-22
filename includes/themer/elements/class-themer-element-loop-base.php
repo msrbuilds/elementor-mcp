@@ -162,8 +162,10 @@ abstract class EMCP_Tools_Themer_Element_Loop_Base extends EMCP_Tools_Themer_Ele
 		$pagination     = in_array( $pagination_raw, self::PAGINATION, true ) ? $pagination_raw : 'none';
 		// A loop nested in a card that the loop REST route renders would build
 		// its page URLs from the REST request URI, which is no page a visitor
-		// can open. It shows its first page only, with no pagination.
-		if ( 'none' !== $pagination && self::is_rest_request() ) {
+		// can open. It shows its first page only, with no pagination. Only
+		// the loop route's own renders: other REST renders (the block
+		// renderer's editor preview) keep their pagination so authors see it.
+		if ( 'none' !== $pagination && class_exists( 'EMCP_Tools_Themer_Loop_REST' ) && EMCP_Tools_Themer_Loop_REST::is_rendering() ) {
 			$pagination = 'none';
 		}
 		if ( in_array( $pagination, self::APPEND_MODES, true ) ) {
