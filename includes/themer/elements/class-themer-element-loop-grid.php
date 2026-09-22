@@ -136,11 +136,9 @@ class EMCP_Tools_Themer_Element_Loop_Grid extends EMCP_Tools_Themer_Element_Loop
 	public static function pagination_html( array $p ): string {
 		$args  = $p['args'];
 		$type  = $p['pagination'];
+		// prepare() has already clamped max_pages to page_limit; this is the
+		// single source of truth so the attribute and this markup agree.
 		$pages = (int) $p['result']['max_pages'];
-		$limit = (int) $args['page_limit'];
-		if ( $limit > 0 ) {
-			$pages = min( $pages, $limit );
-		}
 		if ( 'none' === $type || $pages <= 1 ) {
 			return '';
 		}
@@ -156,7 +154,30 @@ class EMCP_Tools_Themer_Element_Loop_Grid extends EMCP_Tools_Themer_Element_Loop
 		}
 
 		$is_current = 'current' === $p['query']['source'];
-		$links      = paginate_links(
+
+		// Core only substitutes format into base at a literal %_% placeholder;
+		// a base built with %#% directly (the earlier approach here) leaves
+		// format inert and never special-cases page one, so page one links to
+		// /page/1/ and takes a redirect. Building base with %_% and letting
+		// format supply the page segment is how paginate_links() itself
+		// composes its own defaults.
+		if ( $is_current ) {
+			// Reuses whatever pagination scheme get_pagenum_link() already
+			// resolves (pretty or plain permalinks) instead of guessing it.
+			$clean  = untrailingslashit( (string) get_pagenum_link( 1 ) );
+			$tagged = (string) get_pagenum_link( 2 );
+			$suffix = ( 0 === strpos( $tagged, $clean ) ) ? substr( $tagged, strlen( $clean ) ) : '?paged=2';
+			$base   = $clean . '%_%';
+			$format = str_replace( '2', '%#%', $suffix );
+		} else {
+			$page_var = self::page_var( $p['uid'] );
+			$clean    = (string) remove_query_arg( $page_var );
+			$sep      = ( false === strpos( $clean, '?' ) ) ? '?' : '&';
+			$base     = $clean . '%_%' . '#emcp-loop-' . $p['uid'];
+			$format   = $sep . $page_var . '=%#%';
+		}
+
+		$links = paginate_links(
 			array(
 				'type'      => 'array',
 				'total'     => $pages,
@@ -167,8 +188,8 @@ class EMCP_Tools_Themer_Element_Loop_Grid extends EMCP_Tools_Themer_Element_Loop
 				'prev_next' => 'numbers' !== $type,
 				'prev_text' => '' !== trim( (string) $args['prev_label'] ) ? (string) $args['prev_label'] : __( 'Previous', 'emcp-tools' ),
 				'next_text' => '' !== trim( (string) $args['next_label'] ) ? (string) $args['next_label'] : __( 'Next', 'emcp-tools' ),
-				'format'    => $is_current ? '' : '?' . self::page_var( $p['uid'] ) . '=%#%',
-				'base'      => $is_current ? str_replace( PHP_INT_MAX, '%#%', get_pagenum_link( PHP_INT_MAX ) ) : add_query_arg( self::page_var( $p['uid'] ), '%#%', remove_query_arg( self::page_var( $p['uid'] ) ) ) . '#emcp-loop-' . $p['uid'],
+				'format'    => $format,
+				'base'      => $base,
 				'add_args'  => false,
 			)
 		);

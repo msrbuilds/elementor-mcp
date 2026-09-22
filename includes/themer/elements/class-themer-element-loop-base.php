@@ -22,6 +22,14 @@ abstract class EMCP_Tools_Themer_Element_Loop_Base extends EMCP_Tools_Themer_Ele
 	const PAGINATION   = array( 'none', 'numbers', 'prev_next', 'numbers_prev_next', 'load_more', 'infinite' );
 	const APPEND_MODES = array( 'load_more', 'infinite' );
 
+	/**
+	 * A hard ceiling on the requested page, applied before it can reach any
+	 * offset arithmetic. A page number this large is never legitimate; the
+	 * real ceiling (the query's own available pages, and page_limit) is
+	 * applied once the query has run.
+	 */
+	const MAX_PAGE = 1000000;
+
 	/** @var array<string,int> Occurrence counter per "scope|local_id". */
 	private static $instances = array();
 
@@ -117,25 +125,66 @@ abstract class EMCP_Tools_Themer_Element_Loop_Base extends EMCP_Tools_Themer_Ele
 			$ajax = true; // load more and infinite scroll are AJAX by nature.
 		}
 
+		$page_limit = max( 0, (int) ( $args['page_limit'] ?? 0 ) );
+
+		// Cap the requested page before it can reach the offset arithmetic
+		// below: a huge or malicious page number must not overflow the
+		// multiplication or trigger a deep-pagination query. The real
+		// ceiling (available pages, and page_limit) is applied once the
+		// query has run, further down.
+		$page = min( self::current_page( $q, $uid ), self::MAX_PAGE );
+		$ctx  = self::context();
+
+		$main   = null;
+		$reused = null;
+
 		if ( 'current' === $q['source'] ) {
-			$main = $GLOBALS['wp_query'] ?? null;
+			$main                  = $GLOBALS['wp_query'] ?? null;
 			$q['current_snapshot'] = EMCP_Tools_Themer_Loop_Query::snapshot_main_query( $main );
-			if ( $ajax && 'none' !== $pagination && ! EMCP_Tools_Themer_Loop_Query::replay_matches( $q, self::context(), $main ) ) {
-				// The snapshot cannot reproduce the live query (a main-query-only
-				// filter is at work). Reload pagination still works; say why.
-				$ajax    = false;
-				$notes[] = self::admin_comment( 'replay_mismatch', 'the main query cannot be replayed, using reload pagination' );
-				if ( in_array( $pagination, self::APPEND_MODES, true ) ) {
-					$pagination = 'numbers';
+
+			if ( $ajax && 'none' !== $pagination ) {
+				// Run the replay once, at the page we are about to render, and
+				// reuse it below instead of running the same query twice.
+				$reused = EMCP_Tools_Themer_Loop_Query::run( $q, $ctx, $page );
+				if ( ! self::replay_matches_result( $reused, $main ) ) {
+					// The snapshot cannot reproduce the live query (a main-query-only
+					// filter is at work). Reload pagination still works; say why.
+					$ajax    = false;
+					$notes[] = self::admin_comment( 'replay_mismatch', 'the main query cannot be replayed, using reload pagination' );
+					if ( in_array( $pagination, self::APPEND_MODES, true ) ) {
+						$pagination = 'numbers';
+					}
 				}
 			}
 		}
 
-		$page   = self::current_page( $q, $uid );
-		$ctx    = self::context();
-		$result = ( 'current' === $q['source'] && 1 === $page && isset( $GLOBALS['wp_query'] ) && is_object( $GLOBALS['wp_query'] ) && ! self::in_loop_render() )
-			? self::main_query_result( $q )
-			: EMCP_Tools_Themer_Loop_Query::run( $q, $ctx, $page );
+		// A snapshot with its own base offset cannot be compared 1:1 with the
+		// main query's own totals (see max_pages()'s base-offset subtraction),
+		// so route it through the same code path as every other page rather
+		// than let page one and page two disagree on the total.
+		$has_offset         = 'current' === $q['source'] && (int) ( $q['current_snapshot']['offset'] ?? 0 ) > 0;
+		$use_main_shortcut  = ( 'current' === $q['source'] && 1 === $page && ! $has_offset && is_object( $main ) && ! self::in_loop_render() );
+
+		if ( $use_main_shortcut ) {
+			$result = self::main_query_result( $q );
+		} elseif ( null !== $reused ) {
+			$result = $reused;
+		} else {
+			$result = EMCP_Tools_Themer_Loop_Query::run( $q, $ctx, $page );
+		}
+
+		// Clamp to the last available page (page_limit included) rather than
+		// rendering an empty grid for an out-of-range request; there is no
+		// way back from an empty page with no pagination on it.
+		$available = (int) $result['max_pages'];
+		if ( $page_limit > 0 ) {
+			$available = min( $available, $page_limit );
+		}
+		if ( $available > 0 && $page > $available ) {
+			$page   = $available;
+			$result = EMCP_Tools_Themer_Loop_Query::run( $q, $ctx, $page );
+		}
+		$result['max_pages'] = $available;
 
 		$per_page = 'current' === $q['source'] ? max( 1, (int) ( $q['current_snapshot']['posts_per_page'] ?? get_option( 'posts_per_page', 10 ) ) ) : $q['per_page'];
 		$tag      = in_array( (string) ( $args['tag'] ?? 'div' ), EMCP_Tools_Themer_Loop_Renderer::TAGS, true ) ? (string) $args['tag'] : 'div';
@@ -149,6 +198,7 @@ abstract class EMCP_Tools_Themer_Element_Loop_Base extends EMCP_Tools_Themer_Ele
 					'kind'       => $kind,
 					'tag'        => $tag,
 					'per_page'   => $per_page,
+					'page_limit' => $page_limit,
 					'alternates' => self::normalize_alternates( $args['alternates'] ?? array() ),
 				),
 				static::layout_config( $args )
@@ -169,6 +219,7 @@ abstract class EMCP_Tools_Themer_Element_Loop_Base extends EMCP_Tools_Themer_Ele
 			'query'        => $q,
 			'page'         => $page,
 			'per_page'     => $per_page,
+			'page_limit'   => $page_limit,
 			'pagination'   => $pagination,
 			'ajax'         => $ajax,
 			'result'       => $result,
@@ -177,6 +228,28 @@ abstract class EMCP_Tools_Themer_Element_Loop_Base extends EMCP_Tools_Themer_Ele
 			'items'        => $items,
 			'notes'        => $notes,
 		);
+	}
+
+	/**
+	 * Does an already-computed result reproduce the live main query? Mirrors
+	 * EMCP_Tools_Themer_Loop_Query::replay_matches()'s comparison, but takes a
+	 * result the caller already has instead of running the query again.
+	 *
+	 * @param array         $result Result from EMCP_Tools_Themer_Loop_Query::run().
+	 * @param WP_Query|null $main   The live main query.
+	 * @return bool
+	 */
+	private static function replay_matches_result( array $result, $main ): bool {
+		if ( ! is_object( $main ) ) {
+			return false;
+		}
+		$live = array_map( 'intval', wp_list_pluck( (array) $main->posts, 'ID' ) );
+		$ours = array_map( 'intval', wp_list_pluck( (array) $result['posts'], 'ID' ) );
+		if ( $live !== $ours ) {
+			return false;
+		}
+		$ours_pages = isset( $result['query'] ) && is_object( $result['query'] ) ? (int) $result['query']->max_num_pages : 0;
+		return (int) $main->max_num_pages === $ours_pages;
 	}
 
 	/**
