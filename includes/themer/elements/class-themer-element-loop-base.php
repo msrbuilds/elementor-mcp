@@ -45,16 +45,29 @@ abstract class EMCP_Tools_Themer_Element_Loop_Base extends EMCP_Tools_Themer_Ele
 	 * scope (so a grid nested in a repeated card differs per card) + an
 	 * occurrence counter per scope (so two identical blocks differ).
 	 *
-	 * @param string $local_id Caller-provided id ('' = hash the args).
-	 * @param array  $args     Element args (hashed when no id is given).
+	 * A caller that can supply a genuinely stable id (an element id or an
+	 * anchor) should pass it as $local_id. This hash is only the fallback
+	 * for a caller that cannot: it is built from identity alone (which
+	 * template, what it queries, which tag it renders as), never from
+	 * cosmetic settings, so changing a gap or a label does not change the
+	 * uid and therefore does not break a bookmarked or indexed pagination
+	 * URL built from it.
+	 *
+	 * @param string $local_id Caller-provided id ('' = hash the identity args).
+	 * @param array  $args     Element args (only template_id/query/tag are hashed).
 	 * @return string
 	 */
 	public static function instance_uid( string $local_id, array $args ): string {
 		$local_id = sanitize_key( $local_id );
 		if ( '' === $local_id ) {
-			unset( $args['local_id'], $args['anchor'] );
-			ksort( $args );
-			$local_id = substr( md5( (string) wp_json_encode( $args ) ), 0, 8 );
+			$identity = EMCP_Tools_Themer_Loop_Config::sort_recursive(
+				array(
+					'template_id' => $args['template_id'] ?? 0,
+					'query'       => is_array( $args['query'] ?? null ) ? $args['query'] : array(),
+					'tag'         => $args['tag'] ?? 'div',
+				)
+			);
+			$local_id = substr( md5( (string) wp_json_encode( $identity ) ), 0, 8 );
 		}
 		$scope = EMCP_Tools_Themer_Loop_Context::scope_key();
 		$uid   = '' === $scope ? $local_id : $local_id . '-' . substr( md5( $scope ), 0, 6 );
@@ -100,7 +113,7 @@ abstract class EMCP_Tools_Themer_Element_Loop_Base extends EMCP_Tools_Themer_Ele
 	 * @return array{current_post_id:int}
 	 */
 	public static function context(): array {
-		return array( 'current_post_id' => EMCP_Tools_Themer_Dynamic::current_post_id() );
+		return array( 'current_post_id' => self::post_id() );
 	}
 
 	/**

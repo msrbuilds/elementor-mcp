@@ -29,10 +29,14 @@ class EMCP_Tools_Themer_Loop_Config {
 	 * Numerically indexed arrays (lists) keep their order because their keys
 	 * already ascend, preserving the meaningful sequence.
 	 *
+	 * Public so other identity-hashing call sites (the loop elements' own
+	 * instance uid, for one) can reuse the same canonical ordering instead
+	 * of a second, shallower implementation.
+	 *
 	 * @param array $arr Array to sort.
 	 * @return array Sorted array with recursively sorted subarrays.
 	 */
-	private static function sort_recursive( array $arr ): array {
+	public static function sort_recursive( array $arr ): array {
 		ksort( $arr );
 		foreach ( $arr as &$val ) {
 			if ( is_array( $val ) ) {

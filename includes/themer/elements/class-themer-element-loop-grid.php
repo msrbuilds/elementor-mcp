@@ -72,25 +72,39 @@ class EMCP_Tools_Themer_Element_Loop_Grid extends EMCP_Tools_Themer_Element_Loop
 	}
 
 	/**
+	 * The first-item column span, clamped to the column count. The single
+	 * source both the has-first-span modifier class and the --emcp-first-span
+	 * custom property must agree on; a span clamped in only one of them is
+	 * a modifier class the CSS property disagrees with.
+	 *
+	 * @param array $args Element args (defaults not required: falls back).
+	 * @return int
+	 */
+	protected static function first_item_span( array $args ): int {
+		$cols = max( 1, min( 6, (int) ( $args['columns'] ?? 3 ) ) );
+		return max( 1, min( $cols, (int) ( $args['first_item_span'] ?? 1 ) ) );
+	}
+
+	/**
 	 * @param array $args Merged args.
 	 * @return string[]
 	 */
 	public static function class_list( array $args ): array {
 		$classes = array( 'emcp-loop', 'emcp-loop--grid' );
-		if ( self::truthy( $args['masonry'] ) ) {
+		if ( self::truthy( $args['masonry'] ?? false ) ) {
 			$classes[] = 'is-masonry';
 		}
-		if ( self::truthy( $args['equal_height'] ) ) {
+		if ( self::truthy( $args['equal_height'] ?? false ) ) {
 			$classes[] = 'is-equal-height';
 		}
-		if ( (int) $args['first_item_span'] > 1 ) {
+		if ( self::first_item_span( $args ) > 1 ) {
 			$classes[] = 'has-first-span';
 		}
-		$hover = (string) $args['hover_effect'];
+		$hover = (string) ( $args['hover_effect'] ?? 'none' );
 		if ( in_array( $hover, self::HOVER, true ) && 'none' !== $hover ) {
 			$classes[] = 'has-hover-' . $hover;
 		}
-		$anim = (string) $args['animation'];
+		$anim = (string) ( $args['animation'] ?? 'none' );
 		if ( in_array( $anim, self::ANIMATIONS, true ) && 'none' !== $anim ) {
 			$classes[] = 'has-anim-' . $anim;
 		}
@@ -104,17 +118,15 @@ class EMCP_Tools_Themer_Element_Loop_Grid extends EMCP_Tools_Themer_Element_Loop
 	 * @return string
 	 */
 	public static function style_vars( array $args ): string {
-		$cols = max( 1, min( 6, (int) $args['columns'] ) );
-		$span = max( 1, min( $cols, (int) $args['first_item_span'] ) );
 		return sprintf(
 			'--emcp-cols:%d;--emcp-cols-t:%d;--emcp-cols-m:%d;--emcp-gap-x:%dpx;--emcp-gap-y:%dpx;--emcp-first-span:%d;--emcp-anim-step:%dms',
-			$cols,
-			max( 1, min( 6, (int) $args['columns_tablet'] ) ),
-			max( 1, min( 6, (int) $args['columns_mobile'] ) ),
-			max( 0, (int) $args['gap_x'] ),
-			max( 0, (int) $args['gap_y'] ),
-			$span,
-			max( 0, (int) $args['animation_step'] )
+			max( 1, min( 6, (int) ( $args['columns'] ?? 3 ) ) ),
+			max( 1, min( 6, (int) ( $args['columns_tablet'] ?? 2 ) ) ),
+			max( 1, min( 6, (int) ( $args['columns_mobile'] ?? 1 ) ) ),
+			max( 0, (int) ( $args['gap_x'] ?? 24 ) ),
+			max( 0, (int) ( $args['gap_y'] ?? 24 ) ),
+			self::first_item_span( $args ),
+			max( 0, (int) ( $args['animation_step'] ?? 80 ) )
 		);
 	}
 
@@ -123,8 +135,7 @@ class EMCP_Tools_Themer_Element_Loop_Grid extends EMCP_Tools_Themer_Element_Loop
 	 * @return array
 	 */
 	protected static function layout_config( array $args ): array {
-		$cols = max( 1, min( 6, (int) ( $args['columns'] ?? 3 ) ) );
-		return array( 'first_item_span' => max( 1, min( $cols, (int) ( $args['first_item_span'] ?? 1 ) ) ) );
+		return array( 'first_item_span' => self::first_item_span( $args ) );
 	}
 
 	/**
@@ -146,11 +157,11 @@ class EMCP_Tools_Themer_Element_Loop_Grid extends EMCP_Tools_Themer_Element_Loop
 			if ( $p['page'] >= $pages ) {
 				return '';
 			}
-			$label = '' !== trim( (string) $args['load_more_label'] ) ? (string) $args['load_more_label'] : __( 'Load more', 'emcp-tools' );
+			$label = '' !== trim( (string) ( $args['load_more_label'] ?? '' ) ) ? (string) $args['load_more_label'] : __( 'Load more', 'emcp-tools' );
 			return '<div class="emcp-loop__more"><button type="button" class="emcp-loop__more-btn">' . esc_html( $label ) . '</button></div>';
 		}
 		if ( 'infinite' === $type ) {
-			return $p['page'] >= $pages ? '' : '<div class="emcp-loop__sentinel" data-offset="' . max( 0, (int) $args['infinite_offset'] ) . '" hidden></div>';
+			return $p['page'] >= $pages ? '' : '<div class="emcp-loop__sentinel" data-offset="' . max( 0, (int) ( $args['infinite_offset'] ?? 200 ) ) . '" hidden></div>';
 		}
 
 		$is_current = 'current' === $p['query']['source'];
@@ -183,11 +194,11 @@ class EMCP_Tools_Themer_Element_Loop_Grid extends EMCP_Tools_Themer_Element_Loop
 				'total'     => $pages,
 				'current'   => $p['page'],
 				'show_all'  => false,
-				'end_size'  => self::truthy( $args['shorten'] ) ? 1 : 2,
-				'mid_size'  => self::truthy( $args['shorten'] ) ? 1 : 2,
+				'end_size'  => self::truthy( $args['shorten'] ?? false ) ? 1 : 2,
+				'mid_size'  => self::truthy( $args['shorten'] ?? false ) ? 1 : 2,
 				'prev_next' => 'numbers' !== $type,
-				'prev_text' => '' !== trim( (string) $args['prev_label'] ) ? (string) $args['prev_label'] : __( 'Previous', 'emcp-tools' ),
-				'next_text' => '' !== trim( (string) $args['next_label'] ) ? (string) $args['next_label'] : __( 'Next', 'emcp-tools' ),
+				'prev_text' => '' !== trim( (string) ( $args['prev_label'] ?? '' ) ) ? (string) $args['prev_label'] : __( 'Previous', 'emcp-tools' ),
+				'next_text' => '' !== trim( (string) ( $args['next_label'] ?? '' ) ) ? (string) $args['next_label'] : __( 'Next', 'emcp-tools' ),
 				'format'    => $format,
 				'base'      => $base,
 				'add_args'  => false,
