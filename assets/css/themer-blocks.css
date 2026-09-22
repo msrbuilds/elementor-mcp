@@ -317,3 +317,9 @@
 }
 
 .emcp-dyn-featured-image img { display: block; max-width: 100%; height: auto; }
+
+/* Loop Item editor canvas: the card previews at its configured width. */
+.emcp-themer-loop-canvas .emcp-themer-loop-preview {
+	margin: 40px auto;
+	width: 100%;
+}

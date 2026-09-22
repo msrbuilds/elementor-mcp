@@ -278,6 +278,12 @@
 		$json = $( '#emcp-themer-conditions-json' );
 		$type = $( '#emcp-themer-type' );
 		if ( ! $app.length || ! $json.length ) { return; }
+		function togglePart() {
+			var isPart = $type.val() === 'loop';
+			$( '#emcp-themer-loop-preview' ).toggle( isPart );
+			$( '#emcp-themer-conditions-wrap' ).toggle( ! isPart );
+		}
+		togglePart();
 		state.type = $type.val();
 		loadFromJson();
 		render();
@@ -288,6 +294,7 @@
 			reconcileRows();
 			render();
 			serialize();
+			togglePart();
 		} );
 	}
 

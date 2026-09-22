@@ -27,12 +27,24 @@ if ( ! defined( 'ABSPATH' ) ) {
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
 	<?php wp_head(); ?>
 </head>
-<body <?php body_class( 'emcp-themer-edit-canvas' ); ?>>
 <?php
+$emcp_tpl_id  = (int) get_queried_object_id();
+$emcp_is_loop = class_exists( 'EMCP_Tools_Themer_CPT' ) && 'loop' === EMCP_Tools_Themer_CPT::template_type( $emcp_tpl_id );
+$emcp_width   = $emcp_is_loop ? (int) EMCP_Tools_Themer_CPT::loop_preview( $emcp_tpl_id )['width'] : 0;
+?>
+<body <?php body_class( 'emcp-themer-edit-canvas' . ( $emcp_is_loop ? ' emcp-themer-loop-canvas' : '' ) ); ?>>
+<?php
+if ( $emcp_is_loop ) {
+	// A card is narrow; previewing it full-width would misrepresent every Loop Grid.
+	printf( '<div class="emcp-themer-loop-preview" style="max-width:%dpx;">', $emcp_width );
+}
 while ( have_posts() ) :
 	the_post();
 	the_content();
 endwhile;
+if ( $emcp_is_loop ) {
+	echo '</div>';
+}
 wp_footer();
 ?>
 </body>

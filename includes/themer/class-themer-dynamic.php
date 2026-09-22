@@ -91,9 +91,19 @@ class EMCP_Tools_Themer_Dynamic {
 	 * @return int Post id, or 0 outside preview.
 	 */
 	public static function preview_post_id( string $template_type = '' ): int {
-		unset( $template_type );
 		if ( ! self::is_preview_context() ) {
 			return 0;
+		}
+		// A Loop Item carries its own sample post (Gutenberg's editor renders
+		// previews over REST, where nothing is queried and no loop is running).
+		if ( class_exists( 'EMCP_Tools_Themer_CPT' ) ) {
+			$tpl_id = EMCP_Tools_Themer_CPT::current_template_id();
+			if ( $tpl_id > 0 && ( 'loop' === $template_type || 'loop' === EMCP_Tools_Themer_CPT::template_type( $tpl_id ) ) ) {
+				$sample = EMCP_Tools_Themer_CPT::loop_preview_post_id( $tpl_id );
+				if ( $sample > 0 ) {
+					return $sample;
+				}
+			}
 		}
 		$ids = get_posts(
 			array(

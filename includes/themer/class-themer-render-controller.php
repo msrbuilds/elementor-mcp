@@ -102,6 +102,15 @@ class EMCP_Tools_Themer_Render_Controller {
 		// the_content canvas so Elementor's editor can attach and the template
 		// renders standalone. Never apply Themer resolution to our own CPT.
 		if ( is_singular( EMCP_Tools_Themer_CPT::POST_TYPE ) ) {
+			// A Loop Item previews against its sample post for the whole request,
+			// so every dynamic source, tag and binding on the canvas resolves to it.
+			$tpl_id = (int) get_queried_object_id();
+			if ( 'loop' === EMCP_Tools_Themer_CPT::template_type( $tpl_id ) && class_exists( 'EMCP_Tools_Themer_Loop_Context' ) ) {
+				$sample = EMCP_Tools_Themer_CPT::loop_preview_post_id( $tpl_id );
+				if ( $sample > 0 ) {
+					EMCP_Tools_Themer_Loop_Context::push( $sample, $tpl_id, 0, 'preview' );
+				}
+			}
 			$edit = EMCP_TOOLS_DIR . 'includes/themer/templates/template-edit-canvas.php';
 			return is_readable( $edit ) ? $edit : $template;
 		}
