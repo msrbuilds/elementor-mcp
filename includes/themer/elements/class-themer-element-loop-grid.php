@@ -240,7 +240,9 @@ class EMCP_Tools_Themer_Element_Loop_Grid extends EMCP_Tools_Themer_Element_Loop
 			return self::current_url_scheme();
 		}
 		$page_var = self::page_var( (string) ( $p['uid'] ?? '' ) );
-		$clean    = (string) remove_query_arg( $page_var );
+		// A request URI starting with // would make the base a
+		// protocol-relative URL to another host; collapse it to one slash.
+		$clean    = (string) preg_replace( '#^/{2,}#', '/', (string) remove_query_arg( $page_var ) );
 		$sep      = ( false === strpos( $clean, '?' ) ) ? '?' : '&';
 		$base     = $clean . '%_%' . '#emcp-loop-' . ( $p['uid'] ?? '' );
 		return array(

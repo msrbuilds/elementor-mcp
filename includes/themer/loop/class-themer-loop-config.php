@@ -61,7 +61,8 @@ class EMCP_Tools_Themer_Loop_Config {
 	 * @return string hex HMAC.
 	 */
 	public static function sign( string $encoded ): string {
-		return hash_hmac( 'sha256', $encoded, wp_salt( 'nonce' ) );
+		// Domain-separated: this key signs other things too.
+		return hash_hmac( 'sha256', 'emcp-themer-loop|' . $encoded, wp_salt( 'nonce' ) );
 	}
 
 	/**

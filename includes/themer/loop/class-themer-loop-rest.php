@@ -151,7 +151,7 @@ class EMCP_Tools_Themer_Loop_REST {
 		$layout      = is_array( $config['layout'] ?? null ) ? $config['layout'] : array();
 		$query       = is_array( $config['query'] ?? null ) ? $config['query'] : array();
 		$ctx         = is_array( $config['ctx'] ?? null ) ? $config['ctx'] : array();
-		$per_page    = max( 1, (int) ( $layout['per_page'] ?? EMCP_Tools_Themer_Loop_Query::DEFAULT_PER_PAGE ) );
+		$per_page    = max( 1, min( EMCP_Tools_Themer_Loop_Query::MAX_PER_PAGE, (int) ( $layout['per_page'] ?? EMCP_Tools_Themer_Loop_Query::DEFAULT_PER_PAGE ) ) );
 		$uid         = (string) ( $config['uid'] ?? '' );
 		$page_limit  = max( 0, (int) ( $layout['page_limit'] ?? 0 ) );
 

@@ -185,7 +185,12 @@ abstract class EMCP_Tools_Themer_Element_Loop_Base extends EMCP_Tools_Themer_Ele
 		$main   = null;
 		$reused = null;
 
-		if ( 'current' === $q['source'] ) {
+		// A current-source loop rendered by the loop REST route (nested in a
+		// card) has no archive to replay: the REST request has no main query
+		// of its own. It renders its empty state and runs no query at all.
+		$no_archive = 'current' === $q['source'] && class_exists( 'EMCP_Tools_Themer_Loop_REST' ) && EMCP_Tools_Themer_Loop_REST::is_rendering();
+
+		if ( 'current' === $q['source'] && ! $no_archive ) {
 			$main                  = $GLOBALS['wp_query'] ?? null;
 			$q['current_snapshot'] = EMCP_Tools_Themer_Loop_Query::snapshot_main_query( $main );
 
@@ -212,7 +217,10 @@ abstract class EMCP_Tools_Themer_Element_Loop_Base extends EMCP_Tools_Themer_Ele
 		$has_offset         = 'current' === $q['source'] && (int) ( $q['current_snapshot']['offset'] ?? 0 ) > 0;
 		$use_main_shortcut  = ( 'current' === $q['source'] && 1 === $page && ! $has_offset && is_object( $main ) && ! self::in_loop_render() );
 
-		if ( $use_main_shortcut ) {
+		if ( $no_archive ) {
+			$page   = 1;
+			$result = array( 'posts' => array(), 'found' => 0, 'max_pages' => 0, 'page' => 1 );
+		} elseif ( $use_main_shortcut ) {
 			$result = self::main_query_result( $q );
 		} elseif ( null !== $reused ) {
 			$result = $reused;
@@ -227,13 +235,17 @@ abstract class EMCP_Tools_Themer_Element_Loop_Base extends EMCP_Tools_Themer_Ele
 		if ( $page_limit > 0 ) {
 			$available = min( $available, $page_limit );
 		}
-		if ( $available > 0 && $page > $available ) {
+		if ( ! $no_archive && $available > 0 && $page > $available ) {
 			$page   = $available;
 			$result = EMCP_Tools_Themer_Loop_Query::run( $q, $ctx, $page );
 		}
 		$result['max_pages'] = $available;
 
-		$per_page = 'current' === $q['source'] ? max( 1, (int) ( $q['current_snapshot']['posts_per_page'] ?? get_option( 'posts_per_page', 10 ) ) ) : $q['per_page'];
+		// Capped the same way the query caps the snapshot's posts_per_page, so
+		// the index base never disagrees with the page the query returned.
+		$per_page = 'current' === $q['source']
+			? max( 1, min( EMCP_Tools_Themer_Loop_Query::MAX_PER_PAGE, (int) ( $q['current_snapshot']['posts_per_page'] ?? get_option( 'posts_per_page', 10 ) ) ) )
+			: $q['per_page'];
 		// Same reasoning as $pagination_raw above: the carousel does not declare
 		// 'tag' among its own args, so this must not re-read $args['tag'] raw.
 		$tag_raw  = (string) ( $args['tag'] ?? 'div' );
@@ -261,7 +273,9 @@ abstract class EMCP_Tools_Themer_Element_Loop_Base extends EMCP_Tools_Themer_Ele
 			$result['posts'],
 			array(
 				'uid'          => $uid,
-				'index_base'   => ( $page - 1 ) * $per_page,
+				// Page-local indexes in replace mode (every page is a fresh
+				// grid), running ones in append mode; the REST route agrees.
+				'index_base'   => in_array( $pagination, self::APPEND_MODES, true ) ? ( $page - 1 ) * $per_page : 0,
 				'tag'          => $tag,
 				'config'       => $config,
 				'item_classes' => static::item_classes( $args ),
