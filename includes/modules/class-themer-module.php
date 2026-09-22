@@ -88,6 +88,13 @@ class EMCP_Tools_Themer_Module extends EMCP_Tools_Module {
 			EMCP_Tools_Themer_Loop_Context::init();
 		}
 
+		if ( class_exists( 'EMCP_Tools_Themer_Loop_Assets' ) ) {
+			EMCP_Tools_Themer_Loop_Assets::init();
+		}
+		if ( class_exists( 'EMCP_Tools_Themer_Loop_REST' ) ) {
+			EMCP_Tools_Themer_Loop_REST::init();
+		}
+
 		// One-time heal: a prior build could leave the condition index empty (the
 		// rebuild raced the metabox meta writes), so existing templates silently
 		// stopped applying. Rebuild once on upgrade so they resolve again without
