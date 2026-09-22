@@ -69,20 +69,20 @@ class EMCP_Tools_Themer_Loop_REST {
 	public static function handle( $request ) {
 		// WordPress bakes the cookie user's REST nonce into wp-api-fetch's and
 		// wp-api-request's localized data the moment the scripts object is
-		// first built (wp_default_scripts), which happens as soon as anything
-		// here calls wp_script_is()/wp_scripts() — before a request that
-		// carried a cookie but no valid nonce is demoted to anonymous inside
-		// rest_cookie_check_errors(). collect_assets() returns exactly that
-		// localized data for every queued handle, and a REST response
-		// reflects the request Origin with credentials, so without this
-		// check a cookie-but-no-nonce request (the one core refuses to
-		// trust) would get the logged-in visitor's nonce back in the asset
-		// list. A genuine anonymous visitor has no auth cookie and is not
-		// affected; a visitor whose script sent a valid X-WP-Nonce keeps
-		// their identity and is not rejected here. Do not remove this as
-		// redundant with core: core's own demotion happens too late for us,
-		// after rest_api_init, by which point register() has already run.
-		if ( ! empty( $GLOBALS['wp_rest_auth_cookie'] ) && 0 === get_current_user_id() ) {
+		// first built (wp_default_scripts). collect_assets() returns exactly
+		// that localized data for every queued handle, and a REST response
+		// reflects the request Origin with credentials, so a cookie-but-no-
+		// nonce request (the one core refuses to trust) must never reach
+		// rendering, or it would get the logged-in visitor's nonce back in
+		// the asset list. $GLOBALS['wp_rest_auth_cookie'] is exactly true
+		// only for a VALID cookie (rest_cookie_collect_status()); any other
+		// cookie status is a non-empty string ('malformed', 'expired', ...),
+		// so the comparison must be strict, matching core's own check at
+		// rest-api.php:1142. Do not remove this as redundant with core: a
+		// plugin can build the scripts object at init or during user
+		// determination, both of which run before REST authentication
+		// demotes this request, so core's own demotion can come too late.
+		if ( true === ( $GLOBALS['wp_rest_auth_cookie'] ?? null ) && 0 === get_current_user_id() ) {
 			return self::respond( array( 'code' => 'rest_cookie_invalid_nonce', 'message' => __( 'Cookie check failed.', 'emcp-tools' ) ), 403 );
 		}
 
@@ -334,7 +334,11 @@ class EMCP_Tools_Themer_Loop_REST {
 	 */
 	private static function respond( array $data, int $status ) {
 		$res = new WP_REST_Response( $data, $status );
-		$res->header( 'Cache-Control', self::cache_control() );
+		// An error response is never shared. cache_control()'s own public
+		// value is meant for a page of cards, not a refusal; a site that
+		// opted into shared caching must not have a CDN cache one visitor's
+		// 403/400 and serve it to every other visitor as if it were theirs.
+		$res->header( 'Cache-Control', $status >= 400 ? 'no-store' : self::cache_control() );
 		return $res;
 	}
 }
