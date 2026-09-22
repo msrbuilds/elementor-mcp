@@ -21,8 +21,27 @@ class EMCP_Tools_Themer_CPT {
 
 	const POST_TYPE = 'emcp_theme_template';
 
-	/** Valid template types. */
-	const TYPES = array( 'header', 'footer', 'single', 'archive', 'search', '404' );
+	/** Slot types: they fill a page region and take display conditions. */
+	const SLOT_TYPES = array( 'header', 'footer', 'single', 'archive', 'search', '404' );
+
+	/**
+	 * Part types: reusable pieces other elements render, never a page region.
+	 * A Loop Item is rendered once per post by the Loop Grid / Loop Carousel.
+	 *
+	 * @since 3.18.0
+	 */
+	const PART_TYPES = array( 'loop' );
+
+	/** Valid template types (slots first, then parts). */
+	const TYPES = array( 'header', 'footer', 'single', 'archive', 'search', '404', 'loop' );
+
+	/** Loop Item preview settings meta. @since 3.18.0 */
+	const META_LOOP_PREVIEW = '_emcp_themer_loop_preview';
+
+	/** Loop preview canvas width bounds (px). @since 3.18.0 */
+	const LOOP_PREVIEW_MIN_WIDTH     = 200;
+	const LOOP_PREVIEW_MAX_WIDTH     = 1200;
+	const LOOP_PREVIEW_DEFAULT_WIDTH = 400;
 
 	/**
 	 * Register the CPT + Elementor support + its own dashboard menu. Hooked to
@@ -158,15 +177,7 @@ class EMCP_Tools_Themer_CPT {
 			return;
 		}
 
-		// Human labels for each slot type, in display order.
-		$labels = array(
-			'header'  => __( 'Header', 'emcp-tools' ),
-			'footer'  => __( 'Footer', 'emcp-tools' ),
-			'single'  => __( 'Single', 'emcp-tools' ),
-			'archive' => __( 'Archive', 'emcp-tools' ),
-			'search'  => __( 'Search', 'emcp-tools' ),
-			'404'     => __( '404', 'emcp-tools' ),
-		);
+		$labels = self::type_labels();
 
 		$purple = '#8b5cf6';
 		$chips  = '';
@@ -295,6 +306,10 @@ class EMCP_Tools_Themer_CPT {
 		if ( '' === $type ) {
 			return __( 'no template type is set, so it will not render, open it and choose a type', 'emcp-tools' );
 		}
+		// Parts are rendered by other elements; there is no slot to mismatch.
+		if ( self::is_part( $type ) ) {
+			return null;
+		}
 		// Content signal: a header/footer holding body-only dynamic elements.
 		if ( in_array( $type, array( 'header', 'footer' ), true ) && self::has_body_elements( $id ) ) {
 			/* translators: %s: template type label (Header / Footer) */
@@ -336,6 +351,9 @@ class EMCP_Tools_Themer_CPT {
 	 */
 	private static function type_hint_from_title( string $title ): ?string {
 		$t = strtolower( $title );
+		if ( preg_match( '/\bloop\b/', $t ) ) {
+			return 'loop';
+		}
 		if ( false !== strpos( $t, 'header' ) ) {
 			return 'header';
 		}
@@ -355,6 +373,164 @@ class EMCP_Tools_Themer_CPT {
 			return 'single';
 		}
 		return null;
+	}
+
+	/**
+	 * Whether a type is a part (rendered by another element) rather than a slot.
+	 *
+	 * @since 3.18.0
+	 * @param string $type Template type.
+	 * @return bool
+	 */
+	public static function is_part( string $type ): bool {
+		return in_array( $type, self::PART_TYPES, true );
+	}
+
+	/**
+	 * Human labels for every type, in display order. One list, used by the
+	 * metabox, the list-table notice and the MCP descriptions.
+	 *
+	 * @since 3.18.0
+	 * @return array<string,string>
+	 */
+	public static function type_labels(): array {
+		return array(
+			'header'  => __( 'Header', 'emcp-tools' ),
+			'footer'  => __( 'Footer', 'emcp-tools' ),
+			'single'  => __( 'Single (post/page)', 'emcp-tools' ),
+			'archive' => __( 'Archive', 'emcp-tools' ),
+			'search'  => __( 'Search results', 'emcp-tools' ),
+			'404'     => __( '404 (not found)', 'emcp-tools' ),
+			'loop'    => __( 'Loop Item', 'emcp-tools' ),
+		);
+	}
+
+	/**
+	 * The stored type of a template ('' when unset).
+	 *
+	 * @since 3.18.0
+	 * @param int $id Template id.
+	 * @return string
+	 */
+	public static function template_type( int $id ): string {
+		return $id > 0 ? (string) get_post_meta( $id, EMCP_Tools_Themer_Index::META_TYPE, true ) : '';
+	}
+
+	/**
+	 * Whether an id is a published Loop Item, the only thing a loop element renders.
+	 *
+	 * @since 3.18.0
+	 * @param int $id Template id.
+	 * @return bool
+	 */
+	public static function is_published_loop_template( int $id ): bool {
+		$post = $id > 0 ? get_post( $id ) : null;
+		return $post
+			&& self::POST_TYPE === (string) ( $post->post_type ?? '' )
+			&& 'publish' === (string) ( $post->post_status ?? '' )
+			&& 'loop' === self::template_type( $id );
+	}
+
+	/**
+	 * Normalize Loop Item preview settings.
+	 *
+	 * @since 3.18.0
+	 * @param mixed $raw Stored or submitted value.
+	 * @return array{post_type:string,post_id:int,width:int}
+	 */
+	public static function sanitize_loop_preview( $raw ): array {
+		$raw  = is_array( $raw ) ? $raw : array();
+		$type = isset( $raw['post_type'] ) ? sanitize_key( (string) $raw['post_type'] ) : 'post';
+		if ( '' === $type || ! post_type_exists( $type ) ) {
+			$type = 'post';
+		}
+		$width = isset( $raw['width'] ) ? (int) $raw['width'] : 0;
+		if ( $width <= 0 ) {
+			$width = self::LOOP_PREVIEW_DEFAULT_WIDTH;
+		}
+		return array(
+			'post_type' => $type,
+			'post_id'   => isset( $raw['post_id'] ) ? absint( $raw['post_id'] ) : 0,
+			'width'     => max( self::LOOP_PREVIEW_MIN_WIDTH, min( self::LOOP_PREVIEW_MAX_WIDTH, $width ) ),
+		);
+	}
+
+	/**
+	 * A template's preview settings (defaults when unset).
+	 *
+	 * @since 3.18.0
+	 * @param int $template_id Template id.
+	 * @return array{post_type:string,post_id:int,width:int}
+	 */
+	public static function loop_preview( int $template_id ): array {
+		return self::sanitize_loop_preview( get_post_meta( $template_id, self::META_LOOP_PREVIEW, true ) );
+	}
+
+	/**
+	 * The sample post a Loop Item previews against: the chosen post when it is
+	 * published, else the latest published post of the chosen type.
+	 *
+	 * @since 3.18.0
+	 * @param int $template_id Template id.
+	 * @return int Post id, or 0 when the site has nothing to sample.
+	 */
+	public static function loop_preview_post_id( int $template_id ): int {
+		$pv = self::loop_preview( $template_id );
+		if ( $pv['post_id'] > 0 ) {
+			$chosen = get_post( $pv['post_id'] );
+			if ( $chosen && 'publish' === (string) ( $chosen->post_status ?? '' ) ) {
+				return (int) $chosen->ID;
+			}
+		}
+		$ids = get_posts(
+			array(
+				'post_type'        => $pv['post_type'],
+				'post_status'      => 'publish',
+				'numberposts'      => 1,
+				'fields'           => 'ids',
+				'suppress_filters' => false,
+			)
+		);
+		return $ids ? (int) $ids[0] : 0;
+	}
+
+	/**
+	 * The Themer template being viewed or edited in this request, or 0.
+	 *
+	 * Three sources, because the editor builds its config on different
+	 * requests: the queried object (front-end canvas), Elementor's current
+	 * document (editor + its AJAX), and the post id request argument (Gutenberg
+	 * REST previews, Elementor editor bootstrap).
+	 *
+	 * @since 3.18.0
+	 * @return int
+	 */
+	public static function current_template_id(): int {
+		$obj = get_queried_object();
+		if ( is_object( $obj ) && isset( $obj->post_type, $obj->ID ) && self::POST_TYPE === (string) $obj->post_type ) {
+			return (int) $obj->ID;
+		}
+		if ( class_exists( '\Elementor\Plugin' ) && isset( \Elementor\Plugin::$instance ) ) {
+			$docs = \Elementor\Plugin::$instance->documents ?? null;
+			if ( is_object( $docs ) && method_exists( $docs, 'get_current' ) ) {
+				$doc = $docs->get_current();
+				if ( is_object( $doc ) && method_exists( $doc, 'get_main_id' ) ) {
+					$id = (int) $doc->get_main_id();
+					if ( $id > 0 && self::POST_TYPE === get_post_type( $id ) ) {
+						return $id;
+					}
+				}
+			}
+		}
+		foreach ( array( 'post', 'post_id', 'editor_post_id' ) as $key ) {
+			if ( isset( $_REQUEST[ $key ] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only lookup of the edited post.
+				$id = absint( wp_unslash( $_REQUEST[ $key ] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+				if ( $id > 0 && self::POST_TYPE === get_post_type( $id ) ) {
+					return $id;
+				}
+			}
+		}
+		return 0;
 	}
 
 	/**

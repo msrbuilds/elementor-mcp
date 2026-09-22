@@ -41,6 +41,10 @@ class EMCP_Tools_Themer_Index {
 			if ( empty( $rec['id'] ) || empty( $rec['type'] ) ) {
 				continue;
 			}
+			// Parts (Loop Items) never fill a slot, so they stay out of the index.
+			if ( class_exists( 'EMCP_Tools_Themer_CPT' ) && EMCP_Tools_Themer_CPT::is_part( (string) $rec['type'] ) ) {
+				continue;
+			}
 			$cond                             = is_array( $rec['conditions'] ?? null ) ? $rec['conditions'] : array();
 			$index[ (string) $rec['type'] ][] = array(
 				'id'       => (int) $rec['id'],
