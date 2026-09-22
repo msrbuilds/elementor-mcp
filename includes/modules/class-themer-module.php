@@ -31,7 +31,7 @@ class EMCP_Tools_Themer_Module extends EMCP_Tools_Module {
 	}
 
 	public function description(): string {
-		return __( 'Build your site\'s header, footer, single, archive, search & 404 layouts with any page builder, and control where each applies.', 'emcp-tools' );
+		return __( 'Build your site\'s header, footer, single, archive, search & 404 layouts and Loop Items (post cards for the Loop Grid and Loop Carousel) with any page builder, and control where each applies.', 'emcp-tools' );
 	}
 
 	public function tier(): string {
@@ -82,6 +82,11 @@ class EMCP_Tools_Themer_Module extends EMCP_Tools_Module {
 		}
 
 		EMCP_Tools_Themer_Index::register_hooks();
+
+		// Core post blocks inside a Loop Item read the card's post from here.
+		if ( class_exists( 'EMCP_Tools_Themer_Loop_Context' ) ) {
+			EMCP_Tools_Themer_Loop_Context::init();
+		}
 
 		// One-time heal: a prior build could leave the condition index empty (the
 		// rebuild raced the metabox meta writes), so existing templates silently

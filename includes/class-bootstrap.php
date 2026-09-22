@@ -266,6 +266,10 @@ class EMCP_Tools_Bootstrap {
 		require_once EMCP_TOOLS_DIR . 'includes/themer/class-themer-resolver.php';
 		require_once EMCP_TOOLS_DIR . 'includes/themer/class-themer-condition-schema.php';
 		require_once EMCP_TOOLS_DIR . 'includes/themer/class-themer-cpt.php';
+		// Loop Items: per-item context, query builder, renderer (3.18.0).
+		require_once EMCP_TOOLS_DIR . 'includes/themer/loop/class-themer-loop-context.php';
+		require_once EMCP_TOOLS_DIR . 'includes/themer/loop/class-themer-loop-query.php';
+		require_once EMCP_TOOLS_DIR . 'includes/themer/loop/class-themer-loop-renderer.php';
 		require_once EMCP_TOOLS_DIR . 'includes/themer/class-themer-content-renderer.php';
 		require_once EMCP_TOOLS_DIR . 'includes/themer/class-themer-theme-adapters.php';
 		require_once EMCP_TOOLS_DIR . 'includes/themer/class-themer-render-controller.php';
