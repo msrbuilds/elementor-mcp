@@ -71,6 +71,12 @@ class EMCP_Tools_Themer_Element_Loop_Grid extends EMCP_Tools_Themer_Element_Loop
 		}
 		if ( self::truthy( $args['inline_vars'] ) ) {
 			$attrs .= ' style="' . esc_attr( self::style_vars( $args ) ) . '"';
+		} elseif ( self::first_item_span( $args ) > 1 ) {
+			// Without inline vars (the Elementor widget writes the others
+			// through its own selectors) the span is still printed here: it
+			// must be clamped to the column count, which a selector cannot do,
+			// and it must agree with the has-first-span class.
+			$attrs .= ' style="--emcp-first-span:' . self::first_item_span( $args ) . '"';
 		}
 		$html = '<div ' . $attrs . '>' . implode( '', $p['notes'] );
 

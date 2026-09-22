@@ -8,6 +8,57 @@
  * Loop Grid or Carousel nested inside a card is never styled by its parent.
  */
 
+/*
+ * A loop nested inside a card must not inherit its parent loop's settings:
+ * every custom property an Elementor control or an element's inline style
+ * can set is reset on a nested loop, so an unset value falls back to the
+ * stylesheet default. Specificity (0,2,0): a nested Elementor widget's own
+ * values (".elementor-N .elementor-element.elementor-element-ID > .emcp-loop",
+ * at least (0,4,0)) and a nested element's inline style still win.
+ */
+.emcp-loop .emcp-loop {
+	--emcp-cols: initial;
+	--emcp-cols-t: initial;
+	--emcp-cols-m: initial;
+	--emcp-gap-x: initial;
+	--emcp-gap-y: initial;
+	--emcp-first-span: initial;
+	--emcp-lift: initial;
+	--emcp-zoom: initial;
+	--emcp-hover-duration: initial;
+	--emcp-anim-duration: initial;
+	--emcp-anim-step: initial;
+	--emcp-pagination-align: initial;
+	--emcp-pagination-gap: initial;
+	--emcp-pagination-margin: initial;
+	--emcp-pagination-active-bg: initial;
+	--emcp-pagination-active-color: initial;
+	--emcp-more-align: initial;
+	--emcp-more-margin: initial;
+	--emcp-empty-align: initial;
+	--emcp-slides: initial;
+	--emcp-slides-t: initial;
+	--emcp-slides-m: initial;
+	--emcp-gap: initial;
+	--emcp-gap-t: initial;
+	--emcp-gap-m: initial;
+	--emcp-offset: initial;
+	--emcp-arrow-size: initial;
+	--emcp-arrow-color: initial;
+	--emcp-arrow-bg: initial;
+	--emcp-arrow-border: initial;
+	--emcp-arrow-radius: initial;
+	--emcp-arrow-offset: initial;
+	--emcp-dot-size: initial;
+	--emcp-dot-gap: initial;
+	--emcp-dot-color: initial;
+	--emcp-dot-active-color: initial;
+	--emcp-dot-active-width: initial;
+	--emcp-dots-offset: initial;
+	--emcp-progress-height: initial;
+	--emcp-progress-track: initial;
+	--emcp-progress-fill: initial;
+}
 /* ---- Grid ------------------------------------------------------------ */
 .emcp-loop--grid > .emcp-loop__items {
 	display: grid;
@@ -232,8 +283,8 @@
 /* ---- Carousel ---------------------------------------------------------- */
 .emcp-loop--carousel {
 	position: relative;
-	/* Reset, so a nested carousel whose slides value is auto (and therefore
-	 * printed nothing) does not inherit its parent's count. */
+	/* Reset, so a carousel whose slides value is auto (and therefore printed
+	 * nothing) never inherits a count from an ancestor. */
 	--emcp-slides: initial;
 	--emcp-slides-t: initial;
 	--emcp-slides-m: initial;
@@ -316,6 +367,14 @@
 .emcp-loop--carousel.arrows-bottom > .emcp-loop__arrow--prev { inset-inline-start: calc(50% - var(--emcp-arrow-size, 44px) - 8px); }
 .emcp-loop--carousel.arrows-bottom > .emcp-loop__arrow--next { inset-inline-end: calc(50% - var(--emcp-arrow-size, 44px) - 8px); }
 .emcp-loop--carousel > .emcp-loop__arrow.swiper-button-disabled { opacity: 0.35; cursor: default; }
+/* Hide arrows on mobile: the class sits on the element itself (never on a
+ * widget wrapper), so only this carousel's own arrows are reached. The
+ * room reserved for outside or bottom arrows goes with them. */
+@media (max-width: 767px) {
+	.emcp-loop--carousel.hide-arrows-mobile > .emcp-loop__arrow { display: none; }
+	.emcp-loop--carousel.hide-arrows-mobile.arrows-outside { padding-inline: 0; }
+	.emcp-loop--carousel.hide-arrows-mobile.arrows-bottom { padding-bottom: 0; }
+}
 
 /* Dots */
 .emcp-loop--carousel > .emcp-loop__dots.swiper-pagination {

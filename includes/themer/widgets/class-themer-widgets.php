@@ -139,7 +139,7 @@ class EMCP_Tools_Themer_Widgets {
 	 * @since 3.13.0
 	 * @return int
 	 */
-	private static function edited_post_id(): int {
+	public static function edited_post_id(): int {
 		if ( class_exists( '\Elementor\Plugin' ) && isset( \Elementor\Plugin::$instance ) ) {
 			$plugin = \Elementor\Plugin::$instance;
 
@@ -199,6 +199,19 @@ class EMCP_Tools_Themer_Widgets {
 		if ( class_exists( 'EMCP_Tools_Themer_Widget_Rich_Base' ) ) {
 			require_once __DIR__ . '/rich/class-themer-widget-rich-set.php';
 			foreach ( EMCP_Tools_Themer_Widget_Rich_Base::rich_widget_classes() as $class ) {
+				if ( class_exists( $class ) ) {
+					$manager->register( new $class() );
+				}
+			}
+		}
+
+		// Loop elements: available in every Elementor document, not only
+		// Themer templates, because a Loop Grid belongs on ordinary pages too.
+		require_once __DIR__ . '/loop/class-themer-widget-loop-base.php';
+		if ( class_exists( 'EMCP_Tools_Themer_Widget_Loop_Base' ) ) {
+			require_once __DIR__ . '/loop/class-themer-widget-loop-grid.php';
+			require_once __DIR__ . '/loop/class-themer-widget-loop-carousel.php';
+			foreach ( EMCP_Tools_Themer_Widget_Loop_Base::widget_classes() as $class ) {
 				if ( class_exists( $class ) ) {
 					$manager->register( new $class() );
 				}

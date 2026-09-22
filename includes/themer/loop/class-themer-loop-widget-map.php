@@ -36,6 +36,21 @@ class EMCP_Tools_Themer_Loop_Widget_Map {
 	 */
 	const SHARED_ARGS = array( 'template_id', 'query', 'anchor', 'local_id', 'tag', 'empty_message', 'alternates' );
 
+	/** The two loop widgets' Elementor names (the script listens on them). */
+	const WIDGET_NAMES = array( 'emcp-loop-grid', 'emcp-loop-carousel' );
+
+	/**
+	 * Option-backed settings whose saved values collect_saved() gathers,
+	 * grouped by the option list they belong to.
+	 */
+	const SAVED_GROUPS = array(
+		'templates'  => array( 'emcp_template_id' ),
+		'terms'      => array( 'emcp_terms', 'emcp_exclude_terms' ),
+		'authors'    => array( 'emcp_authors' ),
+		'post_types' => array( 'emcp_post_types' ),
+		'taxonomies' => array( 'emcp_related_taxonomy' ),
+	);
+
 	/**
 	 * The widget's own loop root, never a loop nested inside one of its
 	 * cards. Elementor 4's optimized markup drops .elementor-widget-container;
@@ -159,6 +174,84 @@ class EMCP_Tools_Themer_Loop_Widget_Map {
 			}
 		}
 		return false;
+	}
+
+	/**
+	 * Saved option values of every loop widget in an Elementor element tree.
+	 *
+	 * Elementor builds a widget's controls once per type, not per instance,
+	 * so an option list cannot know one widget's saved value. The widget
+	 * base therefore merges the values saved anywhere in the document being
+	 * edited into its option lists: a Loop Item beyond the first 100, or a
+	 * term beyond the cap, still shows and survives a panel edit. Alternate
+	 * template rows count as templates.
+	 *
+	 * @param array $elements Elementor elements data (a list of elements).
+	 * @return array<string,string[]> SAVED_GROUPS key => unique non-empty values.
+	 */
+	public static function collect_saved( array $elements ): array {
+		$out = array_fill_keys( array_keys( self::SAVED_GROUPS ), array() );
+		self::walk_saved( $elements, $out, 0 );
+		foreach ( $out as $group => $values ) {
+			$out[ $group ] = array_values( array_unique( $values ) );
+		}
+		return $out;
+	}
+
+	/**
+	 * @param array $elements Elements.
+	 * @param array $out      Collected values, by reference.
+	 * @param int   $depth    Nesting depth (bounded).
+	 */
+	private static function walk_saved( array $elements, array &$out, int $depth ): void {
+		if ( $depth > 50 ) {
+			return;
+		}
+		foreach ( $elements as $el ) {
+			if ( ! is_array( $el ) ) {
+				continue;
+			}
+			$settings = is_array( $el['settings'] ?? null ) ? $el['settings'] : array();
+			if ( in_array( (string) ( $el['widgetType'] ?? '' ), self::WIDGET_NAMES, true ) ) {
+				foreach ( self::SAVED_GROUPS as $group => $keys ) {
+					foreach ( $keys as $key ) {
+						foreach ( (array) ( $settings[ $key ] ?? array() ) as $value ) {
+							if ( is_scalar( $value ) && '' !== (string) $value && '0' !== (string) $value ) {
+								$out[ $group ][] = (string) $value;
+							}
+						}
+					}
+				}
+				foreach ( (array) ( $settings['emcp_alternates'] ?? array() ) as $row ) {
+					$tid = is_array( $row ) ? (int) ( $row['emcp_alt_template'] ?? 0 ) : 0;
+					if ( $tid > 0 ) {
+						$out['templates'][] = (string) $tid;
+					}
+				}
+			}
+			if ( ! empty( $el['elements'] ) && is_array( $el['elements'] ) ) {
+				self::walk_saved( $el['elements'], $out, $depth + 1 );
+			}
+		}
+	}
+
+	/**
+	 * Add saved values missing from an option list, labelled by $label.
+	 *
+	 * @param array    $options Option list (value => label).
+	 * @param string[] $values  Saved values.
+	 * @param callable $label   Label for a value the list does not have.
+	 * @return array
+	 */
+	public static function merge_saved( array $options, array $values, callable $label ): array {
+		foreach ( $values as $value ) {
+			$value = (string) $value;
+			if ( '' === $value || array_key_exists( $value, $options ) ) {
+				continue;
+			}
+			$options[ $value ] = (string) $label( $value );
+		}
+		return $options;
 	}
 
 	/**
@@ -426,6 +519,7 @@ class EMCP_Tools_Themer_Loop_Widget_Map {
 				'mousewheel'              => self::flag( $s, 'emcp_mousewheel', (bool) $d['mousewheel'] ),
 				'arrows'                  => self::flag( $s, 'emcp_arrows', (bool) $d['arrows'] ),
 				'arrows_position'         => self::text( $s, 'emcp_arrows_position', (string) $d['arrows_position'] ),
+				'arrows_hide_mobile'      => self::flag( $s, 'emcp_hide_arrows_mobile', (bool) $d['arrows_hide_mobile'] ),
 				'arrow_prev_svg'          => self::icon_svg( $s['emcp_arrow_prev'] ?? null ),
 				'arrow_next_svg'          => self::icon_svg( $s['emcp_arrow_next'] ?? null ),
 				'dots'                    => self::text( $s, 'emcp_dots', (string) $d['dots'] ),

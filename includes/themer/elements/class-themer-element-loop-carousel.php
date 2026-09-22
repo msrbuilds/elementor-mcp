@@ -56,6 +56,7 @@ class EMCP_Tools_Themer_Element_Loop_Carousel extends EMCP_Tools_Themer_Element_
 			'mousewheel'              => false,
 			'arrows'                  => true,
 			'arrows_position'         => 'inside',
+			'arrows_hide_mobile'      => false,
 			'arrow_prev_svg'          => '',
 			'arrow_next_svg'          => '',
 			'dots'                    => 'bullets',
@@ -111,6 +112,11 @@ class EMCP_Tools_Themer_Element_Loop_Carousel extends EMCP_Tools_Themer_Element_
 		$classes = array( 'emcp-loop', 'emcp-loop--carousel' );
 		if ( self::truthy( $args['arrows'] ) ) {
 			$classes[] = 'arrows-' . ( in_array( (string) $args['arrows_position'], self::ARROWS, true ) ? (string) $args['arrows_position'] : 'inside' );
+			// On the element's own class list, not the widget wrapper, so the
+			// stylesheet can reach this carousel's own arrows by child chain.
+			if ( self::truthy( $args['arrows_hide_mobile'] ?? false ) ) {
+				$classes[] = 'hide-arrows-mobile';
+			}
 		}
 		if ( 'none' !== (string) $args['dots'] && in_array( (string) $args['dots'], self::DOTS, true ) ) {
 			$classes[] = 'dots-' . ( in_array( (string) $args['dots_position'], self::DOTS_POS, true ) ? (string) $args['dots_position'] : 'inside' );
