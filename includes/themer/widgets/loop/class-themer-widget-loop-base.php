@@ -184,8 +184,13 @@ if ( ! class_exists( 'EMCP_Tools_Themer_Widget_Loop_Base' ) && class_exists( '\E
 			);
 		}
 
-		/** @return array<int|string,string> Loop Items, saved ones included. */
-		protected static function emcp_template_options(): array {
+		/**
+		 * Loop Items, saved ones included. Public so the Pro alternates
+		 * repeater offers the same list as the main picker.
+		 *
+		 * @return array<int|string,string>
+		 */
+		public static function emcp_template_options(): array {
 			if ( ! self::emcp_needs_options() ) {
 				return array();
 			}

@@ -44,6 +44,7 @@ includes/themer/dynamic/class-themer-dynamic-pro.php
 includes/themer/class-themer-pro.php
 includes/themer/class-themer-pro-matchers.php
 includes/themer/class-themer-pro-conditions.php
+includes/themer/class-themer-loop-pro.php
 includes/ai-chat
 includes/modules/class-ai-chat-module.php
 includes/admin/class-pro-prompts.php

@@ -71,6 +71,8 @@ final class EMCP_Tools_Pro_Loader {
 		'includes/themer/dynamic/class-themer-dynamic-pro.php',
 		'includes/themer/class-themer-pro-matchers.php',
 		'includes/themer/class-themer-pro-conditions.php',
+		// Alternate Loop Item templates render on the front end, so runtime.
+		'includes/themer/class-themer-loop-pro.php',
 		'includes/themer/class-themer-pro.php',
 	);
 
