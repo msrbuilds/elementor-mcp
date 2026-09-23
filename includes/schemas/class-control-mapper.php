@@ -273,9 +273,11 @@ class EMCP_Tools_Control_Mapper {
 		$schema = array( 'type' => 'string' );
 
 		if ( ! empty( $control['options'] ) && is_array( $control['options'] ) ) {
+			// PHP turns numeric string keys into ints; the schema says string,
+			// and Elementor stores a SELECT value as a string, so emit strings.
 			$enum = array_values(
 				array_filter(
-					array_keys( $control['options'] ),
+					array_map( 'strval', array_keys( $control['options'] ) ),
 					function ( $value ) {
 						return '' !== $value;
 					}

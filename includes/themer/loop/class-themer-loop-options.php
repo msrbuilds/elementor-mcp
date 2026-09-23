@@ -338,24 +338,39 @@ class EMCP_Tools_Themer_Loop_Options {
 	/**
 	 * Label for a saved Loop Item id missing from loop_templates().
 	 *
+	 * The id comes from saved content, so its title is shown only when the
+	 * viewer may see it: a published Loop Item, or a post the current user
+	 * can read. Anything else is labelled by id, never by a leaked title.
+	 *
 	 * @param int|string $id Template id.
 	 * @return string Plain text.
 	 */
 	public static function template_label( $id ): string {
-		$title = self::plain( get_the_title( (int) $id ) );
+		$id = (int) $id;
 		/* translators: %d: Loop Item id */
-		return '' !== trim( $title ) ? $title : sprintf( __( 'Loop Item #%d', 'emcp-tools' ), (int) $id );
+		$fallback = sprintf( __( 'Loop Item #%d', 'emcp-tools' ), $id );
+		if ( $id <= 0 || ! ( EMCP_Tools_Themer_CPT::is_published_loop_template( $id ) || current_user_can( 'read_post', $id ) ) ) {
+			return $fallback;
+		}
+		$title = self::plain( get_the_title( $id ) );
+		return '' !== trim( $title ) ? $title : $fallback;
 	}
 
 	/**
 	 * Label for a saved `taxonomy:term_id` ref missing from flat_terms().
+	 *
+	 * A term is resolved only in a publicly viewable taxonomy; a private
+	 * taxonomy's term keeps its raw ref, so its name never leaks.
 	 *
 	 * @param string $ref Term ref.
 	 * @return string Plain text.
 	 */
 	public static function term_label( $ref ): string {
 		$parts = explode( ':', (string) $ref, 2 );
-		$term  = 2 === count( $parts ) && function_exists( 'get_term' ) ? get_term( (int) $parts[1], $parts[0] ) : null;
+		if ( 2 !== count( $parts ) || ! function_exists( 'is_taxonomy_viewable' ) || ! is_taxonomy_viewable( $parts[0] ) ) {
+			return (string) $ref;
+		}
+		$term = function_exists( 'get_term' ) ? get_term( (int) $parts[1], $parts[0] ) : null;
 		if ( is_object( $term ) && isset( $term->name ) && ! is_wp_error( $term ) ) {
 			return $parts[0] . ': ' . self::plain( $term->name );
 		}
@@ -365,13 +380,23 @@ class EMCP_Tools_Themer_Loop_Options {
 	/**
 	 * Label for a saved author id missing from authors().
 	 *
+	 * Named only when the user has `edit_posts`, the capability authors()
+	 * lists by; any other account is labelled by id.
+	 *
 	 * @param int|string $id User id.
 	 * @return string Plain text.
 	 */
 	public static function author_label( $id ): string {
-		$user = function_exists( 'get_userdata' ) ? get_userdata( (int) $id ) : false;
+		$id   = (int) $id;
+		$user = $id > 0 && function_exists( 'get_userdata' ) ? get_userdata( $id ) : false;
+		if ( $user && user_can( $user, 'edit_posts' ) ) {
+			$name = self::plain( $user->display_name ?? '' );
+			if ( '' !== trim( $name ) ) {
+				return $name;
+			}
+		}
 		/* translators: %d: user id */
-		return $user ? self::plain( $user->display_name ) : sprintf( __( 'User #%d', 'emcp-tools' ), (int) $id );
+		return sprintf( __( 'Author #%d', 'emcp-tools' ), $id );
 	}
 
 	/**

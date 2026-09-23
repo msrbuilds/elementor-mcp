@@ -55,7 +55,10 @@ if ( ! class_exists( 'EMCP_Tools_Themer_Widget_Loop_Base' ) && class_exists( '\E
 
 		/**
 		 * Handles the editor preview must load: it renders widgets over AJAX,
-		 * where an enqueue from render never reaches the page. Registered by
+		 * where an enqueue from render never reaches the page. Swiper is
+		 * named only per EMCP_Tools_Themer_Loop_Assets::swiper_depends(), so
+		 * an early render or a saved `_elementor_page_assets` never carries
+		 * the bundled fallback beside Elementor's own. Registered by
 		 * EMCP_Tools_Themer_Loop_Assets on elementor/frontend/after_register_scripts,
 		 * which the preview fires before it enqueues widget dependencies.
 		 *
@@ -64,7 +67,7 @@ if ( ! class_exists( 'EMCP_Tools_Themer_Widget_Loop_Base' ) && class_exists( '\E
 		public function get_script_depends(): array {
 			$deps = array( EMCP_Tools_Themer_Loop_Assets::SCRIPT );
 			if ( 'carousel' === $this->emcp_kind() ) {
-				array_unshift( $deps, EMCP_Tools_Themer_Loop_Assets::swiper_handle() );
+				$deps = array_merge( EMCP_Tools_Themer_Loop_Assets::swiper_depends( false, self::emcp_is_editor() ), $deps );
 			}
 			return $deps;
 		}
@@ -73,7 +76,7 @@ if ( ! class_exists( 'EMCP_Tools_Themer_Widget_Loop_Base' ) && class_exists( '\E
 		public function get_style_depends(): array {
 			$deps = array( EMCP_Tools_Themer_Loop_Assets::STYLE );
 			if ( 'carousel' === $this->emcp_kind() ) {
-				array_unshift( $deps, EMCP_Tools_Themer_Loop_Assets::swiper_style_handle() );
+				$deps = array_merge( EMCP_Tools_Themer_Loop_Assets::swiper_depends( true, self::emcp_is_editor() ), $deps );
 			}
 			return $deps;
 		}
@@ -189,11 +192,7 @@ if ( ! class_exists( 'EMCP_Tools_Themer_Widget_Loop_Base' ) && class_exists( '\E
 			return EMCP_Tools_Themer_Loop_Widget_Map::merge_saved(
 				EMCP_Tools_Themer_Loop_Options::loop_templates(),
 				self::emcp_saved()['templates'],
-				static function ( $id ) {
-					$title = wp_strip_all_tags( (string) get_the_title( (int) $id ) );
-					/* translators: %d: Loop Item id */
-					return '' !== trim( $title ) ? $title : sprintf( __( 'Loop Item #%d', 'emcp-tools' ), (int) $id );
-				}
+				array( 'EMCP_Tools_Themer_Loop_Options', 'template_label' )
 			);
 		}
 
@@ -205,14 +204,7 @@ if ( ! class_exists( 'EMCP_Tools_Themer_Widget_Loop_Base' ) && class_exists( '\E
 			return EMCP_Tools_Themer_Loop_Widget_Map::merge_saved(
 				EMCP_Tools_Themer_Loop_Options::flat_terms(),
 				self::emcp_saved()['terms'],
-				static function ( $ref ) {
-					$parts = explode( ':', (string) $ref, 2 );
-					$term  = 2 === count( $parts ) ? get_term( (int) $parts[1], $parts[0] ) : null;
-					if ( $term instanceof WP_Term ) {
-						return $parts[0] . ': ' . wp_strip_all_tags( $term->name );
-					}
-					return (string) $ref;
-				}
+				array( 'EMCP_Tools_Themer_Loop_Options', 'term_label' )
 			);
 		}
 
@@ -224,11 +216,7 @@ if ( ! class_exists( 'EMCP_Tools_Themer_Widget_Loop_Base' ) && class_exists( '\E
 			return EMCP_Tools_Themer_Loop_Widget_Map::merge_saved(
 				EMCP_Tools_Themer_Loop_Options::authors(),
 				self::emcp_saved()['authors'],
-				static function ( $id ) {
-					$user = get_userdata( (int) $id );
-					/* translators: %d: user id */
-					return $user ? wp_strip_all_tags( (string) $user->display_name ) : sprintf( __( 'User #%d', 'emcp-tools' ), (int) $id );
-				}
+				array( 'EMCP_Tools_Themer_Loop_Options', 'author_label' )
 			);
 		}
 

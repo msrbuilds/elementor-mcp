@@ -122,6 +122,34 @@ class EMCP_Tools_Themer_Loop_Assets {
 	}
 
 	/**
+	 * The Swiper handle a carousel widget may declare as a dependency.
+	 *
+	 * Elementor enqueues widget depends as each widget prints, which on a
+	 * block theme is before wp_head (before Elementor registers `swiper` at
+	 * wp_enqueue_scripts), and it stores them in `_elementor_page_assets` when
+	 * a document saves over admin-ajax, REST or WP-CLI, where `swiper` is
+	 * never registered. Naming the bundled fallback there would load a second
+	 * Swiper once Elementor's own arrives. So the depends carry `swiper` only
+	 * when Elementor has registered it, the chosen handle only in the editor
+	 * or preview (which renders over AJAX and needs the depends), and nothing
+	 * otherwise: the element's render-time enqueue() then defers the choice.
+	 *
+	 * @param bool $style  Whether the stylesheet handle is wanted.
+	 * @param bool $editor Whether the request is the Elementor editor or preview.
+	 * @return string[] Zero or one handle.
+	 */
+	public static function swiper_depends( bool $style, bool $editor ): array {
+		$registered = $style ? wp_style_is( 'swiper', 'registered' ) : wp_script_is( 'swiper', 'registered' );
+		if ( $registered ) {
+			return array( 'swiper' );
+		}
+		if ( $editor ) {
+			return array( $style ? self::swiper_style_handle() : self::swiper_handle() );
+		}
+		return array();
+	}
+
+	/**
 	 * Enqueue for a render.
 	 *
 	 * @param bool $carousel Whether a carousel is on the page.
