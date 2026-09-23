@@ -310,6 +310,10 @@ class EMCP_Tools_Themer_Loop_Renderer {
 		if ( isset( self::$dyn_printed[ $key ] ) ) {
 			return '';
 		}
+		// Css\Base::parse_content() changes Elementor's style-controls flag and
+		// duplication mode and restores them only on success, so a throwing tag
+		// would leave every later render in the request generating CSS wrongly.
+		$state = EMCP_Tools_Themer_Content_Renderer::elementor_state();
 		try {
 			$post_css = \Elementor\Core\Files\CSS\Post::create( $template_id );
 			// Never Dynamic_CSS::create(): Elementor's files manager caches one
@@ -318,6 +322,7 @@ class EMCP_Tools_Themer_Loop_Renderer {
 			$dynamic = new \Elementor\Core\DynamicTags\Dynamic_CSS( $template_id, $post_css );
 			$css     = trim( (string) $dynamic->get_content() );
 		} catch ( \Throwable $e ) {
+			EMCP_Tools_Themer_Content_Renderer::restore_elementor_state( $state );
 			return '';
 		}
 		if ( '' === $css ) {

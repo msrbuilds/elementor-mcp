@@ -155,7 +155,60 @@ if ( ! class_exists( 'EMCP_Tools_Themer_Elementor_Tag' )
 		 */
 		public function get_value( array $options = array() ) {
 			unset( $options );
-			return EMCP_Tools_Themer_Elementor_Tags::data_value( $this->source_key(), $this->source_args() );
+			$args = $this->source_args();
+			// The fallback is this tag's own setting, applied below; the render
+			// tag's before/after never applied to a value.
+			unset( $args['fallback'], $args['before'], $args['after'] );
+
+			$value = EMCP_Tools_Themer_Elementor_Tags::data_value( $this->source_key(), $args );
+			return EMCP_Tools_Themer_Elementor_Tags::apply_data_fallback( $value, $this->raw_fallback(), $this->source_type() );
+		}
+
+		/**
+		 * One Fallback control, typed like the control the tag fills: MEDIA for
+		 * an image source (Elementor Pro's Featured Image does the same), URL for
+		 * a url source. The render tags these replaced offered a text Fallback
+		 * in their Advanced section, and bindings saved with it keep working:
+		 * raw_fallback() accepts that string as well as the URL control's array.
+		 */
+		protected function register_controls() {
+			if ( ! method_exists( $this, 'add_control' ) ) {
+				return;
+			}
+			$this->add_control(
+				'fallback',
+				array(
+					'label' => __( 'Fallback', 'emcp-tools' ),
+					// Controls_Manager::MEDIA / Controls_Manager::URL.
+					'type'  => 'image' === $this->source_type() ? 'media' : 'url',
+				)
+			);
+		}
+
+		/**
+		 * @return string The source's value type.
+		 */
+		protected function source_type(): string {
+			$def = EMCP_Tools_Themer_Dynamic_Catalog::get( $this->source_key() );
+			return $def ? (string) $def['type'] : '';
+		}
+
+		/**
+		 * The saved fallback as stored. Read raw rather than via get_settings(),
+		 * because Elementor normalises a URL control's value to an array and
+		 * would drop an old text fallback saved on the former render tag.
+		 *
+		 * @return mixed
+		 */
+		protected function raw_fallback() {
+			if ( method_exists( $this, 'get_data' ) ) {
+				$settings = (array) $this->get_data( 'settings' );
+				if ( array_key_exists( 'fallback', $settings ) ) {
+					return $settings['fallback'];
+				}
+			}
+			$settings = $this->source_args();
+			return $settings['fallback'] ?? null;
 		}
 	}
 

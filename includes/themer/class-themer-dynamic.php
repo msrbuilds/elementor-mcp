@@ -752,14 +752,21 @@ class EMCP_Tools_Themer_Dynamic {
 	}
 
 	/**
-	 * The image size a caller asked for, 'full' when none.
+	 * The image size a caller asked for, when it is a registered size; 'full'
+	 * otherwise. Matched exactly, not through sanitize_key(), because sizes
+	 * registered with capitals (`Hero-Wide`) are valid and would be lowered
+	 * into a name that does not exist.
 	 *
 	 * @param array $args Source args.
 	 * @return string
 	 */
 	private static function image_size( array $args ): string {
-		$size = isset( $args['size'] ) && is_string( $args['size'] ) ? sanitize_key( $args['size'] ) : '';
-		return '' !== $size ? $size : 'full';
+		$size = isset( $args['size'] ) && is_string( $args['size'] ) ? trim( $args['size'] ) : '';
+		if ( '' === $size || 'full' === $size ) {
+			return 'full';
+		}
+		$known = function_exists( 'get_intermediate_image_sizes' ) ? (array) get_intermediate_image_sizes() : array();
+		return in_array( $size, $known, true ) ? $size : 'full';
 	}
 
 	public static function catalog(): array {
