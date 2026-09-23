@@ -188,6 +188,7 @@ Adds a loop builder to EMCP Themer, so one post card can be repeated in grids an
 * Fixed: Themer dynamic images and links in Elementor. Binding the Featured Image, Site Logo or Author Avatar source to an Elementor image or background no longer crashes the page, and the Featured Image size setting now takes effect.
 * Fixed: A padding, margin, border radius or border width sent with some sides blank is no longer saved in a way that makes Elementor drop the whole rule; blank sides are filled from the saved value or the setting is left unchanged, and the warning says which (#151).
 * Fixed: 55 curated widget parameters used names Elementor does not recognise, so their values were ignored; all are corrected or removed, catalog defaults now use values Elementor accepts (progress bars show their percentage and code blocks their line numbers and copy button again), and the widget tools now warn about unrecognised settings. Re-send values set under the old names (#152).
+* Changed: EMCP Themer is off by default on new installs; turn it on from EMCP Tools > Modules. Sites that already use it keep it on.
 * New: Sandbox Plugin Export (Pro module, off by default). Package every active Sandbox widget, block and PHP snippet as a standalone plugin that keeps working after EMCP Tools is deactivated. Identities are preserved, the runtime the widgets call is bundled, API keys come from constants, and the export stays dormant while EMCP Tools is active.
 
 = 3.17.1 =

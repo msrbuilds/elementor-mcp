@@ -38,8 +38,13 @@ class EMCP_Tools_Themer_Module extends EMCP_Tools_Module {
 		return 'free';
 	}
 
+	/**
+	 * Off on new installs: an admin turns Themer on from the Modules tab. The
+	 * registry seeds each module once, so a site that already has Themer on
+	 * keeps it.
+	 */
 	public function default_active(): bool {
-		return true;
+		return false;
 	}
 
 	/** The native CPT screen (its own dashboard menu) is the config surface. */
