@@ -211,14 +211,18 @@
 			return el( TextControl, { key: key, label: def.label, value: val || '', onChange: set } );
 		}
 		if ( def.type === 'number' ) {
+			// The attribute's registered default: shown when the value is unset,
+			// and restored by the control's Reset button.
+			var type = props.name && wp.blocks.getBlockType( props.name );
+			var fallback = type && type.attributes && type.attributes[ key ] ? type.attributes[ key ].default : undefined;
 			return el( RangeControl, {
 				key: key,
 				label: def.label,
-				value: typeof val === 'number' ? val : 0,
+				value: typeof val === 'number' ? val : fallback,
 				min: typeof def.min === 'number' ? def.min : 0,
 				max: typeof def.max === 'number' ? def.max : numberMax( key ),
-				// A cleared field unsets the attribute so it falls back to its
-				// default, as a cleared Elementor control inherits; never 0.
+				allowReset: typeof fallback === 'number',
+				resetFallbackValue: fallback,
 				onChange: function ( v ) { set( typeof v === 'number' ? v : undefined ); }
 			} );
 		}
