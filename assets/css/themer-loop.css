@@ -342,7 +342,8 @@
 .emcp-loop--carousel > .emcp-loop__arrow {
 	position: absolute;
 	top: 50%;
-	z-index: 2;
+	/* Above the dots bar, which Swiper's own stylesheet puts at z-index 10. */
+	z-index: 11;
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
@@ -400,6 +401,14 @@
 	left: 0;
 	right: 0;
 	margin: 0;
+}
+/* The dots bar spans the full width; only the bullets take clicks, so on short
+ * cards it never swallows a click meant for an arrow. */
+.emcp-loop--carousel > .emcp-loop__dots.swiper-pagination {
+	pointer-events: none;
+}
+.emcp-loop--carousel > .emcp-loop__dots .swiper-pagination-bullet {
+	pointer-events: auto;
 }
 .emcp-loop--carousel > .emcp-loop__dots .swiper-pagination-bullet {
 	width: var(--emcp-dot-size, 8px);
