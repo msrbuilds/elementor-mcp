@@ -120,7 +120,7 @@ class EMCP_Tools_Themer_Metabox {
 				array(
 					'templates' => $templates,
 					'i18n'      => array(
-						'none'       => __( ', None (use builder content) , ', 'emcp-tools' ),
+						'none'       => __( 'None (use builder content)', 'emcp-tools' ),
 						'chooseType' => __( 'Choose a template type first to list matching PHP templates.', 'emcp-tools' ),
 						'noMatch'    => __( 'No PHP templates match this type yet. Ask your AI agent to create one.', 'emcp-tools' ),
 					),
@@ -194,7 +194,7 @@ JS;
 		echo '<div class="emcp-themer-field" style="flex:1 1 260px;min-width:240px;">';
 		echo '<p style="margin-top:0;"><label for="emcp-themer-type"><strong>' . esc_html__( 'Template type', 'emcp-tools' ) . '</strong> <span style="color:#d63638">*</span></label><br>';
 		echo '<select id="emcp-themer-type" name="emcp_themer_type" class="emcp-themer-type-select" required style="width:100%;max-width:340px;">';
-		printf( '<option value="" %s>%s</option>', selected( $type, '', false ), esc_html__( ', Choose a template type , ', 'emcp-tools' ) );
+		printf( '<option value="" %s>%s</option>', selected( $type, '', false ), esc_html__( 'Choose a template type', 'emcp-tools' ) );
 		foreach ( EMCP_Tools_Themer_CPT::TYPES as $t ) {
 			printf( '<option value="%1$s" %2$s>%3$s</option>', esc_attr( $t ), selected( $type, $t, false ), esc_html( $type_labels[ $t ] ?? ucfirst( $t ) ) );
 		}
@@ -215,7 +215,7 @@ JS;
 				$attached,
 				$has_type ? '' : 'display:none;'
 			);
-			printf( '<option value="0">%s</option>', esc_html__( ', None (use builder content) , ', 'emcp-tools' ) );
+			printf( '<option value="0">%s</option>', esc_html__( 'None (use builder content)', 'emcp-tools' ) );
 			if ( $has_type ) {
 				foreach ( self::eligible_templates( $type ) as $tpl ) {
 					printf(

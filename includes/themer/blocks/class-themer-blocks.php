@@ -496,7 +496,7 @@ class EMCP_Tools_Themer_Blocks {
 	 * @return array<int,array{value:int,label:string}>
 	 */
 	private static function menu_choices(): array {
-		$out   = array( array( 'value' => 0, 'label' => __( ', Auto (first menu) , ', 'emcp-tools' ) ) );
+		$out   = array( array( 'value' => 0, 'label' => __( 'Auto (first menu)', 'emcp-tools' ) ) );
 		$menus = function_exists( 'wp_get_nav_menus' ) ? wp_get_nav_menus() : array();
 		foreach ( $menus as $menu ) {
 			$out[] = array( 'value' => (int) $menu->term_id, 'label' => $menu->name );

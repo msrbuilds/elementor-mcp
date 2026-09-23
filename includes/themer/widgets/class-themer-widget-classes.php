@@ -175,7 +175,7 @@ abstract class EMCP_Tools_Themer_Widget_Base extends \Elementor\Widget_Base {
 
 	/** Available nav menus for the menu picker. */
 	private function menu_options(): array {
-		$out   = array( '0' => __( ', Auto (first menu) , ', 'emcp-tools' ) );
+		$out   = array( '0' => __( 'Auto (first menu)', 'emcp-tools' ) );
 		$menus = function_exists( 'wp_get_nav_menus' ) ? wp_get_nav_menus() : array();
 		foreach ( $menus as $menu ) {
 			$out[ (string) $menu->term_id ] = $menu->name;
