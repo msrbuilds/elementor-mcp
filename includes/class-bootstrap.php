@@ -290,6 +290,7 @@ class EMCP_Tools_Bootstrap {
 		require_once EMCP_TOOLS_DIR . 'includes/themer/loop/class-themer-loop-assets.php';
 		require_once EMCP_TOOLS_DIR . 'includes/themer/loop/class-themer-loop-options.php';
 		require_once EMCP_TOOLS_DIR . 'includes/themer/loop/class-themer-loop-widget-map.php';
+		require_once EMCP_TOOLS_DIR . 'includes/themer/loop/class-themer-loop-block-map.php';
 		require_once EMCP_TOOLS_DIR . 'includes/themer/loop/class-themer-loop-rest.php';
 		require_once EMCP_TOOLS_DIR . 'includes/themer/dynamic/class-themer-dynamic-catalog.php';
 		require_once EMCP_TOOLS_DIR . 'includes/themer/class-themer-dynamic.php';

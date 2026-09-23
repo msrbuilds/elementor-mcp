@@ -30,6 +30,9 @@ class EMCP_Tools_Themer_Loop_Assets {
 	/** @var bool */
 	private static $registered = false;
 
+	/** @var bool Whether the stylesheet handle is registered. */
+	private static $style_registered = false;
+
 	/**
 	 * Hook registration on every surface that renders a loop.
 	 *
@@ -79,8 +82,30 @@ class EMCP_Tools_Themer_Loop_Assets {
 		}
 
 		wp_register_style( self::STYLE, $url . 'assets/css/themer-loop.css', array(), $style_ver );
+		self::$style_registered = true;
 		wp_register_script( self::SCRIPT, $url . 'assets/js/themer-loop.js', array(), $script_ver, true );
 		wp_localize_script( self::SCRIPT, 'emcpThemerLoop', self::localize_data() );
+	}
+
+	/**
+	 * Register the loop stylesheet only (idempotent). The block editor needs
+	 * it for the loop blocks' previews and it must be registered when the
+	 * blocks are (on init). Unlike register(), it builds no script data (no
+	 * nonce, no REST URL) and decides no Swiper handle, so it is safe that
+	 * early on any request.
+	 */
+	public static function register_style(): void {
+		if ( self::$style_registered ) {
+			return;
+		}
+		self::$style_registered = true;
+		$dir = defined( 'EMCP_TOOLS_DIR' ) ? EMCP_TOOLS_DIR : '';
+		$url = defined( 'EMCP_TOOLS_URL' ) ? EMCP_TOOLS_URL : '';
+		$ver = defined( 'EMCP_TOOLS_VERSION' ) ? EMCP_TOOLS_VERSION : '0';
+		if ( defined( 'WP_DEBUG' ) && WP_DEBUG && '' !== $dir && file_exists( $dir . 'assets/css/themer-loop.css' ) ) {
+			$ver = (string) filemtime( $dir . 'assets/css/themer-loop.css' );
+		}
+		wp_register_style( self::STYLE, $url . 'assets/css/themer-loop.css', array(), $ver );
 	}
 
 	/** @return string */
@@ -128,6 +153,7 @@ class EMCP_Tools_Themer_Loop_Assets {
 
 	/** Test seam. */
 	public static function reset_for_tests(): void {
-		self::$registered = false;
+		self::$registered       = false;
+		self::$style_registered = false;
 	}
 }

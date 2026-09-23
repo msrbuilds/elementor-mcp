@@ -805,6 +805,9 @@ class EMCP_Tools_Themer_Dynamic {
 					'more_text'    => (string) ( $a['moreText'] ?? '' ),
 					'pagination'   => ! empty( $a['pagination'] ),
 				);
+			case 'loop-grid':
+			case 'loop-carousel':
+				return EMCP_Tools_Themer_Loop_Block_Map::attributes_to_args( $key, $a );
 		}
 		return array();
 	}

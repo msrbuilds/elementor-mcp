@@ -34,6 +34,7 @@ class EMCP_Tools_Themer_Blocks {
 	/** Register blocks, the block category, and editor assets. */
 	public function init(): void {
 		add_filter( 'block_categories_all', array( $this, 'register_category' ), 10, 1 );
+		add_action( 'enqueue_block_editor_assets', array( __CLASS__, 'add_loop_options' ) );
 		// The module boots on init:5, so init has already started — register now;
 		// otherwise defer to init.
 		if ( did_action( 'init' ) ) {
@@ -266,6 +267,20 @@ class EMCP_Tools_Themer_Blocks {
 					array( 'key' => 'pagination', 'type' => 'toggle', 'label' => __( 'Pagination', 'emcp-tools' ) ),
 				),
 			),
+			'loop-grid'     => array(
+				'title'      => __( 'Loop Grid', 'emcp-tools' ),
+				'icon'       => 'grid-view',
+				'supports'   => $box_supports,
+				'attributes' => EMCP_Tools_Themer_Loop_Block_Map::attributes( 'loop-grid' ),
+				'controls'   => EMCP_Tools_Themer_Loop_Block_Map::controls( 'loop-grid' ),
+			),
+			'loop-carousel' => array(
+				'title'      => __( 'Loop Carousel', 'emcp-tools' ),
+				'icon'       => 'slides',
+				'supports'   => $box_supports,
+				'attributes' => EMCP_Tools_Themer_Loop_Block_Map::attributes( 'loop-carousel' ),
+				'controls'   => EMCP_Tools_Themer_Loop_Block_Map::controls( 'loop-carousel' ),
+			),
 		);
 	}
 
@@ -303,23 +318,35 @@ class EMCP_Tools_Themer_Blocks {
 			if ( \WP_Block_Type_Registry::get_instance()->is_registered( 'emcp/' . $key ) ) {
 				continue;
 			}
-			register_block_type(
-				'emcp/' . $key,
-				array(
-					'api_version'     => 2,
-					'title'           => $def['title'],
-					'category'        => self::CATEGORY,
-					'icon'            => $def['icon'],
-					'attributes'      => $def['attributes'],
-					'supports'        => $def['supports'],
-					'editor_script'   => self::SCRIPT,
-					'editor_style'    => self::STYLE,
-					'style'           => self::STYLE,
-					'render_callback' => static function ( $attributes ) use ( $key ) {
-						return EMCP_Tools_Themer_Blocks::render_block( $key, is_array( $attributes ) ? $attributes : array() );
-					},
-				)
+			$args = array(
+				'api_version'     => 2,
+				'title'           => $def['title'],
+				'category'        => self::CATEGORY,
+				'icon'            => $def['icon'],
+				'attributes'      => $def['attributes'],
+				'supports'        => $def['supports'],
+				'editor_script'   => self::SCRIPT,
+				'editor_style'    => self::STYLE,
+				'style'           => self::STYLE,
+				'render_callback' => static function ( $attributes ) use ( $key ) {
+					return EMCP_Tools_Themer_Blocks::render_block( $key, is_array( $attributes ) ? $attributes : array() );
+				},
 			);
+			if ( isset( EMCP_Tools_Themer_Loop_Block_Map::BLOCKS[ $key ] ) && class_exists( 'EMCP_Tools_Themer_Loop_Assets' ) ) {
+				// The loop stylesheet goes with the block, so the editor's
+				// preview (in the editor iframe) is laid out as on the site.
+				// The front-end script and Swiper are enqueued by the element
+				// when it renders (EMCP_Tools_Themer_Loop_Assets::enqueue()),
+				// not declared here: deciding the Swiper handle and building
+				// the script data at init would pick the fallback Swiper
+				// before Elementor registers its own, and would create a REST
+				// nonce on every request, which the assets class avoids.
+				EMCP_Tools_Themer_Loop_Assets::register_style();
+				unset( $args['style'], $args['editor_style'] );
+				$args['style_handles']        = array( self::STYLE, EMCP_Tools_Themer_Loop_Assets::STYLE );
+				$args['editor_style_handles'] = array( self::STYLE, EMCP_Tools_Themer_Loop_Assets::STYLE );
+			}
+			register_block_type( 'emcp/' . $key, $args );
 		}
 	}
 
@@ -352,7 +379,16 @@ class EMCP_Tools_Themer_Blocks {
 	 * @return string
 	 */
 	public static function render_block( string $key, array $attributes ): string {
-		$args  = EMCP_Tools_Themer_Dynamic::args_from( $key, $attributes );
+		$args = EMCP_Tools_Themer_Dynamic::args_from( $key, $attributes );
+		if ( isset( EMCP_Tools_Themer_Loop_Block_Map::BLOCKS[ $key ] )
+			&& defined( 'REST_REQUEST' ) && REST_REQUEST
+			&& ! EMCP_Tools_Themer_CPT::is_published_loop_template( (int) ( $args['template_id'] ?? 0 ) ) ) {
+			// The editor preview (the block renderer is a REST request): the
+			// element prints only an HTML comment without a Loop Item, which
+			// would leave the preview blank.
+			$wrapper = function_exists( 'get_block_wrapper_attributes' ) ? get_block_wrapper_attributes() : '';
+			return '<div ' . $wrapper . '><span class="emcp-dyn-placeholder">' . esc_html__( 'Choose a published Loop Item in the block settings.', 'emcp-tools' ) . '</span></div>';
+		}
 		$inner = EMCP_Tools_Themer_Dynamic::render( $key, $args );
 		if ( '' === $inner ) {
 			// In the editor preview, show the block name so it isn't invisible;
@@ -366,6 +402,89 @@ class EMCP_Tools_Themer_Blocks {
 		}
 		$wrapper = function_exists( 'get_block_wrapper_attributes' ) ? get_block_wrapper_attributes() : '';
 		return '<div ' . $wrapper . '>' . $inner . '</div>';
+	}
+
+	/**
+	 * Option lists the loop block inspectors need. Labels are plain text:
+	 * React escapes them. Values a block has saved (a Loop Item, terms,
+	 * authors, post types, a taxonomy) are always included, even beyond the
+	 * lists' caps, labelled from a lookup or by their id.
+	 *
+	 * @since 3.18.0
+	 * @param array<string,string[]> $saved EMCP_Tools_Themer_Loop_Block_Map::collect_saved() output.
+	 * @return array<string,array<int,array{value:string,label:string}>>
+	 */
+	public static function loop_options( array $saved = array() ): array {
+		$pairs = static function ( array $map ): array {
+			$out = array();
+			foreach ( $map as $value => $label ) {
+				$out[] = array( 'value' => (string) $value, 'label' => (string) $label );
+			}
+			return $out;
+		};
+		$merge = static function ( array $options, string $group, callable $label ) use ( $saved ): array {
+			return EMCP_Tools_Themer_Loop_Widget_Map::merge_saved( $options, (array) ( $saved[ $group ] ?? array() ), $label );
+		};
+		$woo = EMCP_Tools_Themer_Loop_Query::woocommerce_active();
+
+		$sources = array(
+			'posts'   => __( 'Posts', 'emcp-tools' ),
+			'current' => __( 'Current query (archive)', 'emcp-tools' ),
+			'related' => __( 'Related to current post', 'emcp-tools' ),
+			'manual'  => __( 'Manual selection', 'emcp-tools' ),
+		);
+		if ( $woo ) {
+			$sources['products'] = __( 'Products', 'emcp-tools' );
+		}
+		$tags = array();
+		foreach ( EMCP_Tools_Themer_Loop_Renderer::TAGS as $tag ) {
+			$tags[ $tag ] = $tag;
+		}
+		$opts = 'EMCP_Tools_Themer_Loop_Options';
+
+		return array(
+			'templates'      => $pairs( $merge( array( 0 => __( 'Select a Loop Item', 'emcp-tools' ) ) + EMCP_Tools_Themer_Loop_Options::loop_templates(), 'templates', array( $opts, 'template_label' ) ) ),
+			'itemTags'       => $pairs( $tags ),
+			'sources'        => $pairs( $sources ),
+			'postTypes'      => $pairs( $merge( EMCP_Tools_Themer_Loop_Options::post_types(), 'postTypes', 'strval' ) ),
+			'taxonomies'     => $pairs( $merge( EMCP_Tools_Themer_Loop_Options::taxonomies(), 'taxonomies', 'strval' ) ),
+			'terms'          => $pairs( $merge( EMCP_Tools_Themer_Loop_Options::flat_terms(), 'terms', array( $opts, 'term_label' ) ) ),
+			'authors'        => $pairs( $merge( EMCP_Tools_Themer_Loop_Options::authors(), 'authors', array( $opts, 'author_label' ) ) ),
+			'orderby'        => $pairs( EMCP_Tools_Themer_Loop_Options::orderby( $woo ) ),
+			'order'          => $pairs( array( 'desc' => __( 'Descending', 'emcp-tools' ), 'asc' => __( 'Ascending', 'emcp-tools' ) ) ),
+			'dates'          => $pairs( EMCP_Tools_Themer_Loop_Options::date_ranges() ),
+			'hover'          => $pairs( array( 'none' => __( 'None', 'emcp-tools' ), 'lift' => __( 'Lift', 'emcp-tools' ), 'zoom' => __( 'Zoom', 'emcp-tools' ), 'shadow' => __( 'Shadow', 'emcp-tools' ) ) ),
+			'animations'     => $pairs( array( 'none' => __( 'None', 'emcp-tools' ), 'fade-up' => __( 'Fade up', 'emcp-tools' ), 'fade-in' => __( 'Fade in', 'emcp-tools' ), 'zoom-in' => __( 'Zoom in', 'emcp-tools' ) ) ),
+			'pagination'     => $pairs( array( 'none' => __( 'None', 'emcp-tools' ), 'numbers' => __( 'Numbers', 'emcp-tools' ), 'prev_next' => __( 'Previous and next', 'emcp-tools' ), 'numbers_prev_next' => __( 'Numbers with previous and next', 'emcp-tools' ), 'load_more' => __( 'Load more button', 'emcp-tools' ), 'infinite' => __( 'Infinite scroll', 'emcp-tools' ) ) ),
+			'heights'        => $pairs( array( 'auto' => __( 'Auto', 'emcp-tools' ), 'equal' => __( 'Equal', 'emcp-tools' ) ) ),
+			'offsets'        => $pairs( array( 'none' => __( 'None', 'emcp-tools' ), 'both' => __( 'Both sides', 'emcp-tools' ), 'left' => __( 'Left', 'emcp-tools' ), 'right' => __( 'Right', 'emcp-tools' ) ) ),
+			'effects'        => $pairs( array( 'slide' => __( 'Slide', 'emcp-tools' ), 'fade' => __( 'Fade', 'emcp-tools' ), 'coverflow' => __( 'Coverflow', 'emcp-tools' ) ) ),
+			'directions'     => $pairs( array( 'ltr' => __( 'Left to right', 'emcp-tools' ), 'rtl' => __( 'Right to left', 'emcp-tools' ) ) ),
+			'arrowPositions' => $pairs( array( 'inside' => __( 'Inside', 'emcp-tools' ), 'outside' => __( 'Outside', 'emcp-tools' ), 'bottom' => __( 'Bottom', 'emcp-tools' ) ) ),
+			'dots'           => $pairs( array( 'none' => __( 'None', 'emcp-tools' ), 'bullets' => __( 'Bullets', 'emcp-tools' ), 'fraction' => __( 'Fraction', 'emcp-tools' ), 'progress' => __( 'Progress bar', 'emcp-tools' ) ) ),
+			'dotPositions'   => $pairs( array( 'inside' => __( 'Inside', 'emcp-tools' ), 'outside' => __( 'Outside', 'emcp-tools' ) ) ),
+		);
+	}
+
+	/**
+	 * Add the loop option lists to the editor payload. Hooked on
+	 * enqueue_block_editor_assets, so the queries behind them (Loop Items,
+	 * terms, authors) run only when a block editor loads, never on a front
+	 * end or REST request. The values saved in the post being edited are
+	 * merged in, so a saved selection always shows.
+	 */
+	public static function add_loop_options(): void {
+		$saved = array();
+		// The post being edited (the editor screens set the global).
+		$post = isset( $GLOBALS['post'] ) ? get_post( $GLOBALS['post'] ) : null;
+		if ( is_object( $post ) && isset( $post->ID, $post->post_content ) && current_user_can( 'edit_post', (int) $post->ID ) ) {
+			$saved = EMCP_Tools_Themer_Loop_Block_Map::collect_saved( parse_blocks( (string) $post->post_content ) );
+		}
+		wp_add_inline_script(
+			self::SCRIPT,
+			'window.emcpThemerBlocks = window.emcpThemerBlocks || {}; window.emcpThemerBlocks.loopOptions = ' . wp_json_encode( self::loop_options( $saved ) ) . ';',
+			'before'
+		);
 	}
 
 	/**

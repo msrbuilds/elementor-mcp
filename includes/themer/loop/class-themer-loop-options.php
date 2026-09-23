@@ -315,6 +315,66 @@ class EMCP_Tools_Themer_Loop_Options {
 	}
 
 	/**
+	 * Public taxonomies the loop query can relate by (names the term ref
+	 * format can express).
+	 *
+	 * @return array<string,string> name => plain label.
+	 */
+	public static function taxonomies(): array {
+		if ( isset( self::$cache['taxonomies'] ) ) {
+			return self::$cache['taxonomies'];
+		}
+		$out = array();
+		foreach ( get_taxonomies( array( 'public' => true ), 'objects' ) as $tax ) {
+			$name = is_object( $tax ) ? (string) ( $tax->name ?? '' ) : '';
+			if ( preg_match( '/^[a-z0-9_-]+$/', $name ) ) {
+				$out[ $name ] = self::plain( $tax->label ?? $name );
+			}
+		}
+		self::$cache['taxonomies'] = $out;
+		return $out;
+	}
+
+	/**
+	 * Label for a saved Loop Item id missing from loop_templates().
+	 *
+	 * @param int|string $id Template id.
+	 * @return string Plain text.
+	 */
+	public static function template_label( $id ): string {
+		$title = self::plain( get_the_title( (int) $id ) );
+		/* translators: %d: Loop Item id */
+		return '' !== trim( $title ) ? $title : sprintf( __( 'Loop Item #%d', 'emcp-tools' ), (int) $id );
+	}
+
+	/**
+	 * Label for a saved `taxonomy:term_id` ref missing from flat_terms().
+	 *
+	 * @param string $ref Term ref.
+	 * @return string Plain text.
+	 */
+	public static function term_label( $ref ): string {
+		$parts = explode( ':', (string) $ref, 2 );
+		$term  = 2 === count( $parts ) && function_exists( 'get_term' ) ? get_term( (int) $parts[1], $parts[0] ) : null;
+		if ( is_object( $term ) && isset( $term->name ) && ! is_wp_error( $term ) ) {
+			return $parts[0] . ': ' . self::plain( $term->name );
+		}
+		return (string) $ref;
+	}
+
+	/**
+	 * Label for a saved author id missing from authors().
+	 *
+	 * @param int|string $id User id.
+	 * @return string Plain text.
+	 */
+	public static function author_label( $id ): string {
+		$user = function_exists( 'get_userdata' ) ? get_userdata( (int) $id ) : false;
+		/* translators: %d: user id */
+		return $user ? self::plain( $user->display_name ) : sprintf( __( 'User #%d', 'emcp-tools' ), (int) $id );
+	}
+
+	/**
 	 * Plain text for an option label (the consumer escapes it).
 	 *
 	 * @param mixed $raw Label.
