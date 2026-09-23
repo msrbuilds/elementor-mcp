@@ -83,7 +83,7 @@ return array(
 		'params'   => array(
 			'icon'                 => array( 'type' => 'object', 'description' => 'Cart icon object.' ),
 			'items_indicator'      => array( 'type' => 'string', 'enum' => array( 'none', 'bubble', 'plain' ), 'description' => 'Items indicator style.' ),
-			'hide_empty_indicator' => array( 'type' => 'string', 'enum' => array( 'yes', '' ), 'description' => 'Hide when cart is empty.' ),
+			'hide_empty_indicator' => array( 'type' => 'string', 'enum' => array( 'hide', '' ), 'description' => 'Hide the indicator when the cart is empty (on value "hide").' ),
 			'alignment'            => array( 'type' => 'string', 'enum' => array( 'left', 'center', 'right' ), 'description' => 'Alignment.' ),
 		),
 		'required' => array(),
