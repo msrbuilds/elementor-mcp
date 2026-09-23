@@ -149,6 +149,7 @@ class EMCP_Tools_Bootstrap {
 		require_once EMCP_TOOLS_DIR . 'includes/schemas/class-schema-generator.php';
 		require_once EMCP_TOOLS_DIR . 'includes/validators/class-element-validator.php';
 		require_once EMCP_TOOLS_DIR . 'includes/validators/class-settings-validator.php';
+		require_once EMCP_TOOLS_DIR . 'includes/validators/class-widget-setting-keys.php';
 		// Widget catalog, source of truth for the 5 catalog-backed widget tools.
 		require_once EMCP_TOOLS_DIR . 'includes/class-secret.php';
 		require_once EMCP_TOOLS_DIR . 'includes/class-remote-keys.php';

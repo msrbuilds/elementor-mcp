@@ -467,11 +467,21 @@ class EMCP_Tools_Layout_Abilities {
 			return $result;
 		}
 
+		// Widget keys that are not controls are saved but do nothing (#152).
+		// `styles` and `editor_settings` are routed to the element root, not settings.
+		$key_warnings = array();
+		if ( 'widget' === ( $element['elType'] ?? '' ) ) {
+			$key_warnings = EMCP_Tools_Widget_Setting_Keys::warnings(
+				(string) ( $element['widgetType'] ?? '' ),
+				array_diff_key( (array) $settings, array_flip( array( 'styles', 'editor_settings' ) ) )
+			);
+		}
+
 		return array(
 			'success'      => true,
 			'element_id'   => $element_id,
 			'element_type' => $element['elType'] ?? 'unknown',
-			'warnings'     => $guard['warnings'],
+			'warnings'     => array_merge( $guard['warnings'], $key_warnings ),
 		);
 	}
 
