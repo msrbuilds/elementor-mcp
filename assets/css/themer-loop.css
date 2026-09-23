@@ -131,12 +131,22 @@
 		grid-column: auto;
 	}
 }
-/* Pro alternate templates print .span-N on an item. */
-.emcp-loop--grid > .emcp-loop__items > .emcp-loop__item.span-2 { grid-column: span 2; }
-.emcp-loop--grid > .emcp-loop__items > .emcp-loop__item.span-3 { grid-column: span 3; }
-.emcp-loop--grid > .emcp-loop__items > .emcp-loop__item.span-4 { grid-column: span 4; }
-.emcp-loop--grid > .emcp-loop__items > .emcp-loop__item.span-5 { grid-column: span 5; }
-.emcp-loop--grid > .emcp-loop__items > .emcp-loop__item.span-6 { grid-column: span 6; }
+/* Pro alternate templates print .span-N on an item. The span is capped at
+   each device's column count, or the grid would add implicit columns; the
+   var() fallbacks match grid-template-columns, since a nested loop resets
+   these properties to initial. */
+.emcp-loop--grid > .emcp-loop__items > .emcp-loop__item.span-2 { grid-column: span min(2, var(--emcp-cols, 3)); }
+.emcp-loop--grid > .emcp-loop__items > .emcp-loop__item.span-3 { grid-column: span min(3, var(--emcp-cols, 3)); }
+.emcp-loop--grid > .emcp-loop__items > .emcp-loop__item.span-4 { grid-column: span min(4, var(--emcp-cols, 3)); }
+.emcp-loop--grid > .emcp-loop__items > .emcp-loop__item.span-5 { grid-column: span min(5, var(--emcp-cols, 3)); }
+.emcp-loop--grid > .emcp-loop__items > .emcp-loop__item.span-6 { grid-column: span min(6, var(--emcp-cols, 3)); }
+@media (max-width: 1024px) {
+	.emcp-loop--grid > .emcp-loop__items > .emcp-loop__item.span-2 { grid-column: span min(2, var(--emcp-cols-t, 2)); }
+	.emcp-loop--grid > .emcp-loop__items > .emcp-loop__item.span-3 { grid-column: span min(3, var(--emcp-cols-t, 2)); }
+	.emcp-loop--grid > .emcp-loop__items > .emcp-loop__item.span-4 { grid-column: span min(4, var(--emcp-cols-t, 2)); }
+	.emcp-loop--grid > .emcp-loop__items > .emcp-loop__item.span-5 { grid-column: span min(5, var(--emcp-cols-t, 2)); }
+	.emcp-loop--grid > .emcp-loop__items > .emcp-loop__item.span-6 { grid-column: span min(6, var(--emcp-cols-t, 2)); }
+}
 @media (max-width: 767px) {
 	.emcp-loop--grid > .emcp-loop__items > .emcp-loop__item[class*="span-"] { grid-column: auto; }
 }
