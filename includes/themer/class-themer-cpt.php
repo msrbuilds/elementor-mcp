@@ -149,7 +149,12 @@ class EMCP_Tools_Themer_CPT {
 			return;
 		}
 		$type = (string) get_post_meta( (int) $post_id, EMCP_Tools_Themer_Index::META_TYPE, true );
-		echo $type ? '<strong>' . esc_html( ucfirst( $type ) ) . '</strong>' : '&mdash;';
+		if ( '' === $type ) {
+			echo '&mdash;';
+			return;
+		}
+		$labels = self::type_labels();
+		echo '<strong>' . esc_html( $labels[ $type ] ?? ucfirst( $type ) ) . '</strong>';
 	}
 
 	/**
