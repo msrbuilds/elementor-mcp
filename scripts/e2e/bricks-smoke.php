@@ -1,10 +1,10 @@
 <?php
-/** Run explicitly on the local Bricks dev site: php scripts/e2e/bricks-smoke.php. */
+/** Run explicitly on the local Bricks test site: php scripts/e2e/bricks-smoke.php. */
 if ( PHP_SAPI !== 'cli' ) { exit; }
 $_SERVER['REQUEST_SCHEME'] = 'https';
-$_SERVER['HTTP_HOST'] = 'msrplugins.test';
-require dirname( __DIR__, 5 ) . '/wp-load.php';
-if ( ! in_array( wp_parse_url( home_url(), PHP_URL_HOST ), array( 'msrplugins.test', 'localhost' ), true ) ) { exit( "Local test site required.\n" ); }
+$_SERVER['HTTP_HOST'] = 'elementor-mcp.test';
+if ( ! defined( 'ABSPATH' ) ) { require dirname( __DIR__, 6 ) . '/elementor-mcp/wp-load.php'; }
+if ( ! in_array( wp_parse_url( home_url(), PHP_URL_HOST ), array( 'elementor-mcp.test', 'localhost' ), true ) ) { exit( "Local test site required.\n" ); }
 EMCP_Tools_Bootstrap::load_mcp_surface();
 if ( ! EMCP_Tools_Bricks_Integration::supported() ) { exit( "Supported Bricks theme required.\n" ); }
 $administrators = get_users( array( 'role' => 'administrator', 'number' => 1 ) );
@@ -33,7 +33,7 @@ try {
 	$disabled = get_option( 'emcp_tools_disabled_tools', array() );
 	update_option( 'emcp_tools_disabled_tools', array_values( array_filter( $disabled, static function( $slug ) { return strpos( $slug, 'emcp-tools/bricks-' ) !== 0; } ) ) );
 	$context = bricks_run( 'get-context' );
-	bricks_check( $context['version'] === '2.3.13', 'installed Bricks version' );
+	bricks_check( $context['version'] === BRICKS_VERSION && EMCP_Tools_Bricks_Integration::version_supported( $context['version'] ), 'installed Bricks version' );
 	bricks_check( ! wp_get_ability( 'emcp-tools/get-page-structure' ), 'Elementor excluded' );
 	bricks_check( (bool) wp_get_ability( 'emcp-tools/list-blocks' ), 'Gutenberg coexists' );
 	$schema = bricks_run( 'get-element-schema', array( 'name' => 'heading' ) );

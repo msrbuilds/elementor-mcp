@@ -2,7 +2,7 @@
 
 ## Target and architecture
 
-Implement and verify against the locally installed Bricks **2.3.13**. Bricks 2.4 native abilities are a separate compatibility task once stable; this adapter does not depend on prerelease features.
+Verified against Bricks **2.3.13 and 2.4.1**, supporting 2.3.13 through 2.4.x. The adapter continues to use native element, metadata, permissions and CSS APIs; this does not add integration with Bricks native AI abilities.
 
 Bricks is an EMCP Pro standalone integration. It shares the scalar Page Builders selector with Elementor/BeBuilder, while Gutenberg and its existing block packs remain independent. Only a selected, active, supported Bricks installation exposes the Bricks tab and abilities. Every execution rechecks availability. AI Chat gets a dedicated Bricks group.
 
@@ -52,3 +52,9 @@ This is the initial 2.3.13–2.3.x adapter. It does not claim full Bricks parity
 ## Reusable plan for subsequent builders
 
 For each builder, record the installed/tested version and storage format; identify its discovery, permission, save and asset APIs; define the bounded initial tool set and exclusions; wire its independent selector/tab/tools; add malformed-data and permission tests; then run an actual build/edit/render round trip before expanding to the next builder.
+
+## Bricks 2.4 compatibility (2026-09-23)
+
+The previous upper bound rejected every 2.4 installation. Extended the tested minor range to below 2.5, updated admin requirements and context, and added regression coverage for accepted 2.3.13/2.4 versions and rejected older/future versions. Read-only `wp eval-file` probes confirmed the native API entry points on both local sites with Bricks 2.4.1.
+
+Run `php scripts/e2e/bricks-smoke.php` directly from the development plugin checkout. It now boots elementor-mcp.test, refuses the dev hostname, creates only disposable drafts/templates, and restores the previous tool settings. Run directly rather than through WP-CLI, which can initialize the ability registry before the smoke selects its builder. All 35 live checks passed on 2.4.1, including native rendering, CSS regeneration, revisions, header/footer areas and permission/lock guards. Focused PHPUnit run: 38 tests, 274 assertions. Existing component/code/global-write limitations remain.

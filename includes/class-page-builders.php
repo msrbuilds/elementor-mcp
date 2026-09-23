@@ -51,7 +51,7 @@ class EMCP_Tools_Page_Builders {
 			'bricks' => array(
 				'label' => __( 'Bricks', 'emcp-tools' ),
 				'description' => __( 'Native elements, page editing, local templates and design-system discovery.', 'emcp-tools' ),
-				'requirement' => __( 'Requires active Bricks 2.3.13–2.3.x and an EMCP Pro license.', 'emcp-tools' ),
+				'requirement' => __( 'Requires active Bricks 2.3.13 to 2.4.x and an EMCP Pro license.', 'emcp-tools' ),
 			),
 			'elementor' => array(
 				'label' => __( 'Elementor', 'emcp-tools' ),
