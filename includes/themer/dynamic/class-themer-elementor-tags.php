@@ -64,6 +64,55 @@ class EMCP_Tools_Themer_Elementor_Tags {
 	}
 
 	/**
+	 * Whether a value type is served by an Elementor data tag.
+	 *
+	 * Image and URL sources fill controls that read a VALUE (the media control's
+	 * `{id, url}`, the URL control's `url` property), so they must be data
+	 * tags. Text and date stay render tags.
+	 *
+	 * @since 3.18.0
+	 * @param string $type Value type.
+	 * @return bool
+	 */
+	public static function is_data_type( string $type ): bool {
+		return in_array( $type, array( 'image', 'url' ), true );
+	}
+
+	/**
+	 * The value an Elementor data tag hands its control, for a source key.
+	 *
+	 * Image: `array( 'id' => attachment id or '', 'url' => url )`, the shape
+	 * Elementor's media control and its CSS generator read. An avatar has no
+	 * attachment, so its id is '', as in Elementor Pro's own tag.
+	 * URL: the raw URL string (Elementor escapes it where it prints it).
+	 * Any other type: ''.
+	 *
+	 * Pure over EMCP_Tools_Themer_Dynamic::value(), so it is unit-testable
+	 * without Elementor loaded.
+	 *
+	 * @since 3.18.0
+	 * @param string $key  Source key.
+	 * @param array  $args Source args (the tag's settings).
+	 * @return array|string
+	 */
+	public static function data_value( string $key, array $args = array() ) {
+		$v = EMCP_Tools_Themer_Dynamic::value( $key, $args );
+
+		if ( 'image' === $v['type'] ) {
+			$img = is_array( $v['value'] ) ? $v['value'] : array();
+			$id  = isset( $img['id'] ) ? (int) $img['id'] : 0;
+			return array(
+				'id'  => $id > 0 ? $id : '',
+				'url' => isset( $img['url'] ) && is_string( $img['url'] ) ? $img['url'] : '',
+			);
+		}
+		if ( 'url' === $v['type'] ) {
+			return is_string( $v['value'] ) ? esc_url_raw( $v['value'] ) : '';
+		}
+		return '';
+	}
+
+	/**
 	 * Source keys that become tags.
 	 *
 	 * @return string[]

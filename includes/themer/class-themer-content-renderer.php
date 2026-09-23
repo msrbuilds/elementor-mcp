@@ -67,10 +67,8 @@ class EMCP_Tools_Themer_Content_Renderer {
 
 		if ( 'elementor' === $builder && class_exists( '\\Elementor\\Plugin' ) ) {
 			// Ensure the template's own generated CSS is enqueued out of context.
-			if ( class_exists( '\\Elementor\\Core\\Files\\CSS\\Post' ) ) {
-				\Elementor\Core\Files\CSS\Post::create( $post_id )->enqueue();
-			}
-			return \Elementor\Plugin::$instance->frontend->get_builder_content_for_display( $post_id );
+			$note = self::enqueue_elementor_css( $post_id );
+			return $note . \Elementor\Plugin::$instance->frontend->get_builder_content_for_display( $post_id );
 		}
 
 		$post = get_post( $post_id );
@@ -81,5 +79,43 @@ class EMCP_Tools_Themer_Content_Renderer {
 		// Gutenberg + classic both run through the the_content filter (do_blocks is
 		// attached there), which resolves blocks and shortcodes.
 		return apply_filters( 'the_content', $post->post_content );
+	}
+
+	/**
+	 * Enqueue a template's Elementor CSS without letting it take the content down.
+	 *
+	 * Enqueueing also generates the template's dynamic CSS, which runs every
+	 * dynamic tag bound to a style control. A tag that returns the wrong shape
+	 * (a third-party image tag handing the media control a string, say) throws
+	 * a TypeError from inside Elementor, and on a front-end request nothing
+	 * catches it: the page fatals, or in a loop the card renders blank. So the
+	 * CSS is skipped and the content still renders. Elementor marks the handle
+	 * printed before it generates, so its own enqueue inside
+	 * get_builder_content_for_display() returns early and cannot throw again.
+	 *
+	 * @since 3.18.0
+	 * @param int           $post_id Template post id.
+	 * @param callable|null $enqueue Test seam; defaults to Elementor's Post CSS enqueue.
+	 * @return string An HTML comment for editors when the CSS failed, else ''.
+	 */
+	public static function enqueue_elementor_css( int $post_id, ?callable $enqueue = null ): string {
+		if ( null === $enqueue ) {
+			if ( ! class_exists( '\\Elementor\\Core\\Files\\CSS\\Post' ) ) {
+				return '';
+			}
+			$enqueue = static function ( int $id ): void {
+				\Elementor\Core\Files\CSS\Post::create( $id )->enqueue();
+			};
+		}
+		try {
+			$enqueue( $post_id );
+		} catch ( \Throwable $e ) {
+			if ( ! current_user_can( 'edit_posts' ) ) {
+				return '';
+			}
+			$text = str_replace( '--', '', 'css_failed: ' . wp_strip_all_tags( $e->getMessage() ) );
+			return '<!-- emcp-themer: ' . esc_html( $text ) . ' -->';
+		}
+		return '';
 	}
 }

@@ -692,7 +692,7 @@ class EMCP_Tools_Themer_Dynamic {
 				break;
 			case 'featured-image':
 				$id  = self::queried_id();
-				$out = self::image_value( $id ? (int) get_post_thumbnail_id( $id ) : 0 );
+				$out = self::image_value( $id ? (int) get_post_thumbnail_id( $id ) : 0, self::image_size( $args ) );
 				break;
 			default:
 				/**
@@ -735,19 +735,31 @@ class EMCP_Tools_Themer_Dynamic {
 	/**
 	 * Normalize an attachment id into the image value shape.
 	 *
-	 * @param int $id Attachment id.
+	 * @param int    $id   Attachment id.
+	 * @param string $size Registered image size.
 	 * @return array{id:int,url:string,alt:string}
 	 */
-	private static function image_value( int $id ): array {
+	private static function image_value( int $id, string $size = 'full' ): array {
 		if ( $id <= 0 ) {
 			return array( 'id' => 0, 'url' => '', 'alt' => '' );
 		}
-		$src = wp_get_attachment_image_src( $id, 'full' );
+		$src = wp_get_attachment_image_src( $id, '' !== $size ? $size : 'full' );
 		return array(
 			'id'  => $id,
 			'url' => is_array( $src ) && isset( $src[0] ) ? (string) $src[0] : '',
 			'alt' => (string) get_post_meta( $id, '_wp_attachment_image_alt', true ),
 		);
+	}
+
+	/**
+	 * The image size a caller asked for, 'full' when none.
+	 *
+	 * @param array $args Source args.
+	 * @return string
+	 */
+	private static function image_size( array $args ): string {
+		$size = isset( $args['size'] ) && is_string( $args['size'] ) ? sanitize_key( $args['size'] ) : '';
+		return '' !== $size ? $size : 'full';
 	}
 
 	public static function catalog(): array {
