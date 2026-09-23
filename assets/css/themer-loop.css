@@ -254,6 +254,23 @@
 	justify-content: var(--emcp-more-align, center);
 	margin-top: var(--emcp-more-margin, 32px);
 }
+/* Shown when infinite scroll could not load the next page. */
+.emcp-loop > .emcp-loop__retry {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: var(--emcp-more-align, center);
+	gap: 12px 16px;
+	margin-top: var(--emcp-more-margin, 32px);
+}
+.emcp-loop > .emcp-loop__retry > .emcp-loop__retry-msg {
+	flex-basis: 100%;
+	margin: 0;
+	text-align: center;
+}
+.emcp-loop > .emcp-loop__retry > .emcp-loop__retry-link {
+	text-decoration: underline;
+}
 .emcp-loop__more-btn {
 	cursor: pointer;
 	padding: 0.75em 1.75em;

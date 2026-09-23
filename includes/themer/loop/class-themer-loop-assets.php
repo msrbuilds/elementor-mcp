@@ -207,6 +207,8 @@ class EMCP_Tools_Themer_Loop_Assets {
 			'i18n'           => array(
 				'loading' => __( 'Loading', 'emcp-tools' ),
 				'error'   => __( 'Could not load more posts.', 'emcp-tools' ),
+				'retry'   => __( 'Try again', 'emcp-tools' ),
+				'next'    => __( 'Open the next page', 'emcp-tools' ),
 			),
 		);
 	}

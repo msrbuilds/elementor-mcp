@@ -23,6 +23,10 @@
 	var doc = win.document;
 	var cfg = win.emcpThemerLoop || { rest: '', nonce: '', rest_nonce_url: '', i18n: {} };
 	var NONCE_RE = /^[a-f0-9]{10}$/;
+	/** A page request that has not answered by then is treated as failed. */
+	var REQUEST_TIMEOUT = 20000;
+	/** Infinite scroll retries a transient failure once, after this delay. */
+	var AUTO_RETRY_DELAY = 2500;
 	var PAGE_TOKEN = 'EMCPPAGENUMBER';
 
 	/** Asset chunks already applied on this page, keyed by handle, kind and text. */
@@ -30,6 +34,40 @@
 	/** Every element this script has wired, so detached ones can be torn down. */
 	var live = new Set();
 	var warned = {};
+
+	/** A translated string from the localized config, else the fallback. */
+	function label( key, fallback ) {
+		return ( cfg.i18n && 'string' === typeof cfg.i18n[ key ] && cfg.i18n[ key ] ) ? cfg.i18n[ key ] : fallback;
+	}
+
+	/**
+	 * Whether a failed page request is worth retrying on its own: a network
+	 * error or timeout (no status), 408, 429 or a server error. A 4xx says the
+	 * request itself is wrong (a bad signature, a refused nonce), and sending
+	 * it again cannot help.
+	 */
+	function isRetryable( status ) {
+		var n = parseInt( status, 10 );
+		return ! n || 408 === n || 429 === n || n >= 500;
+	}
+
+	/** Reject if the promise has not settled within ms. */
+	function withTimeout( promise, ms ) {
+		return new Promise( function ( resolve, reject ) {
+			var timer = win.setTimeout( function () {
+				var e = new Error( 'timeout' );
+				e.status = 0;
+				reject( e );
+			}, ms );
+			promise.then( function ( v ) {
+				win.clearTimeout( timer );
+				resolve( v );
+			}, function ( e ) {
+				win.clearTimeout( timer );
+				reject( e );
+			} );
+		} );
+	}
 
 	function warnOnce( key, msg ) {
 		if ( warned[ key ] ) {
@@ -260,6 +298,8 @@
 		pageFromUrl: pageFromUrl,
 		safeUrl: safeUrl,
 		sanitizeSwiperOptions: sanitizeSwiperOptions,
+		isRetryable: isRetryable,
+		withTimeout: withTimeout,
 	};
 
 	if ( ! doc || ! doc.querySelectorAll ) {
@@ -476,7 +516,9 @@
 			} );
 		} ).then( function ( res ) {
 			if ( ! res.ok ) {
-				throw new Error( 'HTTP ' + res.status );
+				var e = new Error( 'HTTP ' + res.status );
+				e.status = res.status;
+				throw e;
 			}
 			return res.json();
 		} );
@@ -533,6 +575,9 @@
 		} );
 		if ( st.raf && win.cancelAnimationFrame ) {
 			win.cancelAnimationFrame( st.raf );
+		}
+		if ( st.retryTimer ) {
+			win.clearTimeout( st.retryTimer );
 		}
 		if ( st.swiper && st.swiper.destroy ) {
 			try {
@@ -805,6 +850,106 @@
 			}
 			sentinel.parentNode.removeChild( sentinel );
 		}
+		var retry = own( st.el, '.emcp-loop__retry' );
+		if ( retry ) {
+			retry.parentNode.removeChild( retry );
+		}
+	}
+
+	/* ---- infinite scroll failure and recovery ----------------------------- */
+
+	/** Stop watching the sentinel and take it out, keeping the observer. */
+	function stopInfinite( st ) {
+		var sentinel = own( st.el, '.emcp-loop__sentinel' );
+		if ( st.infIo ) {
+			st.infIo.disconnect();
+		}
+		if ( sentinel ) {
+			sentinel.parentNode.removeChild( sentinel );
+		}
+	}
+
+	/** Put the sentinel back and watch it again, after a successful retry. */
+	function restartInfinite( st ) {
+		if ( ! st.infIo || st.dead || own( st.el, '.emcp-loop__sentinel' ) ) {
+			return;
+		}
+		var sentinel = doc.createElement( 'div' );
+		sentinel.className = 'emcp-loop__sentinel';
+		sentinel.setAttribute( 'data-offset', String( st.infOffset || 0 ) );
+		sentinel.style.height = '1px';
+		st.el.appendChild( sentinel );
+		st.infIo.observe( sentinel );
+	}
+
+	/**
+	 * Infinite scroll gave up: tell the visitor and let them carry on, with a
+	 * button that retries in place and a link to the next page as a plain
+	 * reload. Never navigates on its own.
+	 */
+	function showRetry( st ) {
+		var el = st.el;
+		stopInfinite( st );
+		var box = own( el, '.emcp-loop__retry' );
+		if ( box ) {
+			box.parentNode.removeChild( box );
+		}
+		box = doc.createElement( 'div' );
+		box.className = 'emcp-loop__retry';
+		var msg = doc.createElement( 'p' );
+		msg.className = 'emcp-loop__retry-msg';
+		msg.setAttribute( 'role', 'status' );
+		msg.textContent = label( 'error', 'Could not load more posts.' );
+		var btn = doc.createElement( 'button' );
+		btn.type = 'button';
+		btn.className = 'emcp-loop__more-btn';
+		btn.textContent = label( 'retry', 'Try again' );
+		box.appendChild( msg );
+		box.appendChild( btn );
+		var url = pageUrl( el, nextPage( el ) );
+		if ( url ) {
+			var link = doc.createElement( 'a' );
+			link.className = 'emcp-loop__retry-link';
+			link.href = url;
+			link.textContent = label( 'next', 'Open the next page' );
+			box.appendChild( link );
+		}
+		el.appendChild( box );
+		listen( st, btn, 'click', function () {
+			btn.disabled = true;
+			loadPage( st, nextPage( el ), 'append', 'retry' ).then( function ( data ) {
+				btn.disabled = false;
+				if ( ! data ) {
+					return;
+				}
+				if ( box.parentNode ) {
+					box.parentNode.removeChild( box );
+				}
+				if ( ! endReached( st, data ) ) {
+					restartInfinite( st );
+				}
+			} );
+		} );
+	}
+
+	/** One quiet retry for a transient failure before the visitor is told. */
+	function autoRetry( st, page, mode ) {
+		var sentinel = own( st.el, '.emcp-loop__sentinel' );
+		if ( st.infIo && sentinel ) {
+			st.infIo.unobserve( sentinel );
+		}
+		st.retryTimer = win.setTimeout( function () {
+			st.retryTimer = 0;
+			if ( st.dead ) {
+				return;
+			}
+			loadPage( st, page, mode, 'infinite' ).then( function ( data ) {
+				var s = own( st.el, '.emcp-loop__sentinel' );
+				if ( data && s && st.infIo && ! st.dead ) {
+					st.infIo.observe( s );
+				}
+			} );
+		}, AUTO_RETRY_DELAY );
 	}
 
 	/**
@@ -833,7 +978,7 @@
 				btn.classList.remove( 'is-loading' );
 			}
 		};
-		return fetchPage( el, page, mode ).then( function ( data ) {
+		return withTimeout( fetchPage( el, page, mode ), REQUEST_TIMEOUT ).then( function ( data ) {
 			return applyBefore( data.assets ).then( function () {
 				if ( st.dead ) {
 					done();
@@ -854,26 +999,34 @@
 					}
 				}
 				done();
-				if ( 'more' === trigger ) {
+				st.autoRetried = false;
+				if ( 'more' === trigger || 'retry' === trigger ) {
 					focusCard( nodes[ 0 ] );
 				}
 				return data;
 			} );
-		} ).catch( function () {
+		} ).catch( function ( err ) {
 			done();
 			if ( st.dead ) {
 				return false;
 			}
 			if ( 'infinite' === trigger ) {
 				// Never navigate on a failure the visitor did not click for.
-				if ( st.infIo ) {
-					st.infIo.disconnect();
+				// A transient failure gets one quiet retry; after that, or for
+				// a request the server refused, the visitor gets a message, a
+				// retry button and a link to the next page.
+				if ( isRetryable( err && err.status ) && ! st.autoRetried ) {
+					st.autoRetried = true;
+					autoRetry( st, page, mode );
+					return false;
 				}
-				var sentinel = own( el, '.emcp-loop__sentinel' );
-				if ( sentinel ) {
-					sentinel.parentNode.removeChild( sentinel );
-				}
-				warnOnce( 'infinite', 'EMCP Loop Grid: could not load more posts; infinite scroll stopped.' );
+				showRetry( st );
+				warnOnce( 'infinite', 'EMCP Loop Grid: could not load more posts; showing a retry button.' );
+				return false;
+			}
+			if ( 'retry' === trigger ) {
+				// The visitor asked to retry: keep the message and the button
+				// in place and leave the link as the way out.
 				return false;
 			}
 			var url = pageUrl( el, page );
@@ -1017,6 +1170,7 @@
 			return;
 		}
 		var offset = intAttr( sentinel, 'data-offset', 0 );
+		st.infOffset = offset;
 		st.infIo = new win.IntersectionObserver( function ( entries ) {
 			if ( ! entries.some( function ( e ) {
 				return e.isIntersecting;
