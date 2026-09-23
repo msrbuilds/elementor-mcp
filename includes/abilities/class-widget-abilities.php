@@ -335,7 +335,7 @@ class EMCP_Tools_Widget_Abilities {
 		}
 
 		// Partial classic dimensions are left out of a new element (#151).
-		$guard    = EMCP_Tools_Element_Factory::guard_settings( (array) $settings );
+		$guard    = EMCP_Tools_Element_Factory::guard_settings( (array) $settings, null, array( 'elType' => 'widget', 'widgetType' => $widget_type ) );
 		$settings = $guard['settings'];
 
 		// Validate settings if provided.
@@ -462,7 +462,7 @@ class EMCP_Tools_Widget_Abilities {
 		}
 
 		// Partial classic dimensions: fill from the stored value or skip (#151).
-		$guard    = EMCP_Tools_Element_Factory::guard_settings( (array) $settings, (array) ( $element['settings'] ?? array() ) );
+		$guard    = EMCP_Tools_Element_Factory::guard_settings( (array) $settings, (array) ( $element['settings'] ?? array() ), $element );
 		$settings = $guard['settings'];
 
 		$updated = $this->data->update_element_settings( $page_data, $element_id, $settings );

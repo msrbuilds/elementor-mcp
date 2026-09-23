@@ -223,6 +223,13 @@ class EMCP_Tools_Composite_Abilities {
 		$this->warnings         = array();
 		$elements               = $this->build_elements( $structure );
 
+		// Page settings of a new page: partial classic dimensions are left out (#151).
+		if ( ! empty( $page_settings ) && is_array( $page_settings ) ) {
+			$page_guard     = EMCP_Tools_Element_Factory::guard_settings( $page_settings );
+			$page_settings  = $page_guard['settings'];
+			$this->warnings = array_merge( $this->warnings, $page_guard['warnings'] );
+		}
+
 		// Warn on very large pages that may exceed a remote connector's timeout.
 		if ( $this->elements_created > self::SOFT_ELEMENT_LIMIT ) {
 			$this->warnings[] = sprintf(
@@ -401,7 +408,7 @@ class EMCP_Tools_Composite_Abilities {
 				$child_elements = $this->build_elements( $children, true, $direction );
 
 				// Partial classic dimensions are left out of a new element (#151).
-				$guard          = EMCP_Tools_Element_Factory::guard_settings( (array) $settings );
+				$guard          = EMCP_Tools_Element_Factory::guard_settings( (array) $settings, null, array( 'elType' => 'container' ) );
 				$settings       = $guard['settings'];
 				$container      = $this->factory->create_container( $settings, $child_elements );
 				$this->warnings = array_merge( $this->warnings, $guard['warnings'] );
@@ -423,7 +430,7 @@ class EMCP_Tools_Composite_Abilities {
 					if ( ! $this->widget_type_exists( (string) $widget_type ) ) {
 						$this->warnings[] = sprintf( 'Unknown widget type "%s" — it may render nothing. Check list-widgets for valid types.', (string) $widget_type );
 					}
-					$guard          = EMCP_Tools_Element_Factory::guard_settings( (array) $settings );
+					$guard          = EMCP_Tools_Element_Factory::guard_settings( (array) $settings, null, array( 'elType' => 'widget', 'widgetType' => (string) $widget_type ) );
 					$settings       = $guard['settings'];
 					$widget         = $this->build_widget( $widget_type, $settings );
 					$this->warnings = array_merge( $this->warnings, $guard['warnings'] );

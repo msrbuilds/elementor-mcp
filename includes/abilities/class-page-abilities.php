@@ -260,6 +260,7 @@ class EMCP_Tools_Page_Abilities {
 						'edit_url'    => array( 'type' => 'string' ),
 						'preview_url' => array( 'type' => 'string' ),
 						'change_id'   => array( 'type' => 'string' ),
+						'warnings'    => array( 'type' => 'array', 'items' => array( 'type' => 'string' ) ),
 					),
 				),
 				'meta'                => array(
@@ -322,6 +323,11 @@ class EMCP_Tools_Page_Abilities {
 		}
 		try {
 			$content = ! empty( $input['content'] ) && is_array( $input['content'] ) ? $input['content'] : array();
+			// Partial classic dimensions in caller content are left out (#151).
+			if ( ! empty( $content ) ) {
+				$content_guard = EMCP_Tools_Element_Factory::guard_tree( $content );
+				$content       = $content_guard['elements'];
+			}
 			$save_result = $this->data->save_page_data( $post_id, $content );
 		} catch ( \Throwable $error ) {
 			$save_result = new \WP_Error( 'initialization_failed', $error->getMessage() );
@@ -351,6 +357,7 @@ class EMCP_Tools_Page_Abilities {
 			'edit_url'    => $edit_url,
 			'preview_url' => $preview_url ? $preview_url : '',
 			'change_id'   => $change_id,
+			'warnings'    => $content_guard['warnings'] ?? array(),
 		);
 	}
 
@@ -523,6 +530,7 @@ class EMCP_Tools_Page_Abilities {
 					'properties' => array(
 						'success'        => array( 'type' => 'boolean' ),
 						'elements_count' => array( 'type' => 'integer' ),
+						'warnings'       => array( 'type' => 'array', 'items' => array( 'type' => 'string' ) ),
 					),
 				),
 				'meta'                => array(
@@ -560,6 +568,10 @@ class EMCP_Tools_Page_Abilities {
 		$template_json = $this->data->reassign_ids( $template_json );
 		$count         = $this->data->count_elements( $template_json );
 
+		// Partial classic dimensions in the imported tree are left out (#151).
+		$tree_guard    = EMCP_Tools_Element_Factory::guard_tree( (array) $template_json );
+		$template_json = $tree_guard['elements'];
+
 		// Insert at position.
 		if ( $position < 0 || $position >= count( $data ) ) {
 			$data = array_merge( $data, $template_json );
@@ -576,6 +588,7 @@ class EMCP_Tools_Page_Abilities {
 		return array(
 			'success'        => true,
 			'elements_count' => $count,
+			'warnings'       => $tree_guard['warnings'],
 		);
 	}
 

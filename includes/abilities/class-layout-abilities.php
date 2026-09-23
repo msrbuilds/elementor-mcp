@@ -220,7 +220,13 @@ class EMCP_Tools_Layout_Abilities {
 		}
 
 		// Partial classic dimensions are left out of a new element (#151).
-		$guard    = EMCP_Tools_Element_Factory::guard_settings( (array) $settings );
+		$guard_context = array( 'elType' => 'container' );
+		if ( ! empty( $input['full_bleed'] ) ) {
+			// A partial side the caller sent over the preset is filled from it.
+			$guard_context['preset']       = self::full_bleed_preset();
+			$guard_context['preset_label'] = 'full_bleed preset';
+		}
+		$guard    = EMCP_Tools_Element_Factory::guard_settings( (array) $settings, null, $guard_context );
 		$settings = $guard['settings'];
 
 		// When nesting inside a parent, mark as inner container.
@@ -360,7 +366,7 @@ class EMCP_Tools_Layout_Abilities {
 		}
 
 		// Partial classic dimensions: fill from the stored value or skip (#151).
-		$guard    = EMCP_Tools_Element_Factory::guard_settings( (array) $settings, (array) ( $element['settings'] ?? array() ) );
+		$guard    = EMCP_Tools_Element_Factory::guard_settings( (array) $settings, (array) ( $element['settings'] ?? array() ), $element );
 		$settings = $guard['settings'];
 
 		$updated = $this->data->update_element_settings( $page_data, $element_id, $settings );
@@ -452,7 +458,7 @@ class EMCP_Tools_Layout_Abilities {
 		}
 
 		// Partial classic dimensions: fill from the stored value or skip (#151).
-		$guard    = EMCP_Tools_Element_Factory::guard_settings( (array) $settings, (array) ( $element['settings'] ?? array() ) );
+		$guard    = EMCP_Tools_Element_Factory::guard_settings( (array) $settings, (array) ( $element['settings'] ?? array() ), $element );
 		$settings = $guard['settings'];
 
 		$updated = $this->data->update_element_settings( $page_data, $element_id, $settings );
@@ -576,7 +582,7 @@ class EMCP_Tools_Layout_Abilities {
 			}
 
 			// Partial classic dimensions: fill from the stored value or skip (#151).
-			$guard    = EMCP_Tools_Element_Factory::guard_settings( (array) $settings, (array) ( $element['settings'] ?? array() ) );
+			$guard    = EMCP_Tools_Element_Factory::guard_settings( (array) $settings, (array) ( $element['settings'] ?? array() ), $element );
 			$settings = $guard['settings'];
 
 			$ok = $this->data->update_element_settings( $page_data, $eid, $settings );
