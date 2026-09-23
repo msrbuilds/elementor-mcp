@@ -39,8 +39,9 @@ class EMCP_Tools_Element_Factory {
 	 *
 	 *  - Update ($stored is the element's current settings): the blank sides are
 	 *    filled from the stored value of the same key when that value has all
-	 *    four sides. Otherwise the key is left out of the write, so the stored
-	 *    value stays exactly as it was.
+	 *    four sides and the same unit (missing = px). Otherwise the key is left
+	 *    out of the write, so the stored value stays exactly as it was.
+	 *    Element settings and page settings both use this path.
 	 *  - Create ($stored is null): the key is left out.
 	 *
 	 * All four sides blank means "unset" and passes through, as do complete
@@ -69,8 +70,20 @@ class EMCP_Tools_Element_Factory {
 			}
 			$sides = implode( ', ', $blank );
 
-			$saved = $creating ? null : ( $stored[ $key ] ?? null );
-			if ( is_array( $saved ) && ! isset( $saved['$$type'] ) && 0 === count( self::blank_sides( $saved ) ) ) {
+			$saved    = $creating ? null : ( $stored[ $key ] ?? null );
+			$complete = is_array( $saved ) && ! isset( $saved['$$type'] ) && 0 === count( self::blank_sides( $saved ) );
+
+			// Filling across units would change what the saved sides mean. A
+			// missing unit is Elementor's default, px, on either side.
+			$unit       = self::dimension_unit( $value );
+			$saved_unit = $complete ? self::dimension_unit( $saved ) : '';
+			if ( $complete && $unit !== $saved_unit ) {
+				unset( $settings[ $key ] );
+				$warnings[] = sprintf( '%s had blank sides (%s) and a different unit from the saved value (%s vs %s); it was not written and the saved value is unchanged. Supply all four sides (use 0 where intended).', $key, $sides, $unit, $saved_unit );
+				continue;
+			}
+
+			if ( $complete ) {
 				foreach ( $blank as $side ) {
 					$value[ $side ] = $saved[ $side ];
 				}
@@ -110,6 +123,17 @@ class EMCP_Tools_Element_Factory {
 	 */
 	public static function settings_warnings( array $settings, bool $creating = false ): array {
 		return self::guard_settings( $settings, $creating ? null : array() )['warnings'];
+	}
+
+	/**
+	 * Unit of a classic dimension value; missing or blank means px.
+	 *
+	 * @param array $value Dimension value.
+	 * @return string
+	 */
+	private static function dimension_unit( array $value ): string {
+		$unit = isset( $value['unit'] ) && is_string( $value['unit'] ) ? $value['unit'] : '';
+		return '' === $unit ? 'px' : $unit;
 	}
 
 	/**

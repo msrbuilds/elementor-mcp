@@ -384,8 +384,9 @@ class EMCP_Tools_Page_Abilities {
 				'output_schema'       => array(
 					'type'       => 'object',
 					'properties' => array(
-						'success' => array( 'type' => 'boolean' ),
-						'post_id' => array( 'type' => 'integer' ),
+						'success'  => array( 'type' => 'boolean' ),
+						'post_id'  => array( 'type' => 'integer' ),
+						'warnings' => array( 'type' => 'array', 'items' => array( 'type' => 'string' ) ),
 					),
 				),
 				'meta'                => array(
@@ -408,6 +409,11 @@ class EMCP_Tools_Page_Abilities {
 			return new \WP_Error( 'missing_post_id', __( 'The post_id parameter is required.', 'emcp-tools' ) );
 		}
 
+		// Partial classic dimensions: fill from the stored page settings or skip (#151).
+		$stored   = get_post_meta( $post_id, '_elementor_page_settings', true );
+		$guard    = EMCP_Tools_Element_Factory::guard_settings( (array) $settings, is_array( $stored ) ? $stored : array() );
+		$settings = $guard['settings'];
+
 		$result = $this->data->save_page_settings( $post_id, $settings );
 
 		if ( is_wp_error( $result ) ) {
@@ -415,8 +421,9 @@ class EMCP_Tools_Page_Abilities {
 		}
 
 		return array(
-			'success' => true,
-			'post_id' => $post_id,
+			'success'  => true,
+			'post_id'  => $post_id,
+			'warnings' => $guard['warnings'],
 		);
 	}
 
