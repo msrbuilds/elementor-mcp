@@ -183,7 +183,7 @@ On shared LiteSpeed hosting (e.g. Hostinger) this is usually the host caching/bu
 
 Adds a loop builder to EMCP Themer, so one post card can be repeated in grids and carousels in Elementor or Gutenberg, and a Pro module that exports your active Sandbox widgets, blocks and snippets as a standalone plugin.
 
-* New: Loop Items, Loop Grid and Loop Carousel in EMCP Themer (free). Design one post card and repeat it in a responsive grid or a carousel, in Elementor or Gutenberg, with queries over posts, the current archive, related posts, a manual selection or WooCommerce products, and pagination from page numbers to load more and infinite scroll. Free includes one Loop Item; Pro adds unlimited Loop Items and alternate templates.
+* New: Loop Items, Loop Grid and Loop Carousel in EMCP Themer (free). Design one post card and repeat it in a responsive grid or a carousel, in Elementor or Gutenberg, with queries over posts, the current archive, related posts, a manual selection or WooCommerce products, and pagination from page numbers to load more and infinite scroll. Free includes one Loop Item; Pro adds unlimited Loop Items and alternate templates for the Loop Grid widget.
 * New: Sandbox Plugin Export (Pro module, off by default). Package every active Sandbox widget, block and PHP snippet as a standalone plugin that keeps working after EMCP Tools is deactivated. Identities are preserved, the runtime the widgets call is bundled, API keys come from constants, and the export stays dormant while EMCP Tools is active.
 
 = 3.17.1 =
