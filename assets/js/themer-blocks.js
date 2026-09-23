@@ -217,7 +217,9 @@
 				value: typeof val === 'number' ? val : 0,
 				min: typeof def.min === 'number' ? def.min : 0,
 				max: typeof def.max === 'number' ? def.max : numberMax( key ),
-				onChange: function ( v ) { set( typeof v === 'number' ? v : 0 ); }
+				// A cleared field unsets the attribute so it falls back to its
+				// default, as a cleared Elementor control inherits; never 0.
+				onChange: function ( v ) { set( typeof v === 'number' ? v : undefined ); }
 			} );
 		}
 		if ( def.type === 'menu' ) {
