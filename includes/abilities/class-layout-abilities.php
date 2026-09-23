@@ -220,13 +220,14 @@ class EMCP_Tools_Layout_Abilities {
 		}
 
 		// Partial classic dimensions are left out of a new element (#151).
-		$guard_context = array( 'elType' => 'container' );
-		if ( ! empty( $input['full_bleed'] ) ) {
-			// A partial side the caller sent over the preset is filled from it.
-			$guard_context['preset']       = self::full_bleed_preset();
-			$guard_context['preset_label'] = 'full_bleed preset';
-		}
-		$guard    = EMCP_Tools_Element_Factory::guard_settings( (array) $settings, null, $guard_context );
+		// With full_bleed, a partial side sent over the preset is filled from it.
+		$guard    = EMCP_Tools_Element_Factory::guard_settings(
+			(array) $settings,
+			null,
+			array( 'elType' => 'container' ),
+			empty( $input['full_bleed'] ) ? null : self::full_bleed_preset(),
+			'full_bleed preset'
+		);
 		$settings = $guard['settings'];
 
 		// When nesting inside a parent, mark as inner container.

@@ -50,8 +50,8 @@ class EMCP_Tools_Element_Factory {
 	 *    blank sides are filled from the stored value of the same key when that
 	 *    value is complete and has the same unit (missing or blank = px).
 	 *    Otherwise the key is left out, so the stored value stays as it was.
-	 *  - Create ($stored is null): the key is left out, unless $context['preset']
-	 *    holds a complete value for it to fill from (the full_bleed preset).
+	 *  - Create ($stored is null): the key is left out, unless $preset holds a
+	 *    complete value for it to fill from (the full_bleed preset).
 	 *
 	 * Required sides follow the control's `allowed_dimensions` ('vertical',
 	 * 'horizontal' or a side list), read from the live control when Elementor
@@ -66,13 +66,17 @@ class EMCP_Tools_Element_Factory {
 	 * @param array      $settings Incoming settings.
 	 * @param array|null $stored   Current settings of the element or page being
 	 *                             updated, or null when creating.
-	 * @param array      $context  Optional: `elType`, `widgetType` (to read the
-	 *                             control's allowed_dimensions), `preset` (create
-	 *                             mode fill source) and `preset_label`.
+	 * @param array      $context  Optional: `elType` and `widgetType`, to read the
+	 *                             control's allowed_dimensions. Any other key is
+	 *                             ignored, so a whole element can be passed.
+	 * @param array|null $preset   Create mode only: settings to fill blank
+	 *                             sides from (the full_bleed preset). Never
+	 *                             taken from caller data.
+	 * @param string     $preset_label Name of $preset in warnings.
 	 * @return array{settings: array, warnings: string[]}
 	 */
-	public static function guard_settings( array $settings, ?array $stored = null, array $context = array() ): array {
-		$out = self::guard_dimensions( $settings, $stored, $context );
+	public static function guard_settings( array $settings, ?array $stored = null, array $context = array(), ?array $preset = null, string $preset_label = 'preset' ): array {
+		$out = self::guard_dimensions( $settings, $stored, self::control_context( $context ), $preset, $preset_label );
 
 		if ( null === $stored && 'grid' === ( $out['settings']['container_type'] ?? '' ) && ! isset( $out['settings']['grid_rows_grid'] ) ) {
 			$out['warnings'][] = 'Elementor defaults grid_rows_grid to 2 rows. For a single-row grid, explicitly set grid_rows_grid: {"unit":"fr","size":1} inside settings.';
@@ -97,7 +101,7 @@ class EMCP_Tools_Element_Factory {
 				continue;
 			}
 			if ( ! empty( $element['settings'] ) && is_array( $element['settings'] ) ) {
-				$out                 = self::guard_dimensions( $element['settings'], null, $element );
+				$out                 = self::guard_dimensions( $element['settings'], null, self::control_context( $element ) );
 				$element['settings'] = $out['settings'];
 				$id                  = isset( $element['id'] ) && is_scalar( $element['id'] ) ? (string) $element['id'] : '';
 				foreach ( $out['warnings'] as $warning ) {
@@ -134,16 +138,18 @@ class EMCP_Tools_Element_Factory {
 	/**
 	 * The dimension part of guard_settings(), without the grid warning.
 	 *
-	 * @param array      $settings Incoming settings.
-	 * @param array|null $stored   Stored settings, or null when creating.
-	 * @param array      $context  See guard_settings().
+	 * @param array      $settings     Incoming settings.
+	 * @param array|null $stored       Stored settings, or null when creating.
+	 * @param array      $context      `elType` / `widgetType` only.
+	 * @param array|null $preset       Create mode fill source, or null.
+	 * @param string     $preset_label Name of $preset in warnings.
 	 * @return array{settings: array, warnings: string[]}
 	 */
-	private static function guard_dimensions( array $settings, ?array $stored, array $context ): array {
+	private static function guard_dimensions( array $settings, ?array $stored, array $context, ?array $preset = null, string $preset_label = 'preset' ): array {
 		$warnings = array();
 		$creating = null === $stored;
-		$preset   = $creating && isset( $context['preset'] ) && is_array( $context['preset'] ) ? $context['preset'] : array();
-		$label    = $creating ? (string) ( $context['preset_label'] ?? 'preset' ) : 'saved value';
+		$preset   = $creating && is_array( $preset ) ? $preset : array();
+		$label    = $creating ? $preset_label : 'saved value';
 
 		foreach ( $settings as $key => $value ) {
 			if ( ! is_string( $key ) || ! is_array( $value ) || ! self::is_guarded_dimension( $key, $value ) ) {
@@ -264,10 +270,71 @@ class EMCP_Tools_Element_Factory {
 	}
 
 	/**
+	 * The part of a context (often a whole element) the guard may read:
+	 * `elType` and `widgetType`. Everything else, including any `preset` key
+	 * in caller or imported data, is dropped.
+	 *
+	 * @param array $context Context or element.
+	 * @return array{elType?: string, widgetType?: string}
+	 */
+	private static function control_context( array $context ): array {
+		$out = array();
+		foreach ( array( 'elType', 'widgetType' ) as $key ) {
+			if ( isset( $context[ $key ] ) && is_string( $context[ $key ] ) ) {
+				$out[ $key ] = $context[ $key ];
+			}
+		}
+		return $out;
+	}
+
+	/** Breakpoint suffixes used when Elementor's breakpoint list is unavailable. */
+	private const FALLBACK_BREAKPOINTS = array( 'tablet', 'mobile', 'laptop', 'widescreen', 'tablet_extra', 'mobile_extra' );
+
+	/**
+	 * The base key of a responsive setting (`margin_tablet` -> `margin`), or ''
+	 * when the key has no known breakpoint suffix.
+	 *
+	 * @param string $key Setting key.
+	 * @return string
+	 */
+	private static function responsive_base_key( string $key ): string {
+		$breakpoints = array();
+		try {
+			$manager = \Elementor\Plugin::$instance->breakpoints ?? null;
+			if ( is_object( $manager ) && method_exists( $manager, 'get_active_breakpoints' ) ) {
+				$breakpoints = array_keys( (array) $manager->get_active_breakpoints() );
+			}
+		} catch ( \Throwable $e ) {
+			$breakpoints = array();
+		}
+		if ( empty( $breakpoints ) ) {
+			$breakpoints = self::FALLBACK_BREAKPOINTS;
+		}
+		// Longest first, so `_tablet_extra` wins over a shorter match.
+		usort(
+			$breakpoints,
+			static function ( $a, $b ) {
+				return strlen( (string) $b ) - strlen( (string) $a );
+			}
+		);
+		foreach ( $breakpoints as $breakpoint ) {
+			$suffix = '_' . $breakpoint;
+			if ( strlen( $key ) > strlen( $suffix ) && substr( $key, -strlen( $suffix ) ) === $suffix ) {
+				return substr( $key, 0, -strlen( $suffix ) );
+			}
+		}
+		return '';
+	}
+
+	/**
 	 * `allowed_dimensions` of the live Elementor control for this key, or null
 	 * when Elementor, the element type or the control is not available.
 	 *
-	 * @param string $key     Setting key (responsive keys are their own controls).
+	 * Outside CSS generation Elementor registers one control per responsive
+	 * setting, so `margin_tablet` has no control of its own there; when the
+	 * direct lookup finds nothing, the base control (`margin`) is used.
+	 *
+	 * @param string $key     Setting key.
 	 * @param array  $context `elType` / `widgetType`.
 	 * @return string|array|null
 	 */
@@ -295,6 +362,10 @@ class EMCP_Tools_Element_Factory {
 				return null;
 			}
 			$control = $stack->get_controls( $key );
+			if ( ! is_array( $control ) ) {
+				$base    = self::responsive_base_key( $key );
+				$control = '' === $base ? null : $stack->get_controls( $base );
+			}
 			if ( ! is_array( $control ) ) {
 				return null;
 			}
