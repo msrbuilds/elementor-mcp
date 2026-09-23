@@ -443,7 +443,7 @@ class EMCP_Tools_Themer_Dynamic {
 	 *
 	 * On a real front-end archive it loops the MAIN query (that archive's posts).
 	 * In the editor / a block or Elementor preview (or any non-archive context)
-	 * there is no archive query, so it shows a SAMPLE of recent posts instead , 
+	 * there is no archive query, so it shows a SAMPLE of recent posts instead:
 	 * otherwise the widget would just say "No posts found." while you design it.
 	 *
 	 * @param array $args layout (grid|list), columns, show_image, show_title,
