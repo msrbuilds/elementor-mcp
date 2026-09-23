@@ -30,6 +30,9 @@ class EMCP_Tools_Themer_Loop_Assets {
 	/** @var bool */
 	private static $registered = false;
 
+	/** @var bool Whether a deferred Swiper enqueue is hooked. */
+	private static $swiper_pending = false;
+
 	/** @var bool Whether the stylesheet handle is registered. */
 	private static $style_registered = false;
 
@@ -126,11 +129,40 @@ class EMCP_Tools_Themer_Loop_Assets {
 	public static function enqueue( bool $carousel ): void {
 		self::register();
 		if ( $carousel ) {
-			wp_enqueue_style( self::swiper_style_handle() );
-			wp_enqueue_script( self::swiper_handle() );
+			if ( did_action( 'wp_enqueue_scripts' ) ) {
+				self::enqueue_swiper();
+			} elseif ( ! self::$swiper_pending ) {
+				// A render before wp_head (a block theme renders its template
+				// first; an Elementor widget can too) runs before Elementor
+				// registers its own `swiper` at wp_enqueue_scripts priority 5.
+				// Choosing now would pick the fallback, and a page that also
+				// loads Elementor's Swiper would get two. Choose once the
+				// action has registered everything.
+				self::$swiper_pending = true;
+				add_action( 'wp_enqueue_scripts', array( __CLASS__, 'enqueue_swiper' ), 20 );
+			}
 		}
 		wp_enqueue_style( self::STYLE );
 		wp_enqueue_script( self::SCRIPT );
+	}
+
+	/**
+	 * Enqueue Swiper under the handle registered by now: Elementor's own
+	 * `swiper` when it exists, else the bundled fallback (registered here if
+	 * register() ran while Elementor's was still expected).
+	 */
+	public static function enqueue_swiper(): void {
+		self::$swiper_pending = false;
+		self::register();
+		$url = defined( 'EMCP_TOOLS_URL' ) ? EMCP_TOOLS_URL : '';
+		if ( ! wp_script_is( 'swiper', 'registered' ) && ! wp_script_is( self::SWIPER_FALLBACK, 'registered' ) ) {
+			wp_register_script( self::SWIPER_FALLBACK, $url . 'assets/lib/swiper/swiper-bundle.min.js', array(), self::SWIPER_VERSION, true );
+		}
+		if ( ! wp_style_is( 'swiper', 'registered' ) && ! wp_style_is( self::SWIPER_FALLBACK, 'registered' ) ) {
+			wp_register_style( self::SWIPER_FALLBACK, $url . 'assets/lib/swiper/swiper-bundle.min.css', array(), self::SWIPER_VERSION );
+		}
+		wp_enqueue_style( self::swiper_style_handle() );
+		wp_enqueue_script( self::swiper_handle() );
 	}
 
 	/**
@@ -155,5 +187,6 @@ class EMCP_Tools_Themer_Loop_Assets {
 	public static function reset_for_tests(): void {
 		self::$registered       = false;
 		self::$style_registered = false;
+		self::$swiper_pending   = false;
 	}
 }
