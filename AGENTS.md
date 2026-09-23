@@ -17,6 +17,7 @@ Single source of truth for every coding agent working in this repository (Claude
 - **Live-verify integrations:** install the real plugin or theme and verify the API with `wp eval-file` before writing an integration; ship a live smoke alongside the stubbed unit test.
 - **Two repos:** the public free plugin (`msrbuilds/elementor-mcp`) and the private Pro overlay mounted as the `pro/` submodule. Commit `pro/` first, then the main repo with the updated gitlink. `pro-manifest.txt` is the authoritative Pro-path list.
 - **Tests:** `phpunit` from the plugin root runs the Pro suite (`pro/tests`); `phpunit -c tests/phpunit.xml` runs the public suite. Any new ability class must be added to the class map in `pro/tests/bootstrap.php` or `register_groups()` aborts silently and later groups vanish.
+- **Internal docs stay private:** handoff notes, plans, specs and evaluation write-ups go in `docs/`, which is git-ignored apart from the public integration guides listed in `.gitignore`. Never add an internal doc at the repo root or anywhere else that is tracked; the public repo is `msrbuilds/elementor-mcp`.
 - **Long-lived MCP processes hold stale code.** After changing plugin PHP, the WP-CLI stdio MCP server the user is connected to keeps the old code until they reconnect; say so rather than debugging a phantom.
 
 ## Project Overview
