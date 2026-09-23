@@ -3571,20 +3571,23 @@ body.emcp-modal-open { overflow: hidden; }
 
 .emcp-dash-stats {
 	display: grid;
-	grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-	gap: 8px;
+	grid-template-columns: repeat(auto-fit, minmax(215px, 1fr));
+	gap: 10px;
 }
 
-/* Stat tiles sit flat inside the stats panel (the panel is the container). */
 .emcp-dash-stat {
 	display: flex;
 	align-items: center;
 	gap: 14px;
-	padding: 8px 12px;
+	padding: 14px;
+	border: 1px solid var(--mcp-gray-200);
+	border-radius: var(--mcp-radius-sm);
 }
 
-.emcp-dash-stat + .emcp-dash-stat {
-	border-left: 1px solid var(--mcp-gray-200);
+.emcp-dash-stats-note {
+	margin: -12px 4px 0;
+	font-size: 12px;
+	color: var(--mcp-gray-500);
 }
 
 .emcp-dash-stat-icon {
@@ -3604,8 +3607,10 @@ body.emcp-modal-open { overflow: hidden; }
 }
 
 .emcp-dash-stat-icon--tools { background: var(--mcp-primary-light); color: var(--mcp-primary); }
+.emcp-dash-stat-icon--site { background: #e0f2fe; color: #0369a1; }
 .emcp-dash-stat-icon--active { background: var(--mcp-success-light); color: var(--mcp-success); }
 .emcp-dash-stat-icon--pro { background: var(--mcp-pro-light); color: var(--mcp-pro); }
+.emcp-dash-stat-icon--modules { background: #e0e7ff; color: #4338ca; }
 .emcp-dash-stat-icon--prompts { background: #fef3c7; color: var(--mcp-warning); }
 .emcp-dash-stat-icon--brand-kits { background: #ffe4e6; color: #e11d48; }
 .emcp-dash-stat-icon--templates { background: #dbeafe; color: #2563eb; }

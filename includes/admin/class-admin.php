@@ -862,7 +862,7 @@ class EMCP_Tools_Admin {
 	/**
 	 * Build the headline stat cards shown on the Dashboard.
 	 *
-	 * Always includes Total Tools, Active, and Pro Tools. Prompts, Brand Kits,
+	 * Always includes catalog, site, enabled, and Pro tool counts. Prompts, Brand Kits,
 	 * and Templates are appended only when their module is active (and, for the
 	 * Pro-gated counts, when a value is available) — mirroring the module-tab
 	 * visibility rules. Each entry is `key`/`value`/`label`; the view maps `key`
@@ -872,21 +872,33 @@ class EMCP_Tools_Admin {
 	 * @return array<int,array{key:string,value:int,label:string}>
 	 */
 	public function get_dashboard_stats(): array {
-		$stats = array(
-			array( 'key' => 'tools', 'value' => (int) $this->get_total_tool_count(), 'label' => __( 'Total Tools', 'emcp-tools' ) ),
-			array( 'key' => 'active', 'value' => (int) $this->get_enabled_tool_count(), 'label' => __( 'Active', 'emcp-tools' ) ),
-		);
-
-		// Count Pro tools.
-		$pro_count = 0;
+		$catalog_tools = array();
+		$pro_tools     = array();
 		foreach ( $this->get_all_tools() as $category ) {
-			foreach ( $category['tools'] as $tool ) {
-				if ( in_array( 'pro', $tool['badges'], true ) || in_array( 'elementor-pro', $tool['badges'], true ) ) {
-					$pro_count++;
+			foreach ( $category['tools'] as $slug => $tool ) {
+				$catalog_tools[ $slug ] = true;
+				// Elementor Pro is a separate product, not an EMCP Pro tool.
+				if ( in_array( 'pro', $tool['badges'] ?? array(), true ) ) {
+					$pro_tools[ $slug ] = true;
 				}
 			}
 		}
-		$stats[] = array( 'key' => 'pro', 'value' => $pro_count, 'label' => __( 'Pro Tools', 'emcp-tools' ) );
+		$stats = array(
+			array( 'key' => 'tools', 'value' => count( $catalog_tools ), 'label' => __( 'Catalog Tools', 'emcp-tools' ) ),
+			array( 'key' => 'site', 'value' => $this->get_total_tool_count(), 'label' => __( 'Shown in Tools', 'emcp-tools' ) ),
+			array( 'key' => 'active', 'value' => $this->get_enabled_tool_count(), 'label' => __( 'Enabled Tools', 'emcp-tools' ) ),
+			array( 'key' => 'pro', 'value' => count( $pro_tools ), 'label' => __( 'EMCP Pro Tools', 'emcp-tools' ) ),
+		);
+
+		if ( class_exists( 'EMCP_Tools_Modules_Registry' ) ) {
+			$active_modules = 0;
+			foreach ( EMCP_Tools_Modules_Registry::instance()->active() as $module ) {
+				if ( $module->is_available() ) {
+					++$active_modules;
+				}
+			}
+			$stats[] = array( 'key' => 'modules', 'value' => $active_modules, 'label' => __( 'Active Modules', 'emcp-tools' ) );
+		}
 
 		// Count prompts. For Pro sites with a synced bundle, use the actual
 		// premium-library count (matches the Prompts tab). Otherwise count the
