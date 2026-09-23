@@ -219,6 +219,10 @@ class EMCP_Tools_Layout_Abilities {
 			return $page_data;
 		}
 
+		// Partial classic dimensions are left out of a new element (#151).
+		$guard    = EMCP_Tools_Element_Factory::guard_settings( (array) $settings );
+		$settings = $guard['settings'];
+
 		// When nesting inside a parent, mark as inner container.
 		$container = $this->factory->create_container( $settings );
 		if ( ! empty( $parent_id ) ) {
@@ -247,7 +251,7 @@ class EMCP_Tools_Layout_Abilities {
 		return array(
 			'element_id' => $container['id'],
 			'post_id'    => $post_id,
-			'warnings'   => EMCP_Tools_Element_Factory::settings_warnings( $settings, true ),
+			'warnings'   => $guard['warnings'],
 		);
 	}
 
@@ -355,6 +359,10 @@ class EMCP_Tools_Layout_Abilities {
 			return new \WP_Error( 'not_container', __( 'Element is not a container. Use update-widget for widgets.', 'emcp-tools' ) );
 		}
 
+		// Partial classic dimensions: fill from the stored value or skip (#151).
+		$guard    = EMCP_Tools_Element_Factory::guard_settings( (array) $settings, (array) ( $element['settings'] ?? array() ) );
+		$settings = $guard['settings'];
+
 		$updated = $this->data->update_element_settings( $page_data, $element_id, $settings );
 
 		if ( ! $updated ) {
@@ -367,7 +375,7 @@ class EMCP_Tools_Layout_Abilities {
 			return $result;
 		}
 
-		return array( 'success' => true, 'warnings' => EMCP_Tools_Element_Factory::settings_warnings( $settings ) );
+		return array( 'success' => true, 'warnings' => $guard['warnings'] );
 	}
 
 	// -------------------------------------------------------------------------
@@ -443,6 +451,10 @@ class EMCP_Tools_Layout_Abilities {
 			return new \WP_Error( 'element_not_found', __( 'Element not found.', 'emcp-tools' ) );
 		}
 
+		// Partial classic dimensions: fill from the stored value or skip (#151).
+		$guard    = EMCP_Tools_Element_Factory::guard_settings( (array) $settings, (array) ( $element['settings'] ?? array() ) );
+		$settings = $guard['settings'];
+
 		$updated = $this->data->update_element_settings( $page_data, $element_id, $settings );
 
 		if ( ! $updated ) {
@@ -459,7 +471,7 @@ class EMCP_Tools_Layout_Abilities {
 			'success'      => true,
 			'element_id'   => $element_id,
 			'element_type' => $element['elType'] ?? 'unknown',
-			'warnings'     => EMCP_Tools_Element_Factory::settings_warnings( $settings ),
+			'warnings'     => $guard['warnings'],
 		);
 	}
 
@@ -553,11 +565,15 @@ class EMCP_Tools_Layout_Abilities {
 				continue;
 			}
 
+			// Partial classic dimensions: fill from the stored value or skip (#151).
+			$guard    = EMCP_Tools_Element_Factory::guard_settings( (array) $settings, (array) ( $element['settings'] ?? array() ) );
+			$settings = $guard['settings'];
+
 			$ok = $this->data->update_element_settings( $page_data, $eid, $settings );
 
 			if ( $ok ) {
 				$updated_count++;
-				foreach ( EMCP_Tools_Element_Factory::settings_warnings( $settings ) as $warning ) {
+				foreach ( $guard['warnings'] as $warning ) {
 					$warnings[] = $eid . ': ' . $warning;
 				}
 			} else {

@@ -18,30 +18,114 @@ if ( ! defined( 'ABSPATH' ) ) {
 class EMCP_Tools_Element_Factory {
 
 	/**
-	 * Warn about partial classic dimensions without replacing inherited values.
-	 * Elementor can drop the entire selector when one side is blank (#134).
-	 * Grid defaults are intentionally left to Elementor (#135).
+	 * Classic dimension keys the partial-side guard applies to, including the
+	 * `_` advanced-tab prefix and responsive/state suffixes (`padding_tablet`).
 	 */
-	public static function settings_warnings( array $settings, bool $creating = false ): array {
+	private const GUARDED_DIMENSION_KEY = '/^_?(?:margin|padding|border_radius|border_width)(?:_[a-z0-9_]+)?$/';
+
+	/** The four sides a classic dimension value needs for Elementor to emit CSS. */
+	private const FOUR_SIDES = array( 'top', 'right', 'bottom', 'left' );
+
+	/**
+	 * Clean incoming classic settings before they are written, and explain what
+	 * was done. Every MCP write path that takes free-form element settings runs
+	 * its settings through here.
+	 *
+	 * Elementor's CSS generator drops the WHOLE rule for an element and
+	 * breakpoint when one side of a dimension value is blank, valid sides
+	 * included (#134, #151). So a margin/padding/border_radius/border_width
+	 * value (any prefix or suffix) with one to three blank or missing sides is
+	 * never written as sent:
+	 *
+	 *  - Update ($stored is the element's current settings): the blank sides are
+	 *    filled from the stored value of the same key when that value has all
+	 *    four sides. Otherwise the key is left out of the write, so the stored
+	 *    value stays exactly as it was.
+	 *  - Create ($stored is null): the key is left out.
+	 *
+	 * All four sides blank means "unset" and passes through, as do complete
+	 * values and atomic `$$type` values. The caller's `isLinked` is kept.
+	 * Grid defaults are intentionally left to Elementor (#135); creating a grid
+	 * without grid_rows_grid only adds a warning.
+	 *
+	 * @since 3.18.0
+	 *
+	 * @param array      $settings Incoming settings.
+	 * @param array|null $stored   Current settings of the element being updated,
+	 *                             or null when the element is being created.
+	 * @return array{settings: array, warnings: string[]}
+	 */
+	public static function guard_settings( array $settings, ?array $stored = null ): array {
 		$warnings = array();
+		$creating = null === $stored;
+
 		foreach ( $settings as $key => $value ) {
-			if ( ! preg_match( '/^_?(?:margin|padding|border_radius|border_width)(?:_[a-z0-9_]+)?$/', $key ) || ! is_array( $value ) || isset( $value['$$type'] ) ) {
+			if ( ! is_string( $key ) || ! preg_match( self::GUARDED_DIMENSION_KEY, $key ) || ! is_array( $value ) || isset( $value['$$type'] ) ) {
 				continue;
 			}
-			$blank = array();
-			foreach ( array( 'top', 'right', 'bottom', 'left' ) as $side ) {
-				if ( ! isset( $value[ $side ] ) || '' === $value[ $side ] ) {
-					$blank[] = $side;
+			$blank = self::blank_sides( $value );
+			if ( 0 === count( $blank ) || 4 === count( $blank ) ) {
+				continue;
+			}
+			$sides = implode( ', ', $blank );
+
+			$saved = $creating ? null : ( $stored[ $key ] ?? null );
+			if ( is_array( $saved ) && ! isset( $saved['$$type'] ) && 0 === count( self::blank_sides( $saved ) ) ) {
+				foreach ( $blank as $side ) {
+					$value[ $side ] = $saved[ $side ];
 				}
+				if ( ! isset( $value['unit'] ) && isset( $saved['unit'] ) ) {
+					$value['unit'] = $saved['unit'];
+				}
+				$settings[ $key ] = $value;
+				$warnings[]       = sprintf( '%s had blank sides (%s): filled from the saved value.', $key, $sides );
+				continue;
 			}
-			if ( count( $blank ) > 0 && count( $blank ) < 4 ) {
-				$warnings[] = sprintf( '%s has blank or missing sides (%s). Elementor may omit the entire CSS rule. Supply all four sides (use 0 where intended); values were left unchanged to preserve inheritance.', $key, implode( ', ', $blank ) );
-			}
+
+			unset( $settings[ $key ] );
+			$warnings[] = $creating
+				? sprintf( '%s had blank sides (%s) and was not written, because Elementor drops the whole CSS rule when a side is blank. Supply all four sides (use 0 where intended).', $key, $sides )
+				: sprintf( '%s had blank sides (%s) and was not written; the saved value is unchanged. Supply all four sides (use 0 where intended).', $key, $sides );
 		}
+
 		if ( $creating && 'grid' === ( $settings['container_type'] ?? '' ) && ! isset( $settings['grid_rows_grid'] ) ) {
 			$warnings[] = 'Elementor defaults grid_rows_grid to 2 rows. For a single-row grid, explicitly set grid_rows_grid: {"unit":"fr","size":1} inside settings.';
 		}
-		return $warnings;
+
+		return array(
+			'settings' => $settings,
+			'warnings' => $warnings,
+		);
+	}
+
+	/**
+	 * Warnings guard_settings() would report for these settings.
+	 *
+	 * Kept for callers that only need the messages; write paths must use
+	 * guard_settings() and write the settings it returns.
+	 *
+	 * @param array $settings Incoming settings.
+	 * @param bool  $creating True for a new element (no stored value to fill from).
+	 * @return string[]
+	 */
+	public static function settings_warnings( array $settings, bool $creating = false ): array {
+		return self::guard_settings( $settings, $creating ? null : array() )['warnings'];
+	}
+
+	/**
+	 * Sides of a classic dimension value that are missing or blank.
+	 *
+	 * @param array $value Dimension value.
+	 * @return string[]
+	 */
+	private static function blank_sides( array $value ): array {
+		$blank = array();
+		foreach ( self::FOUR_SIDES as $side ) {
+			if ( ! isset( $value[ $side ] ) || '' === $value[ $side ] ) {
+				$blank[] = $side;
+			}
+		}
+		return $blank;
 	}
 
 	/**

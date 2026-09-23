@@ -334,6 +334,10 @@ class EMCP_Tools_Widget_Abilities {
 			);
 		}
 
+		// Partial classic dimensions are left out of a new element (#151).
+		$guard    = EMCP_Tools_Element_Factory::guard_settings( (array) $settings );
+		$settings = $guard['settings'];
+
 		// Validate settings if provided.
 		if ( ! empty( $settings ) ) {
 			$valid = $this->validator->validate( $widget_type, $settings );
@@ -365,7 +369,7 @@ class EMCP_Tools_Widget_Abilities {
 		return array(
 			'element_id'  => $widget['id'],
 			'widget_type' => $widget_type,
-			'warnings'    => EMCP_Tools_Element_Factory::settings_warnings( $settings ),
+			'warnings'    => $guard['warnings'],
 		);
 	}
 
@@ -456,6 +460,10 @@ class EMCP_Tools_Widget_Abilities {
 			return new \WP_Error( 'not_a_widget', __( 'Target element is not a widget.', 'emcp-tools' ) );
 		}
 
+		// Partial classic dimensions: fill from the stored value or skip (#151).
+		$guard    = EMCP_Tools_Element_Factory::guard_settings( (array) $settings, (array) ( $element['settings'] ?? array() ) );
+		$settings = $guard['settings'];
+
 		$updated = $this->data->update_element_settings( $page_data, $element_id, $settings );
 
 		if ( ! $updated ) {
@@ -471,7 +479,7 @@ class EMCP_Tools_Widget_Abilities {
 		return array(
 			'success'    => true,
 			'element_id' => $element_id,
-			'warnings'   => EMCP_Tools_Element_Factory::settings_warnings( $settings ),
+			'warnings'   => $guard['warnings'],
 		);
 	}
 

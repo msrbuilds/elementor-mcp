@@ -400,8 +400,11 @@ class EMCP_Tools_Composite_Abilities {
 				// Recursively build children with this container's direction.
 				$child_elements = $this->build_elements( $children, true, $direction );
 
-				$container = $this->factory->create_container( $settings, $child_elements );
-				$this->warnings = array_merge( $this->warnings, EMCP_Tools_Element_Factory::settings_warnings( $settings, true ) );
+				// Partial classic dimensions are left out of a new element (#151).
+				$guard          = EMCP_Tools_Element_Factory::guard_settings( (array) $settings );
+				$settings       = $guard['settings'];
+				$container      = $this->factory->create_container( $settings, $child_elements );
+				$this->warnings = array_merge( $this->warnings, $guard['warnings'] );
 
 				if ( $is_inner ) {
 					$container['isInner'] = true;
@@ -420,8 +423,10 @@ class EMCP_Tools_Composite_Abilities {
 					if ( ! $this->widget_type_exists( (string) $widget_type ) ) {
 						$this->warnings[] = sprintf( 'Unknown widget type "%s" — it may render nothing. Check list-widgets for valid types.', (string) $widget_type );
 					}
-					$widget = $this->build_widget( $widget_type, $settings );
-					$this->warnings = array_merge( $this->warnings, EMCP_Tools_Element_Factory::settings_warnings( $settings ) );
+					$guard          = EMCP_Tools_Element_Factory::guard_settings( (array) $settings );
+					$settings       = $guard['settings'];
+					$widget         = $this->build_widget( $widget_type, $settings );
+					$this->warnings = array_merge( $this->warnings, $guard['warnings'] );
 					$this->elements_created++;
 
 					// Widgets placed directly inside a row container must be
