@@ -37,16 +37,31 @@ class EMCP_Tools_Widget_Setting_Keys {
 	 *
 	 * @var string[]
 	 */
-	const RESERVED_KEYS = array( '__dynamic__', '__globals__' );
+	const RESERVED_KEYS = array( '__dynamic__', '__globals__', '__fa4_migrated' );
 
 	/**
-	 * Prefixes that commonly separate a guessed key from the real control:
-	 * the advanced tab (`_margin`), Pro post skins (`classic_columns`), the
-	 * query group (`query_orderby`) and style-section names (`style_hotspot_color`).
+	 * Keys the update tools route to the element root, not into settings.
 	 *
 	 * @var string[]
 	 */
-	const KNOWN_PREFIXES = array( '_', 'classic_', 'cards_', 'full_content_', 'query_', 'posts_', 'style_' );
+	const ROOT_KEYS = array( 'styles', 'editor_settings' );
+
+	/**
+	 * Prefixes that commonly separate a guessed key from the real control:
+	 * Pro post skins (`classic_columns`), the query group (`query_orderby`)
+	 * and style-section names (`style_hotspot_color`). A leading underscore
+	 * (`_margin`) needs no entry: the hyphen/underscore rule already finds it.
+	 *
+	 * @var string[]
+	 */
+	const KNOWN_PREFIXES = array( 'classic_', 'cards_', 'full_content_', 'query_', 'posts_', 'style_' );
+
+	/**
+	 * Skin ids whose controls are prefixed with `{skin}_` (Pro posts and archive posts).
+	 *
+	 * @var string[]
+	 */
+	const SKINS = array( 'classic', 'cards', 'full_content' );
 
 	/**
 	 * Per-request cache of control names by widget type.
@@ -66,9 +81,12 @@ class EMCP_Tools_Widget_Setting_Keys {
 	 *
 	 * @param string $widget_type Elementor widget type.
 	 * @param array  $settings    Settings the caller sent.
+	 * @param array  $stored      Settings already stored on the element (update tools),
+	 *                            read for the active `_skin`.
 	 * @return string[]
 	 */
-	public static function warnings( string $widget_type, array $settings ): array {
+	public static function warnings( string $widget_type, array $settings, array $stored = array() ): array {
+		$settings = array_diff_key( $settings, array_flip( self::ROOT_KEYS ) );
 		if ( '' === $widget_type || empty( $settings ) ) {
 			return array();
 		}
@@ -76,18 +94,42 @@ class EMCP_Tools_Widget_Setting_Keys {
 		if ( empty( $known ) ) {
 			return array();
 		}
+		$skin = (string) ( $settings['_skin'] ?? $stored['_skin'] ?? '' );
+		return self::messages( $widget_type, self::unknown_keys( array_keys( $settings ), $known, $skin ) );
+	}
+
+	/**
+	 * Warnings for an element in a page tree: empty unless it is a widget.
+	 *
+	 * @since 3.18.0
+	 *
+	 * @param array $element  The stored element (elType, widgetType, settings).
+	 * @param array $settings Settings the caller sent for it.
+	 * @return string[]
+	 */
+	public static function for_element( array $element, array $settings ): array {
+		if ( 'widget' !== ( $element['elType'] ?? '' ) ) {
+			return array();
+		}
+		return self::warnings( (string) ( $element['widgetType'] ?? '' ), $settings, (array) ( $element['settings'] ?? array() ) );
+	}
+
+	/**
+	 * One warning line per unknown key. Pure.
+	 *
+	 * @since 3.18.0
+	 *
+	 * @param string                    $widget_type Widget type, for the message.
+	 * @param array<string,string|null> $unknown     Unknown key => suggestion or null.
+	 * @return string[]
+	 */
+	public static function messages( string $widget_type, array $unknown ): array {
 		$warnings = array();
-		foreach ( self::unknown_keys( array_keys( $settings ), $known ) as $key => $suggestion ) {
-			$message = sprintf(
-				'Setting "%1$s" is not a control of the %2$s widget. It was saved but has no effect.',
-				$key,
-				$widget_type
-			);
-			if ( null !== $suggestion ) {
-				$message .= sprintf( ' Did you mean "%s"?', $suggestion );
-			} else {
-				$message .= ' Check the control names with get-widget-schema (full: true).';
-			}
+		foreach ( $unknown as $key => $suggestion ) {
+			$message = sprintf( '"%1$s" is not a registered control of the %2$s widget and is likely ignored.', $key, $widget_type );
+			$message .= null !== $suggestion
+				? sprintf( ' Did you mean "%s"?', $suggestion )
+				: ' See get-widget-schema (full: true) for the control names.';
 			$warnings[] = $message;
 		}
 		return $warnings;
@@ -101,16 +143,17 @@ class EMCP_Tools_Widget_Setting_Keys {
 	 *
 	 * @param array               $keys  Settings keys.
 	 * @param array<string,mixed> $known Control names as keys.
+	 * @param string              $skin  Active skin id, if any (for skin-prefixed suggestions).
 	 * @return array<string,string|null>
 	 */
-	public static function unknown_keys( array $keys, array $known ): array {
+	public static function unknown_keys( array $keys, array $known, string $skin = '' ): array {
 		$unknown = array();
 		foreach ( $keys as $key ) {
 			$key = (string) $key;
 			if ( self::is_known( $key, $known ) ) {
 				continue;
 			}
-			$unknown[ $key ] = self::suggest( $key, $known );
+			$unknown[ $key ] = self::suggest( $key, $known, $skin );
 		}
 		return $unknown;
 	}
@@ -166,14 +209,20 @@ class EMCP_Tools_Widget_Setting_Keys {
 	 *
 	 * @param string              $key   Unknown settings key.
 	 * @param array<string,mixed> $known Control names as keys.
+	 * @param string              $skin  Active skin id (`classic`, `cards`, `full_content`);
+	 *                                   its prefix is tried before the other skins'.
 	 * @return string|null
 	 */
-	public static function suggest( string $key, array $known ): ?string {
+	public static function suggest( string $key, array $known, string $skin = '' ): ?string {
 		$suffix = '';
 		$base   = self::strip_responsive_suffix( $key );
 		if ( null !== $base ) {
 			$suffix = substr( $key, strlen( $base ) );
 			$key    = $base;
+		}
+
+		if ( in_array( $skin, self::SKINS, true ) && isset( $known[ $skin . '_' . $key ] ) ) {
+			return $skin . '_' . $key . $suffix;
 		}
 
 		$flat = self::flatten( $key );

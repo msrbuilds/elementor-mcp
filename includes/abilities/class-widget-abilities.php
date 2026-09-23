@@ -369,7 +369,7 @@ class EMCP_Tools_Widget_Abilities {
 		return array(
 			'element_id'  => $widget['id'],
 			'widget_type' => $widget_type,
-			// Keys that are not controls are saved but do nothing (#152).
+			// Keys that are not controls are saved but likely ignored (#152).
 			'warnings'    => array_merge( $guard['warnings'], EMCP_Tools_Widget_Setting_Keys::warnings( $widget_type, (array) $settings ) ),
 		);
 	}
@@ -480,8 +480,8 @@ class EMCP_Tools_Widget_Abilities {
 		return array(
 			'success'    => true,
 			'element_id' => $element_id,
-			// Keys that are not controls are saved but do nothing (#152).
-			'warnings'   => array_merge( $guard['warnings'], EMCP_Tools_Widget_Setting_Keys::warnings( (string) ( $element['widgetType'] ?? '' ), (array) $settings ) ),
+			// Keys that are not controls are saved but likely ignored (#152).
+			'warnings'   => array_merge( $guard['warnings'], EMCP_Tools_Widget_Setting_Keys::for_element( $element, (array) $settings ) ),
 		);
 	}
 

@@ -474,21 +474,12 @@ class EMCP_Tools_Layout_Abilities {
 			return $result;
 		}
 
-		// Widget keys that are not controls are saved but do nothing (#152).
-		// `styles` and `editor_settings` are routed to the element root, not settings.
-		$key_warnings = array();
-		if ( 'widget' === ( $element['elType'] ?? '' ) ) {
-			$key_warnings = EMCP_Tools_Widget_Setting_Keys::warnings(
-				(string) ( $element['widgetType'] ?? '' ),
-				array_diff_key( (array) $settings, array_flip( array( 'styles', 'editor_settings' ) ) )
-			);
-		}
-
 		return array(
 			'success'      => true,
 			'element_id'   => $element_id,
 			'element_type' => $element['elType'] ?? 'unknown',
-			'warnings'     => array_merge( $guard['warnings'], $key_warnings ),
+			// Widget keys that are not controls are saved but likely ignored (#152).
+			'warnings'     => array_merge( $guard['warnings'], EMCP_Tools_Widget_Setting_Keys::for_element( $element, (array) $settings ) ),
 		);
 	}
 
@@ -590,7 +581,8 @@ class EMCP_Tools_Layout_Abilities {
 
 			if ( $ok ) {
 				$updated_count++;
-				foreach ( $guard['warnings'] as $warning ) {
+				// Widget keys that are not controls are saved but likely ignored (#152).
+				foreach ( array_merge( $guard['warnings'], EMCP_Tools_Widget_Setting_Keys::for_element( $element, (array) $settings ) ) as $warning ) {
 					$warnings[] = $eid . ': ' . $warning;
 				}
 			} else {
