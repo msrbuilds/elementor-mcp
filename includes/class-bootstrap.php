@@ -3,7 +3,7 @@
  * Plugin bootstrap: dependency check, class loading, and hook wiring.
  *
  * Hooked to `plugins_loaded` (priority 20) by the main plugin file. Everything
- * here is orchestration — loading class files and wiring them together — not
+ * here is orchestration, loading class files and wiring them together, not
  * feature logic, which lives in the loaded classes.
  *
  * @package EMCP_Tools
@@ -91,7 +91,7 @@ class EMCP_Tools_Bootstrap {
 	 * Best-effort early detection of a REST request. `REST_REQUEST` is not defined
 	 * until `parse_request` (after plugins_loaded), so at boot time we fall back to
 	 * the request URI: the REST base (`/wp-json/`) or the plain-permalink
-	 * `?rest_route=` form. Deliberately broad — any REST request loads the full
+	 * `?rest_route=` form. Deliberately broad, any REST request loads the full
 	 * surface, so a custom MCP route is never missed.
 	 *
 	 * @since 3.12.2
@@ -149,7 +149,7 @@ class EMCP_Tools_Bootstrap {
 		require_once EMCP_TOOLS_DIR . 'includes/schemas/class-schema-generator.php';
 		require_once EMCP_TOOLS_DIR . 'includes/validators/class-element-validator.php';
 		require_once EMCP_TOOLS_DIR . 'includes/validators/class-settings-validator.php';
-		// Widget catalog — source of truth for the 5 catalog-backed widget tools.
+		// Widget catalog, source of truth for the 5 catalog-backed widget tools.
 		require_once EMCP_TOOLS_DIR . 'includes/class-secret.php';
 		require_once EMCP_TOOLS_DIR . 'includes/class-remote-keys.php';
 		require_once EMCP_TOOLS_DIR . 'includes/oauth/class-oauth-util.php';
@@ -188,16 +188,16 @@ class EMCP_Tools_Bootstrap {
 
 		// Themes domain: the child-theme builder + the dispatcher base (must load
 		// before its subclasses) + the integrations.
-		// Forms-tab integrations — abstract base + CF7 (free). Pro form adapters
+		// Forms-tab integrations, abstract base + CF7 (free). Pro form adapters
 		// (WPForms/Gravity/Fluent/Ninja/Formidable) load via EMCP_Tools_Pro_Loader.
-		// SEO plugin integrations — abstract base + Slim SEO (free). The 6 Pro SEO
+		// SEO plugin integrations, abstract base + Slim SEO (free). The 6 Pro SEO
 		// adapters (Yoast/RankMath/AIOSEO/SeoPress/SEOFramework/SureRank) load via
 		// EMCP_Tools_Pro_Loader.
-		// Performance Analyzer (v3.0.0) — read-only server/WP/page audit.
+		// Performance Analyzer (v3.0.0), read-only server/WP/page audit.
 		// Filesystem tools (read/scan + write/edit/delete; writes off by default).
 		// Database tools (read-only query + structured writes; writes off by default).
 		// WP-CLI tools (run + background jobs; disabled-by-default, manage_options).
-		// Security & Malware Scanner (v3.0.0) — read-only multi-audit scan.
+		// Security & Malware Scanner (v3.0.0), read-only multi-audit scan.
 		// Brand Kits. The free writer + backup store + free-kit fetcher load
 		// unconditionally so the MCP REST/CLI/proxy surface can reach them. The
 		// Pro brand-kit admin + system-kit abilities live in the private Pro
@@ -216,19 +216,19 @@ class EMCP_Tools_Bootstrap {
 		require_once EMCP_TOOLS_DIR . 'includes/sandbox/class-sandbox-list-query.php';
 		require_once EMCP_TOOLS_DIR . 'includes/class-widget-store.php';
 		require_once EMCP_TOOLS_DIR . 'includes/class-widget-loader.php';
-		// Sandbox Bundle — portable cloud-ready format for blocks/widgets/snippets.
+		// Sandbox Bundle, portable cloud-ready format for blocks/widgets/snippets.
 		require_once EMCP_TOOLS_DIR . 'includes/sandbox/class-sandbox-bundle.php';
 		require_once EMCP_TOOLS_DIR . 'includes/sandbox/interface-sandbox-artifact.php';
 		require_once EMCP_TOOLS_DIR . 'includes/sandbox/class-sandbox-store.php';
-		// Bundle adapters — present the Widget Builder + PHP Snippet stores as the
+		// Bundle adapters, present the Widget Builder + PHP Snippet stores as the
 		// same cloud-ready artifact surface (EMCP_Tools_Sandbox_Artifact) as the
 		// block store, without touching either store's internals.
 		require_once EMCP_TOOLS_DIR . 'includes/sandbox/class-widget-bundle-adapter.php';
 		require_once EMCP_TOOLS_DIR . 'includes/sandbox/class-snippet-bundle-adapter.php';
-		// Sandbox Cloud abilities — export/import any sandbox artifact (block/
+		// Sandbox Cloud abilities, export/import any sandbox artifact (block/
 		// widget/snippet) as a portable bundle over the cloud contract. Free tree;
 		// registration is wired by the ability registrar (a later task).
-		// PHP Code Snippets (Sandbox) — free, capability-gated. AI can author +
+		// PHP Code Snippets (Sandbox), free, capability-gated. AI can author +
 		// validate drafts via MCP; only an admin can activate. The loader runs
 		// ACTIVE snippets (hash-verified, fatal-isolated).
 		require_once EMCP_TOOLS_DIR . 'includes/class-php-snippet-validator.php';
@@ -238,7 +238,7 @@ class EMCP_Tools_Bootstrap {
 		require_once EMCP_TOOLS_DIR . 'includes/class-atomic-props.php';
 		require_once EMCP_TOOLS_DIR . 'includes/class-atomic-styles.php';
 		require_once EMCP_TOOLS_DIR . 'includes/class-atomic-widget-map.php';
-		// Global Classes (Class Manager) reader — self-gates on Elementor 4.0+.
+		// Global Classes (Class Manager) reader, self-gates on Elementor 4.0+.
 		// Background library refresh.
 		require_once EMCP_TOOLS_DIR . 'includes/class-library-refresher.php';
 		// Modules framework (free) + built-in modules. The registry boots active
@@ -339,7 +339,7 @@ class EMCP_Tools_Bootstrap {
 	 * Loads the MCP tool surface: every ability class plus its exclusive infra
 	 * (schema catalogs, guards, audits, integrations, stock clients). This is the
 	 * heaviest part of the plugin (~80 files) and is only needed to register or run
-	 * abilities — an MCP request, the admin Tools screen, WP-CLI, or cron. A plain
+	 * abilities, an MCP request, the admin Tools screen, WP-CLI, or cron. A plain
 	 * front-end page view never touches it, so deferring these requires off the
 	 * boot path keeps the per-request footprint low (memory, #128MB-hosts).
 	 *
@@ -466,7 +466,7 @@ class EMCP_Tools_Bootstrap {
 		EMCP_Tools_Change_Blobs::init();
 		// The Redirect Manager (store table install + front-end 301/302 handler) is
 		// booted by EMCP_Tools_Redirect_Module::register() only when the module is
-		// active — a true kill switch from the Modules tab.
+		// active, a true kill switch from the Modules tab.
 		// OAuth sign-in: install storage on init (routes wired in later phases).
 		EMCP_Tools_OAuth_Server::init();
 		// Content mirror: auto-export-on-save (gated by its option) + delete cleanup.
@@ -485,7 +485,7 @@ class EMCP_Tools_Bootstrap {
 			add_action( 'init', array( 'EMCP_Tools_Block_Store', 'register_post_type' ) );
 			( new EMCP_Tools_Block_Loader() )->register_hooks();
 		}
-		// Background refresh of the Pro Prompts / Brand Kits libraries — registered
+		// Background refresh of the Pro Prompts / Brand Kits libraries, registered
 		// unconditionally (cron runs in a non-admin context) so an expired 24h
 		// cache self-heals without the user clicking "Sync Library".
 		EMCP_Tools_Library_Refresher::register();
@@ -538,7 +538,7 @@ class EMCP_Tools_Bootstrap {
 		require_once EMCP_TOOLS_DIR . 'includes/admin/class-upgrade-notice.php';
 		( new EMCP_Tools_Upgrade_Notice() )->init();
 
-		// Facebook community banner — only renders once the upgrade banner is out
+		// Facebook community banner, only renders once the upgrade banner is out
 		// of the way (Pro users, or free users who dismissed it), so we never
 		// stack two banners on the dashboard.
 		require_once EMCP_TOOLS_DIR . 'includes/admin/class-community-notice.php';
@@ -556,7 +556,7 @@ class EMCP_Tools_Bootstrap {
 	private static function check_dependencies(): bool {
 		// PHP 8.1+ is required. Elementor 4.0+ uses 8.1+ features that silently
 		// fail on older PHP (writes no-op, _elementor_data never persists).
-		// WordPress only enforces Requires PHP at activation, not on every load —
+		// WordPress only enforces Requires PHP at activation, not on every load , 
 		// so we re-check here to surface a clear admin notice if the host
 		// downgraded PHP after the plugin was already installed.
 		if ( version_compare( PHP_VERSION, '8.1', '<' ) ) {
@@ -588,7 +588,7 @@ class EMCP_Tools_Bootstrap {
 		}
 
 		// MCP Adapter: bundled with the plugin (EMCP_Tools_Adapter_Bootstrap::ensure()
-		// ran above). Only fails if the bundled source is missing/corrupt — a
+		// ran above). Only fails if the bundled source is missing/corrupt, a
 		// broken build, not a user action.
 		if ( ! class_exists( '\WP\MCP\Core\McpAdapter' ) ) {
 			$missing[] = 'WordPress MCP Adapter (bundled, reinstall the plugin if this persists)';

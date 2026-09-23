@@ -151,7 +151,20 @@ class EMCP_Tools_Themer_Loop_Block_Map {
 			return array();
 		}
 		$grid = 'grid' === self::BLOCKS[ $key ];
-		$s    = self::to_settings( $a, array_merge( self::COMMON, $grid ? self::GRID : self::CAROUSEL ) );
+		// An attribute whose control is hidden keeps the value it had while
+		// it showed (the editor never clears it), so a stale offset or term
+		// list would still reach the query. Elementor nulls a hidden
+		// control; do the same here with the client's own conditions.
+		$seen = array();
+		foreach ( self::attributes( $key ) as $name => $schema ) {
+			$seen[ $name ] = array_key_exists( $name, $a ) ? $a[ $name ] : $schema['default'];
+		}
+		foreach ( self::conditions( $key ) as $attr => $when ) {
+			if ( ! self::is_shown( array( 'when' => $when ), $seen ) ) {
+				unset( $a[ $attr ] );
+			}
+		}
+		$s = self::to_settings( $a, array_merge( self::COMMON, $grid ? self::GRID : self::CAROUSEL ) );
 		$args = $grid
 			? EMCP_Tools_Themer_Loop_Widget_Map::grid( $s, '' )
 			: EMCP_Tools_Themer_Loop_Widget_Map::carousel( $s, '' );
@@ -165,6 +178,59 @@ class EMCP_Tools_Themer_Loop_Block_Map {
 		// the element's own occurrence counter.
 		unset( $args['local_id'] );
 		return $args;
+	}
+
+	/** @var array<string,array<string,array>> Per block key: attribute => `when`. */
+	private static $conditions = array();
+
+	/**
+	 * Each conditional control's `when`, by attribute (memoised per request:
+	 * every render evaluates them, the labels are not needed for that).
+	 *
+	 * @param string $key Block key.
+	 * @return array<string,array>
+	 */
+	private static function conditions( string $key ): array {
+		if ( ! isset( self::$conditions[ $key ] ) ) {
+			self::$conditions[ $key ] = array();
+			foreach ( self::controls( $key ) as $control ) {
+				if ( isset( $control['when'] ) ) {
+					self::$conditions[ $key ][ $control['key'] ] = $control['when'];
+				}
+			}
+		}
+		return self::$conditions[ $key ];
+	}
+
+	/**
+	 * Whether a control shows for these attributes, exactly as the editor's
+	 * isShown() decides: `when` is one condition or a list of conditions
+	 * that must all hold; a condition is `attr` plus `in` (the value is one
+	 * of these) or `notIn` (none of these), compared strictly.
+	 *
+	 * @param array $control Control descriptor.
+	 * @param array $attrs   Attributes (defaults filled in).
+	 * @return bool
+	 */
+	public static function is_shown( array $control, array $attrs ): bool {
+		$when = $control['when'] ?? null;
+		if ( ! is_array( $when ) || ! $when ) {
+			return true;
+		}
+		$conditions = isset( $when['attr'] ) ? array( $when ) : $when;
+		foreach ( $conditions as $c ) {
+			if ( ! is_array( $c ) || ! isset( $c['attr'] ) ) {
+				continue;
+			}
+			$v = $attrs[ $c['attr'] ] ?? null;
+			if ( isset( $c['in'] ) && ! in_array( $v, (array) $c['in'], true ) ) {
+				return false;
+			}
+			if ( isset( $c['notIn'] ) && in_array( $v, (array) $c['notIn'], true ) ) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 	/**
@@ -279,9 +345,10 @@ class EMCP_Tools_Themer_Loop_Block_Map {
 
 	/**
 	 * Inspector control descriptors. `panel` groups controls into inspector
-	 * panels; `when` shows a control only while another attribute has one
-	 * of the listed values (`in`) or none of them (`notIn`). Option lists
-	 * come from the editor payload's loopOptions by `optionsKey`.
+	 * panels; `when` shows a control only while its condition holds (see
+	 * is_shown(); a hidden control's attribute is also left out of the
+	 * element args). Option lists come from the editor payload's
+	 * loopOptions by `optionsKey`.
 	 *
 	 * @param string $key Block key.
 	 * @return array
@@ -296,6 +363,8 @@ class EMCP_Tools_Themer_Loop_Block_Map {
 		};
 		$not_current = array( 'when' => array( 'attr' => 'source', 'notIn' => array( 'current' ) ) );
 		$filtering   = array( 'when' => array( 'attr' => 'source', 'in' => array( 'posts', 'products' ) ) );
+		// Conditions mirror the Elementor widget's own control conditions.
+		$queried     = array( 'attr' => 'source', 'notIn' => array( 'current', 'manual' ) );
 
 		$controls = array(
 			$c( 'templateId', 'select', __( 'Loop Item', 'emcp-tools' ), array( 'optionsKey' => 'templates', 'panel' => __( 'Loop Item', 'emcp-tools' ) ) ),
@@ -306,7 +375,7 @@ class EMCP_Tools_Themer_Loop_Block_Map {
 			$c( 'perPage', 'number', __( 'Items per page', 'emcp-tools' ), array_merge( array( 'min' => 1, 'max' => EMCP_Tools_Themer_Loop_Query::MAX_PER_PAGE, 'panel' => $q ), $not_current ) ),
 			$c( 'offset', 'number', __( 'Skip first', 'emcp-tools' ), array( 'min' => 0, 'max' => EMCP_Tools_Themer_Loop_Query::MAX_OFFSET, 'panel' => $q, 'when' => array( 'attr' => 'source', 'notIn' => array( 'current', 'manual' ) ) ) ),
 			$c( 'orderby', 'select', __( 'Order by', 'emcp-tools' ), array_merge( array( 'optionsKey' => 'orderby', 'panel' => $q ), array( 'when' => array( 'attr' => 'source', 'notIn' => array( 'current', 'manual' ) ) ) ) ),
-			$c( 'metaKey', 'text', __( 'Custom field key', 'emcp-tools' ), array( 'panel' => $q, 'when' => array( 'attr' => 'orderby', 'in' => array( 'meta_value', 'meta_value_num' ) ) ) ),
+			$c( 'metaKey', 'text', __( 'Custom field key', 'emcp-tools' ), array( 'panel' => $q, 'when' => array( array( 'attr' => 'orderby', 'in' => array( 'meta_value', 'meta_value_num' ) ), $queried ) ) ),
 			$c( 'order', 'select', __( 'Order', 'emcp-tools' ), array( 'optionsKey' => 'order', 'panel' => $q, 'when' => array( 'attr' => 'source', 'notIn' => array( 'current', 'manual' ) ) ) ),
 			$c( 'terms', 'multiselect', __( 'Include terms', 'emcp-tools' ), array_merge( array( 'optionsKey' => 'terms', 'panel' => $q ), $filtering ) ),
 			$c( 'excludeTerms', 'multiselect', __( 'Exclude terms', 'emcp-tools' ), array_merge( array( 'optionsKey' => 'terms', 'panel' => $q ), $filtering ) ),
@@ -316,9 +385,9 @@ class EMCP_Tools_Themer_Loop_Block_Map {
 			$c( 'excludeCurrent', 'toggle', __( 'Exclude current post', 'emcp-tools' ), array_merge( array( 'panel' => $q ), $filtering ) ),
 			$c( 'relatedExcludeCurrent', 'toggle', __( 'Exclude current post', 'emcp-tools' ), array( 'panel' => $q, 'when' => array( 'attr' => 'source', 'in' => array( 'related' ) ) ) ),
 			$c( 'ignoreSticky', 'toggle', __( 'Ignore sticky posts', 'emcp-tools' ), array( 'panel' => $q, 'when' => array( 'attr' => 'source', 'in' => array( 'posts' ) ) ) ),
-			$c( 'date', 'select', __( 'Date range', 'emcp-tools' ), array_merge( array( 'optionsKey' => 'dates', 'panel' => $q ), $filtering ) ),
-			$c( 'after', 'text', __( 'After (YYYY-MM-DD)', 'emcp-tools' ), array( 'panel' => $q, 'when' => array( 'attr' => 'date', 'in' => array( 'custom' ) ) ) ),
-			$c( 'before', 'text', __( 'Before (YYYY-MM-DD)', 'emcp-tools' ), array( 'panel' => $q, 'when' => array( 'attr' => 'date', 'in' => array( 'custom' ) ) ) ),
+			$c( 'date', 'select', __( 'Date range', 'emcp-tools' ), array( 'optionsKey' => 'dates', 'panel' => $q, 'when' => $queried ) ),
+			$c( 'after', 'text', __( 'After (YYYY-MM-DD)', 'emcp-tools' ), array( 'panel' => $q, 'when' => array( array( 'attr' => 'date', 'in' => array( 'custom' ) ), $queried ) ) ),
+			$c( 'before', 'text', __( 'Before (YYYY-MM-DD)', 'emcp-tools' ), array( 'panel' => $q, 'when' => array( array( 'attr' => 'date', 'in' => array( 'custom' ) ), $queried ) ) ),
 			$c( 'hideOutOfStock', 'toggle', __( 'Hide out of stock', 'emcp-tools' ), array( 'panel' => $q, 'when' => array( 'attr' => 'source', 'in' => array( 'products' ) ) ) ),
 			$c( 'onSaleOnly', 'toggle', __( 'On sale only', 'emcp-tools' ), array( 'panel' => $q, 'when' => array( 'attr' => 'source', 'in' => array( 'products' ) ) ) ),
 			$c( 'featuredOnly', 'toggle', __( 'Featured only', 'emcp-tools' ), array( 'panel' => $q, 'when' => array( 'attr' => 'source', 'in' => array( 'products' ) ) ) ),
@@ -337,7 +406,7 @@ class EMCP_Tools_Themer_Loop_Block_Map {
 					$c( 'gapY', 'number', __( 'Row gap (px)', 'emcp-tools' ), array( 'min' => 0, 'max' => 120, 'panel' => $l ) ),
 					$c( 'masonry', 'toggle', __( 'Masonry', 'emcp-tools' ), array( 'panel' => $l ) ),
 					$c( 'equalHeight', 'toggle', __( 'Equal height', 'emcp-tools' ), array( 'panel' => $l, 'when' => array( 'attr' => 'masonry', 'in' => array( false ) ) ) ),
-					$c( 'firstItemSpan', 'number', __( 'First item spans (columns)', 'emcp-tools' ), array( 'min' => 1, 'max' => 6, 'panel' => $l ) ),
+					$c( 'firstItemSpan', 'number', __( 'First item spans (columns)', 'emcp-tools' ), array( 'min' => 1, 'max' => 6, 'panel' => $l, 'when' => array( 'attr' => 'masonry', 'in' => array( false ) ) ) ),
 					$c( 'hoverEffect', 'select', __( 'Hover effect', 'emcp-tools' ), array( 'optionsKey' => 'hover', 'panel' => $l ) ),
 					$c( 'animation', 'select', __( 'Entrance animation', 'emcp-tools' ), array( 'optionsKey' => 'animations', 'panel' => $l ) ),
 					$c( 'animationStep', 'number', __( 'Animation stagger (ms)', 'emcp-tools' ), array( 'min' => 0, 'max' => 1000, 'panel' => $l, 'when' => array( 'attr' => 'animation', 'notIn' => array( 'none' ) ) ) ),

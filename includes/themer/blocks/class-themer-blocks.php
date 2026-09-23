@@ -35,7 +35,7 @@ class EMCP_Tools_Themer_Blocks {
 	public function init(): void {
 		add_filter( 'block_categories_all', array( $this, 'register_category' ), 10, 1 );
 		add_action( 'enqueue_block_editor_assets', array( __CLASS__, 'add_loop_options' ) );
-		// The module boots on init:5, so init has already started — register now;
+		// The module boots on init:5, so init has already started, register now;
 		// otherwise defer to init.
 		if ( did_action( 'init' ) ) {
 			$this->register_blocks();
@@ -298,7 +298,7 @@ class EMCP_Tools_Themer_Blocks {
 		wp_register_script(
 			self::SCRIPT,
 			EMCP_TOOLS_URL . 'assets/js/themer-blocks.js',
-			array( 'wp-blocks', 'wp-element', 'wp-block-editor', 'wp-components', 'wp-i18n', 'wp-server-side-render' ),
+			array( 'wp-blocks', 'wp-element', 'wp-block-editor', 'wp-components', 'wp-compose', 'wp-i18n', 'wp-server-side-render' ),
 			$jsv,
 			true
 		);
@@ -382,10 +382,13 @@ class EMCP_Tools_Themer_Blocks {
 		$args = EMCP_Tools_Themer_Dynamic::args_from( $key, $attributes );
 		if ( isset( EMCP_Tools_Themer_Loop_Block_Map::BLOCKS[ $key ] )
 			&& defined( 'REST_REQUEST' ) && REST_REQUEST
+			&& ! EMCP_Tools_Themer_Loop_REST::is_rendering()
+			&& current_user_can( 'edit_posts' )
 			&& ! EMCP_Tools_Themer_CPT::is_published_loop_template( (int) ( $args['template_id'] ?? 0 ) ) ) {
-			// The editor preview (the block renderer is a REST request): the
-			// element prints only an HTML comment without a Loop Item, which
-			// would leave the preview blank.
+			// The editor preview (the block renderer is a REST request made
+			// by an editor): the element prints only an HTML comment without
+			// a Loop Item, which would leave the preview blank. Never in a
+			// card the loop route renders, and never for a visitor.
 			$wrapper = function_exists( 'get_block_wrapper_attributes' ) ? get_block_wrapper_attributes() : '';
 			return '<div ' . $wrapper . '><span class="emcp-dyn-placeholder">' . esc_html__( 'Choose a published Loop Item in the block settings.', 'emcp-tools' ) . '</span></div>';
 		}
@@ -482,7 +485,7 @@ class EMCP_Tools_Themer_Blocks {
 		}
 		wp_add_inline_script(
 			self::SCRIPT,
-			'window.emcpThemerBlocks = window.emcpThemerBlocks || {}; window.emcpThemerBlocks.loopOptions = ' . wp_json_encode( self::loop_options( $saved ) ) . ';',
+			'window.emcpThemerBlocks = window.emcpThemerBlocks || {}; window.emcpThemerBlocks.loopOptions = ' . wp_json_encode( self::loop_options( $saved ), JSON_HEX_TAG | JSON_HEX_AMP ) . ';',
 			'before'
 		);
 	}

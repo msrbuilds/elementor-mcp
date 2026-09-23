@@ -4,7 +4,7 @@
  *
  * Every dynamic element (post title, archive title, breadcrumbs, meta, site logo,
  * menu, description, content, archive loop) resolves against the CURRENT main
- * query — Themer renders body templates with the main query intact, so these
+ * query, Themer renders body templates with the main query intact, so these
  * output the viewed post/archive, not the template. Both builders call the same
  * static methods so the dynamic logic lives in exactly one place. Every method
  * returns an escaped HTML string.
@@ -139,14 +139,14 @@ class EMCP_Tools_Themer_Dynamic {
 	/**
 	 * Archive title (category / tag / taxonomy / author / date / post-type archive).
 	 *
-	 * @param array $args tag, show_prefix (bool — keep the "Category:" prefix).
+	 * @param array $args tag, show_prefix (bool, keep the "Category:" prefix).
 	 * @return string
 	 */
 	public static function archive_title( array $args = array() ): string {
 		$tag = self::tag( (string) ( $args['tag'] ?? 'h1' ), 'h1' );
 		if ( empty( $args['show_prefix'] ) ) {
 			// WP 5.5+ exposes the "Category:" / "Tag:" / "Author:" prefix as a
-			// filterable string — the robust way to drop it.
+			// filterable string, the robust way to drop it.
 			add_filter( 'get_the_archive_title_prefix', '__return_empty_string' );
 			$title = get_the_archive_title();
 			remove_filter( 'get_the_archive_title_prefix', '__return_empty_string' );
@@ -366,7 +366,7 @@ class EMCP_Tools_Themer_Dynamic {
 	}
 
 	/**
-	 * Description — the archive description on archives, the post excerpt on
+	 * Description, the archive description on archives, the post excerpt on
 	 * singular views.
 	 *
 	 * @param array $args length (words, 0 = default).
@@ -443,7 +443,7 @@ class EMCP_Tools_Themer_Dynamic {
 	 *
 	 * On a real front-end archive it loops the MAIN query (that archive's posts).
 	 * In the editor / a block or Elementor preview (or any non-archive context)
-	 * there is no archive query, so it shows a SAMPLE of recent posts instead —
+	 * there is no archive query, so it shows a SAMPLE of recent posts instead , 
 	 * otherwise the widget would just say "No posts found." while you design it.
 	 *
 	 * @param array $args layout (grid|list), columns, show_image, show_title,
@@ -473,7 +473,7 @@ class EMCP_Tools_Themer_Dynamic {
 			$own      = false;
 			$paginate = ! empty( $args['pagination'] );
 		} else {
-			// Sample query for the editor/preview — honor optional query args so the
+			// Sample query for the editor/preview, honor optional query args so the
 			// preview can reflect a specific CPT / ordering / taxonomy term instead
 			// of always showing recent posts.
 			$sample = array(
@@ -761,7 +761,7 @@ class EMCP_Tools_Themer_Dynamic {
 
 	/**
 	 * Translate a builder's attributes/settings into provider args. Shared by the
-	 * Gutenberg blocks and the Elementor widgets — both use the same attribute
+	 * Gutenberg blocks and the Elementor widgets, both use the same attribute
 	 * keys (`tag`, `link`, `showPrefix`, `showDate`, …). Truthy values from either
 	 * builder (block `true`/`false` or Elementor `'yes'`/`''`) normalize correctly.
 	 *

@@ -29,6 +29,14 @@
 	var TextControl = comp.TextControl;
 	var RangeControl = comp.RangeControl;
 	var useState = wp.element.useState;
+	var useRef = wp.element.useRef;
+	var useEffect = wp.element.useEffect;
+	var BaseControl = comp.BaseControl;
+	var Disabled = comp.Disabled;
+	var useInstanceId = wp.compose && wp.compose.useInstanceId;
+
+	/** Blocks whose preview holds links and buttons that must not be clickable. */
+	var DISABLED_PREVIEW = { 'loop-grid': true, 'loop-carousel': true };
 
 	function numberMax( key ) {
 		if ( key === 'maxWidth' ) { return 600; }
@@ -65,41 +73,105 @@
 		return extra.length ? list.concat( extra ) : list;
 	}
 
-	/** Whether a descriptor's `when` condition holds for these attributes. */
+	/**
+	 * Whether a descriptor's `when` holds for these attributes: one
+	 * condition or a list that must all hold; `in` (the value is one of
+	 * these) or `notIn` (none of these), compared strictly. The server
+	 * applies the same rule (EMCP_Tools_Themer_Loop_Block_Map::is_shown())
+	 * and leaves a hidden control's attribute out of the render.
+	 */
 	function isShown( def, attributes ) {
 		var w = def.when;
-		if ( ! w || ! w.attr ) {
+		if ( ! w ) {
 			return true;
 		}
-		var v = attributes[ w.attr ];
-		if ( Array.isArray( w.in ) ) {
-			return w.in.indexOf( v ) !== -1;
-		}
-		if ( Array.isArray( w.notIn ) ) {
-			return w.notIn.indexOf( v ) === -1;
+		var list = Array.isArray( w ) ? w : [ w ];
+		for ( var i = 0; i < list.length; i++ ) {
+			var c = list[ i ];
+			if ( ! c || ! c.attr ) {
+				continue;
+			}
+			var v = attributes[ c.attr ];
+			if ( Array.isArray( c.in ) && c.in.indexOf( v ) === -1 ) {
+				return false;
+			}
+			if ( Array.isArray( c.notIn ) && c.notIn.indexOf( v ) !== -1 ) {
+				return false;
+			}
 		}
 		return true;
 	}
 
+	/** A list as the text the control shows. */
+	function listText( v ) {
+		return Array.isArray( v ) ? v.join( ', ' ) : String( v === undefined || v === null ? '' : v );
+	}
+
+	/** Comma-separated text as a trimmed list without empties. */
+	function parseList( text ) {
+		return String( text ).split( ',' ).map( function ( x ) { return x.trim(); } ).filter( function ( x ) { return x !== ''; } );
+	}
+
 	/**
 	 * A list attribute edited as comma-separated text. The draft is local
-	 * while typing (a trailing comma must survive) and saved on blur.
+	 * while typing (a trailing comma must survive) and is saved on blur or
+	 * Enter. When the saved value changes from elsewhere (undo, another
+	 * control, a pasted block), the draft follows it.
 	 */
 	function TextListControl( p ) {
-		var initial = Array.isArray( p.value ) ? p.value.join( ', ' ) : String( p.value || '' );
-		var st = useState( initial );
+		var st = useState( listText( p.value ) );
 		var draft = st[ 0 ];
 		var setDraft = st[ 1 ];
+		var committed = useRef( listText( p.value ) );
+		useEffect( function () {
+			var now = listText( p.value );
+			if ( now !== committed.current ) {
+				committed.current = now;
+				setDraft( now );
+			}
+		}, [ listText( p.value ) ] );
 		function commit() {
-			var parts = String( draft ).split( ',' ).map( function ( x ) { return x.trim(); } ).filter( function ( x ) { return x !== ''; } );
+			var parts = parseList( draft );
+			var current = Array.isArray( p.value ) ? p.value.map( String ) : parseList( listText( p.value ) );
+			committed.current = parts.join( ', ' );
+			if ( parts.join( ',' ) === current.join( ',' ) ) {
+				return;
+			}
 			p.onChange( parts );
 		}
 		return el( TextControl, {
 			label: p.label,
 			value: draft,
 			onChange: setDraft,
-			onBlur: commit
+			onBlur: commit,
+			onKeyDown: function ( ev ) {
+				if ( ev && ev.key === 'Enter' ) {
+					commit();
+				}
+			}
 		} );
+	}
+
+	/** A labelled native multiple select. */
+	function MultiSelectControl( p ) {
+		var id = 'emcp-multiselect-' + ( useInstanceId ? useInstanceId( MultiSelectControl ) : p.name );
+		var current = Array.isArray( p.value ) ? p.value.map( String ) : [];
+		return el( BaseControl, { id: id, label: p.label, className: 'emcp-multiselect' },
+			el( 'select', {
+				id: id,
+				multiple: true,
+				size: Math.min( 8, Math.max( 3, p.options.length ) ),
+				style: { width: '100%' },
+				value: current,
+				onChange: function ( ev ) {
+					var picked = Array.prototype.filter.call( ev.target.options, function ( o ) { return o.selected; } )
+						.map( function ( o ) { return o.value; } );
+					p.onChange( picked );
+				}
+			}, p.options.map( function ( o ) {
+				return el( 'option', { key: String( o.value ), value: String( o.value ) }, o.label );
+			} ) )
+		);
 	}
 
 	function renderControl( def, props ) {
@@ -127,24 +199,7 @@
 			} );
 		}
 		if ( def.type === 'multiselect' ) {
-			var mopts = optionsFor( def, val );
-			var current = Array.isArray( val ) ? val.map( String ) : [];
-			return el( 'div', { key: key, className: 'components-base-control emcp-multiselect' },
-				el( 'label', { className: 'components-base-control__label', style: { display: 'block', marginBottom: '8px' } }, def.label ),
-				el( 'select', {
-					multiple: true,
-					size: Math.min( 8, Math.max( 3, mopts.length ) ),
-					style: { width: '100%' },
-					value: current,
-					onChange: function ( ev ) {
-						var picked = Array.prototype.filter.call( ev.target.options, function ( o ) { return o.selected; } )
-							.map( function ( o ) { return o.value; } );
-						set( picked );
-					}
-				}, mopts.map( function ( o ) {
-					return el( 'option', { key: String( o.value ), value: String( o.value ) }, o.label );
-				} ) )
-			);
+			return el( MultiSelectControl, { key: key, name: key, label: def.label, value: val, options: optionsFor( def, val ), onChange: set } );
 		}
 		if ( def.type === 'text-list' ) {
 			return el( TextListControl, { key: key, label: def.label, value: val, onChange: set } );
@@ -230,6 +285,9 @@
 					attributes: props.attributes,
 					className: 'emcp-dyn-ssr'
 				} );
+				if ( DISABLED_PREVIEW[ key ] && Disabled ) {
+					preview = el( Disabled, {}, preview );
+				}
 				return el( Fragment, {}, panel, el( 'div', blockProps, preview ) );
 			},
 			save: function () { return null; }
