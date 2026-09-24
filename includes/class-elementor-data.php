@@ -13,6 +13,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+// Every save below consults the editor sync bridge; load it with the data layer.
+require_once __DIR__ . '/class-elementor-editor-sync.php';
+
 /**
  * Data access layer wrapping Elementor's internal APIs.
  *
@@ -317,6 +320,13 @@ class EMCP_Tools_Data {
 			return $document;
 		}
 
+		// Another user's unsaved editor session would overwrite this write on
+		// its next save (Elementor 4.3+ guard, same rule as its own MCP tools).
+		$emcp_guard = EMCP_Tools_Elementor_Editor_Sync::guard( $post_id );
+		if ( $emcp_guard ) {
+			return $emcp_guard;
+		}
+
 		// v4 atomic: Elementor validates the WHOLE element tree on save, so one
 		// widget holding raw (unwrapped) prop values blocks every save of the
 		// page, including the edit meant to repair it. Coercing only the element
@@ -474,6 +484,9 @@ class EMCP_Tools_Data {
 			}
 		}
 
+		// After the save: Elementor clears the marker on after_save.
+		EMCP_Tools_Elementor_Editor_Sync::mark_changed( $post_id );
+
 		return true;
 	}
 
@@ -494,6 +507,11 @@ class EMCP_Tools_Data {
 
 		if ( is_wp_error( $document ) ) {
 			return $document;
+		}
+
+		$emcp_guard = EMCP_Tools_Elementor_Editor_Sync::guard( $post_id );
+		if ( $emcp_guard ) {
+			return $emcp_guard;
 		}
 
 		$before = get_post_meta( $post_id, '_elementor_page_settings', false );
@@ -548,6 +566,7 @@ class EMCP_Tools_Data {
 				return new \WP_Error( 'history_record_failed', __( 'The page settings were saved, but their History entry could not be persisted.', 'emcp-tools' ) );
 			}
 		}
+		EMCP_Tools_Elementor_Editor_Sync::mark_changed( $post_id );
 		return true;
 	}
 

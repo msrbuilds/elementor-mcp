@@ -4,6 +4,8 @@ All notable changes to MCP Tools for Elementor are documented in this file.
 
 ## [3.18.0] (in progress, unreleased)
 
+- New: **Works alongside Elementor's own MCP server.** Elementor 4.3 ships a built-in MCP server; both now run side by side on the same site. EMCP's Elementor tools follow the same safety rule as Elementor's: a write to a page that another user has open in the Elementor editor with unsaved changes is refused (nothing is written), and every successful write tells an open editor that the page changed. When Elementor's server is on, EMCP's server instructions tell a connected agent which server to use for which job. The admin bar item now reads EMCP instead of MCP, so it is not mistaken for Elementor's.
+
 - Fixed: **Brand Kits tab missing.** The Brand Kits tab was hidden whenever Elementor was not the selected page builder. It now follows its module switch only, like Templates, and explains on the page when Elementor is not active.
 - Fixed: **Bricks 2.4 compatibility.** The Bricks integration can be enabled on 2.4.x after native verification on 2.4.1. Updated the compatibility gate, admin requirements and bundled guidance.
 

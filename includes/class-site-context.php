@@ -225,6 +225,12 @@ class EMCP_Tools_Site_Context {
 			$lines[] = '- Active plugins of note: ' . $inventory;
 		}
 
+		$emcp_official = self::elementor_mcp_note();
+		if ( '' !== $emcp_official ) {
+			$lines[] = '';
+			$lines[] = $emcp_official;
+		}
+
 		// Read the option directly (not EMCP_Tools_Plugin::is_dispatcher_mode())
 		// so this method has no dependency on the plugin singleton — keeps it
 		// unit-testable without booting EMCP_Tools_Plugin. Option name mirrors
@@ -251,6 +257,44 @@ class EMCP_Tools_Site_Context {
 			$lines[] = $emcp_memory;
 		}
 
+		return implode( "\n", $lines );
+	}
+
+	/**
+	 * Whether Elementor's own MCP server (Elementor 4.3+) is switched on.
+	 *
+	 * @return bool
+	 */
+	public static function elementor_mcp_enabled(): bool {
+		$settings = '\Elementor\MCP\Composer\Admin\McpSettingsController';
+		if ( ! class_exists( $settings ) || ! method_exists( $settings, 'is_enabled' ) ) {
+			return false;
+		}
+		try {
+			return (bool) $settings::is_enabled();
+		} catch ( \Throwable $e ) {
+			return false;
+		}
+	}
+
+	/**
+	 * Tells an agent that may be connected to both servers which one to use.
+	 *
+	 * @return string Empty when Elementor's MCP server is off.
+	 */
+	public static function elementor_mcp_note(): string {
+		if ( ! self::elementor_mcp_enabled() ) {
+			return '';
+		}
+		$lines = array( "## Elementor's own MCP server" );
+		if ( class_exists( 'EMCP_Tools_Page_Builders' ) && EMCP_Tools_Page_Builders::enabled( 'elementor' ) ) {
+			$lines[] = "Elementor's built-in MCP server (`elementor-mcp-server`, tools named `elementor-*`) is also enabled on this site. If you are connected to both, do each step on one server only, never the same step on both:";
+			$lines[] = '- This server: Elementor pages and widgets, global colors, fonts, classes and variables, EMCP Themer templates and loops, WordPress content, media, settings, plugins, users, WooCommerce, other page builders, and History rollback.';
+			$lines[] = "- Elementor's server: only what this server lacks, such as Elementor components, default element styles, interactions and shareable preview links, or when the user asks for it by name.";
+			$lines[] = "Both servers edit the same Elementor data, so re-read the page structure after switching servers.";
+		} else {
+			$lines[] = "Elementor's built-in MCP server (`elementor-mcp-server`) is also enabled, and this server's Elementor tools are off because Elementor is not the page builder selected in EMCP Tools. Edit Elementor pages with Elementor's server; use this server for everything else it offers.";
+		}
 		return implode( "\n", $lines );
 	}
 

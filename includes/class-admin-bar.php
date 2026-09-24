@@ -147,7 +147,7 @@ class EMCP_Tools_Admin_Bar {
 
 		$wp_admin_bar->add_node( array(
 			'id'    => 'emcp-tools-mcp',
-			'title' => $dot . esc_html__( 'MCP', 'emcp-tools' ),
+			'title' => $dot . esc_html__( 'EMCP', 'emcp-tools' ),
 			'href'  => esc_url( $settings ),
 			'meta'  => array( 'title' => esc_attr__( 'EMCP Tools, MCP status', 'emcp-tools' ) ),
 		) );
@@ -178,7 +178,7 @@ class EMCP_Tools_Admin_Bar {
 			$wp_admin_bar->add_node( array(
 				'parent' => 'emcp-tools-mcp',
 				'id'     => 'emcp-tools-mcp-toggle',
-				'title'  => $s['enabled'] ? esc_html__( 'Turn MCP off', 'emcp-tools' ) : esc_html__( 'Turn MCP on', 'emcp-tools' ),
+				'title'  => $s['enabled'] ? esc_html__( 'Turn the EMCP server off', 'emcp-tools' ) : esc_html__( 'Turn the EMCP server on', 'emcp-tools' ),
 				'href'   => esc_url( $toggle_url ),
 			) );
 		}
