@@ -92,16 +92,6 @@ $emcp_tools_upgrade_url = emcp_tools_upgrade_url();
 				</button>
 			</div>
 
-			<div class="elementor-mcp-coming-soon" role="status">
-				<span class="elementor-mcp-coming-soon__icon" aria-hidden="true">
-					<svg viewBox="0 0 20 20" width="16" height="16" xmlns="http://www.w3.org/2000/svg"><path fill="currentColor" d="M10 2a1 1 0 011 1v1.05a6.002 6.002 0 015 5.95v3.382l1.447 2.894A1 1 0 0116.553 18H3.447a1 1 0 01-.894-1.724L4 13.382V10a6.002 6.002 0 015-5.95V3a1 1 0 011-1zm-2 17a2 2 0 104 0H8z"/></svg>
-				</span>
-				<div class="elementor-mcp-coming-soon__text">
-					<strong><?php esc_html_e( '50+ more premium templates on the way.', 'emcp-tools' ); ?></strong>
-					<?php esc_html_e( 'We\'re actively expanding the library across every category. Click Sync Library above whenever you want the latest.', 'emcp-tools' ); ?>
-				</div>
-			</div>
-
 			<?php if ( $emcp_tools_total > 0 ) : ?>
 				<div class="elementor-mcp-pro-filters" role="tablist" aria-label="<?php esc_attr_e( 'Filter by category', 'emcp-tools' ); ?>">
 					<button type="button" class="elementor-mcp-pro-filter is-active" data-category="all">
