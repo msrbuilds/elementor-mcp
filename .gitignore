@@ -155,3 +155,6 @@ scripts/e2e/otter-*.json
 !docs/OTTER-INTEGRATION.md
 !docs/RELEASE-3.17.0.md
 !docs/qa/
+
+# JavaScript build tooling (admin redesign)
+/node_modules/

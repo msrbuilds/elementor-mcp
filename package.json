@@ -1,0 +1,48 @@
+{
+  "name": "emcp-tools-admin",
+  "version": "1.0.0",
+  "description": "Build tooling for the EMCP Tools admin screens.",
+  "scripts": {
+    "build": "wp-scripts build && node admin-build/generate-php-icons.mjs",
+    "start": "wp-scripts start",
+    "test": "wp-scripts test-unit-jest --config jest.config.js",
+    "size": "node admin-build/check-size.mjs",
+    "lint:js": "wp-scripts lint-js admin-src admin-build",
+    "lint:style": "wp-scripts lint-style \"admin-src/**/*.css\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/msrbuilds/elementor-mcp.git"
+  },
+  "license": "GPL-2.0-or-later",
+  "bugs": {
+    "url": "https://github.com/msrbuilds/elementor-mcp/issues"
+  },
+  "homepage": "https://github.com/msrbuilds/elementor-mcp#readme",
+  "private": true,
+  "dependencies": {
+    "@fontsource/figtree": "^5.3.0",
+    "@fontsource/jetbrains-mono": "^5.3.0",
+    "@wordpress/api-fetch": "^7.56.0",
+    "@wordpress/element": "^8.8.0",
+    "@wordpress/hooks": "^4.56.0",
+    "@wordpress/i18n": "^6.29.0",
+    "lucide-react": "^1.48.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.29.7",
+    "@testing-library/dom": "^10.4.2",
+    "@testing-library/jest-dom": "^7.0.1",
+    "@testing-library/react": "^16.3.3",
+    "@testing-library/user-event": "^14.6.7",
+    "@wordpress/babel-preset-default": "^8.55.0",
+    "@wordpress/dependency-extraction-webpack-plugin": "^6.56.0",
+    "@wordpress/jest-preset-default": "^14.2.0",
+    "@wordpress/scripts": "^36.0.0",
+    "babel-jest": "^30.5.0",
+    "jest": "^30.5.0",
+    "jest-axe": "^11.0.0",
+    "jest-environment-jsdom": "^30.5.0",
+    "lucide-static": "^1.48.0"
+  }
+}
