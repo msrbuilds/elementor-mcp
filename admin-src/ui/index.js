@@ -21,3 +21,5 @@ export { Toggle, Checkbox, Field, TextInput, Textarea, Select } from './componen
 export { Segmented, Tabs, FilterChip } from './components/Choice';
 export { rovingKeyDown } from './utils/roving';
 export { Card, PageHeader, Badge, Notice, EmptyState, Skeleton } from './components/Layout';
+export { Menu, Dropdown } from './components/Popover';
+export { usePopover } from './utils/usePopover';
