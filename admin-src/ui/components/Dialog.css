@@ -1,0 +1,15 @@
+.eui-overlay { position: fixed; inset: 0; z-index: 100000; display: flex; background: rgba(17, 24, 39, 0.45); }
+.eui-overlay--dialog { align-items: center; justify-content: center; padding: 24px; }
+.eui-overlay--drawer { justify-content: flex-end; }
+.eui-dialog,
+.eui-drawer { display: flex; flex-direction: column; background: var(--emcp-surface); box-shadow: var(--emcp-shadow-dropdown); }
+.eui-dialog { inline-size: 100%; max-block-size: calc(100vh - 48px); border-radius: var(--emcp-r-hero); }
+.eui-dialog--sm { max-inline-size: 440px; }
+.eui-dialog--md { max-inline-size: 620px; }
+.eui-dialog--lg { max-inline-size: 880px; }
+.eui-drawer { inline-size: min(560px, 100vw); block-size: 100%; }
+.eui-panel__head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-block: 18px; padding-inline: 22px; border-block-end: 1px solid var(--emcp-divider); }
+.eui-panel__title { margin: 0; font-size: 16px; font-weight: 700; color: var(--emcp-ink); }
+.eui-panel__body { flex: 1; overflow: auto; padding-block: 18px; padding-inline: 22px; }
+.eui-panel__foot { display: flex; justify-content: flex-end; gap: 10px; padding-block: 14px; padding-inline: 22px; border-block-start: 1px solid var(--emcp-divider); }
+.eui-confirm__message { margin-block: 0 14px; margin-inline: 0; color: var(--emcp-text-2); }

@@ -23,3 +23,5 @@ export { rovingKeyDown } from './utils/roving';
 export { Card, PageHeader, Badge, Notice, EmptyState, Skeleton } from './components/Layout';
 export { Menu, Dropdown } from './components/Popover';
 export { usePopover } from './utils/usePopover';
+export { Dialog, Drawer, ConfirmDialog, ConfirmProvider, useConfirm } from './components/Dialog';
+export { useFocusTrap } from './utils/useFocusTrap';
