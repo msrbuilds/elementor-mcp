@@ -137,3 +137,6 @@ includes/abilities/class-otter-integration.php
 includes/abilities/class-funnelkit-integration.php
 includes/abilities/class-woo-integration.php
 includes/admin/class-pro-usage.php
+# Pro admin screen bundles and sources (admin redesign)
+assets/admin/build-pro
+admin-src-pro
