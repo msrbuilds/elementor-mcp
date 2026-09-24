@@ -1,0 +1,23 @@
+.eui-savebar {
+	position: sticky;
+	inset-block-end: 16px;
+	z-index: 50;
+	display: flex;
+	align-items: center;
+	gap: 14px;
+	inline-size: fit-content;
+	max-inline-size: 100%;
+	margin-block: 16px 0;
+	margin-inline: auto;
+	padding-block: 10px;
+	padding-inline: 18px 12px;
+	border-radius: var(--emcp-r-md);
+	background: var(--emcp-dark);
+	color: var(--emcp-surface);
+	box-shadow: var(--emcp-shadow-savebar);
+	animation: eui-savebar-in 0.2s ease-out;
+}
+.eui-savebar__dot { inline-size: 8px; block-size: 8px; border-radius: 50%; background: var(--emcp-warning-dot); }
+.eui-savebar__count { font-size: 14px; }
+.eui-savebar__hint { font-size: 13px; color: var(--emcp-code-fg); }
+@keyframes eui-savebar-in { from { transform: translateY(12px); opacity: 0; } }
