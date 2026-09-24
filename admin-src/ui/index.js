@@ -26,3 +26,4 @@ export { usePopover } from './utils/usePopover';
 export { Dialog, Drawer, ConfirmDialog, ConfirmProvider, useConfirm } from './components/Dialog';
 export { useFocusTrap } from './utils/useFocusTrap';
 export { ToastProvider, useToast } from './components/Toast';
+export { Table, Pagination, pageList } from './components/Table';

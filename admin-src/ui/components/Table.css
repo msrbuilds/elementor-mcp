@@ -1,0 +1,13 @@
+.eui-table-wrap { overflow-x: auto; }
+.eui-table { inline-size: 100%; border-collapse: collapse; font-size: 14px; }
+.eui-table th { padding-block: 11px; padding-inline: 16px; background: var(--emcp-surface-2); color: var(--emcp-muted); font-size: 12px; font-weight: 600; letter-spacing: 0.05em; text-align: start; text-transform: uppercase; white-space: nowrap; border-block-end: 1px solid var(--emcp-divider-2); }
+.eui-table td { padding-block: 11px; padding-inline: 16px; border-block-end: 1px solid var(--emcp-divider-2); color: var(--emcp-ink); vertical-align: middle; }
+.eui-table .is-end { text-align: end; }
+.eui-table td.is-mono { font-family: var(--emcp-mono); font-size: 13px; }
+.eui-table tbody tr:last-child td { border-block-end: 0; }
+.eui-table__empty { padding: 0; }
+
+.eui-pagination { display: flex; align-items: center; justify-content: center; gap: 6px; }
+.eui-pagination__page { position: relative; min-inline-size: 32px; block-size: 32px; padding-inline: 8px; border: 1px solid var(--emcp-border-input); border-radius: var(--emcp-r-sm); background: var(--emcp-surface); color: var(--emcp-ink-2); font: 600 13px/1 var(--emcp-font); cursor: pointer; }
+.eui-pagination__page.is-current { background: var(--emcp-primary); border-color: var(--emcp-primary); color: var(--emcp-surface); }
+.eui-pagination__gap { color: var(--emcp-muted); }
