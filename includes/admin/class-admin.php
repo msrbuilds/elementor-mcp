@@ -119,10 +119,8 @@ class EMCP_Tools_Admin {
 	 * @return bool
 	 */
 	private function module_tab_visible( string $module_id ): bool {
-		// The Templates library remains browsable independently of builder selection.
-		if ( 'brand-kits' === $module_id && ! EMCP_Tools_Page_Builders::enabled( 'elementor' ) ) {
-			return false;
-		}
+		// Templates and Brand Kits follow their module switch only, never the
+		// selected page builder; each page explains itself when Elementor is off.
 		if ( ! class_exists( 'EMCP_Tools_Modules_Registry' ) ) {
 			return true;
 		}
