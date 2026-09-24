@@ -8,11 +8,11 @@ module.exports = {
 	rootDir: __dirname,
 	roots: [ '<rootDir>/admin-src', '<rootDir>/admin-build' ],
 	transform: {
-		'\.[jt]sx?$': [ 'babel-jest', { presets: [ '@wordpress/babel-preset-default' ] } ],
+		'\\.[jt]sx?$': [ 'babel-jest', { presets: [ '@wordpress/babel-preset-default' ] } ],
 	},
 	setupFilesAfterEnv: [ '<rootDir>/admin-src/test-setup.js' ],
 	moduleNameMapper: {
-		'\.css$': '<rootDir>/admin-src/test-style-stub.js',
+		'\\.css$': '<rootDir>/admin-src/test-style-stub.js',
 		'^@emcp/ui$': '<rootDir>/admin-src/ui/index.js',
 	},
 };

@@ -13,3 +13,6 @@ import './styles/base.css';
 
 export const UI_VERSION = '1';
 export { COLORS } from './styles/tokens';
+export { Icon } from './components/Icon';
+export { ICONS } from './icons';
+export { cx } from './utils/cx';

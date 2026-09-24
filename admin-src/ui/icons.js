@@ -1,0 +1,28 @@
+/**
+ * The Lucide icons the admin uses, imported one by one so only these are
+ * bundled. Keys must match icon-names.json (the PHP map is generated from it).
+ */
+import {
+	LayoutDashboard, Plug, Wrench, Blocks, LayoutTemplate, MessageSquare, Info, Lightbulb,
+	Sparkles, Brain, Code, LayoutGrid, Palette, Store, History, DatabaseBackup, Shuffle,
+	ScrollText, LifeBuoy, Gift, DollarSign, Search, Bell, X, Check, Copy, ChevronDown,
+	ChevronRight, ChevronLeft, ArrowLeft, ArrowRight, Ellipsis, TriangleAlert, CircleAlert,
+	CircleCheck, Lock, ExternalLink, LoaderCircle, RotateCcw, Cloud, Download, Upload, Eye,
+	Pencil, Trash2, Plus, RefreshCw, Server,
+} from 'lucide-react';
+
+export const ICONS = {
+	'layout-dashboard': LayoutDashboard, plug: Plug, wrench: Wrench, blocks: Blocks,
+	'layout-template': LayoutTemplate, 'message-square': MessageSquare, info: Info,
+	lightbulb: Lightbulb, sparkles: Sparkles, brain: Brain, code: Code,
+	'layout-grid': LayoutGrid, palette: Palette, store: Store, history: History,
+	'database-backup': DatabaseBackup, shuffle: Shuffle, 'scroll-text': ScrollText,
+	'life-buoy': LifeBuoy, gift: Gift, 'dollar-sign': DollarSign, search: Search,
+	bell: Bell, x: X, check: Check, copy: Copy, 'chevron-down': ChevronDown,
+	'chevron-right': ChevronRight, 'chevron-left': ChevronLeft, 'arrow-left': ArrowLeft,
+	'arrow-right': ArrowRight, ellipsis: Ellipsis, 'triangle-alert': TriangleAlert,
+	'circle-alert': CircleAlert, 'circle-check': CircleCheck, lock: Lock,
+	'external-link': ExternalLink, 'loader-circle': LoaderCircle, 'rotate-ccw': RotateCcw,
+	cloud: Cloud, download: Download, upload: Upload, eye: Eye, pencil: Pencil,
+	'trash-2': Trash2, plus: Plus, 'refresh-cw': RefreshCw, server: Server,
+};
