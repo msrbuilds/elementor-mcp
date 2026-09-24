@@ -16,3 +16,4 @@ export { COLORS } from './styles/tokens';
 export { Icon } from './components/Icon';
 export { ICONS } from './icons';
 export { cx } from './utils/cx';
+export { Button, IconButton } from './components/Button';
