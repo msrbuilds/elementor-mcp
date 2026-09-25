@@ -15,3 +15,4 @@ admin-src/** text eol=lf
 admin-build/** text eol=lf
 *.config.js text eol=lf
 eslint.config.cjs text eol=lf
+tests-e2e/** text eol=lf
