@@ -1,6 +1,7 @@
 import { useEffect, useRef } from '@wordpress/element';
 
-const FOCUSABLE = 'a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])';
+const FOCUSABLE =
+	'a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])';
 
 /**
  * While `active`, keep Tab inside `ref`, call `onEscape` on Escape, focus the
@@ -22,7 +23,8 @@ export function useFocusTrap( ref, active, onEscape ) {
 		}
 		const doc = node.ownerDocument;
 		const previous = doc.activeElement;
-		const focusables = () => Array.from( node.querySelectorAll( FOCUSABLE ) );
+		const focusables = () =>
+			Array.from( node.querySelectorAll( FOCUSABLE ) );
 		( focusables()[ 0 ] || node ).focus();
 
 		const onKeyDown = ( e ) => {

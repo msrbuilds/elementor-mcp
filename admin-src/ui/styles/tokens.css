@@ -1,4 +1,5 @@
-/* Design tokens (spec 6.1). Scoped so they never leak into the rest of wp-admin.
+/* Design tokens (spec 6.1). Scoped so they never leak into the rest of
+   wp-admin.
    .eui-portal carries them into overlays rendered outside .emcp-app. */
 :where(.emcp-app, .eui-portal) {
 	--emcp-primary: #5b5fe8;
@@ -13,7 +14,7 @@
 	--emcp-muted: #646b78;
 	--emcp-faint: #9ca3af;
 	--emcp-bg: #f4f5f8;
-	--emcp-surface: #ffffff;
+	--emcp-surface: #fff;
 	--emcp-surface-2: #fafbfc;
 	--emcp-border: #e6e8ef;
 	--emcp-border-input: #d9dce5;
@@ -49,5 +50,5 @@
 	--emcp-shadow-dropdown: 0 12px 32px rgba(17, 24, 39, 0.12);
 
 	--emcp-font: "Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
-	--emcp-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+	--emcp-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", menlo, consolas, monospace;
 }

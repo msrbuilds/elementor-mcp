@@ -53,7 +53,12 @@ export const CONTRAST_PAIRS = [
 	[ 'muted', 'primary-tint', 4.5, 'meta on selected cards' ],
 	[ 'primary', 'surface', 4.5, 'links' ],
 	[ 'primary', 'bg', 4.5, 'links on the page background' ],
-	[ 'primary-strong', 'primary-tint', 4.5, 'active nav, PRO tag, text on tints' ],
+	[
+		'primary-strong',
+		'primary-tint',
+		4.5,
+		'active nav, PRO tag, text on tints',
+	],
 	[ 'primary-strong', 'surface', 4.5, 'outline button text' ],
 	[ 'surface', 'primary', 4.5, 'primary button text' ],
 	[ 'surface', 'dark', 4.5, 'save bar and dark panels' ],

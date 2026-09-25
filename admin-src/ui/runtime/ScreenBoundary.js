@@ -18,7 +18,9 @@ export class ScreenBoundary extends Component {
 	}
 
 	componentDidCatch( error, info ) {
-		this.setState( { stack: `${ error.stack || error.message }\n${ info?.componentStack || '' }` } );
+		this.setState( {
+			stack: `${ error.stack || error.message }\n${ info?.componentStack || '' }`,
+		} );
 		this.props.onError?.( error );
 	}
 
@@ -28,11 +30,22 @@ export class ScreenBoundary extends Component {
 		}
 		return (
 			<div className="eui-card eui-card__body" role="alert">
-				<h2 className="eui-card__title">{ __( 'This screen ran into a problem', 'emcp-tools' ) }</h2>
+				<h2 className="eui-card__title">
+					{ __( 'This screen ran into a problem', 'emcp-tools' ) }
+				</h2>
 				<p>{ this.state.error.message }</p>
 				<div style={ { display: 'flex', gap: '10px' } }>
-					<Button variant="primary" onClick={ () => window.location.reload() }>{ __( 'Reload', 'emcp-tools' ) }</Button>
-					<CopyButton text={ this.state.stack || this.state.error.message } label={ __( 'Copy details', 'emcp-tools' ) } className="eui-btn eui-btn--secondary eui-btn--md" />
+					<Button
+						variant="primary"
+						onClick={ () => window.location.reload() }
+					>
+						{ __( 'Reload', 'emcp-tools' ) }
+					</Button>
+					<CopyButton
+						text={ this.state.stack || this.state.error.message }
+						label={ __( 'Copy details', 'emcp-tools' ) }
+						className="eui-btn eui-btn--secondary eui-btn--md"
+					/>
 				</div>
 			</div>
 		);

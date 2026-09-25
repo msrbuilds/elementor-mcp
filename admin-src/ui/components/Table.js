@@ -7,26 +7,56 @@ import './Table.css';
 /**
  * A data table. Columns without visible header text should pass a
  * visually hidden header (for example "Actions") so screen readers can name them.
+ *
+ * @param {Object}   props
+ * @param {Array}    props.columns        [ { key, header, render, align, width, mono } ].
+ * @param {Array}    props.rows           Row objects.
+ * @param {string}   [props.rowKey]       Key holding each row's unique id.
+ * @param {*}        [props.empty]        Content shown when there are no rows.
+ * @param {boolean}  [props.loading]      Show skeleton rows.
+ * @param {string}   [props.caption]      Visually hidden table caption.
+ * @param {Function} [props.rowClassName] ( row ) => class name.
  */
-export function Table( { columns, rows, rowKey = 'id', empty, loading = false, caption, rowClassName } ) {
+export function Table( {
+	columns,
+	rows,
+	rowKey = 'id',
+	empty,
+	loading = false,
+	caption,
+	rowClassName,
+} ) {
 	let body;
 	if ( loading ) {
 		body = [ 0, 1, 2 ].map( ( i ) => (
 			<tr key={ `skeleton-${ i }` } aria-hidden="true">
-				<td colSpan={ columns.length }><Skeleton lines={ 1 } /></td>
+				<td colSpan={ columns.length }>
+					<Skeleton lines={ 1 } />
+				</td>
 			</tr>
 		) );
 	} else if ( ! rows.length ) {
 		body = (
 			<tr>
-				<td colSpan={ columns.length } className="eui-table__empty">{ empty }</td>
+				<td colSpan={ columns.length } className="eui-table__empty">
+					{ empty }
+				</td>
 			</tr>
 		);
 	} else {
 		body = rows.map( ( row ) => (
-			<tr key={ row[ rowKey ] } className={ rowClassName ? rowClassName( row ) : undefined }>
+			<tr
+				key={ row[ rowKey ] }
+				className={ rowClassName ? rowClassName( row ) : undefined }
+			>
 				{ columns.map( ( c ) => (
-					<td key={ c.key } className={ cx( 'end' === c.align && 'is-end', c.mono && 'is-mono' ) }>
+					<td
+						key={ c.key }
+						className={ cx(
+							'end' === c.align && 'is-end',
+							c.mono && 'is-mono'
+						) }
+					>
 						{ c.render ? c.render( row ) : row[ c.key ] }
 					</td>
 				) ) }
@@ -36,11 +66,24 @@ export function Table( { columns, rows, rowKey = 'id', empty, loading = false, c
 	return (
 		<div className="eui-table-wrap">
 			<table className="eui-table">
-				{ caption && <caption className="eui-visually-hidden">{ caption }</caption> }
+				{ caption && (
+					<caption className="eui-visually-hidden">
+						{ caption }
+					</caption>
+				) }
 				<thead>
 					<tr>
 						{ columns.map( ( c ) => (
-							<th key={ c.key } scope="col" style={ c.width ? { width: c.width } : undefined } className={ cx( 'end' === c.align && 'is-end' ) }>
+							<th
+								key={ c.key }
+								scope="col"
+								style={
+									c.width ? { width: c.width } : undefined
+								}
+								className={ cx(
+									'end' === c.align && 'is-end'
+								) }
+							>
 								{ c.header }
 							</th>
 						) ) }
@@ -82,18 +125,46 @@ export function Pagination( { page, totalPages, onChange, label } ) {
 		return null;
 	}
 	return (
-		<nav className="eui-pagination" aria-label={ label || __( 'Pagination', 'emcp-tools' ) }>
-			<IconButton icon="chevron-left" label={ __( 'Previous page', 'emcp-tools' ) } disabled={ page <= 1 } onClick={ () => onChange( page - 1 ) } />
+		<nav
+			className="eui-pagination"
+			aria-label={ label || __( 'Pagination', 'emcp-tools' ) }
+		>
+			<IconButton
+				icon="chevron-left"
+				label={ __( 'Previous page', 'emcp-tools' ) }
+				disabled={ page <= 1 }
+				onClick={ () => onChange( page - 1 ) }
+			/>
 			{ pageList( page, totalPages ).map( ( p, i ) =>
 				'gap' === p ? (
-					<span key={ `gap-${ i }` } className="eui-pagination__gap" aria-hidden="true">...</span>
+					<span
+						key={ `gap-${ i }` }
+						className="eui-pagination__gap"
+						aria-hidden="true"
+					>
+						...
+					</span>
 				) : (
-					<button key={ p } type="button" className={ cx( 'eui-pagination__page', p === page && 'is-current' ) } aria-current={ p === page ? 'page' : undefined } onClick={ () => onChange( p ) }>
+					<button
+						key={ p }
+						type="button"
+						className={ cx(
+							'eui-pagination__page',
+							p === page && 'is-current'
+						) }
+						aria-current={ p === page ? 'page' : undefined }
+						onClick={ () => onChange( p ) }
+					>
 						{ p }
 					</button>
 				)
 			) }
-			<IconButton icon="chevron-right" label={ __( 'Next page', 'emcp-tools' ) } disabled={ page >= totalPages } onClick={ () => onChange( page + 1 ) } />
+			<IconButton
+				icon="chevron-right"
+				label={ __( 'Next page', 'emcp-tools' ) }
+				disabled={ page >= totalPages }
+				onClick={ () => onChange( page + 1 ) }
+			/>
 		</nav>
 	);
 }

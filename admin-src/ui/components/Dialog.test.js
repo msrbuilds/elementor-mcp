@@ -9,7 +9,12 @@ function DialogHarness( { Cmp = Dialog } ) {
 	return (
 		<>
 			<button onClick={ () => setOpen( true ) }>Open</button>
-			<Cmp open={ open } title="Review code" onClose={ () => setOpen( false ) } footer={ <button>Done</button> }>
+			<Cmp
+				open={ open }
+				title="Review code"
+				onClose={ () => setOpen( false ) }
+				footer={ <button>Done</button> }
+			>
 				<input aria-label="First field" />
 			</Cmp>
 		</>
@@ -17,50 +22,105 @@ function DialogHarness( { Cmp = Dialog } ) {
 }
 
 describe( 'Dialog and Drawer', () => {
-	it.each( [ [ 'Dialog', Dialog ], [ 'Drawer', Drawer ] ] )( '%s traps focus, closes on Escape and restores focus', async ( name, Cmp ) => {
-		render( <DialogHarness Cmp={ Cmp } /> );
-		const opener = screen.getByRole( 'button', { name: 'Open' } );
-		await userEvent.click( opener );
-		const dialog = screen.getByRole( 'dialog', { name: 'Review code' } );
-		expect( dialog ).toHaveAttribute( 'aria-modal', 'true' );
-		expect( dialog.closest( '.eui-portal' ) ).not.toBeNull();
-		expect( screen.getByRole( 'button', { name: 'Close' } ) ).toHaveFocus();
-		await userEvent.tab();
-		await userEvent.tab();
-		await userEvent.tab();
-		expect( dialog ).toContainElement( document.activeElement );
-		await userEvent.keyboard( '{Escape}' );
-		expect( screen.queryByRole( 'dialog' ) ).not.toBeInTheDocument();
-		expect( opener ).toHaveFocus();
-	} );
+	it.each( [
+		[ 'Dialog', Dialog ],
+		[ 'Drawer', Drawer ],
+	] )(
+		'%s traps focus, closes on Escape and restores focus',
+		async ( name, Cmp ) => {
+			render( <DialogHarness Cmp={ Cmp } /> );
+			const opener = screen.getByRole( 'button', { name: 'Open' } );
+			await userEvent.click( opener );
+			const dialog = screen.getByRole( 'dialog', {
+				name: 'Review code',
+			} );
+			expect( dialog ).toHaveAttribute( 'aria-modal', 'true' );
+			expect( dialog.closest( '.eui-portal' ) ).not.toBeNull();
+			expect(
+				screen.getByRole( 'button', { name: 'Close' } )
+			).toHaveFocus();
+			await userEvent.tab();
+			await userEvent.tab();
+			await userEvent.tab();
+			expect( dialog ).toContainElement( document.activeElement );
+			await userEvent.keyboard( '{Escape}' );
+			expect( screen.queryByRole( 'dialog' ) ).not.toBeInTheDocument();
+			expect( opener ).toHaveFocus();
+		}
+	);
 
 	it( 'has no axe violations when open', async () => {
-		render( <Dialog open title="Review code" onClose={ () => {} }>Body</Dialog> );
+		render(
+			<Dialog open title="Review code" onClose={ () => {} }>
+				Body
+			</Dialog>
+		);
 		expect( await axe( document.body ) ).toHaveNoViolations();
 	} );
 } );
 
 function ConfirmHarness( { onResult, options } ) {
 	const confirm = useConfirm();
-	return <button onClick={ async () => onResult( await confirm( options ) ) }>Delete</button>;
+	return (
+		<button onClick={ async () => onResult( await confirm( options ) ) }>
+			Delete
+		</button>
+	);
 }
 
 describe( 'useConfirm', () => {
 	it( 'resolves true on confirm and false on cancel', async () => {
 		const onResult = jest.fn();
-		render( <ConfirmProvider><ConfirmHarness onResult={ onResult } options={ { title: 'Delete snippet?', message: 'This cannot be undone.', confirmLabel: 'Delete', tone: 'danger' } } /></ConfirmProvider> );
-		await userEvent.click( screen.getByRole( 'button', { name: 'Delete' } ) );
-		await userEvent.click( screen.getByRole( 'button', { name: 'Cancel' } ) );
-		await waitFor( () => expect( onResult ).toHaveBeenLastCalledWith( false ) );
-		await userEvent.click( screen.getByRole( 'button', { name: 'Delete' } ) );
-		await userEvent.click( screen.getAllByRole( 'button', { name: 'Delete' } ).pop() );
-		await waitFor( () => expect( onResult ).toHaveBeenLastCalledWith( true ) );
+		render(
+			<ConfirmProvider>
+				<ConfirmHarness
+					onResult={ onResult }
+					options={ {
+						title: 'Delete snippet?',
+						message: 'This cannot be undone.',
+						confirmLabel: 'Delete',
+						tone: 'danger',
+					} }
+				/>
+			</ConfirmProvider>
+		);
+		await userEvent.click(
+			screen.getByRole( 'button', { name: 'Delete' } )
+		);
+		await userEvent.click(
+			screen.getByRole( 'button', { name: 'Cancel' } )
+		);
+		await waitFor( () =>
+			expect( onResult ).toHaveBeenLastCalledWith( false )
+		);
+		await userEvent.click(
+			screen.getByRole( 'button', { name: 'Delete' } )
+		);
+		await userEvent.click(
+			screen.getAllByRole( 'button', { name: 'Delete' } ).pop()
+		);
+		await waitFor( () =>
+			expect( onResult ).toHaveBeenLastCalledWith( true )
+		);
 	} );
 
 	it( 'requires typed confirmation when asked', async () => {
 		const onResult = jest.fn();
-		render( <ConfirmProvider><ConfirmHarness onResult={ onResult } options={ { title: 'Clear log?', confirmLabel: 'Clear log', requireText: 'CLEAR' } } /></ConfirmProvider> );
-		await userEvent.click( screen.getByRole( 'button', { name: 'Delete' } ) );
+		render(
+			<ConfirmProvider>
+				<ConfirmHarness
+					onResult={ onResult }
+					options={ {
+						title: 'Clear log?',
+						confirmLabel: 'Clear log',
+						requireText: 'CLEAR',
+					} }
+				/>
+			</ConfirmProvider>
+		);
+		await userEvent.click(
+			screen.getByRole( 'button', { name: 'Delete' } )
+		);
 		const confirmBtn = screen.getByRole( 'button', { name: 'Clear log' } );
 		expect( confirmBtn ).toBeDisabled();
 		await userEvent.type( screen.getByRole( 'textbox' ), 'CLEAR' );

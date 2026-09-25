@@ -4,16 +4,26 @@ import { axe } from 'jest-axe';
 import { Menu, Dropdown } from './Popover';
 
 describe( 'Menu', () => {
-	const items = [ { label: 'Export', onSelect: jest.fn() }, { label: 'Save to Cloud', onSelect: jest.fn() }, { label: 'Delete', onSelect: jest.fn(), danger: true } ];
+	const items = [
+		{ label: 'Export', onSelect: jest.fn() },
+		{ label: 'Save to Cloud', onSelect: jest.fn() },
+		{ label: 'Delete', onSelect: jest.fn(), danger: true },
+	];
 
 	it( 'opens with focus on the first item and arrows move', async () => {
-		const { container } = render( <Menu label="More actions" items={ items } /> );
+		const { container } = render(
+			<Menu label="More actions" items={ items } />
+		);
 		const trigger = screen.getByRole( 'button', { name: 'More actions' } );
 		await userEvent.click( trigger );
 		expect( trigger ).toHaveAttribute( 'aria-expanded', 'true' );
-		expect( screen.getByRole( 'menuitem', { name: 'Export' } ) ).toHaveFocus();
+		expect(
+			screen.getByRole( 'menuitem', { name: 'Export' } )
+		).toHaveFocus();
 		await userEvent.keyboard( '{ArrowDown}' );
-		expect( screen.getByRole( 'menuitem', { name: 'Save to Cloud' } ) ).toHaveFocus();
+		expect(
+			screen.getByRole( 'menuitem', { name: 'Save to Cloud' } )
+		).toHaveFocus();
 		expect( await axe( container ) ).toHaveNoViolations();
 	} );
 
@@ -28,18 +38,33 @@ describe( 'Menu', () => {
 
 	it( 'runs the chosen item and closes', async () => {
 		render( <Menu label="More actions" items={ items } /> );
-		await userEvent.click( screen.getByRole( 'button', { name: 'More actions' } ) );
-		await userEvent.click( screen.getByRole( 'menuitem', { name: 'Delete' } ) );
+		await userEvent.click(
+			screen.getByRole( 'button', { name: 'More actions' } )
+		);
+		await userEvent.click(
+			screen.getByRole( 'menuitem', { name: 'Delete' } )
+		);
 		expect( items[ 2 ].onSelect ).toHaveBeenCalled();
 		expect( screen.queryByRole( 'menu' ) ).not.toBeInTheDocument();
 	} );
 
 	it( 'closes on an outside click without stealing focus', async () => {
-		render( <><Menu label="More actions" items={ items } /><button>Elsewhere</button></> );
-		await userEvent.click( screen.getByRole( 'button', { name: 'More actions' } ) );
-		await userEvent.click( screen.getByRole( 'button', { name: 'Elsewhere' } ) );
+		render(
+			<>
+				<Menu label="More actions" items={ items } />
+				<button>Elsewhere</button>
+			</>
+		);
+		await userEvent.click(
+			screen.getByRole( 'button', { name: 'More actions' } )
+		);
+		await userEvent.click(
+			screen.getByRole( 'button', { name: 'Elsewhere' } )
+		);
 		expect( screen.queryByRole( 'menu' ) ).not.toBeInTheDocument();
-		expect( screen.getByRole( 'button', { name: 'Elsewhere' } ) ).toHaveFocus();
+		expect(
+			screen.getByRole( 'button', { name: 'Elsewhere' } )
+		).toHaveFocus();
 	} );
 } );
 
@@ -53,8 +78,12 @@ describe( 'Dropdown', () => {
 		const trigger = screen.getByRole( 'button', { name: /Category/ } );
 		expect( trigger ).toHaveTextContent( '1' );
 		await userEvent.click( trigger );
-		expect( screen.getByRole( 'dialog', { name: 'Category' } ) ).toBeInTheDocument();
-		await userEvent.click( screen.getByRole( 'button', { name: 'Apply' } ) );
+		expect(
+			screen.getByRole( 'dialog', { name: 'Category' } )
+		).toBeInTheDocument();
+		await userEvent.click(
+			screen.getByRole( 'button', { name: 'Apply' } )
+		);
 		expect( screen.queryByRole( 'dialog' ) ).not.toBeInTheDocument();
 		expect( trigger ).toHaveFocus();
 	} );

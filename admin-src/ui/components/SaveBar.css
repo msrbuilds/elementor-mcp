@@ -17,7 +17,27 @@
 	box-shadow: var(--emcp-shadow-savebar);
 	animation: eui-savebar-in 0.2s ease-out;
 }
-.eui-savebar__dot { inline-size: 8px; block-size: 8px; border-radius: 50%; background: var(--emcp-warning-dot); }
-.eui-savebar__count { font-size: 14px; }
-.eui-savebar__hint { font-size: 13px; color: var(--emcp-code-fg); }
-@keyframes eui-savebar-in { from { transform: translateY(12px); opacity: 0; } }
+
+.eui-savebar__dot {
+	inline-size: 8px;
+	block-size: 8px;
+	border-radius: 50%;
+	background: var(--emcp-warning-dot);
+}
+
+.eui-savebar__count {
+	font-size: 14px;
+}
+
+.eui-savebar__hint {
+	font-size: 13px;
+	color: var(--emcp-code-fg);
+}
+
+@keyframes eui-savebar-in {
+
+	from {
+		transform: translateY(12px);
+		opacity: 0;
+	}
+}

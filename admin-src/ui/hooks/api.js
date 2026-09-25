@@ -22,7 +22,13 @@ export function request( path, options = {} ) {
  */
 export function errorMessage( err ) {
 	if ( err && 'rest_cookie_invalid_nonce' === err.code ) {
-		return __( 'Your session expired. Reload the page and try again.', 'emcp-tools' );
+		return __(
+			'Your session expired. Reload the page and try again.',
+			'emcp-tools'
+		);
 	}
-	return ( err && err.message ) || __( 'Something went wrong. Please try again.', 'emcp-tools' );
+	return (
+		( err && err.message ) ||
+		__( 'Something went wrong. Please try again.', 'emcp-tools' )
+	);
 }

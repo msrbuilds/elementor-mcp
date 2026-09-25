@@ -23,7 +23,7 @@
 	margin: -1px;
 	padding: 0;
 	overflow: hidden;
-	clip: rect(0, 0, 0, 0);
+	clip-path: inset(50%);
 	white-space: nowrap;
 	border: 0;
 }
@@ -37,12 +37,14 @@
 }
 
 @keyframes eui-spin {
+
 	to {
 		transform: rotate(360deg);
 	}
 }
 
 @media (prefers-reduced-motion: reduce) {
+
 	:where(.emcp-app, .eui-portal) * {
 		animation-duration: 0.01ms !important;
 		transition-duration: 0.01ms !important;

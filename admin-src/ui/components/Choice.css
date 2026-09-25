@@ -1,4 +1,11 @@
-.eui-seg { display: inline-flex; gap: 2px; padding: 3px; border-radius: 10px; background: var(--emcp-track); }
+.eui-seg {
+	display: inline-flex;
+	gap: 2px;
+	padding: 3px;
+	border-radius: 10px;
+	background: var(--emcp-track);
+}
+
 .eui-seg__opt {
 	display: inline-flex;
 	align-items: center;
@@ -13,10 +20,25 @@
 	white-space: nowrap;
 	cursor: pointer;
 }
-.eui-seg__opt.is-active { background: var(--emcp-surface); color: var(--emcp-ink); box-shadow: var(--emcp-shadow-seg); }
-.eui-seg__count { color: var(--emcp-text-3); font-weight: 600; }
 
-.eui-tabs { display: flex; gap: 4px; border-block-end: 1px solid var(--emcp-divider); overflow-x: auto; }
+.eui-seg__opt.is-active {
+	background: var(--emcp-surface);
+	color: var(--emcp-ink);
+	box-shadow: var(--emcp-shadow-seg);
+}
+
+.eui-seg__count {
+	color: var(--emcp-text-3);
+	font-weight: 600;
+}
+
+.eui-tabs {
+	display: flex;
+	gap: 4px;
+	border-block-end: 1px solid var(--emcp-divider);
+	overflow-x: auto;
+}
+
 .eui-tabs__tab {
 	display: inline-flex;
 	align-items: center;
@@ -31,16 +53,90 @@
 	white-space: nowrap;
 	cursor: pointer;
 }
-.eui-tabs__tab.is-active { color: var(--emcp-primary-strong); border-block-end-color: var(--emcp-primary); }
-.eui-tabs__count { padding: 2px 7px; border-radius: var(--emcp-r-pill); background: var(--emcp-divider-2); color: var(--emcp-text-3); font-size: 11px; }
-.eui-tabs__tab.is-active .eui-tabs__count { background: var(--emcp-primary); color: var(--emcp-surface); }
 
-.eui-chip { display: inline-flex; align-items: center; border-radius: var(--emcp-r-pill); background: var(--emcp-surface); border: 1px solid var(--emcp-border-input); }
-.eui-chip.is-active { background: var(--emcp-primary); border-color: var(--emcp-primary); }
-.eui-chip__main { display: inline-flex; align-items: center; gap: 6px; min-block-size: 32px; padding-inline: 12px; border: 0; background: transparent; color: var(--emcp-ink-2); font: 500 13px/1 var(--emcp-font); cursor: pointer; }
-.eui-chip.is-active .eui-chip__main { color: var(--emcp-surface); }
-.eui-chip__count { padding: 2px 6px; border-radius: var(--emcp-r-pill); background: var(--emcp-divider-2); color: var(--emcp-text-3); font-size: 11px; font-weight: 600; }
-.eui-chip.is-active .eui-chip__count { background: var(--emcp-surface); color: var(--emcp-primary-strong); }
-.eui-chip__remove { position: relative; display: inline-flex; align-items: center; justify-content: center; inline-size: 24px; block-size: 24px; margin-inline-end: 4px; border: 0; border-radius: 50%; background: transparent; color: inherit; cursor: pointer; }
-.eui-chip__remove::before { content: ""; position: absolute; inset: -4px; }
-.eui-chip.is-active .eui-chip__remove { color: var(--emcp-surface); }
+.eui-tabs__tab.is-active {
+	color: var(--emcp-primary-strong);
+	border-block-end-color: var(--emcp-primary);
+}
+
+.eui-tabs__count {
+	padding: 2px 7px;
+	border-radius: var(--emcp-r-pill);
+	background: var(--emcp-divider-2);
+	color: var(--emcp-text-3);
+	font-size: 11px;
+}
+
+.eui-tabs__tab.is-active .eui-tabs__count {
+	background: var(--emcp-primary);
+	color: var(--emcp-surface);
+}
+
+.eui-chip {
+	display: inline-flex;
+	align-items: center;
+	border-radius: var(--emcp-r-pill);
+	background: var(--emcp-surface);
+	border: 1px solid var(--emcp-border-input);
+}
+
+.eui-chip.is-active {
+	background: var(--emcp-primary);
+	border-color: var(--emcp-primary);
+}
+
+.eui-chip__main {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	min-block-size: 32px;
+	padding-inline: 12px;
+	border: 0;
+	background: transparent;
+	color: var(--emcp-ink-2);
+	font: 500 13px/1 var(--emcp-font);
+	cursor: pointer;
+}
+
+.eui-chip.is-active .eui-chip__main {
+	color: var(--emcp-surface);
+}
+
+.eui-chip__count {
+	padding: 2px 6px;
+	border-radius: var(--emcp-r-pill);
+	background: var(--emcp-divider-2);
+	color: var(--emcp-text-3);
+	font-size: 11px;
+	font-weight: 600;
+}
+
+.eui-chip.is-active .eui-chip__count {
+	background: var(--emcp-surface);
+	color: var(--emcp-primary-strong);
+}
+
+.eui-chip__remove {
+	position: relative;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	inline-size: 24px;
+	block-size: 24px;
+	margin-inline-end: 4px;
+	border: 0;
+	border-radius: 50%;
+	background: transparent;
+	color: inherit;
+	cursor: pointer;
+}
+
+.eui-chip__remove::before {
+	content: "";
+	position: absolute;
+	inset: -4px;
+}
+
+.eui-chip.is-active .eui-chip__remove {
+	color: var(--emcp-surface);
+}

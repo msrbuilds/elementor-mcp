@@ -9,7 +9,9 @@ describe( 'rovingKeyDown', () => {
 
 	it( 'moves and wraps horizontally', () => {
 		const onMove = jest.fn();
-		expect( rovingKeyDown( key( 'ArrowRight' ), { index: 2, count: 3, onMove } ) ).toBe( true );
+		expect(
+			rovingKeyDown( key( 'ArrowRight' ), { index: 2, count: 3, onMove } )
+		).toBe( true );
 		expect( onMove ).toHaveBeenLastCalledWith( 0 );
 		rovingKeyDown( key( 'ArrowLeft' ), { index: 0, count: 3, onMove } );
 		expect( onMove ).toHaveBeenLastCalledWith( 2 );
@@ -32,8 +34,15 @@ describe( 'rovingKeyDown', () => {
 
 	it( 'uses up and down when vertical and ignores other keys', () => {
 		const onMove = jest.fn();
-		rovingKeyDown( key( 'ArrowDown' ), { index: 0, count: 2, onMove, orientation: 'vertical' } );
+		rovingKeyDown( key( 'ArrowDown' ), {
+			index: 0,
+			count: 2,
+			onMove,
+			orientation: 'vertical',
+		} );
 		expect( onMove ).toHaveBeenLastCalledWith( 1 );
-		expect( rovingKeyDown( key( 'a' ), { index: 0, count: 2, onMove } ) ).toBe( false );
+		expect(
+			rovingKeyDown( key( 'a' ), { index: 0, count: 2, onMove } )
+		).toBe( false );
 	} );
 } );

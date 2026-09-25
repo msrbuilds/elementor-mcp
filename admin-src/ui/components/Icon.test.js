@@ -7,7 +7,10 @@ describe( 'Icon', () => {
 	it( 'has a component for every listed name, and nothing else', () => {
 		expect( Object.keys( ICONS ).sort() ).toEqual( [ ...names ].sort() );
 		Object.entries( ICONS ).forEach( ( [ name, Cmp ] ) => {
-			expect( [ name, typeof Cmp ] ).toEqual( [ name, expect.stringMatching( /function|object/ ) ] );
+			expect( [ name, typeof Cmp ] ).toEqual( [
+				name,
+				expect.stringMatching( /function|object/ ),
+			] );
 		} );
 	} );
 

@@ -7,8 +7,13 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const root = path.resolve( path.dirname( fileURLToPath( import.meta.url ) ), '..' );
-const names = JSON.parse( readFileSync( path.join( root, 'admin-src/ui/icon-names.json' ), 'utf8' ) );
+const root = path.resolve(
+	path.dirname( fileURLToPath( import.meta.url ) ),
+	'..'
+);
+const names = JSON.parse(
+	readFileSync( path.join( root, 'admin-src/ui/icon-names.json' ), 'utf8' )
+);
 const dir = path.join( root, 'node_modules/lucide-static/icons' );
 
 const rows = names.map( ( name ) => {
@@ -20,7 +25,9 @@ const rows = names.map( ( name ) => {
 		.replace( /\s+/g, ' ' )
 		.trim();
 	if ( ! inner || /<script|\son[a-z]+=|javascript:/i.test( inner ) ) {
-		throw new Error( `Unexpected markup in lucide-static icon "${ name }"` );
+		throw new Error(
+			`Unexpected markup in lucide-static icon "${ name }"`
+		);
 	}
 	const php = inner.replace( /\\/g, '\\\\' ).replace( /'/g, "\\'" );
 	return `\t'${ name }' => '${ php }',`;

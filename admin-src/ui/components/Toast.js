@@ -1,4 +1,13 @@
-import { createContext, createPortal, useCallback, useContext, useEffect, useMemo, useRef, useState } from '@wordpress/element';
+import {
+	createContext,
+	createPortal,
+	useCallback,
+	useContext,
+	useEffect,
+	useMemo,
+	useRef,
+	useState,
+} from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 import { Icon } from './Icon';
 import { IconButton } from './Button';
@@ -19,27 +28,36 @@ export function ToastProvider( { children } ) {
 		setToasts( ( list ) => list.filter( ( t ) => t.id !== id ) );
 	}, [] );
 
-	const push = useCallback( ( tone, message ) => {
-		seq.current += 1;
-		const id = seq.current;
-		setToasts( ( list ) => [ ...list, { id, tone, message } ] );
-		if ( 'error' !== tone ) {
-			timers.current.set( id, setTimeout( () => dismiss( id ), 5000 ) );
-		}
-		return id;
-	}, [ dismiss ] );
+	const push = useCallback(
+		( tone, message ) => {
+			seq.current += 1;
+			const id = seq.current;
+			setToasts( ( list ) => [ ...list, { id, tone, message } ] );
+			if ( 'error' !== tone ) {
+				timers.current.set(
+					id,
+					setTimeout( () => dismiss( id ), 5000 )
+				);
+			}
+			return id;
+		},
+		[ dismiss ]
+	);
 
 	useEffect( () => {
 		const pending = timers.current;
 		return () => pending.forEach( ( t ) => clearTimeout( t ) );
 	}, [] );
 
-	const api = useMemo( () => ( {
-		success: ( m ) => push( 'success', m ),
-		error: ( m ) => push( 'error', m ),
-		info: ( m ) => push( 'info', m ),
-		dismiss,
-	} ), [ push, dismiss ] );
+	const api = useMemo(
+		() => ( {
+			success: ( m ) => push( 'success', m ),
+			error: ( m ) => push( 'error', m ),
+			info: ( m ) => push( 'info', m ),
+			dismiss,
+		} ),
+		[ push, dismiss ]
+	);
 
 	return (
 		<ToastContext.Provider value={ api }>
@@ -47,10 +65,24 @@ export function ToastProvider( { children } ) {
 			{ createPortal(
 				<div className="eui-portal eui-toasts">
 					{ toasts.map( ( t ) => (
-						<div key={ t.id } className={ cx( 'eui-toast', `eui-toast--${ t.tone }` ) } role={ 'error' === t.tone ? 'alert' : 'status' }>
+						<div
+							key={ t.id }
+							className={ cx(
+								'eui-toast',
+								`eui-toast--${ t.tone }`
+							) }
+							role={ 'error' === t.tone ? 'alert' : 'status' }
+						>
 							<Icon name={ ICONS[ t.tone ] } />
-							<span className="eui-toast__message">{ t.message }</span>
-							<IconButton icon="x" size="sm" label={ __( 'Dismiss', 'emcp-tools' ) } onClick={ () => dismiss( t.id ) } />
+							<span className="eui-toast__message">
+								{ t.message }
+							</span>
+							<IconButton
+								icon="x"
+								size="sm"
+								label={ __( 'Dismiss', 'emcp-tools' ) }
+								onClick={ () => dismiss( t.id ) }
+							/>
 						</div>
 					) ) }
 				</div>,

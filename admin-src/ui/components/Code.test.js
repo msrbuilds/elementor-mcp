@@ -4,8 +4,14 @@ import { axe } from 'jest-axe';
 import { copyText, CopyButton, CopyField, CodeBlock } from './Code';
 
 function setSecure( secure, clipboard ) {
-	Object.defineProperty( window, 'isSecureContext', { value: secure, configurable: true } );
-	Object.defineProperty( navigator, 'clipboard', { value: clipboard, configurable: true } );
+	Object.defineProperty( window, 'isSecureContext', {
+		value: secure,
+		configurable: true,
+	} );
+	Object.defineProperty( navigator, 'clipboard', {
+		value: clipboard,
+		configurable: true,
+	} );
 }
 
 describe( 'copyText', () => {
@@ -37,7 +43,9 @@ describe( 'CopyButton', () => {
 
 	it( 'shows Copied for 2 seconds', async () => {
 		setSecure( true, { writeText: jest.fn().mockResolvedValue() } );
-		const user = userEvent.setup( { advanceTimers: jest.advanceTimersByTime } );
+		const user = userEvent.setup( {
+			advanceTimers: jest.advanceTimersByTime,
+		} );
 		render( <CopyButton text="x" label="Copy" /> );
 		await user.click( screen.getByRole( 'button', { name: 'Copy' } ) );
 		expect( screen.getByRole( 'button' ) ).toHaveTextContent( 'Copied' );
@@ -48,10 +56,14 @@ describe( 'CopyButton', () => {
 	it( 'shows Copy failed when nothing could copy', async () => {
 		setSecure( false, undefined );
 		document.execCommand = jest.fn().mockReturnValue( false );
-		const user = userEvent.setup( { advanceTimers: jest.advanceTimersByTime } );
+		const user = userEvent.setup( {
+			advanceTimers: jest.advanceTimersByTime,
+		} );
 		render( <CopyButton text="x" label="Copy" /> );
 		await user.click( screen.getByRole( 'button', { name: 'Copy' } ) );
-		expect( screen.getByRole( 'button' ) ).toHaveTextContent( 'Copy failed' );
+		expect( screen.getByRole( 'button' ) ).toHaveTextContent(
+			'Copy failed'
+		);
 	} );
 } );
 
@@ -59,8 +71,14 @@ describe( 'CopyField and CodeBlock', () => {
 	it( 'render values as text, never HTML', async () => {
 		const { container } = render(
 			<>
-				<CopyField label="Server URL" value="https://msrplugins.test/wp-json/mcp/emcp-tools-server" />
-				<CodeBlock label="Snippet code" value={ '<?php echo "<b>x</b>";' } />
+				<CopyField
+					label="Server URL"
+					value="https://msrplugins.test/wp-json/mcp/emcp-tools-server"
+				/>
+				<CodeBlock
+					label="Snippet code"
+					value={ '<?php echo "<b>x</b>";' }
+				/>
 			</>
 		);
 		expect( container.querySelector( 'b' ) ).toBeNull();

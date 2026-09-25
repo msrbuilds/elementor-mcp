@@ -17,7 +17,7 @@ export async function copyText( text ) {
 		try {
 			await navigator.clipboard.writeText( text );
 			return true;
-		} catch ( e ) {
+		} catch {
 			// Fall through to the textarea path.
 		}
 	}
@@ -31,7 +31,7 @@ export async function copyText( text ) {
 	let ok = false;
 	try {
 		ok = !! document.execCommand( 'copy' );
-	} catch ( e ) {
+	} catch {
 		ok = false;
 	} finally {
 		ta.remove();
@@ -55,7 +55,12 @@ export function CopyButton( { text, label, className } ) {
 		failed: __( 'Copy failed', 'emcp-tools' ),
 	}[ state ];
 	return (
-		<button type="button" className={ cx( 'eui-copy', `is-${ state }`, className ) } onClick={ onClick } aria-live="polite">
+		<button
+			type="button"
+			className={ cx( 'eui-copy', `is-${ state }`, className ) }
+			onClick={ onClick }
+			aria-live="polite"
+		>
 			<Icon name={ 'copied' === state ? 'check' : 'copy' } size={ 14 } />
 			<span>{ shown }</span>
 		</button>
@@ -65,7 +70,9 @@ export function CopyButton( { text, label, className } ) {
 export function CopyField( { value, label } ) {
 	return (
 		<div className="eui-copy-field">
-			<code className="eui-copy-field__value" aria-label={ label }>{ value }</code>
+			<code className="eui-copy-field__value" aria-label={ label }>
+				{ value }
+			</code>
 			<CopyButton text={ value } />
 		</div>
 	);
@@ -89,7 +96,16 @@ export function CodeBlock( { value, label } ) {
  * The only raw-HTML sink in the admin UI. `html` must already be sanitized on
  * the server with wp_kses_post() (spec 8.23 and 11). A test pins this file as
  * the single use of dangerouslySetInnerHTML.
+ *
+ * @param {Object} props
+ * @param {string} props.html        Server-sanitized HTML.
+ * @param {string} [props.className] Extra classes.
  */
 export function SafeHtml( { html, className } ) {
-	return <div className={ cx( 'eui-safe-html', className ) } dangerouslySetInnerHTML={ { __html: html } } />;
+	return (
+		<div
+			className={ cx( 'eui-safe-html', className ) }
+			dangerouslySetInnerHTML={ { __html: html } }
+		/>
+	);
 }

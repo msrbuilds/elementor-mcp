@@ -1,4 +1,10 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from '@wordpress/element';
+import {
+	useCallback,
+	useEffect,
+	useMemo,
+	useRef,
+	useState,
+} from '@wordpress/element';
 import { isEqual } from '../utils/isEqual';
 
 /**
@@ -19,11 +25,20 @@ export function useSettingsForm( initial, save ) {
 	const savingRef = useRef( false );
 
 	const changedKeys = useMemo(
-		() => Object.keys( { ...baseline, ...values } ).filter( ( k ) => ! isEqual( baseline[ k ], values[ k ] ) ),
+		() =>
+			Object.keys( { ...baseline, ...values } ).filter(
+				( k ) => ! isEqual( baseline[ k ], values[ k ] )
+			),
 		[ baseline, values ]
 	);
 	const dirty = changedKeys.length > 0;
-	const diff = useMemo( () => Object.fromEntries( changedKeys.map( ( k ) => [ k, values[ k ] ] ) ), [ changedKeys, values ] );
+	const diff = useMemo(
+		() =>
+			Object.fromEntries(
+				changedKeys.map( ( k ) => [ k, values[ k ] ] )
+			),
+		[ changedKeys, values ]
+	);
 
 	useEffect( () => {
 		if ( ! dirty ) {
@@ -42,7 +57,10 @@ export function useSettingsForm( initial, save ) {
 	}, [ dirty ] );
 
 	const setValue = useCallback( ( key, next ) => {
-		setValues( ( v ) => ( { ...v, [ key ]: 'function' === typeof next ? next( v[ key ] ) : next } ) );
+		setValues( ( v ) => ( {
+			...v,
+			[ key ]: 'function' === typeof next ? next( v[ key ] ) : next,
+		} ) );
 	}, [] );
 
 	const discard = useCallback( () => {
@@ -71,5 +89,18 @@ export function useSettingsForm( initial, save ) {
 		}
 	}, [ dirty, diff, values, save ] );
 
-	return { values, setValue, setValues, baseline, changedKeys, count: changedKeys.length, dirty, diff, discard, submit, saving, error };
+	return {
+		values,
+		setValue,
+		setValues,
+		baseline,
+		changedKeys,
+		count: changedKeys.length,
+		dirty,
+		diff,
+		discard,
+		submit,
+		saving,
+		error,
+	};
 }

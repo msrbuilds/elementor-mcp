@@ -37,13 +37,19 @@ export function useResource( path, initial ) {
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [ path ] );
 
-	const mutate = useCallback( async ( method, body, { subPath = '', replace = true } = {} ) => {
-		const result = await request( path + subPath, { method, data: body } );
-		if ( replace ) {
-			setData( result );
-		}
-		return result;
-	}, [ path ] );
+	const mutate = useCallback(
+		async ( method, body, { subPath = '', replace = true } = {} ) => {
+			const result = await request( path + subPath, {
+				method,
+				data: body,
+			} );
+			if ( replace ) {
+				setData( result );
+			}
+			return result;
+		},
+		[ path ]
+	);
 
 	return { data, loading, error, refresh, mutate, setData };
 }

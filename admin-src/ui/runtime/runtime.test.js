@@ -20,13 +20,21 @@ describe( 'mountScreen', () => {
 		await act( async () => {
 			expect( mountScreen( 'tools', Tools ) ).toBe( true );
 		} );
-		expect( screen.getByRole( 'heading', { name: '116 tools' } ) ).toBeInTheDocument();
-		await waitFor( () => expect( document.querySelector( '[data-emcp-fallback]' ) ).toBeNull() );
+		expect(
+			screen.getByRole( 'heading', { name: '116 tools' } )
+		).toBeInTheDocument();
+		await waitFor( () =>
+			expect(
+				document.querySelector( '[data-emcp-fallback]' )
+			).toBeNull()
+		);
 		expect( window.emcpScreenReady ).toBe( true );
 	} );
 
 	it( 'shows the error card and still removes the fallback when the screen throws', async () => {
-		jest.spyOn( console, 'error' ).mockImplementation( () => {} );
+		const consoleSpy = jest
+			.spyOn( console, 'error' )
+			.mockImplementation( () => {} );
 		frame( 'tools' );
 		function Broken() {
 			throw new Error( 'boom' );
@@ -35,9 +43,15 @@ describe( 'mountScreen', () => {
 			mountScreen( 'tools', Broken );
 		} );
 		expect( screen.getByRole( 'alert' ) ).toHaveTextContent( 'boom' );
-		expect( screen.getByRole( 'button', { name: 'Reload' } ) ).toBeInTheDocument();
-		await waitFor( () => expect( document.querySelector( '[data-emcp-fallback]' ) ).toBeNull() );
-		console.error.mockRestore();
+		expect(
+			screen.getByRole( 'button', { name: 'Reload' } )
+		).toBeInTheDocument();
+		await waitFor( () =>
+			expect(
+				document.querySelector( '[data-emcp-fallback]' )
+			).toBeNull()
+		);
+		consoleSpy.mockRestore();
 	} );
 
 	it( 'returns false when the frame is not on the page or is for another screen', () => {

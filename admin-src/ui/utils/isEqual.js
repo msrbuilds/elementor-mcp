@@ -9,7 +9,12 @@ export function isEqual( a, b ) {
 	if ( a === b ) {
 		return true;
 	}
-	if ( null === a || null === b || 'object' !== typeof a || 'object' !== typeof b ) {
+	if (
+		null === a ||
+		null === b ||
+		'object' !== typeof a ||
+		'object' !== typeof b
+	) {
 		return false;
 	}
 	if ( Array.isArray( a ) !== Array.isArray( b ) ) {
@@ -20,5 +25,9 @@ export function isEqual( a, b ) {
 	if ( ka.length !== kb.length ) {
 		return false;
 	}
-	return ka.every( ( k ) => Object.prototype.hasOwnProperty.call( b, k ) && isEqual( a[ k ], b[ k ] ) );
+	return ka.every(
+		( k ) =>
+			Object.prototype.hasOwnProperty.call( b, k ) &&
+			isEqual( a[ k ], b[ k ] )
+	);
 }

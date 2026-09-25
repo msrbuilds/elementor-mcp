@@ -18,7 +18,8 @@ export function AppProviders( { children } ) {
  */
 export function markReady( container ) {
 	window.emcpScreenReady = true;
-	const fallback = container && container.querySelector( '[data-emcp-fallback]' );
+	const fallback =
+		container && container.querySelector( '[data-emcp-fallback]' );
 	if ( fallback ) {
 		fallback.remove();
 	}

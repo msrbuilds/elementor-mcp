@@ -4,14 +4,19 @@
  *
  * @param {KeyboardEvent} event
  * @param {Object}        options
- * @param {number}        options.index       Current item index.
- * @param {number}        options.count       Number of items.
- * @param {Function}      options.onMove      Called with the target index.
+ * @param {number}        options.index         Current item index.
+ * @param {number}        options.count         Number of items.
+ * @param {Function}      options.onMove        Called with the target index.
  * @param {string}        [options.orientation] 'horizontal' (default) or 'vertical'.
  * @return {boolean} Whether the key was handled.
  */
-export function rovingKeyDown( event, { index, count, onMove, orientation = 'horizontal' } ) {
-	const rtl = typeof document !== 'undefined' && 'rtl' === document.documentElement.getAttribute( 'dir' );
+export function rovingKeyDown(
+	event,
+	{ index, count, onMove, orientation = 'horizontal' }
+) {
+	const rtl =
+		typeof document !== 'undefined' &&
+		'rtl' === document.documentElement.getAttribute( 'dir' );
 	let next = 'ArrowDown';
 	let prev = 'ArrowUp';
 	if ( 'horizontal' === orientation ) {

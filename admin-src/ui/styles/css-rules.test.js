@@ -11,7 +11,10 @@ function cssFiles( dir ) {
 		return e.name.endsWith( '.css' ) ? [ full ] : [];
 	} );
 }
-const files = cssFiles( uiDir ).map( ( f ) => [ path.relative( uiDir, f ), fs.readFileSync( f, 'utf8' ) ] );
+const files = cssFiles( uiDir ).map( ( f ) => [
+	path.relative( uiDir, f ),
+	fs.readFileSync( f, 'utf8' ),
+] );
 
 describe( 'component CSS rules', () => {
 	it( 'has CSS files to check', () => {
@@ -19,7 +22,10 @@ describe( 'component CSS rules', () => {
 	} );
 
 	it.each( files )( '%s never styles legacy emcp- classes', ( name, css ) => {
-		const selectors = css.replace( /\/\*[\s\S]*?\*\//g, '' ).match( /(^|[,}\s])\.emcp-[a-z-]+/gm ) || [];
+		const selectors =
+			css
+				.replace( /\/\*[\s\S]*?\*\//g, '' )
+				.match( /(^|[,}\s])\.emcp-[a-z-]+/gm ) || [];
 		const allowed = selectors.filter( ( s ) => ! /\.emcp-app\b/.test( s ) );
 		expect( allowed ).toEqual( [] );
 	} );
@@ -30,7 +36,9 @@ describe( 'component CSS rules', () => {
 
 	it.each( files )( '%s uses logical properties only', ( name, css ) => {
 		const body = css.replace( /\/\*[\s\S]*?\*\//g, '' );
-		expect( body ).not.toMatch( /(margin|padding|border)-(left|right)\s*:/ );
+		expect( body ).not.toMatch(
+			/(margin|padding|border)-(left|right)\s*:/
+		);
 		expect( body ).not.toMatch( /(^|[\s;{])(left|right)\s*:/m );
 		expect( body ).not.toMatch( /text-align:\s*(left|right)/ );
 	} );

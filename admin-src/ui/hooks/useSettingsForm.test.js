@@ -5,7 +5,9 @@ describe( 'useSettingsForm', () => {
 	afterEach( () => delete document.documentElement.dataset.emcpDirty );
 
 	it( 'tracks changed keys and the diff', () => {
-		const { result } = renderHook( () => useSettingsForm( { a: true, b: false }, jest.fn() ) );
+		const { result } = renderHook( () =>
+			useSettingsForm( { a: true, b: false }, jest.fn() )
+		);
 		act( () => result.current.setValue( 'b', true ) );
 		expect( result.current.count ).toBe( 1 );
 		expect( result.current.diff ).toEqual( { b: true } );
@@ -16,19 +18,29 @@ describe( 'useSettingsForm', () => {
 	it( 'sets and clears the dirty flag and the unload guard', () => {
 		const add = jest.spyOn( window, 'addEventListener' );
 		const remove = jest.spyOn( window, 'removeEventListener' );
-		const { result } = renderHook( () => useSettingsForm( { a: 1 }, jest.fn() ) );
+		const { result } = renderHook( () =>
+			useSettingsForm( { a: 1 }, jest.fn() )
+		);
 		act( () => result.current.setValue( 'a', 2 ) );
 		expect( document.documentElement.dataset.emcpDirty ).toBe( '1' );
-		expect( add ).toHaveBeenCalledWith( 'beforeunload', expect.any( Function ) );
+		expect( add ).toHaveBeenCalledWith(
+			'beforeunload',
+			expect.any( Function )
+		);
 		act( () => result.current.discard() );
 		expect( document.documentElement.dataset.emcpDirty ).toBeUndefined();
-		expect( remove ).toHaveBeenCalledWith( 'beforeunload', expect.any( Function ) );
+		expect( remove ).toHaveBeenCalledWith(
+			'beforeunload',
+			expect.any( Function )
+		);
 	} );
 
 	it( 'saves once on a double submit and adopts the server response', async () => {
 		let resolve;
 		const save = jest.fn( () => new Promise( ( r ) => ( resolve = r ) ) );
-		const { result } = renderHook( () => useSettingsForm( { a: 1 }, save ) );
+		const { result } = renderHook( () =>
+			useSettingsForm( { a: 1 }, save )
+		);
 		act( () => result.current.setValue( 'a', 2 ) );
 		let first;
 		act( () => {
@@ -47,7 +59,9 @@ describe( 'useSettingsForm', () => {
 
 	it( 'stays dirty and exposes the error when saving fails', async () => {
 		const save = jest.fn().mockRejectedValue( new Error( 'nope' ) );
-		const { result } = renderHook( () => useSettingsForm( { a: 1 }, save ) );
+		const { result } = renderHook( () =>
+			useSettingsForm( { a: 1 }, save )
+		);
 		act( () => result.current.setValue( 'a', 2 ) );
 		let ok;
 		await act( async () => {

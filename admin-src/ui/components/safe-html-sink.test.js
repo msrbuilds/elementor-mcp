@@ -7,12 +7,18 @@ function sources( dir ) {
 		if ( e.isDirectory() ) {
 			return sources( full );
 		}
-		return /\.js$/.test( e.name ) && ! /\.test\.js$/.test( e.name ) ? [ full ] : [];
+		return /\.js$/.test( e.name ) && ! /\.test\.js$/.test( e.name )
+			? [ full ]
+			: [];
 	} );
 }
 
 it( 'uses dangerouslySetInnerHTML only in Code.js (SafeHtml)', () => {
 	const root = path.join( __dirname, '..', '..' );
-	const offenders = sources( root ).filter( ( f ) => fs.readFileSync( f, 'utf8' ).includes( 'dangerouslySetInnerHTML' ) );
-	expect( offenders.map( ( f ) => path.relative( root, f ) ) ).toEqual( [ path.join( 'ui', 'components', 'Code.js' ) ] );
+	const offenders = sources( root ).filter( ( f ) =>
+		fs.readFileSync( f, 'utf8' ).includes( 'dangerouslySetInnerHTML' )
+	);
+	expect( offenders.map( ( f ) => path.relative( root, f ) ) ).toEqual( [
+		path.join( 'ui', 'components', 'Code.js' ),
+	] );
 } );

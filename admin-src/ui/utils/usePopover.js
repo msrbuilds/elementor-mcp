@@ -23,7 +23,10 @@ export function usePopover() {
 			return undefined;
 		}
 		const onMouseDown = ( e ) => {
-			if ( ! panelRef.current?.contains( e.target ) && ! triggerRef.current?.contains( e.target ) ) {
+			if (
+				! panelRef.current?.contains( e.target ) &&
+				! triggerRef.current?.contains( e.target )
+			) {
 				close( false );
 			}
 		};

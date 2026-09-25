@@ -4,11 +4,23 @@ import { axe } from 'jest-axe';
 import { useState } from '@wordpress/element';
 import { Segmented, Tabs, FilterChip } from './Choice';
 
-const opts = [ { value: 'all', label: 'All', count: 14 }, { value: 'on', label: 'Enabled', count: 10 }, { value: 'off', label: 'Disabled', count: 4 } ];
+const opts = [
+	{ value: 'all', label: 'All', count: 14 },
+	{ value: 'on', label: 'Enabled', count: 10 },
+	{ value: 'off', label: 'Disabled', count: 4 },
+];
 
 function Harness( { Cmp } ) {
 	const [ v, setV ] = useState( 'all' );
-	return <Cmp label="Filter" options={ opts } value={ v } onChange={ setV } idPrefix="t" />;
+	return (
+		<Cmp
+			label="Filter"
+			options={ opts }
+			value={ v }
+			onChange={ setV }
+			idPrefix="t"
+		/>
+	);
 }
 
 describe( 'Segmented', () => {
@@ -18,8 +30,12 @@ describe( 'Segmented', () => {
 		expect( radios.map( ( r ) => r.tabIndex ) ).toEqual( [ 0, -1, -1 ] );
 		radios[ 0 ].focus();
 		await userEvent.keyboard( '{ArrowRight}' );
-		expect( screen.getByRole( 'radio', { name: /Enabled/ } ) ).toHaveAttribute( 'aria-checked', 'true' );
-		expect( screen.getByRole( 'radio', { name: /Enabled/ } ) ).toHaveFocus();
+		expect(
+			screen.getByRole( 'radio', { name: /Enabled/ } )
+		).toHaveAttribute( 'aria-checked', 'true' );
+		expect(
+			screen.getByRole( 'radio', { name: /Enabled/ } )
+		).toHaveFocus();
 		expect( await axe( container ) ).toHaveNoViolations();
 	} );
 } );
@@ -39,9 +55,22 @@ describe( 'FilterChip', () => {
 	it( 'is a toggle button with an optional remove button', async () => {
 		const onClick = jest.fn();
 		const onRemove = jest.fn();
-		const { container } = render( <FilterChip label="Widgets" active count={ 48 } onClick={ onClick } onRemove={ onRemove } removeLabel="Remove Widgets filter" /> );
-		expect( screen.getByRole( 'button', { name: /Widgets/, pressed: true } ) ).toBeInTheDocument();
-		await userEvent.click( screen.getByRole( 'button', { name: 'Remove Widgets filter' } ) );
+		const { container } = render(
+			<FilterChip
+				label="Widgets"
+				active
+				count={ 48 }
+				onClick={ onClick }
+				onRemove={ onRemove }
+				removeLabel="Remove Widgets filter"
+			/>
+		);
+		expect(
+			screen.getByRole( 'button', { name: /Widgets/, pressed: true } )
+		).toBeInTheDocument();
+		await userEvent.click(
+			screen.getByRole( 'button', { name: 'Remove Widgets filter' } )
+		);
 		expect( onRemove ).toHaveBeenCalled();
 		expect( onClick ).not.toHaveBeenCalled();
 		expect( await axe( container ) ).toHaveNoViolations();

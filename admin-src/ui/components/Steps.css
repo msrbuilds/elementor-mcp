@@ -1,28 +1,184 @@
-.eui-stepper { margin: 0; padding: 0; list-style: none; }
-.eui-step { display: flex; gap: 16px; padding-block: 20px; padding-inline: 22px; border-block-end: 1px solid var(--emcp-divider); }
-.eui-step:last-child { border-block-end: 0; }
-.eui-step__marker { display: inline-flex; flex: none; align-items: center; justify-content: center; inline-size: 28px; block-size: 28px; border: 1px solid var(--emcp-border-input); border-radius: 50%; background: var(--emcp-surface); color: var(--emcp-text-3); font-size: 13px; font-weight: 700; }
-.eui-step.is-complete .eui-step__marker { background: var(--emcp-success-fg); border-color: var(--emcp-success-fg); color: var(--emcp-surface); }
-.eui-step.is-active .eui-step__marker { background: var(--emcp-primary); border-color: var(--emcp-primary); color: var(--emcp-surface); box-shadow: 0 0 0 4px var(--emcp-primary-tint); }
-.eui-step__main { flex: 1; min-inline-size: 0; }
-.eui-step__head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
-.eui-step__title { margin: 0; font-size: 16px; font-weight: 700; color: var(--emcp-ink); }
-.eui-step.is-locked .eui-step__title { color: var(--emcp-muted); }
-.eui-step__meta { font-size: 12px; color: var(--emcp-muted); }
-.eui-step__summary { display: flex; align-items: center; gap: 8px; margin-block: 6px 0; margin-inline: 0; font-size: 13px; color: var(--emcp-muted); }
-.eui-step__body { margin-block-start: 14px; }
+.eui-stepper {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
 
-.eui-radio-cards { display: grid; grid-template-columns: repeat(var(--eui-cols, 2), minmax(0, 1fr)); gap: 12px; margin: 0; padding: 0; border: 0; }
-.eui-radio-card { position: relative; display: flex; align-items: flex-start; gap: 12px; padding-block: 14px; padding-inline: 16px; border: 1px solid var(--emcp-border); border-radius: var(--emcp-r-md); background: var(--emcp-surface); cursor: pointer; }
-.eui-radio-card.is-checked { border-color: var(--emcp-primary); background: var(--emcp-primary-tint-2); }
-.eui-radio-card.is-disabled { opacity: 0.6; cursor: not-allowed; }
-.eui-radio-card__input { position: absolute; opacity: 0; inline-size: 1px; block-size: 1px; }
-.eui-radio-card__input:focus-visible ~ .eui-radio-card__dot { outline: 2px solid var(--emcp-primary); outline-offset: 2px; }
-.eui-radio-card__dot { flex: none; inline-size: 18px; block-size: 18px; margin-block-start: 1px; border: 1.5px solid var(--emcp-border-input); border-radius: 50%; background: var(--emcp-surface); }
-.eui-radio-card.is-checked .eui-radio-card__dot { border: 5px solid var(--emcp-primary); }
-.eui-radio-card__text { display: flex; flex: 1; flex-direction: column; gap: 3px; }
-.eui-radio-card__title { display: flex; align-items: center; gap: 8px; font-weight: 600; color: var(--emcp-ink); }
-.eui-radio-card__desc { font-size: 13px; color: var(--emcp-muted); }
-.eui-radio-card__req { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; color: var(--emcp-muted); }
-.eui-radio-card__icon { color: var(--emcp-text-3); }
-@media (max-width: 1100px) { .eui-radio-cards { grid-template-columns: repeat(min(var(--eui-cols, 2), 2), minmax(0, 1fr)); } }
+.eui-step {
+	display: flex;
+	gap: 16px;
+	padding-block: 20px;
+	padding-inline: 22px;
+	border-block-end: 1px solid var(--emcp-divider);
+}
+
+.eui-step:last-child {
+	border-block-end: 0;
+}
+
+.eui-step__marker {
+	display: inline-flex;
+	flex: none;
+	align-items: center;
+	justify-content: center;
+	inline-size: 28px;
+	block-size: 28px;
+	border: 1px solid var(--emcp-border-input);
+	border-radius: 50%;
+	background: var(--emcp-surface);
+	color: var(--emcp-text-3);
+	font-size: 13px;
+	font-weight: 700;
+}
+
+.eui-step.is-complete .eui-step__marker {
+	background: var(--emcp-success-fg);
+	border-color: var(--emcp-success-fg);
+	color: var(--emcp-surface);
+}
+
+.eui-step.is-active .eui-step__marker {
+	background: var(--emcp-primary);
+	border-color: var(--emcp-primary);
+	color: var(--emcp-surface);
+	box-shadow: 0 0 0 4px var(--emcp-primary-tint);
+}
+
+.eui-step__main {
+	flex: 1;
+	min-inline-size: 0;
+}
+
+.eui-step__head {
+	display: flex;
+	align-items: baseline;
+	justify-content: space-between;
+	gap: 12px;
+}
+
+.eui-step__title {
+	margin: 0;
+	font-size: 16px;
+	font-weight: 700;
+	color: var(--emcp-ink);
+}
+
+.eui-step.is-locked .eui-step__title {
+	color: var(--emcp-muted);
+}
+
+.eui-step__meta {
+	font-size: 12px;
+	color: var(--emcp-muted);
+}
+
+.eui-step__summary {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin-block: 6px 0;
+	margin-inline: 0;
+	font-size: 13px;
+	color: var(--emcp-muted);
+}
+
+.eui-step__body {
+	margin-block-start: 14px;
+}
+
+.eui-radio-cards {
+	display: grid;
+	grid-template-columns: repeat(var(--eui-cols, 2), minmax(0, 1fr));
+	gap: 12px;
+	margin: 0;
+	padding: 0;
+	border: 0;
+}
+
+.eui-radio-card {
+	position: relative;
+	display: flex;
+	align-items: flex-start;
+	gap: 12px;
+	padding-block: 14px;
+	padding-inline: 16px;
+	border: 1px solid var(--emcp-border);
+	border-radius: var(--emcp-r-md);
+	background: var(--emcp-surface);
+	cursor: pointer;
+}
+
+.eui-radio-card.is-checked {
+	border-color: var(--emcp-primary);
+	background: var(--emcp-primary-tint-2);
+}
+
+.eui-radio-card.is-disabled {
+	opacity: 0.6;
+	cursor: not-allowed;
+}
+
+.eui-radio-card__input {
+	position: absolute;
+	opacity: 0;
+	inline-size: 1px;
+	block-size: 1px;
+}
+
+.eui-radio-card__input:focus-visible ~ .eui-radio-card__dot {
+	outline: 2px solid var(--emcp-primary);
+	outline-offset: 2px;
+}
+
+.eui-radio-card__dot {
+	flex: none;
+	inline-size: 18px;
+	block-size: 18px;
+	margin-block-start: 1px;
+	border: 1.5px solid var(--emcp-border-input);
+	border-radius: 50%;
+	background: var(--emcp-surface);
+}
+
+.eui-radio-card.is-checked .eui-radio-card__dot {
+	border: 5px solid var(--emcp-primary);
+}
+
+.eui-radio-card__text {
+	display: flex;
+	flex: 1;
+	flex-direction: column;
+	gap: 3px;
+}
+
+.eui-radio-card__title {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	font-weight: 600;
+	color: var(--emcp-ink);
+}
+
+.eui-radio-card__desc {
+	font-size: 13px;
+	color: var(--emcp-muted);
+}
+
+.eui-radio-card__req {
+	display: inline-flex;
+	align-items: center;
+	gap: 5px;
+	font-size: 12px;
+	color: var(--emcp-muted);
+}
+
+.eui-radio-card__icon {
+	color: var(--emcp-text-3);
+}
+
+@media (max-width: 1100px) {
+
+	.eui-radio-cards {
+		grid-template-columns: repeat(min(var(--eui-cols, 2), 2), minmax(0, 1fr));
+	}
+}

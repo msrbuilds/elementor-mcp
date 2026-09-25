@@ -15,6 +15,15 @@ export function Icon( { name, size = 16, label, className } ) {
 	if ( ! Cmp ) {
 		return null;
 	}
-	const a11y = label ? { role: 'img', 'aria-label': label } : { 'aria-hidden': 'true', focusable: 'false' };
-	return <Cmp size={ size } strokeWidth={ 2 } className={ cx( 'eui-icon', className ) } { ...a11y } />;
+	const a11y = label
+		? { role: 'img', 'aria-label': label }
+		: { 'aria-hidden': 'true', focusable: 'false' };
+	return (
+		<Cmp
+			size={ size }
+			strokeWidth={ 2 }
+			className={ cx( 'eui-icon', className ) }
+			{ ...a11y }
+		/>
+	);
 }
