@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Build tooling for the EMCP Tools admin screens.",
   "scripts": {
-    "build": "wp-scripts build && node admin-build/generate-php-icons.mjs",
+    "build": "wp-scripts build && node admin-build/generate-php-icons.mjs && node admin-build/scope-legacy-css.mjs",
     "start": "wp-scripts start",
     "test": "wp-scripts test-unit-jest --config jest.config.js",
     "size": "node admin-build/check-size.mjs",
@@ -45,6 +45,7 @@
     "jest": "^30.5.0",
     "jest-axe": "^11.0.0",
     "jest-environment-jsdom": "^30.5.0",
-    "lucide-static": "^1.48.0"
+    "lucide-static": "^1.48.0",
+    "postcss": "^8.5.28"
   }
 }

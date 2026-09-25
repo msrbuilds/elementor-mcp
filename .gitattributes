@@ -10,3 +10,8 @@ assets/admin/build/*.css text eol=lf
 assets/admin/build/*.php text eol=lf
 includes/admin/icons.php text eol=lf
 assets/admin/build/fonts/** binary
+# Admin UI sources: prettier (wp-scripts lint) requires LF.
+admin-src/** text eol=lf
+admin-build/** text eol=lf
+*.config.js text eol=lf
+eslint.config.cjs text eol=lf
