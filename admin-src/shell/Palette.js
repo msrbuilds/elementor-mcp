@@ -90,7 +90,7 @@ export function Palette( { open, onClose, data, navigate } ) {
 					// Keyboard selection is handled on the combobox (arrows and Enter).
 					// eslint-disable-next-line jsx-a11y/click-events-have-key-events
 					<li
-						key={ `${ item.kind }-${ item.url }` }
+						key={ `${ item.kind }-${ item.url }-${ item.label }` }
 						id={ `${ listId }-${ i }` }
 						role="option"
 						aria-selected={ i === active ? 'true' : 'false' }

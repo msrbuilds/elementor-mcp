@@ -51,6 +51,8 @@ import {
 	Plus,
 	RefreshCw,
 	Server,
+	CircleUser,
+	Crown,
 } from 'lucide-react';
 
 export const ICONS = {
@@ -102,4 +104,6 @@ export const ICONS = {
 	plus: Plus,
 	'refresh-cw': RefreshCw,
 	server: Server,
+	'circle-user': CircleUser,
+	crown: Crown,
 };

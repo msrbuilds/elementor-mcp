@@ -3,8 +3,8 @@
  * Write short-lived admin auth cookies for the Playwright smoke, so a local
  * run needs no password:
  *
- *   wp eval-file tests-e2e/auth-cookies.php > .superpowers/e2e-cookies.json
- *   EMCP_E2E_COOKIES=.superpowers/e2e-cookies.json npm run test:e2e
+ *   wp eval-file tests-e2e/auth-cookies.php > tests-e2e/.auth/cookies.json
+ *   EMCP_E2E_COOKIES=tests-e2e/.auth/cookies.json npm run test:e2e
  *
  * Local development only; the cookies expire after three hours.
  *

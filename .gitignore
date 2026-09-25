@@ -161,3 +161,5 @@ scripts/e2e/otter-*.json
 /test-results/
 /playwright-report/
 /.playwright-mcp/
+# Playwright auth cookies (live admin session; never commit)
+/tests-e2e/.auth/

@@ -584,7 +584,31 @@ class EMCP_Tools_Admin {
 		foreach ( array_keys( $this->get_submenus() ) as $slug ) {
 			$tabs[] = EMCP_Tools_Admin_Nav::tab_from_slug( $slug );
 		}
-		return new EMCP_Tools_Admin_Nav( $tabs, $this->nav_counts(), self::affiliation_page_available() );
+		return new EMCP_Tools_Admin_Nav( $tabs, $this->nav_counts(), self::affiliation_page_available(), $this->nav_links() );
+	}
+
+	/**
+	 * Licence links for the sidebar footer. The WordPress submenu that carried
+	 * Freemius's Account and Upgrade items is hidden by the frame, so the frame
+	 * offers them instead.
+	 *
+	 * @since 3.18.0
+	 *
+	 * @return string[] Optional 'account' and 'upgrade' URLs.
+	 */
+	private function nav_links(): array {
+		if ( ! function_exists( 'emcp_tools_fs' ) ) {
+			return array();
+		}
+		$fs    = emcp_tools_fs();
+		$links = array();
+		if ( method_exists( $fs, 'is_registered' ) && method_exists( $fs, 'get_account_url' ) && $fs->is_registered() ) {
+			$links['account'] = (string) $fs->get_account_url();
+		}
+		if ( ! $fs->can_use_premium_code() ) {
+			$links['upgrade'] = function_exists( 'emcp_tools_upgrade_url' ) ? emcp_tools_upgrade_url() : 'https://emcptools.com/pricing';
+		}
+		return $links;
 	}
 
 	/**
@@ -603,7 +627,8 @@ class EMCP_Tools_Admin {
 			'tools'  => $this->get_enabled_tool_count(),
 			'memory' => $this->memory_pending_count(),
 		);
-		foreach ( $this->get_dashboard_stats() as $stat ) {
+		// Cached reads only: the frame must never make a remote call (spec 5.1).
+		foreach ( $this->get_dashboard_stats( true ) as $stat ) {
 			if ( isset( $stat['key'], $stat['value'] ) && in_array( $stat['key'], array( 'prompts', 'templates', 'brand-kits' ), true ) ) {
 				$counts[ $stat['key'] ] = (int) $stat['value'];
 			}
@@ -1075,9 +1100,13 @@ class EMCP_Tools_Admin {
 	 * to an icon.
 	 *
 	 * @since 3.1.0
+	 * @since 3.18.0 $cached_only: read the templates library from its cache
+	 *               only, never fetch it (the frame's sidebar counts).
+	 *
+	 * @param bool $cached_only Never make a remote call.
 	 * @return array<int,array{key:string,value:int,label:string}>
 	 */
-	public function get_dashboard_stats(): array {
+	public function get_dashboard_stats( bool $cached_only = false ): array {
 		$catalog_tools = array();
 		$pro_tools     = array();
 		foreach ( $this->get_all_tools() as $category ) {
@@ -1143,7 +1172,7 @@ class EMCP_Tools_Admin {
 		// categories). Hidden for free users and when the bundle can't be fetched.
 		if ( $this->module_tab_visible( 'templates' ) && class_exists( 'EMCP_Tools_Pro_Templates' ) && EMCP_Tools_Pro_Templates::user_has_access() ) {
 			$template_count  = 0;
-			$emcp_tpl_bundle = EMCP_Tools_Pro_Templates::get_bundle();
+			$emcp_tpl_bundle = $cached_only ? get_transient( EMCP_Tools_Pro_Templates::CACHE_KEY ) : EMCP_Tools_Pro_Templates::get_bundle();
 			if ( ! is_wp_error( $emcp_tpl_bundle ) && is_array( $emcp_tpl_bundle ) && ! empty( $emcp_tpl_bundle['categories'] ) ) {
 				foreach ( $emcp_tpl_bundle['categories'] as $emcp_tpl_cat ) {
 					$template_count += is_array( $emcp_tpl_cat['templates'] ?? null ) ? count( $emcp_tpl_cat['templates'] ) : 0;

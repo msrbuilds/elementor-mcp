@@ -40,8 +40,12 @@ final class EMCP_Tools_Admin_Nav {
 	 * @param string[] $visible_tabs Tab ids that get_submenus() shows.
 	 * @param int[]    $counts       Tab id => count badge.
 	 * @param bool     $affiliate    Whether the Freemius affiliation page exists.
+	 * @param string[] $links        Optional footer URLs: 'account' (the Freemius
+	 *                               licence page) and 'upgrade' (unlicensed sites).
+	 *                               The WordPress submenu that used to carry them is
+	 *                               hidden, so the frame must.
 	 */
-	public function __construct( array $visible_tabs, array $counts = array(), bool $affiliate = false ) {
+	public function __construct( array $visible_tabs, array $counts = array(), bool $affiliate = false, array $links = array() ) {
 		foreach ( self::definitions() as $tab => $def ) {
 			if ( ! in_array( $tab, $visible_tabs, true ) ) {
 				continue;
@@ -74,6 +78,26 @@ final class EMCP_Tools_Admin_Nav {
 				'url'      => self::url( 'changelog' ),
 				'external' => false,
 				'badge'    => __( 'New', 'emcp-tools' ),
+			);
+		}
+		if ( ! empty( $links['account'] ) ) {
+			$this->footer[] = array(
+				'id'       => 'account',
+				'label'    => __( 'Account', 'emcp-tools' ),
+				'icon'     => 'circle-user',
+				'url'      => (string) $links['account'],
+				'external' => false,
+				'badge'    => null,
+			);
+		}
+		if ( ! empty( $links['upgrade'] ) ) {
+			$this->footer[] = array(
+				'id'       => 'upgrade',
+				'label'    => __( 'Upgrade to Pro', 'emcp-tools' ),
+				'icon'     => 'crown',
+				'url'      => (string) $links['upgrade'],
+				'external' => true,
+				'badge'    => null,
 			);
 		}
 		if ( $affiliate ) {

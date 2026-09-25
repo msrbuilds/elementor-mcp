@@ -138,6 +138,38 @@ describe( 'ShellApp', () => {
 		);
 	} );
 
+	it( 'lists settings that share a page without duplicate row keys', async () => {
+		frame();
+		const shared = {
+			...data,
+			settings: [
+				{ label: 'OAuth sign-in', url: '/connection' },
+				{ label: 'Application passwords', url: '/connection' },
+			],
+		};
+		render(
+			<AppProviders>
+				<ShellApp
+					data={ shared }
+					navigate={ jest.fn() }
+					doc={ document }
+				/>
+			</AppProviders>,
+			{ container: document.getElementById( 'emcp-shell-root' ) }
+		);
+		await userEvent.keyboard( '{Control>}k{/Control}' );
+		await userEvent.type(
+			await screen.findByRole( 'combobox', { name: /Search/ } ),
+			'o'
+		);
+		expect(
+			screen.getByRole( 'option', { name: /OAuth sign-in/ } )
+		).toBeInTheDocument();
+		expect(
+			screen.getByRole( 'option', { name: /Application passwords/ } )
+		).toBeInTheDocument();
+	} );
+
 	it( 'opens the palette from the sidebar search button', async () => {
 		mount();
 		await userEvent.click(

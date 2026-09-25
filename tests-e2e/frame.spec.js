@@ -26,7 +26,12 @@ test.beforeEach( async ( { page, context } ) => {
 			sameSite: 'Lax',
 		};
 		await context.addCookies( [
-			{ ...base, name: c.auth[ 0 ], value: c.auth[ 1 ], path: '/wp-admin' },
+			{
+				...base,
+				name: c.auth[ 0 ],
+				value: c.auth[ 1 ],
+				path: '/wp-admin',
+			},
 			{ ...base, name: c.logged[ 0 ], value: c.logged[ 1 ], path: '/' },
 		] );
 		return;
@@ -115,7 +120,9 @@ test( 'frame controls have at least 32px hit areas', async ( { page } ) => {
 test( 'deep link highlights the parent and shows the child crumb', async ( {
 	page,
 } ) => {
-	await page.goto( '/wp-admin/admin.php?page=emcp-tools-widgets&view=snippets' );
+	await page.goto(
+		'/wp-admin/admin.php?page=emcp-tools-widgets&view=snippets'
+	);
 	await expect(
 		page.locator( '.eui-frame-nav [aria-current="page"]' )
 	).toContainText( 'Sandbox' );
@@ -177,7 +184,9 @@ test( 'legacy Tools screen has no console errors and its toggles respond', async
 } ) => {
 	const errors = watchConsole( page );
 	await page.goto( '/wp-admin/admin.php?page=emcp-tools-tools' );
-	const toggle = page.locator( '.emcp-legacy input[type="checkbox"]' ).first();
+	const toggle = page
+		.locator( '.emcp-legacy input[type="checkbox"]' )
+		.first();
 	const before = await toggle.isChecked();
 	await toggle.click( { force: true } );
 	expect( await toggle.isChecked() ).toBe( ! before );
