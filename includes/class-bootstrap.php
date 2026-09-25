@@ -172,6 +172,7 @@ class EMCP_Tools_Bootstrap {
 		require_once EMCP_TOOLS_DIR . 'includes/class-lease.php';
 		require_once EMCP_TOOLS_DIR . 'includes/admin/rest/class-admin-rest-controller.php';
 		require_once EMCP_TOOLS_DIR . 'includes/admin/class-admin-frame.php';
+		require_once EMCP_TOOLS_DIR . 'includes/admin/rest/class-admin-rest-frame.php';
 		require_once EMCP_TOOLS_DIR . 'includes/class-change-blobs.php';
 		require_once EMCP_TOOLS_DIR . 'includes/class-change-recorder.php';
 		require_once EMCP_TOOLS_DIR . 'includes/class-structured-import.php';
@@ -516,6 +517,9 @@ class EMCP_Tools_Bootstrap {
 		// Admin-bar MCP status + exposure toggle (front-end + wp-admin; the class
 		// self-gates on capability + is_admin_bar_showing()).
 		( new EMCP_Tools_Admin_Bar() )->init();
+
+		// Admin frame REST (cookie-only): promo dismissal + notification read state.
+		( new EMCP_Tools_Admin_REST_Frame() )->register();
 
 		// Free-tier updates from GitHub releases (self-disables on premium builds,
 		// where Freemius owns updates).
