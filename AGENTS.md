@@ -202,6 +202,7 @@ Traps found building it:
 - **White on the brand fill needs a solid background.** Translucent white overlays on `--emcp-primary` fail contrast; the promo badge and CTA use `--emcp-primary-strong`.
 - **MySQL counts changed rows**: an UPDATE writing an identical value reports 0 affected rows, so compare-and-swap code must treat old === new as "does the row still match".
 - **Admin UI sources are pinned `eol=lf`** in `.gitattributes`; a CRLF checkout makes every prettier lint rule fail.
+- **`register_rest_route()` ignores a top-level `permission_callback` when the route is a list of endpoints** (GET plus POST): each numbered endpoint needs its own, or the route answers anyone, logged out included. `EMCP_Tools_Admin_REST_Controller::route()` puts the check on every endpoint; `pro/tests/unit/setup/AdminRoutePermissionTest.php` pins it and `pro/tests/smoke/setup-screens-rest-smoke.php` checks it live. `can_access()` also loads the admin classes once access is granted, because REST is not `is_admin()` and module settings URLs name `EMCP_Tools_Admin::PAGE_SLUG`.
 - **Core styles `input[type="search"]` at specificity (0,1,1)**, which beats a single class; `@emcp/ui` rules that must win over core admin form styles need two classes (`.eui-search .eui-search__input`).
 - **Hit areas come from an absolutely positioned `::before`** on Toggle and IconButton, so the frame spec's 32 px check adds the pseudo-element's negative insets to the bounding box.
 
