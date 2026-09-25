@@ -8,9 +8,9 @@ const OURS = /\/assets\/admin\/build(-pro)?\//;
 /**
  * Watch for screen-bundle failures and reveal the recovery panel.
  *
- * @param {Window}   win       Window.
- * @param {Document} doc       Document.
- * @param {number}   timeoutMs Reveal when the screen has not reported ready by then.
+ * @param {Window}     win       Window.
+ * @param {Document}   doc       Document.
+ * @param {number}     timeoutMs Reveal when the screen has not reported ready by then.
  * @param {() => void} reload    Called by the Reload button.
  * @return {?{reveal: () => void, stop: () => void}} Controls, or null without the frame.
  */
