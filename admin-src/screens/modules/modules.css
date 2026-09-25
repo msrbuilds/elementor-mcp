@@ -1,0 +1,134 @@
+.eui-modules {
+	display: flex;
+	flex-direction: column;
+	gap: 18px;
+}
+
+.eui-modules__filters {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+}
+
+.eui-modules__group-title {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	margin-block: 0 10px;
+	padding-block-end: 8px;
+	border-block-end: 1px solid var(--emcp-divider);
+	color: var(--emcp-ink);
+	font-size: 15px;
+	font-weight: 600;
+}
+
+.eui-modules__group-count {
+	padding-block: 2px;
+	padding-inline: 8px;
+	border-radius: var(--emcp-r-pill);
+	background: var(--emcp-divider-2);
+	color: var(--emcp-text-3);
+	font: 500 12px/1.2 var(--emcp-mono);
+}
+
+.eui-modules__grid {
+	display: grid;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	gap: 14px;
+}
+
+.eui-module.is-off .eui-module__desc {
+	opacity: 0.7;
+}
+
+.eui-module__head {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+}
+
+.eui-module__icon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	inline-size: 32px;
+	block-size: 32px;
+	border-radius: var(--emcp-r-sm);
+	background: var(--emcp-primary-tint);
+	color: var(--emcp-primary-strong);
+}
+
+.eui-module__title {
+	flex: 1;
+	color: var(--emcp-ink);
+	font-weight: 600;
+}
+
+.eui-module__desc,
+.eui-module__reason {
+	margin-block: 10px 0;
+	color: var(--emcp-muted);
+	font-size: 13px;
+}
+
+.eui-module__reason {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+}
+
+.eui-module__link {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	min-block-size: 32px;
+	margin-block-start: 6px;
+	padding: 0;
+	border: 0;
+	background: none;
+	color: var(--emcp-primary-strong);
+	font: 600 13px/1 var(--emcp-font);
+	text-decoration: none;
+	cursor: pointer;
+}
+
+.eui-mod-drawer {
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+}
+
+.eui-mod-drawer__choices {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	margin: 0;
+	padding: 0;
+	border: 0;
+}
+
+.eui-mod-drawer__bulk {
+	margin-block-start: 20px;
+	padding-block-start: 16px;
+	border-block-start: 1px solid var(--emcp-divider);
+}
+
+.eui-mod-drawer__bulk-actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 10px;
+}
+
+@media (max-width: 1280px) {
+
+	.eui-modules__grid {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+
+@media (max-width: 960px) {
+
+	.eui-modules__grid {
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
