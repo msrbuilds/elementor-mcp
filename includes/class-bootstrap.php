@@ -180,6 +180,8 @@ class EMCP_Tools_Bootstrap {
 		require_once EMCP_TOOLS_DIR . 'includes/admin/rest/class-admin-rest-frame.php';
 		require_once EMCP_TOOLS_DIR . 'includes/admin/data/class-admin-tools-data.php';
 		require_once EMCP_TOOLS_DIR . 'includes/admin/rest/class-admin-rest-tools.php';
+		require_once EMCP_TOOLS_DIR . 'includes/admin/data/class-admin-builders-data.php';
+		require_once EMCP_TOOLS_DIR . 'includes/admin/rest/class-admin-rest-builders.php';
 		require_once EMCP_TOOLS_DIR . 'includes/class-change-blobs.php';
 		require_once EMCP_TOOLS_DIR . 'includes/class-change-recorder.php';
 		require_once EMCP_TOOLS_DIR . 'includes/class-structured-import.php';
@@ -528,6 +530,7 @@ class EMCP_Tools_Bootstrap {
 		// Admin frame REST (cookie-only): promo dismissal + notification read state.
 		( new EMCP_Tools_Admin_REST_Frame() )->register();
 		( new EMCP_Tools_Admin_REST_Tools() )->register();
+		( new EMCP_Tools_Admin_REST_Builders() )->register();
 
 		// Free-tier updates from GitHub releases (self-disables on premium builds,
 		// where Freemius owns updates).
