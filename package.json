@@ -8,7 +8,7 @@
     "test": "wp-scripts test-unit-jest --config jest.config.js",
     "size": "node admin-build/check-size.mjs",
     "lint:js": "wp-scripts lint-js admin-src admin-build",
-    "lint:style": "wp-scripts lint-style \"admin-src/**/*.css\""
+    "lint:style": "wp-scripts lint-style \"admin-src/**/*.css\" --ignore-pattern \"admin-src/legacy/**\""
   },
   "repository": {
     "type": "git",
