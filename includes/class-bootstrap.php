@@ -178,6 +178,7 @@ class EMCP_Tools_Bootstrap {
 		require_once EMCP_TOOLS_DIR . 'includes/admin/rest/class-admin-rest-controller.php';
 		require_once EMCP_TOOLS_DIR . 'includes/admin/class-admin-frame.php';
 		require_once EMCP_TOOLS_DIR . 'includes/admin/rest/class-admin-rest-frame.php';
+		require_once EMCP_TOOLS_DIR . 'includes/admin/data/class-admin-tools-data.php';
 		require_once EMCP_TOOLS_DIR . 'includes/class-change-blobs.php';
 		require_once EMCP_TOOLS_DIR . 'includes/class-change-recorder.php';
 		require_once EMCP_TOOLS_DIR . 'includes/class-structured-import.php';
