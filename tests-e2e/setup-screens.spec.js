@@ -4,6 +4,7 @@
  */
 const fs = require( 'fs' );
 const { test, expect } = require( '@playwright/test' );
+const AxeBuilder = require( '@axe-core/playwright' ).default;
 
 const { EMCP_E2E_URL, EMCP_E2E_COOKIES } = process.env;
 test.skip(
@@ -127,4 +128,30 @@ test( 'Setup screens load without console errors', async ( { page } ) => {
 		).toBeVisible();
 	}
 	expect( errors.filter( ( e ) => ! /favicon/i.test( e ) ) ).toEqual( [] );
+} );
+
+test( 'Setup screens pass axe', async ( { page } ) => {
+	for ( const slug of [
+		'emcp-tools-tools',
+		'emcp-tools-modules',
+		'emcp-tools-page-builders',
+	] ) {
+		await page.goto( `/wp-admin/admin.php?page=${ slug }` );
+		await expect(
+			page.locator( '#emcp-screen [data-emcp-root] > *' ).first()
+		).toBeVisible();
+		const results = await new AxeBuilder( { page } )
+			.include( '#emcp-screen' )
+			.analyze();
+		expect(
+			results.violations.map(
+				( v ) =>
+					slug +
+					' ' +
+					v.id +
+					': ' +
+					v.nodes.map( ( n ) => n.target.join( ' ' ) ).join( ', ' )
+			)
+		).toEqual( [] );
+	}
 } );
