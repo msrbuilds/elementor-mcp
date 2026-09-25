@@ -187,6 +187,8 @@ class EMCP_Tools_Bootstrap {
 		require_once EMCP_TOOLS_DIR . 'includes/admin/rest/class-admin-rest-modules.php';
 		require_once EMCP_TOOLS_DIR . 'includes/admin/data/class-admin-connection-data.php';
 		require_once EMCP_TOOLS_DIR . 'includes/admin/rest/class-admin-rest-connection.php';
+		require_once EMCP_TOOLS_DIR . 'includes/admin/data/class-admin-library-list.php';
+		require_once EMCP_TOOLS_DIR . 'includes/admin/data/class-admin-prompts-data.php';
 		require_once EMCP_TOOLS_DIR . 'includes/class-change-blobs.php';
 		require_once EMCP_TOOLS_DIR . 'includes/class-change-recorder.php';
 		require_once EMCP_TOOLS_DIR . 'includes/class-structured-import.php';
