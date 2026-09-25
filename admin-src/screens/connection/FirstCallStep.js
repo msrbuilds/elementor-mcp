@@ -10,14 +10,14 @@ const when = ( ts ) => ( ts ? new Date( ts * 1000 ).toLocaleTimeString() : '' );
  * Step 4: wait for the first successful call from the client being set up
  * (spec 9.5). Polls every 3 seconds for up to 5 minutes.
  *
- * @param {Object}   props             Props.
- * @param {string}   props.setupId     Setup record id.
- * @param {string}   props.clientLabel Client name.
- * @param {string}   props.method      oauth | app | cli.
- * @param {Object}   props.conn        { username, password } for the server test.
+ * @param {Object}     props             Props.
+ * @param {string}     props.setupId     Setup record id.
+ * @param {string}     props.clientLabel Client name.
+ * @param {string}     props.method      oauth | app | cli.
+ * @param {Object}     props.conn        { username, password } for the server test.
  * @param {() => void} props.onRestart   Open a new setup.
- * @param {number}   props.interval    Poll interval in ms.
- * @param {number}   props.maxPolls    Polls before giving up.
+ * @param {number}     props.interval    Poll interval in ms.
+ * @param {number}     props.maxPolls    Polls before giving up.
  */
 export function FirstCallStep( {
 	setupId,
