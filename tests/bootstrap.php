@@ -136,6 +136,11 @@ if ( ! function_exists( 'rest_url' ) ) {
 	}
 }
 
+if ( ! function_exists( 'wp_cache_delete' ) ) {
+	function wp_cache_delete( $key, $group = '' ) {
+		return true;
+	}
+}
 function get_option( $name, $default = false ) {
 	return $GLOBALS['emcp_test']['options'][ $name ] ?? $default;
 }
