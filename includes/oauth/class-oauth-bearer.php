@@ -25,6 +25,21 @@ if ( ! defined( 'ABSPATH' ) ) {
 class EMCP_Tools_OAuth_Bearer {
 
 	/**
+	 * The EMCP OAuth client id that authenticated this request ('' when none).
+	 *
+	 * @var string
+	 */
+	private static $authenticated_client_id = '';
+
+	/**
+	 * The EMCP OAuth client that authenticated this request, for the request
+	 * context (spec 9.2).
+	 */
+	public static function authenticated_client_id(): string {
+		return self::$authenticated_client_id;
+	}
+
+	/**
 	 * Transport permission callback. Returns bool (fail-closed).
 	 *
 	 * @param WP_REST_Request $request The MCP request.
@@ -42,6 +57,7 @@ class EMCP_Tools_OAuth_Bearer {
 			$row = EMCP_Tools_OAuth_Store::find_token( $token, 'access' );
 			if ( null !== $row && EMCP_Tools_OAuth_Metadata::resource_matches( (string) ( $row['resource'] ?? EMCP_Tools_OAuth_Metadata::resource() ) ) ) {
 				wp_set_current_user( (int) $row['user_id'] );
+				self::$authenticated_client_id = (string) ( $row['client_id'] ?? '' );
 				return true;
 			}
 			return false; // Bearer present but invalid/expired → 401.
