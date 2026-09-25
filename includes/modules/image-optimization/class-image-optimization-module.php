@@ -52,6 +52,16 @@ class EMCP_Tools_Image_Optimization_Module extends EMCP_Tools_Module {
 		return 'free';
 	}
 
+	/** Modules screen group. */
+	public function group(): string {
+		return 'content';
+	}
+
+	/** Modules screen icon. */
+	public function icon(): string {
+		return 'image';
+	}
+
 	public function default_active(): bool {
 		return false;
 	}
@@ -105,6 +115,23 @@ class EMCP_Tools_Image_Optimization_Module extends EMCP_Tools_Module {
 				'sanitize_callback' => $bool,
 			),
 		);
+	}
+
+	/** Labelled drawer fields (spec 8.4). */
+	public function settings_schema(): array {
+		return array(
+			array( 'key' => self::PREFIX . 'compress', 'type' => 'toggle', 'label' => __( 'Compress uploads', 'emcp-tools' ), 'help' => __( 'Re-encode generated image sizes at the quality below.', 'emcp-tools' ) ),
+			array( 'key' => self::PREFIX . 'webp', 'type' => 'toggle', 'label' => __( 'Create WebP copies', 'emcp-tools' ) ),
+			array( 'key' => self::PREFIX . 'webp_serve', 'type' => 'toggle', 'label' => __( 'Serve WebP on the site', 'emcp-tools' ), 'parent' => self::PREFIX . 'webp', 'help' => __( 'MCP and REST always get WebP; this also serves it to visitors whose browser supports it.', 'emcp-tools' ) ),
+			array( 'key' => self::PREFIX . 'quality', 'type' => 'range', 'label' => __( 'Quality', 'emcp-tools' ), 'min' => 1, 'max' => 100 ),
+			array( 'key' => self::PREFIX . 'max_dimension', 'type' => 'number', 'label' => __( 'Largest side', 'emcp-tools' ), 'min' => 0, 'unit' => 'px', 'help' => __( '0 keeps the original size.', 'emcp-tools' ) ),
+			array( 'key' => self::PREFIX . 'keep_originals', 'type' => 'toggle', 'label' => __( 'Keep originals', 'emcp-tools' ), 'help' => __( 'Back up files before changing them, so they can be restored.', 'emcp-tools' ) ),
+		);
+	}
+
+	/** Why the module cannot be turned on here. */
+	public function unavailable_reason(): string {
+		return $this->is_available() ? '' : __( "Your server's image editor cannot write WebP files.", 'emcp-tools' );
 	}
 
 	/**

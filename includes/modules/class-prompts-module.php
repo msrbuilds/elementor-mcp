@@ -38,6 +38,16 @@ class EMCP_Tools_Prompts_Module extends EMCP_Tools_Module {
 		return 'free';
 	}
 
+	/** Modules screen group. */
+	public function group(): string {
+		return 'content';
+	}
+
+	/** Modules screen icon. */
+	public function icon(): string {
+		return 'lightbulb';
+	}
+
 	public function default_active(): bool {
 		return true;
 	}

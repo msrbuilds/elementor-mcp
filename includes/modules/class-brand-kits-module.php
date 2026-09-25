@@ -38,6 +38,16 @@ class EMCP_Tools_Brand_Kits_Module extends EMCP_Tools_Module {
 		return 'free';
 	}
 
+	/** Modules screen group. */
+	public function group(): string {
+		return 'content';
+	}
+
+	/** Modules screen icon. */
+	public function icon(): string {
+		return 'palette';
+	}
+
 	public function default_active(): bool {
 		return true;
 	}

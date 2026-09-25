@@ -44,6 +44,16 @@ class EMCP_Tools_Agent_Skills_Module extends EMCP_Tools_Module {
 		return 'pro';
 	}
 
+	/** Modules screen group. */
+	public function group(): string {
+		return 'ai';
+	}
+
+	/** Modules screen icon. */
+	public function icon(): string {
+		return 'sparkles';
+	}
+
 	public function default_active(): bool {
 		return true;
 	}

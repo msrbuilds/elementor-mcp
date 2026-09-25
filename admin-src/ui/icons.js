@@ -53,6 +53,10 @@ import {
 	Server,
 	CircleUser,
 	Crown,
+	Image,
+	FileCode,
+	WandSparkles,
+	Package,
 } from 'lucide-react';
 
 export const ICONS = {
@@ -106,4 +110,8 @@ export const ICONS = {
 	server: Server,
 	'circle-user': CircleUser,
 	crown: Crown,
+	image: Image,
+	'file-code': FileCode,
+	'wand-sparkles': WandSparkles,
+	package: Package,
 };

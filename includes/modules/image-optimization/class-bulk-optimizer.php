@@ -84,6 +84,26 @@ class EMCP_Tools_Bulk_Optimizer {
 			wp_send_json_error( array( 'message' => __( 'Permission denied.', 'emcp-tools' ) ), 403 );
 		}
 
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- checked by check_ajax_referer() above.
+		wp_send_json_success( $this->run_batch( isset( $_POST['batch'] ) ? (int) $_POST['batch'] : 0 ) );
+	}
+
+	/** admin-ajax: restore originals from backups. */
+	public function ajax_restore(): void {
+		check_ajax_referer( self::NONCE, 'nonce' );
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( array( 'message' => __( 'Permission denied.', 'emcp-tools' ) ), 403 );
+		}
+		wp_send_json_success( $this->restore() );
+	}
+
+	/**
+	 * Optimize the next batch of the library (shared by admin-ajax and REST).
+	 *
+	 * @param int $size Requested batch size (clamped 1-50).
+	 * @return array{total:int,processed:int,remaining:int,percent:int,done:bool}
+	 */
+	public function run_batch( int $size ): array {
 		$ids = get_posts(
 			array(
 				'post_type'      => 'attachment',
@@ -96,7 +116,7 @@ class EMCP_Tools_Bulk_Optimizer {
 			)
 		);
 		$total = count( $ids );
-		$batch = self::batch_size( isset( $_POST['batch'] ) ? (int) $_POST['batch'] : 0 );
+		$batch = self::batch_size( $size );
 		$done  = (int) get_option( self::OPTION_CURSOR, 0 );
 
 		$slice     = array_slice( $ids, $done, $batch );
@@ -121,15 +141,15 @@ class EMCP_Tools_Bulk_Optimizer {
 		if ( $progress['done'] ) {
 			update_option( self::OPTION_CURSOR, 0 );
 		}
-		wp_send_json_success( $progress );
+		return $progress;
 	}
 
-	/** admin-ajax: restore originals from backups. */
-	public function ajax_restore(): void {
-		check_ajax_referer( self::NONCE, 'nonce' );
-		if ( ! current_user_can( 'manage_options' ) ) {
-			wp_send_json_error( array( 'message' => __( 'Permission denied.', 'emcp-tools' ) ), 403 );
-		}
+	/**
+	 * Copy the backed-up originals back and delete their WebP siblings.
+	 *
+	 * @return array{restored:int}
+	 */
+	public function restore(): array {
 		$upload   = wp_upload_dir();
 		$basedir  = rtrim( $upload['basedir'] ?? '', '/\\' );
 		$origin   = $basedir . '/emcp-originals';
@@ -150,7 +170,7 @@ class EMCP_Tools_Bulk_Optimizer {
 			}
 		}
 		update_option( self::OPTION_CURSOR, 0 );
-		wp_send_json_success( array( 'restored' => $restored ) );
+		return array( 'restored' => $restored );
 	}
 
 	/**

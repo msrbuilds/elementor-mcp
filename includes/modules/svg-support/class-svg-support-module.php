@@ -48,6 +48,16 @@ class EMCP_Tools_SVG_Support_Module extends EMCP_Tools_Module {
 		return 'free';
 	}
 
+	/** Modules screen group. */
+	public function group(): string {
+		return 'content';
+	}
+
+	/** Modules screen icon. */
+	public function icon(): string {
+		return 'file-code';
+	}
+
 	/** Opt-in: SVG uploads are a security surface, so off until an admin enables it. */
 	public function default_active(): bool {
 		return false;
@@ -56,6 +66,18 @@ class EMCP_Tools_SVG_Support_Module extends EMCP_Tools_Module {
 	/** Needs the sanitizer library present (bundled). Without it we must not allow SVGs. */
 	public function is_available(): bool {
 		return EMCP_Tools_SVG_Sanitizer::library_available();
+	}
+
+	/** Why the module cannot be turned on here. */
+	public function unavailable_reason(): string {
+		return $this->is_available() ? '' : __( 'The SVG sanitizer library is missing.', 'emcp-tools' );
+	}
+
+	/** Labelled drawer fields (spec 8.4). */
+	public function settings_schema(): array {
+		return array(
+			array( 'key' => self::PREFIX . 'admin_only', 'type' => 'toggle', 'label' => __( 'Administrators only', 'emcp-tools' ), 'help' => __( 'Only administrators may upload SVG files.', 'emcp-tools' ) ),
+		);
 	}
 
 	/** Whether some other plugin/theme (e.g. Elementor) already allows the svg mime. */

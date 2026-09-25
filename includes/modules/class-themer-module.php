@@ -38,6 +38,16 @@ class EMCP_Tools_Themer_Module extends EMCP_Tools_Module {
 		return 'free';
 	}
 
+	/** Modules screen group. */
+	public function group(): string {
+		return 'content';
+	}
+
+	/** Modules screen icon. */
+	public function icon(): string {
+		return 'layout-template';
+	}
+
 	/**
 	 * Off on new installs: an admin turns Themer on from the Modules tab. The
 	 * registry seeds each module once, so a site that already has Themer on

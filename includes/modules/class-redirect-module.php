@@ -46,6 +46,16 @@ class EMCP_Tools_Redirect_Module extends EMCP_Tools_Module {
 		return 'free';
 	}
 
+	/** Modules screen group. */
+	public function group(): string {
+		return 'site';
+	}
+
+	/** Modules screen icon. */
+	public function icon(): string {
+		return 'shuffle';
+	}
+
 	/** On by default — a safety feature; disabling it is an explicit opt-out. */
 	public function default_active(): bool {
 		return true;

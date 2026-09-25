@@ -96,4 +96,33 @@ abstract class EMCP_Tools_Module {
 	public function settings_url(): string {
 		return '';
 	}
+
+	/**
+	 * Modules screen group: content (Content & design), ai (AI & agents) or
+	 * site (Site & safety).
+	 */
+	public function group(): string {
+		return 'site';
+	}
+
+	/** Lucide icon name for the module card (must be in admin-src/ui/icon-names.json). */
+	public function icon(): string {
+		return 'blocks';
+	}
+
+	/** Why the module cannot be turned on here ('' when it can). */
+	public function unavailable_reason(): string {
+		return 'pro' === $this->tier() ? __( 'Requires an active EMCP Pro licence.', 'emcp-tools' ) : '';
+	}
+
+	/**
+	 * Labelled fields for the Modules screen's settings drawer, one per key in
+	 * settings_fields(): { key, label, type: toggle|range|number|checkboxes,
+	 * help?, parent?, min?, max?, unit?, choices?: [{value,label,description?}] }.
+	 *
+	 * @return array[]
+	 */
+	public function settings_schema(): array {
+		return array();
+	}
 }

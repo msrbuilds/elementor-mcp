@@ -26,6 +26,16 @@ class EMCP_Tools_Cloud_Module extends EMCP_Tools_Module {
 		return 'free';
 	}
 
+	/** Modules screen group. */
+	public function group(): string {
+		return 'site';
+	}
+
+	/** Modules screen icon. */
+	public function icon(): string {
+		return 'cloud';
+	}
+
 	public function default_active(): bool {
 		return true;
 	}
