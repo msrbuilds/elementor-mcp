@@ -171,6 +171,7 @@ class EMCP_Tools_Bootstrap {
 		require_once EMCP_TOOLS_DIR . 'includes/class-change-log.php';
 		require_once EMCP_TOOLS_DIR . 'includes/class-lease.php';
 		require_once EMCP_TOOLS_DIR . 'includes/admin/rest/class-admin-rest-controller.php';
+		require_once EMCP_TOOLS_DIR . 'includes/admin/class-admin-frame.php';
 		require_once EMCP_TOOLS_DIR . 'includes/class-change-blobs.php';
 		require_once EMCP_TOOLS_DIR . 'includes/class-change-recorder.php';
 		require_once EMCP_TOOLS_DIR . 'includes/class-structured-import.php';
@@ -528,6 +529,7 @@ class EMCP_Tools_Bootstrap {
 	 */
 	private static function load_admin(): void {
 		require_once EMCP_TOOLS_DIR . 'includes/admin/class-admin-pager.php';
+		require_once EMCP_TOOLS_DIR . 'includes/admin/class-admin-icons.php';
 		require_once EMCP_TOOLS_DIR . 'includes/admin/class-admin-nav.php';
 		require_once EMCP_TOOLS_DIR . 'includes/admin/class-admin-screens.php';
 		require_once EMCP_TOOLS_DIR . 'includes/admin/class-admin.php';

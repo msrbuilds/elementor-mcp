@@ -1,0 +1,444 @@
+/* Admin frame (spec 5.1). Tokens come from emcpUI (loaded first). */
+.eui-frame {
+	margin-block: 0;
+	margin-inline: -20px 0;
+	background: var(--emcp-bg);
+	min-block-size: calc(100vh - 32px);
+}
+
+.eui-frame-promo {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	padding-block: 9px;
+	padding-inline: 24px;
+	background: var(--emcp-primary);
+	color: var(--emcp-surface);
+	font-size: 13px;
+}
+
+.eui-frame-promo__badge {
+	padding-block: 2px;
+	padding-inline: 8px;
+	border-radius: var(--emcp-r-pill);
+	background: rgba(255, 255, 255, 0.2);
+	font-size: 11px;
+	font-weight: 700;
+	text-transform: uppercase;
+}
+
+.eui-frame-promo__text {
+	flex: 1;
+	margin: 0;
+}
+
+.eui-frame-promo__cta {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	min-block-size: 32px;
+	padding-inline: 12px;
+	border-radius: var(--emcp-r-sm);
+	background: rgba(255, 255, 255, 0.16);
+	color: var(--emcp-surface);
+	font-weight: 600;
+	text-decoration: none;
+	white-space: nowrap;
+}
+
+.eui-frame-promo__cta:hover,
+.eui-frame-promo__cta:focus {
+	color: var(--emcp-surface);
+}
+
+.eui-frame-promo__dismiss {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	inline-size: 32px;
+	block-size: 32px;
+	border: 0;
+	border-radius: var(--emcp-r-sm);
+	background: transparent;
+	color: var(--emcp-surface);
+	cursor: pointer;
+}
+
+.eui-frame__layout {
+	display: flex;
+	align-items: stretch;
+}
+
+.eui-frame__sidebar {
+	position: sticky;
+	inset-block-start: 32px;
+	display: flex;
+	flex: none;
+	flex-direction: column;
+	gap: 4px;
+	inline-size: 240px;
+	block-size: calc(100vh - 32px);
+	overflow-y: auto;
+	padding-block: 16px;
+	padding-inline: 12px;
+	border-inline-end: 1px solid var(--emcp-border);
+	background: var(--emcp-surface);
+}
+
+.eui-frame-brand {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	padding-block: 4px 12px;
+	padding-inline: 6px;
+}
+
+.eui-frame-brand__logo {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	inline-size: 32px;
+	block-size: 32px;
+	border-radius: var(--emcp-r-sm);
+	background: var(--emcp-primary);
+	color: var(--emcp-surface);
+}
+
+.eui-frame-brand__text {
+	display: flex;
+	flex-direction: column;
+}
+
+.eui-frame-brand__name {
+	font-size: 15px;
+	font-weight: 700;
+	color: var(--emcp-ink);
+}
+
+.eui-frame-brand__version {
+	font-size: 11px;
+	color: var(--emcp-muted);
+}
+
+.eui-frame-search {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	min-block-size: 36px;
+	margin-block-end: 8px;
+	padding-inline: 10px;
+	border: 1px solid var(--emcp-border-input);
+	border-radius: var(--emcp-r-btn);
+	background: var(--emcp-surface-2);
+	color: var(--emcp-muted);
+	font: 500 13px/1 var(--emcp-font);
+	cursor: pointer;
+}
+
+.eui-frame-search__label {
+	flex: 1;
+	text-align: start;
+}
+
+.eui-frame-search__kbd {
+	padding-block: 2px;
+	padding-inline: 6px;
+	border: 1px solid var(--emcp-border-input);
+	border-radius: var(--emcp-r-xs);
+	background: var(--emcp-surface);
+	color: var(--emcp-muted);
+	font: 500 11px/1.2 var(--emcp-mono);
+}
+
+.eui-frame-nav__group {
+	margin-block: 14px 4px;
+	margin-inline: 0;
+	padding-inline: 10px;
+	color: var(--emcp-muted);
+	font-size: 11px;
+	font-weight: 600;
+	letter-spacing: 0.07em;
+	text-transform: uppercase;
+}
+
+.eui-frame-nav__list {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.eui-frame-nav__item {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	min-block-size: 34px;
+	padding-inline: 10px;
+	border-radius: var(--emcp-r-sm);
+	color: var(--emcp-text-2);
+	font-size: 14px;
+	font-weight: 500;
+	text-decoration: none;
+}
+
+.eui-frame-nav__item:hover,
+.eui-frame-nav__item:focus {
+	background: var(--emcp-divider-2);
+	color: var(--emcp-ink);
+}
+
+.eui-frame-nav__item.is-active {
+	background: var(--emcp-primary-tint);
+	color: var(--emcp-primary-strong);
+}
+
+.eui-frame-nav__label {
+	flex: 1;
+}
+
+.eui-frame-nav__count {
+	color: var(--emcp-muted);
+	font-size: 12px;
+}
+
+.eui-frame-nav__item.is-active .eui-frame-nav__count {
+	color: var(--emcp-primary-strong);
+}
+
+.eui-frame-nav__badge {
+	padding-block: 2px;
+	padding-inline: 7px;
+	border-radius: var(--emcp-r-pill);
+	background: var(--emcp-primary-tint);
+	color: var(--emcp-primary-strong);
+	font-size: 10.5px;
+	font-weight: 700;
+	text-transform: uppercase;
+}
+
+.eui-frame-nav__footer {
+	margin-block-start: auto;
+	padding-block-start: 12px;
+	border-block-start: 1px solid var(--emcp-divider);
+}
+
+.eui-frame__main {
+	flex: 1;
+	min-inline-size: 0;
+}
+
+.eui-frame__topbar {
+	position: sticky;
+	inset-block-start: 32px;
+	z-index: 20;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 16px;
+	padding-block: 12px;
+	padding-inline: 32px;
+	border-block-end: 1px solid var(--emcp-border);
+	background: var(--emcp-surface);
+}
+
+.eui-frame-crumbs {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+	color: var(--emcp-muted);
+	font-size: 13px;
+}
+
+.eui-frame-crumbs li {
+	margin: 0;
+}
+
+.eui-frame-crumbs li + li::before {
+	content: "›";
+	margin-inline-end: 8px;
+	color: var(--emcp-muted);
+}
+
+.eui-frame-crumbs [aria-current="page"] {
+	color: var(--emcp-ink);
+	font-weight: 600;
+}
+
+.eui-frame__topbar-actions {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.eui-frame-status {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	min-block-size: 32px;
+	padding-inline: 12px;
+	border-radius: var(--emcp-r-pill);
+	font-size: 13px;
+	font-weight: 500;
+	text-decoration: none;
+}
+
+.eui-frame-status__dot {
+	inline-size: 8px;
+	block-size: 8px;
+	border-radius: 50%;
+	background: currentcolor;
+}
+
+.eui-frame-status.is-green {
+	background: var(--emcp-success-bg);
+	color: var(--emcp-success-fg);
+}
+
+.eui-frame-status.is-grey {
+	background: var(--emcp-divider-2);
+	color: var(--emcp-text-3);
+}
+
+.eui-frame-status.is-red {
+	background: var(--emcp-danger-bg);
+	color: var(--emcp-danger-fg);
+}
+
+.eui-frame-iconlink {
+	position: relative;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	inline-size: 36px;
+	block-size: 36px;
+	border: 0;
+	border-radius: var(--emcp-r-sm);
+	background: transparent;
+	color: var(--emcp-text-3);
+	cursor: pointer;
+}
+
+.eui-frame-iconlink:hover,
+.eui-frame-iconlink:focus {
+	background: var(--emcp-divider-2);
+	color: var(--emcp-ink);
+}
+
+.eui-frame-bell__dot {
+	position: absolute;
+	inset-block-start: 7px;
+	inset-inline-end: 8px;
+	inline-size: 8px;
+	block-size: 8px;
+	border: 2px solid var(--emcp-surface);
+	border-radius: 50%;
+	background: var(--emcp-danger-icon);
+}
+
+.eui-frame-bell__dot[hidden] {
+	display: none;
+}
+
+.eui-frame-user {
+	display: inline-flex;
+}
+
+.eui-frame-avatar {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	inline-size: 32px;
+	block-size: 32px;
+	border-radius: 50%;
+	background: var(--emcp-dark);
+	color: var(--emcp-surface);
+	font-size: 12px;
+	font-weight: 700;
+}
+
+.eui-frame__content {
+	display: flex;
+	flex-direction: column;
+	gap: 20px;
+	padding-block: 28px 40px;
+	padding-inline: 32px;
+}
+
+.eui-frame__content > .wp-header-end {
+	display: none;
+}
+
+.eui-frame-fallback .eui-skeleton {
+	max-inline-size: 640px;
+}
+
+.eui-frame-recovery {
+	max-inline-size: 640px;
+}
+
+.eui-frame-recovery[hidden] {
+	display: none;
+}
+
+.eui-frame-recovery__details {
+	max-block-size: 160px;
+	overflow: auto;
+	padding: 10px;
+	border-radius: var(--emcp-r-sm);
+	background: var(--emcp-surface-2);
+	white-space: pre-wrap;
+	font-size: 12px;
+}
+
+.eui-frame-recovery__actions {
+	display: flex;
+	gap: 10px;
+}
+
+@media (max-width: 1200px) {
+
+	.eui-frame__sidebar {
+		inline-size: 64px;
+		padding-inline: 8px;
+	}
+
+	.eui-frame-brand__text,
+	.eui-frame-search__label,
+	.eui-frame-search__kbd,
+	.eui-frame-nav__group,
+	.eui-frame-nav__label,
+	.eui-frame-nav__count,
+	.eui-frame-nav__badge {
+		position: absolute !important;
+		inline-size: 1px;
+		block-size: 1px;
+		overflow: hidden;
+		clip-path: inset(50%);
+		white-space: nowrap;
+	}
+
+	.eui-frame-nav__item,
+	.eui-frame-search {
+		justify-content: center;
+		padding-inline: 0;
+	}
+
+	.eui-frame__topbar,
+	.eui-frame__content {
+		padding-inline: 20px;
+	}
+}
+
+@media (max-width: 782px) {
+
+	.eui-frame {
+		margin-inline: -10px 0;
+	}
+
+	.eui-frame__topbar,
+	.eui-frame__sidebar {
+		inset-block-start: 46px;
+	}
+}
