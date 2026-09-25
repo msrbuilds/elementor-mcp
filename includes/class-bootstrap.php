@@ -536,13 +536,21 @@ class EMCP_Tools_Bootstrap {
 	 *
 	 * @since 2.1.0
 	 */
-	private static function load_admin(): void {
+	/**
+	 * Load the admin classes without wiring any admin hooks. The admin REST
+	 * endpoints need them, and REST requests are not is_admin().
+	 */
+	public static function require_admin_classes(): void {
 		require_once EMCP_TOOLS_DIR . 'includes/admin/class-admin-pager.php';
 		require_once EMCP_TOOLS_DIR . 'includes/admin/class-admin-icons.php';
 		require_once EMCP_TOOLS_DIR . 'includes/admin/class-admin-nav.php';
 		require_once EMCP_TOOLS_DIR . 'includes/admin/class-admin-screens.php';
 		require_once EMCP_TOOLS_DIR . 'includes/admin/class-admin-locked.php';
 		require_once EMCP_TOOLS_DIR . 'includes/admin/class-admin.php';
+	}
+
+	private static function load_admin(): void {
+		self::require_admin_classes();
 		require_once EMCP_TOOLS_DIR . 'includes/admin/class-mcpb-builder.php';
 
 		// Pro admin units (AI Chat page assets + Pro prompts/templates/skills +

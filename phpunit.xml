@@ -39,6 +39,9 @@
         <testsuite name="McpLog">
             <directory>pro/tests/unit/mcplog</directory>
         </testsuite>
+        <testsuite name="SetupScreens">
+            <directory>pro/tests/unit/setup</directory>
+        </testsuite>
         <testsuite name="Skills">
             <directory>pro/tests/unit/skills</directory>
         </testsuite>

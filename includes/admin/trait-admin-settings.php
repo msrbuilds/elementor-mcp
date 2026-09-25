@@ -28,7 +28,24 @@ trait EMCP_Tools_Admin_Settings_Trait {
 			$existing = array();
 		}
 
-		$add = array();
+		$changes  = $this->default_disabled_changes( $applied );
+		$existing = array_values( array_diff( $existing, $changes['strip'] ) );
+		$merged   = array_values( array_unique( array_merge( $existing, $changes['add'] ) ) );
+		update_option( self::OPTION_DISABLED_TOOLS, $merged );
+		update_option( self::OPTION_DEFAULTS_APPLIED, (string) self::DEFAULTS_VERSION );
+	}
+
+	/**
+	 * The versioned additions to the disabled set above `$applied`, and the
+	 * stale slugs to strip from the stored set. Shared by the upgrade seeding
+	 * and Tools > Reset to defaults (spec 8.3).
+	 *
+	 * @param int $applied Last defaults version applied (0 for a fresh install).
+	 * @return array{add: string[], strip: string[]}
+	 */
+	public function default_disabled_changes( int $applied ): array {
+		$add   = array();
+		$strip = array();
 
 		// v1 — every Pro-badged tool. Only seeded on a truly fresh install
 		// (applied < 1); re-running on an upgrade would clobber user re-enables.
@@ -63,7 +80,7 @@ trait EMCP_Tools_Admin_Settings_Trait {
 		// stored option. add-pro-widget is a single tool, left ENABLED by default
 		// (it only registers when Elementor Pro is active anyway).
 		if ( $applied < 5 ) {
-			$existing = array_values( array_diff( $existing, self::removed_widget_tool_slugs() ) );
+			$strip = array_merge( $strip, self::removed_widget_tool_slugs() );
 		}
 
 		// v6 — Plugins & Themes mutation tools ship disabled-by-default
@@ -105,7 +122,7 @@ trait EMCP_Tools_Admin_Settings_Trait {
 		// v12/v13 per-tool ACF seeding, which targeted slugs that no longer
 		// exist as individual tools.)
 		if ( $applied < 14 ) {
-			$existing = array_values( array_diff( $existing, self::legacy_acf_operation_slugs() ) );
+			$strip = array_merge( $strip, self::legacy_acf_operation_slugs() );
 			$add[]    = 'emcp-tools/acf-write';
 		}
 
@@ -315,9 +332,21 @@ trait EMCP_Tools_Admin_Settings_Trait {
 		if ( $applied < 53 ) {
 			$add[] = 'emcp-tools/visibility-write';
 		}
-		$merged = array_values( array_unique( array_merge( $existing, $add ) ) );
-		update_option( self::OPTION_DISABLED_TOOLS, $merged );
-		update_option( self::OPTION_DEFAULTS_APPLIED, (string) self::DEFAULTS_VERSION );
+		return array(
+			'add'   => array_values( array_unique( $add ) ),
+			'strip' => array_values( array_unique( $strip ) ),
+		);
+	}
+
+	/**
+	 * The disabled set a fresh install starts with: the target of Tools >
+	 * Bulk actions > Reset to defaults (spec 8.3).
+	 *
+	 * @return string[]
+	 */
+	public function default_disabled_tool_slugs(): array {
+		$changes = $this->default_disabled_changes( 0 );
+		return array_values( array_intersect( array_diff( $changes['add'], $changes['strip'] ), $this->get_all_tool_slugs() ) );
 	}
 
 	/**
