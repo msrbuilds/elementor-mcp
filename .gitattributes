@@ -3,3 +3,10 @@ readme.txt text eol=lf
 assets/admin/build/** linguist-generated=true -diff
 includes/admin/icons.php linguist-generated=true -diff
 package-lock.json -diff
+# Build output is written with LF; pin it so a checkout matches a fresh build
+# and the release staleness check (git status) stays clean on Windows.
+assets/admin/build/*.js text eol=lf
+assets/admin/build/*.css text eol=lf
+assets/admin/build/*.php text eol=lf
+includes/admin/icons.php text eol=lf
+assets/admin/build/fonts/** binary
