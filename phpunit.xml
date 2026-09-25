@@ -36,6 +36,9 @@
         <testsuite name="Dispatcher">
             <directory>pro/tests/unit/dispatcher</directory>
         </testsuite>
+        <testsuite name="McpLog">
+            <directory>pro/tests/unit/mcplog</directory>
+        </testsuite>
         <testsuite name="Skills">
             <directory>pro/tests/unit/skills</directory>
         </testsuite>

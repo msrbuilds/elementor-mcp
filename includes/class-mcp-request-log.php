@@ -1,12 +1,12 @@
 <?php
 /**
- * MCP request log — a small, capped, option-backed ring buffer of recent MCP
- * requests (tool, status, duration) so a site owner can match connector
- * failures to server-side outcomes.
+ * MCP request log: a capped, option-backed ring buffer of recent MCP requests,
+ * one row per JSON-RPC request (spec 9.2).
  *
- * Bug report Issue 5: the client only ever sees two generic error strings with
- * no status code or step name. This records each MCP request's result and, when
- * WP_DEBUG is on, the underlying error, surfaced on the "MCP Log" admin tab.
+ * Rows are written by EMCP_Tools_MCP_Observability (every routed request, on
+ * both transports) and by EMCP_Tools_MCP_Log_Recorder (HTTP requests rejected
+ * before routing). They carry who made the request (client, session,
+ * credential), a normalized status and, on errors, a short failure reason.
  *
  * @package EMCP_Tools
  */
@@ -17,8 +17,10 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 class EMCP_Tools_MCP_Request_Log {
 
-	const OPTION    = 'emcp_tools_mcp_request_log';
-	const MAX_COUNT = 100;
+	const OPTION     = 'emcp_tools_mcp_request_log';
+	const MAX_COUNT  = 500;
+	const REASON_MAX = 300;
+	const FIELD_MAX  = 100;
 
 	/** Test seam: when non-null, overrides the WP_DEBUG check. */
 	public static $debug_override = null;
@@ -32,18 +34,45 @@ class EMCP_Tools_MCP_Request_Log {
 	}
 
 	/**
-	 * Append a request record (newest last). Keys: tool, status, ms, req_id, error.
-	 * The error is dropped unless WP_DEBUG is on.
+	 * `success` or `error` from any status the callers use: the router's
+	 * success/error, the old recorder's "ok", or an HTTP status code.
 	 *
-	 * @param array $entry Partial record.
+	 * @param mixed $status Raw status.
+	 */
+	public static function normalize_status( $status ): string {
+		$s = strtolower( trim( (string) $status ) );
+		if ( 'success' === $s || 'ok' === $s ) {
+			return 'success';
+		}
+		if ( '' !== $s && ctype_digit( $s ) ) {
+			$code = (int) $s;
+			return ( $code >= 200 && $code < 400 ) ? 'success' : 'error';
+		}
+		return 'error';
+	}
+
+	/**
+	 * Append a request row (newest last).
+	 *
+	 * @param array $entry method, tool, status, ms, req_id, client, session,
+	 *                     credential, setup, stage, failure_reason, ledger, error.
 	 */
 	public static function record( array $entry ): void {
-		$row = array(
-			'ts'     => time(),
-			'tool'   => (string) ( $entry['tool'] ?? '' ),
-			'status' => (string) ( $entry['status'] ?? '' ),
-			'ms'     => (int) ( $entry['ms'] ?? 0 ),
-			'req_id' => (string) ( $entry['req_id'] ?? '' ),
+		$status = self::normalize_status( $entry['status'] ?? '' );
+		$row    = array(
+			'ts'             => time(),
+			'method'         => self::field( $entry['method'] ?? '' ),
+			'tool'           => self::field( $entry['tool'] ?? '' ),
+			'status'         => $status,
+			'ms'             => (int) round( (float) ( $entry['ms'] ?? 0 ) ),
+			'req_id'         => self::field( $entry['req_id'] ?? '' ),
+			'client'         => self::field( $entry['client'] ?? '' ),
+			'session'        => self::field( $entry['session'] ?? '' ),
+			'credential'     => self::field( $entry['credential'] ?? '' ),
+			'setup'          => self::field( $entry['setup'] ?? '' ),
+			'stage'          => 'error' === $status ? self::field( $entry['stage'] ?? '' ) : '',
+			'failure_reason' => 'error' === $status ? self::reason( $entry['failure_reason'] ?? '' ) : '',
+			'ledger'         => self::field( $entry['ledger'] ?? '' ),
 		);
 		if ( self::debug_enabled() && ! empty( $entry['error'] ) ) {
 			$row['error'] = (string) $entry['error'];
@@ -57,14 +86,40 @@ class EMCP_Tools_MCP_Request_Log {
 		update_option( self::OPTION, $log, false );
 	}
 
-	/** All records, oldest first. */
+	/** All rows, oldest first. */
 	public static function all(): array {
 		$log = get_option( self::OPTION, array() );
-		return is_array( $log ) ? $log : array();
+		return is_array( $log ) ? array_values( $log ) : array();
 	}
 
 	/** Clear the log. */
 	public static function clear(): void {
 		update_option( self::OPTION, array(), false );
+	}
+
+	/**
+	 * A short scalar field.
+	 *
+	 * @param mixed $value Value.
+	 */
+	private static function field( $value ): string {
+		if ( ! is_scalar( $value ) ) {
+			return '';
+		}
+		return substr( (string) $value, 0, self::FIELD_MAX );
+	}
+
+	/**
+	 * Plain text, at most REASON_MAX characters.
+	 *
+	 * @param mixed $value Raw reason.
+	 */
+	private static function reason( $value ): string {
+		if ( ! is_scalar( $value ) ) {
+			return '';
+		}
+		$text = function_exists( 'wp_strip_all_tags' ) ? wp_strip_all_tags( (string) $value ) : strip_tags( (string) $value );
+		$text = trim( (string) preg_replace( '/\s+/', ' ', $text ) );
+		return function_exists( 'mb_substr' ) ? mb_substr( $text, 0, self::REASON_MAX ) : substr( $text, 0, self::REASON_MAX );
 	}
 }
