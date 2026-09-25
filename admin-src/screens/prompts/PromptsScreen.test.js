@@ -86,6 +86,13 @@ describe( 'PromptsScreen', () => {
 		).toHaveAttribute( 'href', data.v1Url );
 	} );
 
+	it( 'gives the cards a section heading so headings do not skip a level', () => {
+		mount();
+		expect(
+			screen.getByRole( 'heading', { level: 2, name: 'Prompt library' } )
+		).toBeInTheDocument();
+	} );
+
 	it( 'filters by category through the server and keeps it in the URL', async () => {
 		mount();
 		await userEvent.click(

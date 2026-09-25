@@ -187,6 +187,9 @@ export function PromptsScreen( { data: initial } ) {
 					</a>
 				</Notice>
 			) }
+			<h2 className="eui-visually-hidden">
+				{ __( 'Prompt library', 'emcp-tools' ) }
+			</h2>
 			<div className="eui-prompts__filters">
 				<SearchInput
 					label={ __( 'Search prompts', 'emcp-tools' ) }

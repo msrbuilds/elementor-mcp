@@ -276,6 +276,9 @@ export function BrandKitsScreen( { data: initial } ) {
 					</a>
 				</Notice>
 			) }
+			<h2 className="eui-visually-hidden">
+				{ __( 'Brand kit library', 'emcp-tools' ) }
+			</h2>
 			<div className="eui-kits__filters">
 				<SearchInput
 					label={ __( 'Search kits', 'emcp-tools' ) }

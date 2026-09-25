@@ -79,6 +79,16 @@ describe( 'BrandKitsScreen', () => {
 		).toBeInTheDocument();
 	} );
 
+	it( 'gives the cards a section heading so headings do not skip a level', () => {
+		mount();
+		expect(
+			screen.getByRole( 'heading', {
+				level: 2,
+				name: 'Brand kit library',
+			} )
+		).toBeInTheDocument();
+	} );
+
 	it( 'draws the swatch bar in 50/25/15/10 proportions', () => {
 		const { container } = mount();
 		const widths = [

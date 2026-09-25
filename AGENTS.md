@@ -217,6 +217,17 @@ Traps found building it:
 - **Form posts.** Cloud connect, settings sync and the `.mcpb` download stay real form posts to `admin-post.php`.
 - **Live check.** `bash pro/tests/smoke/first-call-acceptance.sh`.
 
+**Library screens, Prompts and Brand Kits (Part 3a).** React screens (`admin-src/screens/{prompts,brand-kits}`) on `EMCP_Tools_Admin_REST_{Prompts,Brand_Kits}` and `EMCP_Tools_Admin_{Prompts,Brand_Kits}_Data`.
+
+- **Library and paging.** Both show the bundled free set, or the synced Pro library when licensed, falling back to the free set with the sync error shown. Both are paged 12 at a time by the pure `EMCP_Tools_Admin_Library_List`. Items are addressed by `{category}/{slug}`.
+- **Prompts.** List items carry the full `content`, so Copy runs inside the click. "Use in AI Chat" hands the prompt over through `sessionStorage['emcp.aiChat.prompt']`, which `pro/assets/js/ai-chat.js` takes once in `startChat()`.
+- **Brand Kits.** Apply and restore run on free code (`EMCP_Tools_System_Kit_Writer`, `EMCP_Tools_Kit_Backup_Store`), which fixes free builds whose Apply had no handler. The applied kit is recorded in `emcp_tools_current_brand_kit`; restore clears it.
+- **Loading Pro classes in REST.** Pro library classes that are admin-only in the Pro loader (`EMCP_Tools_Pro_Prompts`, `EMCP_Tools_Pro_Usage`) are required by `EMCP_Tools_Pro_Loader::path()` inside REST, never by root path.
+- **Live check.** `bash pro/tests/smoke/brand-kit-apply-smoke.sh` applies a free kit and restores it twice (data layer, then REST), each step in its own WP-CLI process, and asserts the kit settings come back exactly.
+- **`page` is taken in wp-admin URLs** (`?page=emcp-tools-prompts`): screens keep their page number as `paged`.
+- **WP_REST_Request::get_param() reads the query string before URL params**, so `?category=` overrides a route's `{category}`. Route-addressed items read their ids with `EMCP_Tools_Admin_REST_Controller::route_param()`, and screens never append view filters to action URLs.
+- **Elementor caches the active kit's settings for the whole PHP process**: a kit snapshot taken in the same process as a restore still shows the old values. Live checks run each apply and restore in its own WP-CLI process.
+
 - **axe runs on every React screen** (`tests-e2e/setup-screens.spec.js`, `tests-e2e/connection.spec.js`). What it caught: `PageHeader` rendered a `<header>` inside core's role=main; scrollable `code`/`pre` need `tabIndex=0`; step headings need an h2 between the page h1 and the steps' h3; faded states done with `opacity` fail colour contrast, so off/disabled states use `--emcp-surface-2` backgrounds with full-strength text; core styles `code` with a grey background that drops muted text below 4.5:1.
 
 ### MCP request log (3.18.0)
