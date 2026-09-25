@@ -212,6 +212,8 @@ Traps:
 - **The adapter instantiates the handler by class name** with no arguments; state lives in static classes.
 - **The adapter casts `result` (and content items) to objects** before serializing; the fallback's response classification reads the data through a JSON round trip, or `$item['result']['isError']` fatals.
 - **A stdio process started before a setup existed** must still be tagged at its next `initialize`; only positive lookups are cached.
+- **A long-running `wp mcp-adapter serve` keeps options and user meta in its object cache for its whole life.** Any option it read-modify-writes (the MCP log, activity stats, the setup index) must be read fresh (`wp_cache_delete( $name, 'options' )` plus `notoptions`, or `wp_cache_delete( $user_id, 'user_meta' )`), or it overwrites rows other clients wrote and undoes Clear log. Short-lived smoke processes never show this; `pro/tests/smoke/mcp-log-cache-smoke.php` does.
+- **Requests with no user are rate-limited** (one row per client address per 30 s, never counted in activity stats) so a scanner cannot evict the log. A wrong application password is refused in `check_authentication()` before `rest_pre_dispatch`; the recorder logs it from `rest_post_dispatch` alone.
 - **WP-CLI output carries other plugins' PHP notices on stdout** (Elementor's deprecations here); smoke scripts must filter captured values to their expected shape, never `tail -1`.
 
 ### MCP Server Registration
