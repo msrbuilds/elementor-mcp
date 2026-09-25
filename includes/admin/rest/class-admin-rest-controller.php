@@ -1,0 +1,90 @@
+<?php
+/**
+ * Base for the admin screens' REST endpoints (spec 5.5).
+ *
+ * Admin endpoints are for the logged-in browser only: an agent holding an
+ * application password or an OAuth token must not reach them, so tool
+ * toggles, module switches and sandbox activation stay human-only.
+ *
+ * @package EMCP_Tools
+ */
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
+/**
+ * Cookie-only REST controller base.
+ */
+abstract class EMCP_Tools_Admin_REST_Controller {
+
+	const REST_NAMESPACE = 'emcp-tools/v1';
+
+	/**
+	 * Capability required by default.
+	 *
+	 * @var string
+	 */
+	protected $capability = 'manage_options';
+
+	/**
+	 * Register this controller's routes.
+	 */
+	abstract public function register_routes(): void;
+
+	/**
+	 * Hook route registration.
+	 */
+	public function register(): void {
+		add_action( 'rest_api_init', array( $this, 'register_routes' ) );
+	}
+
+	/**
+	 * Permission callback for every route of this controller.
+	 *
+	 * @param WP_REST_Request $request Request.
+	 * @return true|WP_Error
+	 */
+	public function can_access( $request ) {
+		return self::check( $request, $this->capability );
+	}
+
+	/**
+	 * Cookie-only check, in the spec's order.
+	 *
+	 * @param WP_REST_Request $request    Request.
+	 * @param string          $capability Capability.
+	 * @return true|WP_Error
+	 */
+	public static function check( $request, string $capability ) {
+		// Core sets this to true for a logged-in cookie and to 'malformed' on
+		// every cookieless request, so a truthiness check would pass everyone.
+		if ( true !== ( $GLOBALS['wp_rest_auth_cookie'] ?? null ) ) {
+			return new WP_Error( 'emcp_admin_cookie_required', __( 'This endpoint is only available from the WordPress admin.', 'emcp-tools' ), array( 'status' => 401 ) );
+		}
+		if ( function_exists( 'rest_get_authenticated_app_password' ) && null !== rest_get_authenticated_app_password() ) {
+			return new WP_Error( 'emcp_admin_no_app_password', __( 'Application passwords cannot use admin endpoints.', 'emcp-tools' ), array( 'status' => 403 ) );
+		}
+		if ( class_exists( 'EMCP_Tools_OAuth_Bearer' ) && '' !== EMCP_Tools_OAuth_Bearer::bearer_token( $request ) ) {
+			return new WP_Error( 'emcp_admin_no_bearer', __( 'Access tokens cannot use admin endpoints.', 'emcp-tools' ), array( 'status' => 403 ) );
+		}
+		if ( ! current_user_can( $capability ) ) {
+			return new WP_Error( 'rest_forbidden', __( 'You are not allowed to do that.', 'emcp-tools' ), array( 'status' => 403 ) );
+		}
+		return true;
+	}
+
+	/**
+	 * Register /emcp-tools/v1/admin/{path} with this controller's permission check.
+	 *
+	 * @param string $path Route path under admin/.
+	 * @param array  $args register_rest_route() arguments.
+	 */
+	protected function route( string $path, array $args ): void {
+		register_rest_route(
+			self::REST_NAMESPACE,
+			'/admin/' . ltrim( $path, '/' ),
+			array_merge( array( 'permission_callback' => array( $this, 'can_access' ) ), $args )
+		);
+	}
+}
