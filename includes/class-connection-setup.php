@@ -102,6 +102,23 @@ final class EMCP_Tools_Connection_Setup {
 	}
 
 	/**
+	 * Set what the open record waits for (app:{uuid} once the password exists,
+	 * oauth:{client_id} when reconnecting an app). The token does not change.
+	 *
+	 * @param int    $user_id User.
+	 * @param string $expect  Expected credential tag.
+	 */
+	public static function set_expect( int $user_id, string $expect ): ?array {
+		$record = self::get( $user_id );
+		if ( null === $record ) {
+			return null;
+		}
+		$record['expect'] = substr( $expect, 0, 100 );
+		update_user_meta( $user_id, self::META, $record );
+		return $record;
+	}
+
+	/**
 	 * Close the user's record; its token stops working.
 	 *
 	 * @param int $user_id User.
