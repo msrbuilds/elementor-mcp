@@ -313,6 +313,7 @@ class EMCP_Tools_Admin {
 		EMCP_Tools_Admin_REST_Tools::register_screen( $this );
 		EMCP_Tools_Admin_REST_Builders::register_screen();
 		EMCP_Tools_Admin_REST_Modules::register_screen();
+		EMCP_Tools_Admin_REST_Connection::register_screen( $this );
 		add_action( 'admin_head', array( $this, 'print_menu_icon_style' ) );
 		add_action( 'wp_ajax_emcp_tools_create_app_password', array( $this, 'ajax_create_app_password' ) );
 		add_action( 'wp_ajax_emcp_tools_test_connection', array( $this, 'ajax_test_connection' ) );
