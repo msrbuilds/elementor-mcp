@@ -203,6 +203,17 @@ Traps found building it:
 - **MySQL counts changed rows**: an UPDATE writing an identical value reports 0 affected rows, so compare-and-swap code must treat old === new as "does the row still match".
 - **Admin UI sources are pinned `eol=lf`** in `.gitattributes`; a CRLF checkout makes every prettier lint rule fail.
 
+### MCP request log (3.18.0)
+
+Every routed JSON-RPC request, on HTTP and WP-CLI stdio, becomes one row in `EMCP_Tools_MCP_Request_Log` (option, 500 rows) through `EMCP_Tools_MCP_Observability`, the adapter observability handler passed to `create_server()`; the adapter's `RequestRouter` emits `mcp.request` on every exit path. `EMCP_Tools_MCP_Log_Recorder` (REST `rest_pre_dispatch` / `rest_post_dispatch`) writes a row only for HTTP requests the router never saw: invalid sessions, unsupported `MCP-Protocol-Version`, malformed bodies, notifications (HTTP never routes them) and adapters without the observability interface (filter `emcp_tools_mcp_observability` off). `EMCP_Tools_Request_Context` supplies client (OAuth client name, application password name, "HTTP", "WP-CLI"), session (`Mcp-Session-Id`, or a pid-plus-start-time hash for stdio) and credential (`app:`, `oauth:`, `cli:`); stdio processes carrying `EMCP_SETUP` are tagged to the Connection setup record (`EMCP_Tools_Connection_Setup`) on any `initialize`. `EMCP_Tools_Activity_Stats` counts calls, errors and tools per day. Live check: `bash pro/tests/smoke/mcp-log-acceptance.sh` (creates and removes a temporary application password and mu-plugin).
+
+Traps:
+- **The stdio bridge routes notifications** and the router answers "method not found"; the handler logs them as successes.
+- **The adapter instantiates the handler by class name** with no arguments; state lives in static classes.
+- **The adapter casts `result` (and content items) to objects** before serializing; the fallback's response classification reads the data through a JSON round trip, or `$item['result']['isError']` fatals.
+- **A stdio process started before a setup existed** must still be tagged at its next `initialize`; only positive lookups are cached.
+- **WP-CLI output carries other plugins' PHP notices on stdout** (Elementor's deprecations here); smoke scripts must filter captured values to their expected shape, never `tail -1`.
+
 ### MCP Server Registration
 
 The plugin registers a dedicated MCP server `emcp-tools-server` at `/wp-json/mcp/emcp-tools-server`. All abilities use the `emcp-tools/` namespace.

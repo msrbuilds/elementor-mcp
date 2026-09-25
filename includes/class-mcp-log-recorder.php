@@ -115,6 +115,11 @@ final class EMCP_Tools_MCP_Log_Recorder {
 		} else {
 			$code = is_object( $response ) && method_exists( $response, 'get_status' ) ? (int) $response->get_status() : 200;
 			$data = is_object( $response ) && method_exists( $response, 'get_data' ) ? $response->get_data() : null;
+			// The adapter casts `result` (and content items) to objects before
+			// the response is serialized; read them as plain arrays.
+			if ( is_array( $data ) || is_object( $data ) ) {
+				$data = json_decode( (string) wp_json_encode( $data ), true );
+			}
 			if ( $code >= 400 ) {
 				$error  = true;
 				$reason = self::error_text( $data );
