@@ -14,7 +14,16 @@ export class ScreenBoundary extends Component {
 	}
 
 	static getDerivedStateFromError( error ) {
-		return { error };
+		// Anything can be thrown; a falsy or non-Error value would otherwise
+		// clear the error state and leave a blank screen.
+		if ( error instanceof Error ) {
+			return { error };
+		}
+		const message =
+			null === error || undefined === error
+				? 'Unknown error'
+				: String( error );
+		return { error: new Error( message ) };
 	}
 
 	componentDidCatch( error, info ) {

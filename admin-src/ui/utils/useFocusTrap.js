@@ -23,8 +23,12 @@ export function useFocusTrap( ref, active, onEscape ) {
 		}
 		const doc = node.ownerDocument;
 		const previous = doc.activeElement;
+		// Real tab stops only: roving groups keep their inactive items at
+		// tabindex -1, and those must not count as the trap's first or last stop.
 		const focusables = () =>
-			Array.from( node.querySelectorAll( FOCUSABLE ) );
+			Array.from( node.querySelectorAll( FOCUSABLE ) ).filter(
+				( el ) => el.tabIndex >= 0
+			);
 		( focusables()[ 0 ] || node ).focus();
 
 		const onKeyDown = ( e ) => {

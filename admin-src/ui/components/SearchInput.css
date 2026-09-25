@@ -1,0 +1,27 @@
+.eui-search {
+	position: relative;
+	display: inline-flex;
+	align-items: center;
+	inline-size: 100%;
+}
+
+.eui-search__icon {
+	position: absolute;
+	inset-inline-start: 12px;
+	color: var(--emcp-muted);
+	pointer-events: none;
+}
+
+.eui-search__input {
+	padding-inline: 36px 36px;
+	border-radius: var(--emcp-r-md);
+}
+
+.eui-search__input::-webkit-search-cancel-button {
+	appearance: none;
+}
+
+.eui-search__clear {
+	position: absolute;
+	inset-inline-end: 8px;
+}

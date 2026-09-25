@@ -7,7 +7,7 @@ import { IconButton } from './Button';
 import './Popover.css';
 
 export function Menu( { label, items, icon = 'ellipsis', align = 'end' } ) {
-	const pop = usePopover();
+	const pop = usePopover( { align } );
 	const itemRefs = useRef( [] );
 	const menuId = useId();
 
@@ -40,6 +40,7 @@ export function Menu( { label, items, icon = 'ellipsis', align = 'end' } ) {
 				<ul
 					id={ menuId }
 					ref={ pop.panelRef }
+					style={ pop.style }
 					role="menu"
 					aria-label={ label }
 					className={ cx(
@@ -105,7 +106,7 @@ export function Dropdown( {
 	align = 'start',
 	children,
 } ) {
-	const pop = usePopover();
+	const pop = usePopover( { align } );
 	const panelId = useId();
 	return (
 		<div className="eui-dropdown">
@@ -128,6 +129,7 @@ export function Dropdown( {
 				<div
 					id={ panelId }
 					ref={ pop.panelRef }
+					style={ pop.style }
 					role="dialog"
 					aria-label={ panelLabel || label }
 					className={ cx(

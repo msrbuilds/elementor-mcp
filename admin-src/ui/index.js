@@ -64,3 +64,4 @@ export { useQueryState } from './hooks/useQueryState';
 export { useResource } from './hooks/useResource';
 export { ScreenBoundary } from './runtime/ScreenBoundary';
 export { AppProviders, mountScreen, markReady } from './runtime/mount';
+export { SearchInput } from './components/SearchInput';

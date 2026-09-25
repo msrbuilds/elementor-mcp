@@ -35,6 +35,7 @@ it( 'exposes the full emcpUI API', () => {
 			'SafeHtml',
 			'SaveBar',
 			'ScreenBoundary',
+			'SearchInput',
 			'Segmented',
 			'Select',
 			'Skeleton',

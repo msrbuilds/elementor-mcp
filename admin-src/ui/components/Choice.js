@@ -42,6 +42,7 @@ export function Segmented( { label, options, value, onChange, className } ) {
 							index: i,
 							count: options.length,
 							onMove: move,
+							isDisabled: ( j ) => !! options[ j ].disabled,
 						} )
 					}
 				>
@@ -90,6 +91,7 @@ export function Tabs( {
 							index: i,
 							count: options.length,
 							onMove: move,
+							isDisabled: ( j ) => !! options[ j ].disabled,
 						} )
 					}
 				>

@@ -4,10 +4,13 @@
 	display: inline-flex;
 }
 
+/* Positioned with fixed coordinates by usePopover so scroll containers
+   (tables, dialog bodies) never clip it. The absolute fallback applies only
+   before the first measurement. */
 .eui-pop {
 	position: absolute;
 	inset-block-start: calc(100% + 6px);
-	z-index: 100;
+	z-index: 100002;
 	min-inline-size: 200px;
 	margin: 0;
 	padding: 6px;

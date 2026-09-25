@@ -75,10 +75,21 @@ export function useSettingsForm( initial, save ) {
 		savingRef.current = true;
 		setSaving( true );
 		setError( null );
+		const submitted = values;
 		try {
-			const fresh = ( await save( diff, values ) ) ?? values;
+			const fresh = ( await save( diff, submitted ) ) ?? submitted;
 			setBaseline( fresh );
-			setValues( fresh );
+			// Keep edits made while the request was in flight: any key that
+			// differs from what was submitted stays as the user left it.
+			setValues( ( current ) => {
+				const next = { ...fresh };
+				Object.keys( current ).forEach( ( k ) => {
+					if ( ! isEqual( current[ k ], submitted[ k ] ) ) {
+						next[ k ] = current[ k ];
+					}
+				} );
+				return next;
+			} );
 			return true;
 		} catch ( e ) {
 			setError( e );
