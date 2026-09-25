@@ -1,4 +1,4 @@
-import { useState } from '@wordpress/element';
+import { useEffect, useState } from '@wordpress/element';
 import { __, sprintf } from '@wordpress/i18n';
 import {
 	Badge,
@@ -35,6 +35,7 @@ export function ModulesScreen( {
 	const [ filter, setFilter ] = useQueryState( 'show', 'all' );
 	const [ search, setSearch ] = useQueryState( 'q', '', { debounce: 250 } );
 	const [ drawer, setDrawer ] = useState( null );
+	const [ saved, setSaved ] = useState( false );
 	const form = useSettingsForm(
 		valuesFrom( data.modules ),
 		async ( diff ) => {
@@ -48,7 +49,7 @@ export function ModulesScreen( {
 					data: payload,
 				} );
 				toast.success( __( 'Modules saved.', 'emcp-tools' ) );
-				reload();
+				setSaved( true );
 				return valuesFrom( fresh.modules );
 			} catch ( e ) {
 				toast.error( errorMessage( e ) );
@@ -57,6 +58,14 @@ export function ModulesScreen( {
 		}
 	);
 	const { values, setValue, baseline } = form;
+
+	// Modules gate sidebar entries, so reload after a save, but only once the
+	// form is clean: reloading while dirty would trip the leave-page guard.
+	useEffect( () => {
+		if ( saved && ! form.dirty ) {
+			reload();
+		}
+	}, [ saved, form.dirty ] ); // eslint-disable-line react-hooks/exhaustive-deps
 
 	const byId = Object.fromEntries( data.modules.map( ( m ) => [ m.id, m ] ) );
 	const changedTitle = byId[ form.changedKeys[ 0 ] ]?.title;

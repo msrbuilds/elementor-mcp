@@ -86,6 +86,25 @@ test( 'Modules: toggling a module shows its name in the save bar; discard restor
 	).toBeChecked( { checked: before } );
 } );
 
+test( 'Modules: saving a module persists after the reload, then is reverted', async ( {
+	page,
+} ) => {
+	page.on( 'dialog', ( d ) => {
+		throw new Error( 'unexpected dialog: ' + d.message() );
+	} );
+	await page.goto( '/wp-admin/admin.php?page=emcp-tools-modules' );
+	const toggle = () =>
+		page.getByRole( 'switch', { name: 'Redirect Manager' } );
+	const before = await toggle().isChecked();
+	for ( const expected of [ ! before, before ] ) {
+		await toggle().click();
+		const reloaded = page.waitForEvent( 'load' );
+		await saveAndWait( page, 'Save modules' );
+		await reloaded;
+		await expect( toggle() ).toBeChecked( { checked: expected } );
+	}
+} );
+
 test( 'Setup screens load without console errors', async ( { page } ) => {
 	const errors = [];
 	page.on( 'pageerror', ( e ) => errors.push( e.message ) );

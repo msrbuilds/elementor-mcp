@@ -144,7 +144,7 @@ final class EMCP_Tools_Admin_Modules_Data {
 					break;
 			}
 			$sanitize = $registered[ $key ]['sanitize_callback'] ?? null;
-			update_option( $key, is_callable( $sanitize ) ? call_user_func( $sanitize, $value ) : $value, false );
+			update_option( $key, is_callable( $sanitize ) ? call_user_func( $sanitize, $value ) : $value );
 			$saved[] = (string) $key;
 		}
 		return array(

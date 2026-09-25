@@ -46,7 +46,13 @@ abstract class EMCP_Tools_Admin_REST_Controller {
 	 * @return true|WP_Error
 	 */
 	public function can_access( $request ) {
-		return self::check( $request, $this->capability );
+		$allowed = self::check( $request, $this->capability );
+		// REST requests are not is_admin(), so the bootstrap never loaded the admin
+		// classes the screen payloads use (module settings URLs name the admin page).
+		if ( true === $allowed && class_exists( 'EMCP_Tools_Bootstrap' ) ) {
+			EMCP_Tools_Bootstrap::require_admin_classes();
+		}
+		return $allowed;
 	}
 
 	/**
@@ -81,10 +87,18 @@ abstract class EMCP_Tools_Admin_REST_Controller {
 	 * @param array  $args register_rest_route() arguments.
 	 */
 	protected function route( string $path, array $args ): void {
-		register_rest_route(
-			self::REST_NAMESPACE,
-			'/admin/' . ltrim( $path, '/' ),
-			array_merge( array( 'permission_callback' => array( $this, 'can_access' ) ), $args )
-		);
+		$check = array( 'permission_callback' => array( $this, 'can_access' ) );
+		// A list of endpoints (GET plus POST) needs the check on each endpoint:
+		// register_rest_route() ignores a top-level permission_callback there.
+		if ( isset( $args[0] ) && is_array( $args[0] ) ) {
+			foreach ( $args as $i => $endpoint ) {
+				if ( is_int( $i ) && is_array( $endpoint ) ) {
+					$args[ $i ] = array_merge( $check, $endpoint );
+				}
+			}
+		} else {
+			$args = array_merge( $check, $args );
+		}
+		register_rest_route( self::REST_NAMESPACE, '/admin/' . ltrim( $path, '/' ), $args );
 	}
 }

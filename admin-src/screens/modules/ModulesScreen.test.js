@@ -1,4 +1,4 @@
-import { render, screen, within } from '@testing-library/react';
+import { act, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import apiFetch from '@wordpress/api-fetch';
 import { AppProviders } from '@emcp/ui';
@@ -131,6 +131,38 @@ describe( 'ModulesScreen', () => {
 		expect( reload ).toHaveBeenCalled();
 	} );
 
+	it( 'reloads only after the form is clean, so the leave-page guard is gone', async () => {
+		apiFetch.mockResolvedValue( {
+			...data,
+			modules: data.modules.map( ( m ) =>
+				'redirects' === m.id ? { ...m, active: false } : m
+			),
+			ignored: [],
+		} );
+		let dirtyAtReload = null;
+		const reload = jest.fn( () => {
+			dirtyAtReload = 'emcpDirty' in document.documentElement.dataset;
+		} );
+		window.history.replaceState(
+			{},
+			'',
+			'/wp-admin/admin.php?page=emcp-tools-modules'
+		);
+		render(
+			<AppProviders>
+				<ModulesScreen data={ data } reload={ reload } />
+			</AppProviders>
+		);
+		await userEvent.click(
+			screen.getByRole( 'switch', { name: 'Redirect Manager' } )
+		);
+		await userEvent.click(
+			screen.getByRole( 'button', { name: 'Save modules' } )
+		);
+		expect( reload ).toHaveBeenCalledTimes( 1 );
+		expect( dirtyAtReload ).toBe( false );
+	} );
+
 	it( 'configure and settings links show for saved-on modules', () => {
 		mount();
 		expect(
@@ -144,6 +176,86 @@ describe( 'ModulesScreen', () => {
 				name: /Settings for Image Optimization/,
 			} )
 		).toBeInTheDocument();
+	} );
+
+	it( 'keeps a drawer field changed during an in-flight save', async () => {
+		let resolve;
+		apiFetch
+			.mockResolvedValueOnce( {
+				fields: [
+					{ key: 'c', type: 'toggle', label: 'Compress uploads' },
+					{ key: 'k', type: 'toggle', label: 'Keep originals' },
+				],
+				values: { c: true, k: true },
+			} )
+			.mockImplementationOnce(
+				() =>
+					new Promise( ( r ) => {
+						resolve = r;
+					} )
+			);
+		mount();
+		await userEvent.click(
+			screen.getByRole( 'button', {
+				name: /Settings for Image Optimization/,
+			} )
+		);
+		const drawer = await screen.findByRole( 'dialog', {
+			name: 'Image Optimization',
+		} );
+		await userEvent.click(
+			within( drawer ).getByRole( 'switch', { name: 'Compress uploads' } )
+		);
+		await userEvent.click(
+			within( drawer ).getByRole( 'button', { name: 'Save settings' } )
+		);
+		await userEvent.click(
+			within( drawer ).getByRole( 'switch', { name: 'Keep originals' } )
+		);
+		await act( async () =>
+			resolve( {
+				fields: [],
+				values: { c: false, k: true },
+				ignored: [],
+			} )
+		);
+		expect(
+			within( drawer ).getByRole( 'switch', { name: 'Keep originals' } )
+		).not.toBeChecked();
+		expect(
+			within( drawer ).getByRole( 'switch', { name: 'Compress uploads' } )
+		).not.toBeChecked();
+		expect(
+			within( drawer ).getByRole( 'button', { name: 'Save settings' } )
+		).toBeEnabled();
+	} );
+
+	it( 'restore originals asks first and sends nothing when cancelled', async () => {
+		apiFetch.mockResolvedValueOnce( {
+			fields: [ { key: 'c', type: 'toggle', label: 'Compress uploads' } ],
+			values: { c: true },
+		} );
+		mount();
+		await userEvent.click(
+			screen.getByRole( 'button', {
+				name: /Settings for Image Optimization/,
+			} )
+		);
+		const drawer = await screen.findByRole( 'dialog', {
+			name: 'Image Optimization',
+		} );
+		await userEvent.click(
+			within( drawer ).getByRole( 'button', {
+				name: 'Restore originals',
+			} )
+		);
+		const confirm = await screen.findByRole( 'dialog', {
+			name: 'Restore original images?',
+		} );
+		await userEvent.click(
+			within( confirm ).getByRole( 'button', { name: 'Cancel' } )
+		);
+		expect( apiFetch ).toHaveBeenCalledTimes( 1 );
 	} );
 
 	it( 'a Pro module on a free build is locked', () => {

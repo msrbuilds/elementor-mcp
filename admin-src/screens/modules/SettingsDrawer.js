@@ -11,6 +11,7 @@ import {
 	errorMessage,
 	isEqual,
 	request,
+	useConfirm,
 	useToast,
 } from '@emcp/ui';
 
@@ -23,11 +24,13 @@ import {
  */
 export function SettingsDrawer( { module, onClose } ) {
 	const toast = useToast();
+	const confirm = useConfirm();
 	const base = `/emcp-tools/v1/admin/modules/${ module.id }/settings`;
 	const [ form, setForm ] = useState( null );
 	const [ values, setValues ] = useState( {} );
 	const [ saving, setSaving ] = useState( false );
 	const [ progress, setProgress ] = useState( null );
+	const [ restoring, setRestoring ] = useState( false );
 
 	useEffect( () => {
 		request( base )
@@ -48,13 +51,23 @@ export function SettingsDrawer( { module, onClose } ) {
 
 	const save = async () => {
 		setSaving( true );
+		const submitted = values;
 		try {
 			const res = await request( base, {
 				method: 'POST',
 				data: { values: changed },
 			} );
 			setForm( ( f ) => ( { ...f, values: res.values } ) );
-			setValues( res.values );
+			// Keep fields changed while the request was in flight (spec 7).
+			setValues( ( current ) => {
+				const next = { ...res.values };
+				Object.keys( current ).forEach( ( k ) => {
+					if ( ! isEqual( current[ k ], submitted[ k ] ) ) {
+						next[ k ] = current[ k ];
+					}
+				} );
+				return next;
+			} );
 			toast.success( __( 'Settings saved.', 'emcp-tools' ) );
 		} catch ( e ) {
 			toast.error( errorMessage( e ) );
@@ -82,6 +95,19 @@ export function SettingsDrawer( { module, onClose } ) {
 	};
 
 	const restore = async () => {
+		const ok = await confirm( {
+			title: __( 'Restore original images?', 'emcp-tools' ),
+			message: __(
+				'This copies the backed-up originals over the optimized files and deletes their WebP copies.',
+				'emcp-tools'
+			),
+			confirmLabel: __( 'Restore', 'emcp-tools' ),
+			tone: 'danger',
+		} );
+		if ( ! ok ) {
+			return;
+		}
+		setRestoring( true );
 		try {
 			const res = await request(
 				'/emcp-tools/v1/admin/modules/image-optimization/restore',
@@ -96,6 +122,8 @@ export function SettingsDrawer( { module, onClose } ) {
 			);
 		} catch ( e ) {
 			toast.error( errorMessage( e ) );
+		} finally {
+			setRestoring( false );
 		}
 	};
 
@@ -197,7 +225,14 @@ export function SettingsDrawer( { module, onClose } ) {
 						>
 							{ __( 'Optimize existing library', 'emcp-tools' ) }
 						</Button>
-						<Button variant="ghost" onClick={ restore }>
+						<Button
+							variant="ghost"
+							onClick={ restore }
+							loading={ restoring }
+							disabled={
+								restoring || ( !! progress && ! progress.done )
+							}
+						>
 							{ __( 'Restore originals', 'emcp-tools' ) }
 						</Button>
 					</div>
