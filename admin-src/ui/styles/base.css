@@ -5,15 +5,26 @@
 	color: var(--emcp-ink);
 }
 
-:where(.emcp-app, .eui-portal) *,
-:where(.emcp-app, .eui-portal) *::before,
-:where(.emcp-app, .eui-portal) *::after {
+/* The resets below skip .emcp-legacy: legacy views render inside the frame
+   until each screen is ported and must keep their own layout (review
+   finding 4). */
+:where(.emcp-app, .eui-portal) :where(*:not(.emcp-legacy, .emcp-legacy *)),
+:where(.emcp-app, .eui-portal) :where(*:not(.emcp-legacy, .emcp-legacy *))::before,
+:where(.emcp-app, .eui-portal) :where(*:not(.emcp-legacy, .emcp-legacy *))::after {
 	box-sizing: border-box;
 }
 
-:where(.emcp-app, .eui-portal) :focus-visible {
+:where(.emcp-app, .eui-portal) :where(:focus-visible:not(.emcp-legacy *)) {
 	outline: 2px solid var(--emcp-primary);
 	outline-offset: 2px;
+}
+
+/* Legacy views keep WordPress admin typography until they are ported. */
+:where(.emcp-legacy) {
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+	font-size: 13px;
+	line-height: 1.4;
+	color: #3c434a;
 }
 
 .eui-visually-hidden {
@@ -45,7 +56,7 @@
 
 @media (prefers-reduced-motion: reduce) {
 
-	:where(.emcp-app, .eui-portal) * {
+	:where(.emcp-app, .eui-portal) :where(*:not(.emcp-legacy, .emcp-legacy *)) {
 		animation-duration: 0.01ms !important;
 		transition-duration: 0.01ms !important;
 	}
