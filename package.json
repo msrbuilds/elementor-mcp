@@ -8,7 +8,8 @@
     "test": "wp-scripts test-unit-jest --config jest.config.js",
     "size": "node admin-build/check-size.mjs",
     "lint:js": "wp-scripts lint-js admin-src admin-build",
-    "lint:style": "wp-scripts lint-style \"admin-src/**/*.css\" --ignore-pattern \"admin-src/legacy/**\""
+    "lint:style": "wp-scripts lint-style \"admin-src/**/*.css\" --ignore-pattern \"admin-src/legacy/**\"",
+    "test:e2e": "playwright test"
   },
   "repository": {
     "type": "git",
@@ -31,7 +32,9 @@
     "lucide-react": "^1.48.0"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.13.0",
     "@babel/core": "^7.29.7",
+    "@playwright/test": "^1.63.0",
     "@testing-library/dom": "^10.4.2",
     "@testing-library/jest-dom": "^7.0.1",
     "@testing-library/react": "^16.3.3",

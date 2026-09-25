@@ -85,6 +85,30 @@ describe( 'palette search', () => {
 		);
 	} );
 
+	it( 'ranks a matching screen above tools that share the word', () => {
+		const index = buildIndex( {
+			...data,
+			tools: [
+				{
+					slug: 'emcp-tools/list-redirects',
+					name: 'List Redirects',
+					category: 'Redirects',
+				},
+				{
+					slug: 'emcp-tools/create-redirect',
+					name: 'Create Redirect',
+					category: 'Redirects',
+				},
+			],
+		} );
+		const hits = searchPalette( index, 'redirect' );
+		expect( hits[ 0 ] ).toMatchObject( {
+			kind: 'screen',
+			label: 'Redirects',
+		} );
+		expect( hits.map( ( h ) => h.label ) ).toContain( 'Create Redirect' );
+	} );
+
 	it( 'finds by fuzzy label and by slug', () => {
 		const index = buildIndex( data );
 		expect( searchPalette( index, 'redir' )[ 0 ].label ).toBe(
@@ -203,5 +227,19 @@ describe( 'ShellApp', () => {
 				data: { id: 'cloud' },
 			} )
 		);
+	} );
+	it( 'keeps Ctrl+K from reaching the WordPress core command palette', async () => {
+		const coreListener = jest.fn();
+		document.addEventListener( 'keydown', coreListener );
+		mount();
+		await userEvent.keyboard( '{Control>}k{/Control}' );
+		expect(
+			await screen.findByRole( 'combobox', { name: /Search/ } )
+		).toBeInTheDocument();
+		const reachedCore = coreListener.mock.calls.some(
+			( [ e ] ) => 'k' === e.key.toLowerCase() && e.ctrlKey
+		);
+		document.removeEventListener( 'keydown', coreListener );
+		expect( reachedCore ).toBe( false );
 	} );
 } );

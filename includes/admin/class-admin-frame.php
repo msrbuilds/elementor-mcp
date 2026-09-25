@@ -82,7 +82,9 @@ final class EMCP_Tools_Admin_Frame {
 	 * @param bool                 $premium    Whether Pro is licensed.
 	 */
 	public static function sidebar( EMCP_Tools_Admin_Nav $nav, string $active_tab, string $version, bool $premium ): string {
-		$html  = '<aside class="eui-frame__sidebar" aria-label="' . esc_attr__( 'EMCP Tools navigation', 'emcp-tools' ) . '">';
+		// A div, not <aside>: the frame sits inside core's role="main" (#wpbody-content),
+		// where a nested complementary landmark is an accessibility error.
+		$html  = '<div class="eui-frame__sidebar">';
 		$html .= '<div class="eui-frame-brand"><span class="eui-frame-brand__logo" aria-hidden="true">' . EMCP_Tools_Admin_Icons::svg( 'blocks', 18 ) . '</span>'
 			. '<span class="eui-frame-brand__text"><span class="eui-frame-brand__name">' . esc_html__( 'EMCP Tools', 'emcp-tools' ) . '</span>'
 			. '<span class="eui-frame-brand__version eui-mono">v' . esc_html( $version ) . ' · ' . esc_html( $premium ? __( 'Pro', 'emcp-tools' ) : __( 'Free', 'emcp-tools' ) ) . '</span></span></div>';
@@ -102,7 +104,7 @@ final class EMCP_Tools_Admin_Frame {
 		foreach ( $nav->footer() as $item ) {
 			$html .= '<li>' . self::nav_link( $item, $item['id'] === $active_tab ) . '</li>';
 		}
-		return $html . '</ul></aside>';
+		return $html . '</ul></div>';
 	}
 
 	/**
@@ -134,7 +136,8 @@ final class EMCP_Tools_Admin_Frame {
 	 * @param array    $user   user_summary().
 	 */
 	public static function topbar( array $crumbs, array $status, int $unread, array $user ): string {
-		$html = '<header class="eui-frame__topbar"><nav aria-label="' . esc_attr__( 'Breadcrumb', 'emcp-tools' ) . '"><ol class="eui-frame-crumbs">';
+		// A div, not <header>: a banner landmark cannot sit inside core's role="main".
+		$html = '<div class="eui-frame__topbar"><nav aria-label="' . esc_attr__( 'Breadcrumb', 'emcp-tools' ) . '"><ol class="eui-frame-crumbs">';
 		$last = count( $crumbs ) - 1;
 		foreach ( array_values( $crumbs ) as $i => $label ) {
 			$html .= $i === $last ? '<li aria-current="page">' . esc_html( $label ) . '</li>' : '<li>' . esc_html( $label ) . '</li>';
@@ -161,7 +164,7 @@ final class EMCP_Tools_Admin_Frame {
 		$avatar     = '' !== ( $user['avatar'] ?? '' )
 			? '<img class="eui-frame-avatar" src="' . esc_url( $user['avatar'] ) . '" alt="" width="32" height="32" />'
 			: '<span class="eui-frame-avatar" aria-hidden="true">' . esc_html( $user['initials'] ?? '' ) . '</span>';
-		return $html . '<span class="eui-frame-user" title="' . esc_attr( $user['name'] ?? '' ) . '">' . $avatar . '<span class="eui-visually-hidden">' . esc_html( $user['name'] ?? '' ) . '</span></span></div></header>';
+		return $html . '<span class="eui-frame-user" title="' . esc_attr( $user['name'] ?? '' ) . '">' . $avatar . '<span class="eui-visually-hidden">' . esc_html( $user['name'] ?? '' ) . '</span></span></div></div>';
 	}
 
 	/**

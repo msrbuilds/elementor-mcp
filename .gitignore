@@ -158,3 +158,6 @@ scripts/e2e/otter-*.json
 
 # JavaScript build tooling (admin redesign)
 /node_modules/
+/test-results/
+/playwright-report/
+/.playwright-mcp/

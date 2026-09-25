@@ -33,6 +33,11 @@ export function buildIndex( data ) {
 	];
 }
 
+// Added to a result's fuzzy score (0 = perfect) so that, for comparable
+// matches, a screen outranks a setting and a setting outranks a tool: someone
+// typing "redirect" is usually looking for the Redirects screen.
+const KIND_PENALTY = { screen: 0, setting: 0.1, tool: 0.2 };
+
 /**
  * Fuzzy search; an empty query lists the screens.
  *
@@ -53,6 +58,15 @@ export function searchPalette( index, query, limit = 12 ) {
 		],
 		threshold: 0.4,
 		ignoreLocation: true,
+		includeScore: true,
 	} );
-	return fuse.search( q, { limit } ).map( ( r ) => r.item );
+	return fuse
+		.search( q )
+		.map( ( r ) => ( {
+			item: r.item,
+			rank: r.score + ( KIND_PENALTY[ r.item.kind ] ?? 0.2 ),
+		} ) )
+		.sort( ( a, b ) => a.rank - b.rank )
+		.slice( 0, limit )
+		.map( ( r ) => r.item );
 }

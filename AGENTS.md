@@ -191,6 +191,18 @@ The plugin is split across **two repos** so no Pro-tier source ships in any free
 
 ## Architecture
 
+### Admin frame (3.18.0 redesign)
+
+Every EMCP admin page renders inside the new frame (`includes/admin/views/page-shell.php` + `EMCP_Tools_Admin_Frame`). The sidebar comes from `EMCP_Tools_Admin_Nav`, fed by `get_submenus()`, which stays the only gating source; the WordPress submenu is hidden with CSS but every page stays registered, so URLs and `?view=` deep links keep working. A page is either a React screen (registered in `EMCP_Tools_Admin_Screens`, mounted into `#emcp-screen` with a server-rendered fallback and the inline `fallback.js`) or a legacy view inside `.emcp-legacy`, whose stylesheet is `admin-src/legacy/admin.css` scoped at build time into `assets/admin/build/legacy.css` (legacy elements that `admin.js` appends to `<body>` are listed in `PORTALS` in `admin-build/scope-selector.js` and stay unscoped). The shell (`assets/admin/build/shell.js`) adds the Ctrl/Cmd+K palette, the notifications drawer, the unsaved-changes guard (`data-emcp-dirty`) and promo dismissal. Pro-only tabs whose Pro view is missing (free build) route to the `locked` screen (`EMCP_Tools_Admin_Locked`). Admin REST lives under `emcp-tools/v1/admin/*` on `EMCP_Tools_Admin_REST_Controller` and is cookie-only (application passwords and Bearer tokens are refused). The shared lease is `EMCP_Tools_Lease` (`includes/class-lease.php`). Commands: `npm run build` (commit its output), `npm test` (Jest via `test-unit-jest`), `npm run test:e2e` (Playwright; `EMCP_E2E_URL` plus `EMCP_E2E_USER`/`EMCP_E2E_PASS` or `EMCP_E2E_COOKIES` from `wp eval-file tests-e2e/auth-cookies.php`).
+
+Traps found building it:
+- **WordPress 7.1 core binds Ctrl/Cmd+K to its own command palette.** The shell takes the key in the window's capture phase and stops propagation, or both palettes open.
+- **The frame sits inside core's `#wpbody-content` (`role="main"`)**, so it must not add `<header>`, `<aside>`, `<main>` or `<footer>` landmarks (axe fails them). Use `div` plus labelled `nav`.
+- **Admin notices land after `.wp-header-end`**, or else after the first `.wrap h1/h2`; the frame prints `<hr class="wp-header-end">` at the top of the content so notices never end up inside the hidden recovery panel.
+- **White on the brand fill needs a solid background.** Translucent white overlays on `--emcp-primary` fail contrast; the promo badge and CTA use `--emcp-primary-strong`.
+- **MySQL counts changed rows**: an UPDATE writing an identical value reports 0 affected rows, so compare-and-swap code must treat old === new as "does the row still match".
+- **Admin UI sources are pinned `eol=lf`** in `.gitattributes`; a CRLF checkout makes every prettier lint rule fail.
+
 ### MCP Server Registration
 
 The plugin registers a dedicated MCP server `emcp-tools-server` at `/wp-json/mcp/emcp-tools-server`. All abilities use the `emcp-tools/` namespace.

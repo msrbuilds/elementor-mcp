@@ -27,9 +27,18 @@ export function ShellApp( {
 	const [ items, setItems ] = useState( data.notifications || [] );
 
 	useEffect( () => {
+		// WordPress core binds Ctrl/Cmd+K to its own command palette. On EMCP
+		// screens ours wins: take the key in the window's capture phase and stop
+		// it before it reaches core's document listener.
+		const view = doc.defaultView || window;
 		const onKey = ( e ) => {
-			if ( ( e.ctrlKey || e.metaKey ) && 'k' === e.key.toLowerCase() ) {
+			if (
+				( e.ctrlKey || e.metaKey ) &&
+				! e.altKey &&
+				'k' === String( e.key ).toLowerCase()
+			) {
 				e.preventDefault();
+				e.stopPropagation();
 				setPaletteOpen( true );
 			}
 		};
@@ -80,10 +89,10 @@ export function ShellApp( {
 				}
 			}
 		};
-		doc.addEventListener( 'keydown', onKey );
+		view.addEventListener( 'keydown', onKey, true );
 		doc.addEventListener( 'click', onClick );
 		return () => {
-			doc.removeEventListener( 'keydown', onKey );
+			view.removeEventListener( 'keydown', onKey, true );
 			doc.removeEventListener( 'click', onClick );
 		};
 	}, [ confirm, doc, navigate ] );

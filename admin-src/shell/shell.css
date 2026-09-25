@@ -21,7 +21,7 @@
 	padding-block: 2px;
 	padding-inline: 8px;
 	border-radius: var(--emcp-r-pill);
-	background: rgba(255, 255, 255, 0.2);
+	background: var(--emcp-primary-strong);
 	font-size: 11px;
 	font-weight: 700;
 	text-transform: uppercase;
@@ -39,7 +39,7 @@
 	min-block-size: 32px;
 	padding-inline: 12px;
 	border-radius: var(--emcp-r-sm);
-	background: rgba(255, 255, 255, 0.16);
+	background: var(--emcp-primary-strong);
 	color: var(--emcp-surface);
 	font-weight: 600;
 	text-decoration: none;
