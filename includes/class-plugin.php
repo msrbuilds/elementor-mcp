@@ -55,15 +55,6 @@ class EMCP_Tools_Plugin {
 	 */
 	private $registrar;
 
-	/** @var float|null MCP request start time (for the request log). */
-	private $mcp_req_start = null;
-
-	/** @var string MCP request tool name (for the request log). */
-	private $mcp_req_tool = '';
-
-	/** @var string MCP request id header (for the request log). */
-	private $mcp_req_id = '';
-
 	/**
 	 * The admin settings page handler.
 	 *
@@ -143,54 +134,11 @@ class EMCP_Tools_Plugin {
 		// Never cache/buffer MCP responses (LiteSpeed/QUIC drop-suspect, Issue 1).
 		add_filter( 'rest_pre_serve_request', array( 'EMCP_Tools_MCP_Host_Guard', 'no_store_headers' ), 10, 4 );
 
-		// Record every MCP request (tool, status, duration) for the MCP Log tab.
-		require_once EMCP_TOOLS_DIR . 'includes/class-mcp-request-log.php';
-		add_filter( 'rest_pre_dispatch', array( $this, 'mcp_log_pre_dispatch' ), 6, 3 );
-		add_filter( 'rest_post_dispatch', array( $this, 'mcp_log_post_dispatch' ), 10, 3 );
-	}
-
-	/**
-	 * Capture the start of an MCP request (timer + tool name + request id).
-	 *
-	 * @param mixed $result  Pass-through.
-	 * @param mixed $server  REST server (unused).
-	 * @param mixed $request WP_REST_Request.
-	 * @return mixed Unmodified $result.
-	 */
-	public function mcp_log_pre_dispatch( $result, $server, $request ) {
-		if ( is_object( $request ) && method_exists( $request, 'get_route' ) && 0 === strpos( (string) $request->get_route(), '/mcp/emcp-tools-server' ) ) {
-			$this->mcp_req_start = microtime( true );
-			$body                = json_decode( (string) $request->get_body(), true );
-			$this->mcp_req_tool  = is_array( $body ) ? (string) ( $body['params']['name'] ?? ( $body['method'] ?? '' ) ) : '';
-			$this->mcp_req_id    = (string) ( $request->get_header( 'x-request-id' ) ? $request->get_header( 'x-request-id' ) : '' );
-		}
-		return $result;
-	}
-
-	/**
-	 * Record the result of an MCP request.
-	 *
-	 * @param mixed $response REST response / WP_Error.
-	 * @param mixed $server   REST server (unused).
-	 * @param mixed $request  WP_REST_Request.
-	 * @return mixed Unmodified $response.
-	 */
-	public function mcp_log_post_dispatch( $response, $server, $request ) {
-		if ( is_object( $request ) && method_exists( $request, 'get_route' ) && 0 === strpos( (string) $request->get_route(), '/mcp/emcp-tools-server' ) && null !== $this->mcp_req_start ) {
-			$status = is_wp_error( $response ) ? 'error' : ( is_object( $response ) && method_exists( $response, 'get_status' ) ? (string) $response->get_status() : 'ok' );
-			$error  = is_wp_error( $response ) ? $response->get_error_message() : '';
-			EMCP_Tools_MCP_Request_Log::record(
-				array(
-					'tool'   => $this->mcp_req_tool,
-					'status' => $status,
-					'ms'     => (int) round( ( microtime( true ) - $this->mcp_req_start ) * 1000 ),
-					'req_id' => $this->mcp_req_id,
-					'error'  => $error,
-				)
-			);
-			$this->mcp_req_start = null;
-		}
-		return $response;
+		// MCP log: routed requests are recorded by the adapter observability
+		// handler (create_server below); this REST fallback records the HTTP
+		// requests the router never sees (spec 9.2).
+		add_filter( 'rest_pre_dispatch', array( 'EMCP_Tools_MCP_Log_Recorder', 'pre_dispatch' ), 6, 3 );
+		add_filter( 'rest_post_dispatch', array( 'EMCP_Tools_MCP_Log_Recorder', 'post_dispatch' ), 10, 3 );
 	}
 
 	/**
@@ -349,7 +297,7 @@ class EMCP_Tools_Plugin {
 			'v' . EMCP_TOOLS_VERSION,                              // version
 			array( \WP\MCP\Transport\HttpTransport::class ),          // transports
 			null,                                                     // error_handler (use default)
-			null,                                                     // observability_handler
+			EMCP_Tools_MCP_Log_Recorder::observability_class(),       // observability_handler (null: REST fallback logs)
 			$tools,                                                   // tools
 			array(),                                                  // resources
 			array(),                                                  // prompts

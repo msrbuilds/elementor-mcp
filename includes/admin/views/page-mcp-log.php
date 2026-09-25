@@ -25,9 +25,9 @@ $emcp_debug = EMCP_Tools_MCP_Request_Log::debug_enabled();
 <div class="elementor-mcp-section">
 	<h2><?php esc_html_e( 'MCP Log', 'emcp-tools' ); ?></h2>
 	<p class="elementor-mcp-activate-note">
-		<?php esc_html_e( 'The last 100 MCP requests to this site, with tool, result status and duration — use this to match a connector failure to a server-side outcome.', 'emcp-tools' ); ?>
+		<?php esc_html_e( 'The last 500 MCP requests to this site, with client, tool, result and duration. Use this to match a connector failure to a server-side outcome.', 'emcp-tools' ); ?>
 		<?php if ( ! $emcp_debug ) : ?>
-			<br><?php esc_html_e( 'Enable WP_DEBUG to also record the underlying error message for failed requests.', 'emcp-tools' ); ?>
+			<br><?php esc_html_e( 'Enable WP_DEBUG to also record the full error detail for failed requests.', 'emcp-tools' ); ?>
 		<?php endif; ?>
 	</p>
 
@@ -42,11 +42,12 @@ $emcp_debug = EMCP_Tools_MCP_Request_Log::debug_enabled();
 			<thead>
 				<tr>
 					<th><?php esc_html_e( 'When (UTC)', 'emcp-tools' ); ?></th>
+					<th><?php esc_html_e( 'Client', 'emcp-tools' ); ?></th>
 					<th><?php esc_html_e( 'Tool', 'emcp-tools' ); ?></th>
 					<th><?php esc_html_e( 'Status', 'emcp-tools' ); ?></th>
 					<th><?php esc_html_e( 'Duration', 'emcp-tools' ); ?></th>
 					<th><?php esc_html_e( 'Request ID', 'emcp-tools' ); ?></th>
-					<?php if ( $emcp_debug ) : ?><th><?php esc_html_e( 'Error', 'emcp-tools' ); ?></th><?php endif; ?>
+					<th><?php esc_html_e( 'Error', 'emcp-tools' ); ?></th>
 				</tr>
 			</thead>
 			<tbody>
@@ -54,7 +55,8 @@ $emcp_debug = EMCP_Tools_MCP_Request_Log::debug_enabled();
 					<?php $emcp_status = (string) ( $emcp_row['status'] ?? '' ); ?>
 					<tr>
 						<td><?php echo esc_html( gmdate( 'Y-m-d H:i:s', (int) ( $emcp_row['ts'] ?? 0 ) ) ); ?></td>
-						<td><code><?php echo esc_html( (string) ( $emcp_row['tool'] ?? '' ) ); ?></code></td>
+						<td><?php echo esc_html( (string) ( $emcp_row['client'] ?? '' ) ); ?></td>
+						<td><code><?php echo esc_html( (string) ( '' !== (string) ( $emcp_row['tool'] ?? '' ) ? $emcp_row['tool'] : ( $emcp_row['method'] ?? '' ) ) ); ?></code></td>
 						<td>
 							<span style="<?php echo ( 'error' === $emcp_status || ( is_numeric( $emcp_status ) && (int) $emcp_status >= 400 ) ) ? 'color:#b32d2e;font-weight:600' : 'color:#1a7f4b'; ?>">
 								<?php echo esc_html( $emcp_status ); ?>
@@ -62,9 +64,11 @@ $emcp_debug = EMCP_Tools_MCP_Request_Log::debug_enabled();
 						</td>
 						<td><?php echo esc_html( (int) ( $emcp_row['ms'] ?? 0 ) ); ?> ms</td>
 						<td><code style="font-size:11px;"><?php echo esc_html( (string) ( $emcp_row['req_id'] ?? '' ) ); ?></code></td>
-						<?php if ( $emcp_debug ) : ?>
-							<td style="max-width:340px;word-break:break-word;font-size:12px;color:#b32d2e;"><?php echo esc_html( (string) ( $emcp_row['error'] ?? '' ) ); ?></td>
-						<?php endif; ?>
+						<?php
+						// The short failure reason is always kept; the full error only under WP_DEBUG.
+						$emcp_reason = '' !== (string) ( $emcp_row['failure_reason'] ?? '' ) ? (string) $emcp_row['failure_reason'] : (string) ( $emcp_row['error'] ?? '' );
+						?>
+						<td style="max-width:340px;word-break:break-word;font-size:12px;color:#b32d2e;"><?php echo esc_html( $emcp_reason ); ?></td>
 					</tr>
 				<?php endforeach; ?>
 			</tbody>

@@ -64,6 +64,11 @@ class EMCP_Tools_Change_Log {
 		$log[] = $entry;
 		$kept = self::cap( $log );
 		if ( ! update_option( self::OPTION, $kept, false ) ) {
+			// The change happened but its undo record did not persist: the MCP
+			// log row for this request says so (spec 9.1).
+			if ( class_exists( 'EMCP_Tools_Request_Context' ) ) {
+				EMCP_Tools_Request_Context::flag_ledger_not_recorded();
+			}
 			return '';
 		}
 		self::forget_blobs( array_slice( $log, 0, count( $log ) - count( $kept ) ) );
