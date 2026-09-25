@@ -528,6 +528,7 @@ class EMCP_Tools_Bootstrap {
 	 */
 	private static function load_admin(): void {
 		require_once EMCP_TOOLS_DIR . 'includes/admin/class-admin-pager.php';
+		require_once EMCP_TOOLS_DIR . 'includes/admin/class-admin-nav.php';
 		require_once EMCP_TOOLS_DIR . 'includes/admin/class-admin.php';
 		require_once EMCP_TOOLS_DIR . 'includes/admin/class-mcpb-builder.php';
 
