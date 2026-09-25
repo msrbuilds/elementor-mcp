@@ -566,18 +566,216 @@ class EMCP_Tools_Admin {
 			. '#toplevel_page_' . esc_attr( self::PAGE_SLUG ) . '.wp-has-current-submenu .wp-menu-image img{'
 			. 'opacity:1;'
 			. '}'
-			// Changelog lives in the header app-bar, not the sidebar. It stays a
-			// real submenu (so it renders + is URL-accessible); we only hide its
-			// sidebar row. :has() hides the whole <li>; the anchor rule is a
-			// fallback for browsers without :has() (collapses the row to 0).
-			. '#toplevel_page_' . esc_attr( self::PAGE_SLUG ) . ' .wp-submenu li:has(> a[href$="page=' . esc_attr( self::PAGE_SLUG ) . '-changelog"]),'
-			. '#toplevel_page_' . esc_attr( self::PAGE_SLUG ) . ' .wp-submenu a[href$="page=' . esc_attr( self::PAGE_SLUG ) . '-changelog"],'
-			// History also lives in the app-bar (next to Changelog), not the sidebar.
-			. '#toplevel_page_' . esc_attr( self::PAGE_SLUG ) . ' .wp-submenu li:has(> a[href$="page=' . esc_attr( self::PAGE_SLUG ) . '-history"]),'
-			. '#toplevel_page_' . esc_attr( self::PAGE_SLUG ) . ' .wp-submenu a[href$="page=' . esc_attr( self::PAGE_SLUG ) . '-history"]{'
+			// The frame's own sidebar replaces the submenu (spec 5.1). The pages
+			// stay registered so every URL and deep link keeps working.
+			. '#toplevel_page_' . esc_attr( self::PAGE_SLUG ) . ' .wp-submenu{'
 			. 'display:none !important;'
 			. '}'
 			. '</style>';
+	}
+
+	/**
+	 * Sidebar registry for the current request (spec 5.1).
+	 *
+	 * @since 3.18.0
+	 */
+	public function nav(): EMCP_Tools_Admin_Nav {
+		$tabs = array();
+		foreach ( array_keys( $this->get_submenus() ) as $slug ) {
+			$tabs[] = EMCP_Tools_Admin_Nav::tab_from_slug( $slug );
+		}
+		return new EMCP_Tools_Admin_Nav( $tabs, $this->nav_counts(), self::affiliation_page_available() );
+	}
+
+	/**
+	 * Sidebar counts, cached for five minutes (spec 5.1: cheap cached reads only).
+	 *
+	 * @since 3.18.0
+	 *
+	 * @return int[] Tab id => count.
+	 */
+	public function nav_counts(): array {
+		$cached = get_transient( 'emcp_tools_nav_counts' );
+		if ( is_array( $cached ) ) {
+			return $cached;
+		}
+		$counts = array(
+			'tools'  => $this->get_enabled_tool_count(),
+			'memory' => $this->memory_pending_count(),
+		);
+		foreach ( $this->get_dashboard_stats() as $stat ) {
+			if ( isset( $stat['key'], $stat['value'] ) && in_array( $stat['key'], array( 'prompts', 'templates', 'brand-kits' ), true ) ) {
+				$counts[ $stat['key'] ] = (int) $stat['value'];
+			}
+		}
+		set_transient( 'emcp_tools_nav_counts', $counts, 300 );
+		return $counts;
+	}
+
+	/**
+	 * Whether a hook suffix is one of this plugin's admin pages.
+	 *
+	 * @since 3.18.0
+	 *
+	 * @param string $hook Hook suffix.
+	 */
+	public function is_frame_hook( string $hook ): bool {
+		return in_array( $hook, $this->hook_suffixes, true );
+	}
+
+	/**
+	 * Frame body classes on EMCP screens only.
+	 *
+	 * @since 3.18.0
+	 *
+	 * @param string $classes Admin body classes.
+	 */
+	public function admin_body_class( $classes ): string {
+		$classes = (string) $classes;
+		$hook    = (string) ( $GLOBALS['hook_suffix'] ?? '' );
+		if ( ! $this->is_frame_hook( $hook ) ) {
+			return $classes;
+		}
+		return EMCP_Tools_Admin_Frame::body_class( $classes, (string) get_user_setting( 'mfold', '' ) );
+	}
+
+	/**
+	 * Data for window.emcpShell: the palette index and the notifications.
+	 *
+	 * @since 3.18.0
+	 */
+	public function shell_data(): array {
+		$groups = EMCP_Tools_Admin_Nav::group_labels();
+		$nav    = array();
+		foreach ( $this->nav()->entries() as $entry ) {
+			$nav[] = array(
+				'id'    => $entry['id'],
+				'label' => $entry['label'],
+				'group' => $groups[ $entry['group'] ] ?? '',
+				'url'   => $entry['url'],
+			);
+		}
+		$tools = array();
+		foreach ( $this->get_all_tools() as $category ) {
+			foreach ( (array) ( $category['tools'] ?? array() ) as $slug => $tool ) {
+				$tools[] = array(
+					'slug'     => (string) $slug,
+					'name'     => (string) ( $tool['label'] ?? $slug ),
+					'category' => (string) ( $category['label'] ?? '' ),
+				);
+			}
+		}
+		$user   = get_current_user_id();
+		$notifs = array();
+		if ( class_exists( 'EMCP_Tools_Notifications' ) ) {
+			foreach ( EMCP_Tools_Notifications::get() as $n ) {
+				$id       = (string) ( $n['id'] ?? '' );
+				$notifs[] = array(
+					'id'     => $id,
+					'title'  => (string) ( $n['title'] ?? '' ),
+					'body'   => (string) ( $n['body'] ?? '' ),
+					'url'    => (string) ( $n['url'] ?? '' ),
+					'cta'    => (string) ( $n['cta'] ?? '' ),
+					'unread' => ! EMCP_Tools_Notifications::is_read( $user, $id ),
+				);
+			}
+		}
+		return array(
+			'nav'           => $nav,
+			'tools'         => $tools,
+			'settings'      => array(
+				array(
+					'label' => __( 'Compact tool mode', 'emcp-tools' ),
+					'url'   => EMCP_Tools_Admin_Nav::url( 'tools' ),
+				),
+				array(
+					'label' => __( 'OAuth sign-in', 'emcp-tools' ),
+					'url'   => EMCP_Tools_Admin_Nav::url( 'connection' ),
+				),
+				array(
+					'label' => __( 'Server URL override', 'emcp-tools' ),
+					'url'   => EMCP_Tools_Admin_Nav::url( 'connection' ),
+				),
+				array(
+					'label' => __( 'Application passwords', 'emcp-tools' ),
+					'url'   => EMCP_Tools_Admin_Nav::url( 'connection' ),
+				),
+				array(
+					'label' => __( 'Page builder', 'emcp-tools' ),
+					'url'   => EMCP_Tools_Admin_Nav::url( 'page-builders' ),
+				),
+			),
+			'notifications' => $notifs,
+			'unread'        => class_exists( 'EMCP_Tools_Notifications' ) ? EMCP_Tools_Notifications::unread_count( $user ) : 0,
+		);
+	}
+
+	/**
+	 * Common part of every React screen's boot payload (spec 5.2).
+	 *
+	 * @since 3.18.0
+	 */
+	public function boot_common(): array {
+		$user = wp_get_current_user();
+		return array(
+			'version' => EMCP_TOOLS_VERSION,
+			'tier'    => array(
+				'premium'  => function_exists( 'emcp_tools_fs' ) && emcp_tools_fs()->is_premium(),
+				'licensed' => function_exists( 'emcp_tools_fs' ) && emcp_tools_fs()->can_use_premium_code(),
+			),
+			'user'    => EMCP_Tools_Admin_Frame::user_summary( $user ),
+			'site'    => array(
+				'name'       => get_bloginfo( 'name' ),
+				'adminUrl'   => admin_url(),
+				'restRoot'   => rest_url(),
+				'timezone'   => function_exists( 'wp_timezone_string' ) ? wp_timezone_string() : 'UTC',
+				'dateFormat' => (string) get_option( 'date_format', 'Y-m-d' ),
+			),
+			'flags'   => array(
+				'cloud'     => class_exists( 'EMCP_Tools_Cloud' ) && EMCP_Tools_Cloud::is_connected(),
+				'elementor' => defined( 'ELEMENTOR_VERSION' ),
+				'debug'     => defined( 'WP_DEBUG' ) && WP_DEBUG,
+			),
+		);
+	}
+
+	/**
+	 * Register the shared UI library and enqueue the shell (every EMCP screen).
+	 *
+	 * @since 3.18.0
+	 */
+	private function enqueue_frame_bundles(): void {
+		$build = EMCP_TOOLS_DIR . 'assets/admin/build/';
+		foreach ( array( 'ui' => 'emcp-admin-ui', 'shell' => 'emcp-admin-shell' ) as $file => $handle ) {
+			$asset_file = $build . $file . '.asset.php';
+			if ( ! is_readable( $asset_file ) ) {
+				continue;
+			}
+			$asset   = include $asset_file;
+			$version = (string) ( $asset['version'] ?? EMCP_TOOLS_VERSION );
+			$deps    = (array) ( $asset['dependencies'] ?? array() );
+			if ( 'shell' === $file ) {
+				$deps = array_values( array_unique( array_merge( $deps, array( 'emcp-admin-ui' ) ) ) );
+			}
+			wp_register_script( $handle, EMCP_TOOLS_URL . 'assets/admin/build/' . $file . '.js', $deps, $version, true );
+			wp_set_script_translations( $handle, 'emcp-tools' );
+			if ( file_exists( $build . $file . '.css' ) ) {
+				wp_enqueue_style( $handle, EMCP_TOOLS_URL . 'assets/admin/build/' . $file . '.css', 'shell' === $file ? array( 'emcp-admin-ui' ) : array(), $version );
+			}
+		}
+		wp_add_inline_script( 'emcp-admin-shell', 'window.emcpShell = ' . wp_json_encode( $this->shell_data(), JSON_HEX_TAG | JSON_HEX_AMP ) . ';', 'before' );
+		wp_enqueue_script( 'emcp-admin-shell' );
+	}
+
+	/**
+	 * Enqueue a React screen with its boot payload.
+	 *
+	 * @since 3.18.0
+	 *
+	 * @param string $screen Screen id.
+	 */
+	private function enqueue_screen( string $screen ): void {
+		EMCP_Tools_Admin_Screens::enqueue( $screen, $this->boot_common(), array( 'tab' => $this->get_active_tab() ) );
 	}
 
 	/**
@@ -592,7 +790,15 @@ class EMCP_Tools_Admin {
 			return;
 		}
 
-		$css_path = EMCP_TOOLS_DIR . 'assets/css/admin.css';
+		$this->enqueue_frame_bundles();
+		$screen = EMCP_Tools_Admin_Screens::screen_for_tab( $this->get_active_tab() );
+		if ( null !== $screen ) {
+			$this->enqueue_screen( $screen );
+			return;
+		}
+
+		// Legacy view: its scoped stylesheet plus the old admin scripts.
+		$css_path = EMCP_TOOLS_DIR . 'assets/admin/build/legacy.css';
 		$js_path  = EMCP_TOOLS_DIR . 'assets/js/admin.js';
 
 		// Some security software and hosts rename or quarantine .js files on
@@ -612,8 +818,8 @@ class EMCP_Tools_Admin {
 		if ( file_exists( $css_path ) ) {
 			wp_enqueue_style(
 				'elementor-mcp-admin',
-				EMCP_TOOLS_URL . 'assets/css/admin.css',
-				array(),
+				EMCP_TOOLS_URL . 'assets/admin/build/legacy.css',
+				array( 'emcp-admin-ui' ),
 				$css_ver
 			);
 		}
