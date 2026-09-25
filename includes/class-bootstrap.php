@@ -536,6 +536,7 @@ class EMCP_Tools_Bootstrap {
 		require_once EMCP_TOOLS_DIR . 'includes/admin/class-admin-icons.php';
 		require_once EMCP_TOOLS_DIR . 'includes/admin/class-admin-nav.php';
 		require_once EMCP_TOOLS_DIR . 'includes/admin/class-admin-screens.php';
+		require_once EMCP_TOOLS_DIR . 'includes/admin/class-admin-locked.php';
 		require_once EMCP_TOOLS_DIR . 'includes/admin/class-admin.php';
 		require_once EMCP_TOOLS_DIR . 'includes/admin/class-mcpb-builder.php';
 

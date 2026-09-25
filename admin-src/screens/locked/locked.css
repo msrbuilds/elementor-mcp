@@ -1,0 +1,28 @@
+.eui-locked__list {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	margin-block: 0 18px;
+	margin-inline: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.eui-locked__item {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	margin: 0;
+	color: var(--emcp-text-2);
+}
+
+.eui-locked__item .eui-icon {
+	flex: none;
+	color: var(--emcp-success-fg);
+}
+
+.eui-locked__actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 10px;
+}

@@ -15,6 +15,7 @@ module.exports = {
 		},
 		fallback: './admin-src/fallback/index.js',
 		shell: './admin-src/shell/index.js',
+		'screen-locked': './admin-src/screens/locked/index.js',
 	},
 	output: {
 		...defaultConfig.output,
