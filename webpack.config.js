@@ -1,7 +1,10 @@
 const path = require( 'path' );
 const defaultConfig = require( '@wordpress/scripts/config/webpack.config' );
 const DependencyExtractionWebpackPlugin = require( '@wordpress/dependency-extraction-webpack-plugin' );
-const { requestToExternal, requestToHandle } = require( './admin-build/externals' );
+const {
+	requestToExternal,
+	requestToHandle,
+} = require( './admin-build/externals' );
 
 module.exports = {
 	...defaultConfig,
@@ -10,6 +13,7 @@ module.exports = {
 			import: './admin-src/ui/index.js',
 			library: { name: 'emcpUI', type: 'window' },
 		},
+		fallback: './admin-src/fallback/index.js',
 	},
 	output: {
 		...defaultConfig.output,
@@ -18,8 +22,12 @@ module.exports = {
 	},
 	plugins: [
 		...defaultConfig.plugins.filter(
-			( plugin ) => plugin.constructor.name !== 'DependencyExtractionWebpackPlugin'
+			( plugin ) =>
+				plugin.constructor.name !== 'DependencyExtractionWebpackPlugin'
 		),
-		new DependencyExtractionWebpackPlugin( { requestToExternal, requestToHandle } ),
+		new DependencyExtractionWebpackPlugin( {
+			requestToExternal,
+			requestToHandle,
+		} ),
 	],
 };
