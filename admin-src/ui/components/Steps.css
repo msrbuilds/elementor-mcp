@@ -113,9 +113,14 @@
 	background: var(--emcp-primary-tint-2);
 }
 
+/* Muted background, not opacity: faded text fails WCAG contrast (axe). */
 .eui-radio-card.is-disabled {
-	opacity: 0.6;
+	background: var(--emcp-surface-2);
 	cursor: not-allowed;
+}
+
+.eui-radio-card.is-disabled .eui-radio-card__title {
+	color: var(--emcp-text-2);
 }
 
 .eui-radio-card__input {

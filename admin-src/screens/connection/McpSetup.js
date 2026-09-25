@@ -365,158 +365,163 @@ export function McpSetup( { data } ) {
 	}
 
 	return (
-		<Stepper label={ __( 'Connect an AI client', 'emcp-tools' ) }>
-			<Step
-				number={ 1 }
-				title={ __( 'Choose your AI client', 'emcp-tools' ) }
-				meta={ __( 'Step 1 of 4', 'emcp-tools' ) }
-				status={ statusOf( 1 ) }
-				summary={ client?.label }
-				onEdit={ () => setEditing( 1 ) }
-			>
-				<div
-					className="eui-conn__chips"
-					role="group"
-					aria-label={ __( 'AI clients', 'emcp-tools' ) }
+		<>
+			<h2 className="eui-visually-hidden">
+				{ __( 'Connect an AI client', 'emcp-tools' ) }
+			</h2>
+			<Stepper label={ __( 'Connect an AI client', 'emcp-tools' ) }>
+				<Step
+					number={ 1 }
+					title={ __( 'Choose your AI client', 'emcp-tools' ) }
+					meta={ __( 'Step 1 of 4', 'emcp-tools' ) }
+					status={ statusOf( 1 ) }
+					summary={ client?.label }
+					onEdit={ () => setEditing( 1 ) }
 				>
-					{ data.clients.map( ( c ) => (
-						<FilterChip
-							key={ c.id }
-							label={ c.label }
-							active={ c.id === clientId }
-							onClick={ () => {
-								setClientId( c.id );
-								setEditing( 0 );
+					<div
+						className="eui-conn__chips"
+						role="group"
+						aria-label={ __( 'AI clients', 'emcp-tools' ) }
+					>
+						{ data.clients.map( ( c ) => (
+							<FilterChip
+								key={ c.id }
+								label={ c.label }
+								active={ c.id === clientId }
+								onClick={ () => {
+									setClientId( c.id );
+									setEditing( 0 );
+								} }
+							/>
+						) ) }
+					</div>
+				</Step>
+				<Step
+					number={ 2 }
+					title={ __( 'Pick how it signs in', 'emcp-tools' ) }
+					meta={ __( 'Step 2 of 4', 'emcp-tools' ) }
+					status={ statusOf( 2 ) }
+					summary={ methodLabel[ method ] }
+					onEdit={ () => setEditing( 2 ) }
+				>
+					<RadioCardGroup
+						legend={ __( 'Sign-in method', 'emcp-tools' ) }
+						name="emcp-conn-method"
+						value={ method }
+						onChange={ ( v ) => {
+							setMethod( v );
+							setEditing( 0 );
+						} }
+						columns={ cliOk ? 3 : 2 }
+					>
+						<RadioCard
+							value="oauth"
+							title={ __( 'OAuth', 'emcp-tools' ) }
+							tag={
+								<Badge kind="status" value="success">
+									{ __( 'Recommended', 'emcp-tools' ) }
+								</Badge>
+							}
+							description={ __(
+								'Sign in through the browser, no password to copy.',
+								'emcp-tools'
+							) }
+							disabled={ ! data.oauth.enabled }
+							requirement={
+								data.oauth.enabled
+									? undefined
+									: __(
+											'Turn on OAuth sign-in in Advanced settings.',
+											'emcp-tools'
+										)
+							}
+						/>
+						<RadioCard
+							value="app"
+							title={ __( 'Application password', 'emcp-tools' ) }
+							description={ __(
+								'Generate a password and paste it into the client config.',
+								'emcp-tools'
+							) }
+						/>
+						{ cliOk && (
+							<RadioCard
+								value="cli"
+								title={ __(
+									'WP-CLI on this computer',
+									'emcp-tools'
+								) }
+								description={ __(
+									'The client starts WP-CLI directly. Local sites only.',
+									'emcp-tools'
+								) }
+							/>
+						) }
+					</RadioCardGroup>
+				</Step>
+				<Step
+					number={ 3 }
+					title={
+						client
+							? sprintf(
+									/* translators: %s: client name. */ __(
+										'Add EMCP to %s',
+										'emcp-tools'
+									),
+									client.label
+								)
+							: __( 'Add EMCP to your client', 'emcp-tools' )
+					}
+					meta={ __( 'Step 3 of 4', 'emcp-tools' ) }
+					status={ statusOf( 3 ) }
+					summary={ step > 3 ? __( 'Added', 'emcp-tools' ) : '' }
+					onEdit={ () => setConfirmed( false ) }
+				>
+					{ content }
+					<div className="eui-conn__actions">
+						<Button
+							variant="primary"
+							onClick={ () => setConfirmed( true ) }
+							disabled={ ! setup }
+						>
+							{ __( "I've added it, continue", 'emcp-tools' ) }
+						</Button>
+						<Button onClick={ () => setEditing( 2 ) }>
+							{ __( 'Back', 'emcp-tools' ) }
+						</Button>
+					</div>
+				</Step>
+				<Step
+					number={ 4 }
+					title={ __( 'Test the connection', 'emcp-tools' ) }
+					meta={ __( 'Step 4 of 4', 'emcp-tools' ) }
+					status={ 4 === step ? 'active' : 'locked' }
+					summary={
+						client
+							? sprintf(
+									/* translators: %s: client name. */ __(
+										"We'll wait for %s to call the server and confirm it here.",
+										'emcp-tools'
+									),
+									client.label
+								)
+							: ''
+					}
+				>
+					{ 4 === step && setup && (
+						<FirstCallStep
+							setupId={ setup.setup_id }
+							clientLabel={ client.label }
+							method={ method }
+							conn={ conn }
+							onRestart={ () => {
+								setConfirmed( false );
+								openSetup();
 							} }
 						/>
-					) ) }
-				</div>
-			</Step>
-			<Step
-				number={ 2 }
-				title={ __( 'Pick how it signs in', 'emcp-tools' ) }
-				meta={ __( 'Step 2 of 4', 'emcp-tools' ) }
-				status={ statusOf( 2 ) }
-				summary={ methodLabel[ method ] }
-				onEdit={ () => setEditing( 2 ) }
-			>
-				<RadioCardGroup
-					legend={ __( 'Sign-in method', 'emcp-tools' ) }
-					name="emcp-conn-method"
-					value={ method }
-					onChange={ ( v ) => {
-						setMethod( v );
-						setEditing( 0 );
-					} }
-					columns={ cliOk ? 3 : 2 }
-				>
-					<RadioCard
-						value="oauth"
-						title={ __( 'OAuth', 'emcp-tools' ) }
-						tag={
-							<Badge kind="status" value="success">
-								{ __( 'Recommended', 'emcp-tools' ) }
-							</Badge>
-						}
-						description={ __(
-							'Sign in through the browser, no password to copy.',
-							'emcp-tools'
-						) }
-						disabled={ ! data.oauth.enabled }
-						requirement={
-							data.oauth.enabled
-								? undefined
-								: __(
-										'Turn on OAuth sign-in in Advanced settings.',
-										'emcp-tools'
-									)
-						}
-					/>
-					<RadioCard
-						value="app"
-						title={ __( 'Application password', 'emcp-tools' ) }
-						description={ __(
-							'Generate a password and paste it into the client config.',
-							'emcp-tools'
-						) }
-					/>
-					{ cliOk && (
-						<RadioCard
-							value="cli"
-							title={ __(
-								'WP-CLI on this computer',
-								'emcp-tools'
-							) }
-							description={ __(
-								'The client starts WP-CLI directly. Local sites only.',
-								'emcp-tools'
-							) }
-						/>
 					) }
-				</RadioCardGroup>
-			</Step>
-			<Step
-				number={ 3 }
-				title={
-					client
-						? sprintf(
-								/* translators: %s: client name. */ __(
-									'Add EMCP to %s',
-									'emcp-tools'
-								),
-								client.label
-							)
-						: __( 'Add EMCP to your client', 'emcp-tools' )
-				}
-				meta={ __( 'Step 3 of 4', 'emcp-tools' ) }
-				status={ statusOf( 3 ) }
-				summary={ __( 'Added', 'emcp-tools' ) }
-				onEdit={ () => setConfirmed( false ) }
-			>
-				{ content }
-				<div className="eui-conn__actions">
-					<Button
-						variant="primary"
-						onClick={ () => setConfirmed( true ) }
-						disabled={ ! setup }
-					>
-						{ __( "I've added it, continue", 'emcp-tools' ) }
-					</Button>
-					<Button onClick={ () => setEditing( 2 ) }>
-						{ __( 'Back', 'emcp-tools' ) }
-					</Button>
-				</div>
-			</Step>
-			<Step
-				number={ 4 }
-				title={ __( 'Test the connection', 'emcp-tools' ) }
-				meta={ __( 'Step 4 of 4', 'emcp-tools' ) }
-				status={ 4 === step ? 'active' : 'locked' }
-				summary={
-					client
-						? sprintf(
-								/* translators: %s: client name. */ __(
-									"We'll wait for %s to call the server and confirm it here.",
-									'emcp-tools'
-								),
-								client.label
-							)
-						: ''
-				}
-			>
-				{ 4 === step && setup && (
-					<FirstCallStep
-						setupId={ setup.setup_id }
-						clientLabel={ client.label }
-						method={ method }
-						conn={ conn }
-						onRestart={ () => {
-							setConfirmed( false );
-							openSetup();
-						} }
-					/>
-				) }
-			</Step>
-		</Stepper>
+				</Step>
+			</Stepper>
+		</>
 	);
 }

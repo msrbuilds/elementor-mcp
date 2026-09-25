@@ -176,12 +176,13 @@ export function ServerRail( { data, apps, setApps } ) {
 					{ ! apps.length && (
 						<EmptyState
 							icon="plug"
-							title=""
-							description={ __(
-								'No apps yet. They show up here as soon as they register.',
+							title={ __( 'No apps yet', 'emcp-tools' ) }
+						>
+							{ __(
+								'They show up here as soon as they register.',
 								'emcp-tools'
 							) }
-						/>
+						</EmptyState>
 					) }
 					<ul className="eui-conn__apps">
 						{ apps.map( ( a ) => (

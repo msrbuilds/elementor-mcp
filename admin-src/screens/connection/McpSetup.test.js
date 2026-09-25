@@ -54,6 +54,23 @@ describe( 'McpSetup', () => {
 		expect( window.location.search ).toContain( 'method=oauth' );
 	} );
 
+	it( 'gives the steps a section heading so headings do not skip a level', () => {
+		mount();
+		expect(
+			screen.getByRole( 'heading', {
+				level: 2,
+				name: 'Connect an AI client',
+			} )
+		).toBeInTheDocument();
+	} );
+
+	it( 'locked steps never claim they are done', async () => {
+		mount(
+			'/wp-admin/admin.php?page=emcp-tools-connection&client=claude-desktop'
+		);
+		expect( screen.queryByText( 'Added' ) ).not.toBeInTheDocument();
+	} );
+
 	it( 'changing the client opens a new setup', async () => {
 		mount(
 			'/wp-admin/admin.php?page=emcp-tools-connection&client=claude-desktop&method=oauth'

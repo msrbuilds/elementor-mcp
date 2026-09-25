@@ -70,7 +70,11 @@ export function CopyButton( { text, label, className } ) {
 export function CopyField( { value, label } ) {
 	return (
 		<div className="eui-copy-field">
-			<code className="eui-copy-field__value" aria-label={ label }>
+			<code
+				className="eui-copy-field__value"
+				aria-label={ label }
+				tabIndex={ 0 }
+			>
 				{ value }
 			</code>
 			<CopyButton text={ value } />
@@ -85,7 +89,7 @@ export function CodeBlock( { value, label } ) {
 				<span className="eui-code__label">{ label }</span>
 				<CopyButton text={ value } />
 			</div>
-			<pre className="eui-code__pre" aria-label={ label }>
+			<pre className="eui-code__pre" aria-label={ label } tabIndex={ 0 }>
 				<code>{ value }</code>
 			</pre>
 		</div>

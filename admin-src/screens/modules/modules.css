@@ -37,8 +37,9 @@
 	gap: 14px;
 }
 
-.eui-module.is-off .eui-module__desc {
-	opacity: 0.7;
+/* Muted background, not opacity: faded text fails WCAG contrast (axe). */
+.eui-module.is-off {
+	background: var(--emcp-surface-2);
 }
 
 .eui-module__head {

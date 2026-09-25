@@ -134,7 +134,10 @@ export function CloudSection( { data } ) {
 											'Re-issue gateway credential',
 											'emcp-tools'
 										)
-									: __( 'Enable the gateway', 'emcp-tools' ) }
+									: __(
+											'Enable gateway access',
+											'emcp-tools'
+										) }
 							</a>
 						) }
 					</div>

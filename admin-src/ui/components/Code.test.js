@@ -68,6 +68,22 @@ describe( 'CopyButton', () => {
 } );
 
 describe( 'CopyField and CodeBlock', () => {
+	it( 'makes the scrollable value reachable by keyboard', () => {
+		const { container } = render(
+			<>
+				<CopyField label="URL" value="https://example.test" />
+				<CodeBlock label="Config" value="{}" />
+			</>
+		);
+		expect(
+			container.querySelector( '.eui-copy-field__value' )
+		).toHaveAttribute( 'tabindex', '0' );
+		expect( container.querySelector( '.eui-code__pre' ) ).toHaveAttribute(
+			'tabindex',
+			'0'
+		);
+	} );
+
 	it( 'render values as text, never HTML', async () => {
 		const { container } = render(
 			<>

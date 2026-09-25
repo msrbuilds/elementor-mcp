@@ -11,6 +11,11 @@ import {
 } from './Layout';
 
 describe( 'layout primitives', () => {
+	it( 'PageHeader adds no banner landmark (the frame sits inside core role=main)', () => {
+		const { container } = render( <PageHeader title="Tools" /> );
+		expect( container.querySelector( 'header' ) ).toBeNull();
+	} );
+
 	it( 'PageHeader renders an h1 with tier tag, description, actions and back link', async () => {
 		const { container } = render(
 			<PageHeader

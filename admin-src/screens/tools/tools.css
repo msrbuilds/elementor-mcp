@@ -158,8 +158,13 @@
 	background: var(--emcp-surface);
 }
 
+/* Muted background, not opacity: faded text fails WCAG contrast (axe). */
 .eui-tool.is-off {
-	opacity: 0.62;
+	background: var(--emcp-surface-2);
+}
+
+.eui-tool.is-off .eui-tool__name {
+	color: var(--emcp-text-2);
 }
 
 .eui-tool__body {
@@ -186,6 +191,8 @@
 }
 
 .eui-tool__slug {
+	padding: 0;
+	background: none;
 	color: var(--emcp-muted);
 	font: 400 12px/1.4 var(--emcp-mono);
 	word-break: break-all;

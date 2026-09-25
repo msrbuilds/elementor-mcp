@@ -74,7 +74,9 @@ export function Badge( { kind = 'status', value, children, dot = false } ) {
 
 export function PageHeader( { title, tier, description, actions, back } ) {
 	return (
-		<header className="eui-page-header">
+		// A div, not <header>: the frame sits inside core's role="main", and a
+		// nested banner landmark fails axe (landmark-banner-is-top-level).
+		<div className="eui-page-header">
 			{ back && (
 				<a className="eui-page-header__back" href={ back.href }>
 					<Icon name="arrow-left" size={ 14 } />
@@ -95,7 +97,7 @@ export function PageHeader( { title, tier, description, actions, back } ) {
 					<div className="eui-page-header__actions">{ actions }</div>
 				) }
 			</div>
-		</header>
+		</div>
 	);
 }
 

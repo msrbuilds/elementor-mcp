@@ -100,6 +100,20 @@ describe( 'ConnectionScreen', () => {
 		expect( within( rail ).getByText( data.endpoint ) ).toBeInTheDocument();
 	} );
 
+	it( 'explains an empty connected apps list', () => {
+		window.history.replaceState(
+			{},
+			'',
+			'/wp-admin/admin.php?page=emcp-tools-connection'
+		);
+		render(
+			<AppProviders>
+				<ConnectionScreen data={ { ...data, apps: [] } } />
+			</AppProviders>
+		);
+		expect( screen.getByText( /No apps yet/ ) ).toBeInTheDocument();
+	} );
+
 	it( 'saves advanced settings as a diff', async () => {
 		apiFetch.mockResolvedValueOnce( {
 			advanced: { ...data.advanced, strict_schemas: true },
