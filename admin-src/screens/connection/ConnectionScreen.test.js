@@ -1,4 +1,4 @@
-import { render, screen, within } from '@testing-library/react';
+import { act, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import apiFetch from '@wordpress/api-fetch';
 import { AppProviders } from '@emcp/ui';
@@ -210,6 +210,88 @@ describe( 'ConnectionScreen', () => {
 			within( dialog ).getByRole( 'button', { name: 'Cancel' } )
 		);
 		expect( screen.queryByRole( 'dialog' ) ).not.toBeInTheDocument();
+	} );
+
+	it( 'turning OAuth on in the rail unlocks the OAuth card', async () => {
+		apiFetch.mockImplementation( ( { path } ) =>
+			Promise.resolve(
+				path.endsWith( '/advanced' )
+					? {
+							advanced: { ...data.advanced, oauth_enabled: true },
+							status: data.status,
+							oauth: { available: true, enabled: true },
+							ignored: [],
+							endpoint: data.endpoint,
+							siteUrl: data.siteUrl,
+						}
+					: { setup_id: 'set_1', token: 't', since: 1, expires: 2 }
+			)
+		);
+		window.history.replaceState(
+			{},
+			'',
+			'/wp-admin/admin.php?page=emcp-tools-connection&client=claude-desktop'
+		);
+		render(
+			<AppProviders>
+				<ConnectionScreen
+					data={ {
+						...data,
+						oauth: { available: true, enabled: false },
+						advanced: { ...data.advanced, oauth_enabled: false },
+					} }
+				/>
+			</AppProviders>
+		);
+		expect( screen.getByRole( 'radio', { name: /OAuth/ } ) ).toBeDisabled();
+		await userEvent.click(
+			screen.getByRole( 'switch', { name: 'OAuth sign-in' } )
+		);
+		await userEvent.click( screen.getByRole( 'button', { name: 'Save' } ) );
+		expect(
+			await screen.findByRole( 'radio', { name: /OAuth/ } )
+		).toBeEnabled();
+	} );
+
+	it( 'services show what the server saved', async () => {
+		apiFetch.mockResolvedValue( {
+			services: data.services.map( ( f ) =>
+				'emcp_tools_unsplash_access_key' === f.key
+					? { ...f, hasValue: false }
+					: f
+			),
+			ignored: [],
+		} );
+		mount(
+			'/wp-admin/admin.php?page=emcp-tools-connection&section=services'
+		);
+		await userEvent.click(
+			screen.getByRole( 'button', { name: 'Clear Unsplash' } )
+		);
+		await userEvent.click(
+			screen.getByRole( 'button', { name: 'Save changes' } )
+		);
+		await act( async () => {} );
+		expect(
+			screen.queryByRole( 'button', { name: 'Clear Unsplash' } )
+		).not.toBeInTheDocument();
+	} );
+
+	it( 'switching sections keeps the open setup', async () => {
+		mount(
+			'/wp-admin/admin.php?page=emcp-tools-connection&client=claude-desktop&method=oauth'
+		);
+		await act( async () => {} );
+		await userEvent.click(
+			screen.getByRole( 'radio', { name: '3rd-party services' } )
+		);
+		await userEvent.click( screen.getByRole( 'radio', { name: 'MCP' } ) );
+		await act( async () => {} );
+		expect(
+			apiFetch.mock.calls.filter( ( [ a ] ) =>
+				a.path.endsWith( '/setup' )
+			)
+		).toHaveLength( 1 );
 	} );
 
 	it( 'a Cloud redirect flag opens the Cloud section with a notice', () => {

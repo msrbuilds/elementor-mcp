@@ -90,6 +90,12 @@ final class EMCP_Tools_Connection_Setup {
 		if ( null === $record ) {
 			return null;
 		}
+		// Only rewrite once half the TTL is gone: every write replaces the whole
+		// record, and a poll that rewrote it on each tick could drop an OAuth
+		// consent tag written between its read and its write.
+		if ( (int) $record['expires'] - $now > self::TTL / 2 ) {
+			return $record;
+		}
 		$record['expires'] = $now + self::TTL;
 		update_user_meta( $user_id, self::META, $record );
 		$index = self::index();

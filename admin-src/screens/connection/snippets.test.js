@@ -264,6 +264,42 @@ describe( 'snippets', () => {
 		);
 	} );
 
+	it( 'quotes paths with spaces in commands and keeps them whole in JSON', () => {
+		const cli = {
+			command: '"C:/Program Files/php/php.exe" /x/wp-cli.phar',
+			path: 'C:/Local Sites/x/app/public',
+			user: 'admin',
+			token: 't',
+			name: 'emcp-x',
+		};
+		const cmd = cliSteps( byId( 'claude-code' ), cli ).find(
+			( s ) => s.kind === 'code'
+		).text;
+		expect( cmd ).toContain( '"--path=C:/Local Sites/x/app/public"' );
+		expect( cmd ).toContain(
+			'-- "C:/Program Files/php/php.exe" /x/wp-cli.phar mcp-adapter'
+		);
+		const json = JSON.parse(
+			cliSteps( byId( 'cursor' ), cli ).find( ( s ) => s.kind === 'code' )
+				.text
+		).mcpServers[ 'emcp-x' ];
+		expect( json.command ).toBe( 'C:/Program Files/php/php.exe' );
+		expect( json.args ).toContain( '--path=C:/Local Sites/x/app/public' );
+	} );
+
+	it( 'tells connector users to leave the OAuth client fields empty', () => {
+		const steps = oauthSteps(
+			byId( 'claude-desktop', {
+				oauth: { type: 'connector', app: 'Claude Desktop' },
+			} ),
+			'n',
+			'https://e'
+		);
+		expect( JSON.stringify( steps ) ).toMatch(
+			/Leave the OAuth Client ID and Secret empty/
+		);
+	} );
+
 	it( 'never uses an em dash in its copy', () => {
 		const all = JSON.stringify( [
 			appSteps(

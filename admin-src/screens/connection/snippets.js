@@ -133,6 +133,14 @@ export function oauthSteps( client, name, endpoint ) {
 			title: __( 'Enter the server URL', 'emcp-tools' ),
 			text: endpoint,
 		} );
+		out.push( {
+			kind: 'text',
+			title: '',
+			text: __(
+				'Leave the OAuth Client ID and Secret empty. Sign in when the browser opens.',
+				'emcp-tools'
+			),
+		} );
 		return out;
 	}
 	if ( 'steps' === o.type ) {
@@ -395,6 +403,28 @@ export function appSteps( client, c ) {
 	return out;
 }
 
+/**
+ * Split a command line, keeping "double quoted" parts whole.
+ *
+ * @param {string} line Command line.
+ * @return {string[]} Parts without their quotes.
+ */
+function splitCommand( line ) {
+	return ( String( line ).match( /"[^"]*"|\S+/g ) || [] ).map( ( p ) =>
+		p.replace( /^"(.*)"$/, '$1' )
+	);
+}
+
+/**
+ * Double-quote a shell argument that contains spaces or quotes.
+ *
+ * @param {string} arg Argument.
+ * @return {string} Safe argument.
+ */
+function shellArg( arg ) {
+	return /[\s"]/.test( arg ) ? '"' + arg.replace( /"/g, '\\"' ) + '"' : arg;
+}
+
 export function cliSteps( client, cli ) {
 	const args = [
 		'mcp-adapter',
@@ -422,14 +452,14 @@ export function cliSteps( client, cli ) {
 					' --env EMCP_SETUP=' +
 					cli.token +
 					' -- ' +
-					cli.command +
-					' ' +
-					args.join( ' ' ),
+					[ ...splitCommand( cli.command ), ...args ]
+						.map( shellArg )
+						.join( ' ' ),
 			},
 			note,
 		];
 	}
-	const parts = String( cli.command ).trim().split( /\s+/ );
+	const parts = splitCommand( cli.command );
 	const config = {
 		mcpServers: {
 			[ cli.name ]: {

@@ -35,12 +35,14 @@ test( 'wizard walks to step 4 and waits for the bound call', async ( {
 	await page.goto( '/wp-admin/admin.php?page=emcp-tools-connection' );
 	await page.getByRole( 'button', { name: 'Claude Code' } ).click();
 	// The radio input is visually hidden; people click the card.
+	// OAuth: nothing is created, and Continue needs no password.
 	await page
-		.getByText( 'Generate a password and paste it into the client config.' )
+		.getByText( 'Sign in through the browser, no password to copy.' )
 		.click();
+	await expect( page.getByText( 'Run this in your terminal' ) ).toBeVisible();
 	await expect(
-		page.getByRole( 'button', { name: 'Create password' } )
-	).toBeVisible();
+		page.getByRole( 'button', { name: "I've added it, continue" } )
+	).toBeEnabled();
 	await page
 		.getByRole( 'button', { name: "I've added it, continue" } )
 		.click();

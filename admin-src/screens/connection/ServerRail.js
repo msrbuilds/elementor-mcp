@@ -19,7 +19,7 @@ import {
 
 const API = '/emcp-tools/v1/admin/connection';
 
-export function ServerRail( { data, apps, setApps } ) {
+export function ServerRail( { data, apps, setApps, onSaved = () => {} } ) {
 	const toast = useToast();
 	const confirm = useConfirm();
 	const [ status, setStatus ] = useState( data.status );
@@ -33,6 +33,7 @@ export function ServerRail( { data, apps, setApps } ) {
 			} );
 			setStatus( res.status );
 			setOauth( res.oauth );
+			onSaved( res );
 			if ( res.ignored?.length ) {
 				toast.error(
 					__(

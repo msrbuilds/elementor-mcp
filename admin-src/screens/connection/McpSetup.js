@@ -62,6 +62,16 @@ export function McpSetup( { data } ) {
 		step = 4;
 	}
 
+	// What the reopened setup should keep waiting for: the password created
+	// or chosen here, or the app picked for a reconnect (spec 9.5).
+	const carriedExpect = () => {
+		if ( 'app' === method && creds.uuid ) {
+			return 'app:' + creds.uuid;
+		}
+		const prefix = 'app' === method ? 'app:' : 'oauth:';
+		return expectRef.current.startsWith( prefix ) ? expectRef.current : '';
+	};
+
 	const openSetup = async ( expect = '' ) => {
 		const body = { client: clientId, method };
 		if ( expect ) {
@@ -86,7 +96,7 @@ export function McpSetup( { data } ) {
 		if ( client && methodOk && 0 === editing ) {
 			setSetup( null );
 			setConfirmed( false );
-			openSetup();
+			openSetup( carriedExpect() );
 		}
 	}, [ clientId, method, editing ] ); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -110,6 +120,7 @@ export function McpSetup( { data } ) {
 				username: res.username,
 				password: res.password,
 				created: true,
+				uuid: res.uuid,
 			} ) );
 		} catch ( e ) {
 			toast.error( errorMessage( e ) );
@@ -482,7 +493,11 @@ export function McpSetup( { data } ) {
 						<Button
 							variant="primary"
 							onClick={ () => setConfirmed( true ) }
-							disabled={ ! setup }
+							disabled={
+								! setup ||
+								( 'app' === method &&
+									! ( creds.username && creds.password ) )
+							}
 						>
 							{ __( "I've added it, continue", 'emcp-tools' ) }
 						</Button>
@@ -516,7 +531,7 @@ export function McpSetup( { data } ) {
 							conn={ conn }
 							onRestart={ () => {
 								setConfirmed( false );
-								openSetup();
+								openSetup( carriedExpect() );
 							} }
 						/>
 					) }

@@ -139,6 +139,79 @@ describe( 'McpSetup', () => {
 		).toBeInTheDocument();
 	} );
 
+	it( 'reopening the setup keeps waiting for the password already created', async () => {
+		apiFetch.mockImplementation( ( { path } ) => {
+			if ( path.includes( '/setup' ) ) {
+				return Promise.resolve( {
+					setup_id: 'set_1',
+					token: 'tok1',
+					since: 1,
+					expires: 2,
+				} );
+			}
+			if ( path.includes( '/app-password' ) ) {
+				return Promise.resolve( {
+					username: 'admin',
+					password: 'abcd efgh',
+					name: 'EMCP',
+					uuid: 'u1',
+				} );
+			}
+			return Promise.resolve( {} );
+		} );
+		mount(
+			'/wp-admin/admin.php?page=emcp-tools-connection&client=claude-desktop&method=app'
+		);
+		await userEvent.click(
+			await screen.findByRole( 'button', { name: 'Create password' } )
+		);
+		await screen.findByText( 'abcd efgh' );
+		await userEvent.click(
+			screen.getAllByRole( 'button', { name: /Edit/ } )[ 0 ]
+		);
+		await userEvent.click(
+			screen.getByRole( 'button', { name: 'Claude.ai' } )
+		);
+		await act( async () => {} );
+		const setups = apiFetch.mock.calls.filter( ( [ a ] ) =>
+			a.path.endsWith( '/setup' )
+		);
+		expect( setups[ setups.length - 1 ][ 0 ].data ).toEqual( {
+			client: 'claude-ai',
+			method: 'app',
+			expect: 'app:u1',
+			user_id: 1,
+		} );
+	} );
+
+	it( 'choosing the same method again after Back continues', async () => {
+		mount(
+			'/wp-admin/admin.php?page=emcp-tools-connection&client=claude-desktop&method=app'
+		);
+		await userEvent.click(
+			await screen.findByRole( 'button', { name: 'Back' } )
+		);
+		expect(
+			screen.queryByRole( 'button', { name: 'Create password' } )
+		).not.toBeInTheDocument();
+		await userEvent.click(
+			screen.getByRole( 'radio', { name: /Application password/ } )
+		);
+		expect(
+			await screen.findByRole( 'button', { name: 'Create password' } )
+		).toBeInTheDocument();
+	} );
+
+	it( 'continue waits for a password in application password mode', async () => {
+		mount(
+			'/wp-admin/admin.php?page=emcp-tools-connection&client=claude-desktop&method=app'
+		);
+		await screen.findByRole( 'button', { name: 'Create password' } );
+		expect(
+			screen.getByRole( 'button', { name: "I've added it, continue" } )
+		).toBeDisabled();
+	} );
+
 	it( 'WP-CLI shows the stdio config with the setup token', async () => {
 		mount(
 			'/wp-admin/admin.php?page=emcp-tools-connection&client=claude-desktop&method=cli'

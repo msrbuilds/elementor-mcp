@@ -1,3 +1,4 @@
+import { useState } from '@wordpress/element';
 import { __, sprintf } from '@wordpress/i18n';
 import {
 	Button,
@@ -45,14 +46,25 @@ const initial = ( fields ) =>
 
 export function ServicesSection( { data } ) {
 	const toast = useToast();
+	const [ services, setServices ] = useState( data.services );
 	const form = useSettingsForm( initial( data.services ), async ( diff ) => {
 		try {
-			await request( API + '/services', {
+			const res = await request( API + '/services', {
 				method: 'POST',
 				data: { values: diff },
 			} );
-			toast.success( __( 'Services saved.', 'emcp-tools' ) );
-			return initial( data.services );
+			setServices( res.services );
+			if ( res.ignored?.length ) {
+				toast.error(
+					__(
+						'Some keys could not be changed: they are set in wp-config.php.',
+						'emcp-tools'
+					)
+				);
+			} else {
+				toast.success( __( 'Services saved.', 'emcp-tools' ) );
+			}
+			return initial( res.services );
 		} catch ( e ) {
 			toast.error( errorMessage( e ) );
 			throw e;
@@ -61,9 +73,7 @@ export function ServicesSection( { data } ) {
 	return (
 		<div className="eui-conn__services">
 			{ GROUPS().map( ( [ group, title, desc ] ) => {
-				const fields = data.services.filter(
-					( f ) => f.group === group
-				);
+				const fields = services.filter( ( f ) => f.group === group );
 				if ( ! fields.length ) {
 					return null;
 				}

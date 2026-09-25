@@ -85,6 +85,12 @@ export function ConnectionScreen( { data } ) {
 		fromCloud ? 'cloud' : 'mcp'
 	);
 	const [ apps, setApps ] = useState( data.apps );
+	// Saved in the rail, read by the wizard: OAuth state and the public URLs.
+	const [ live, setLive ] = useState( {
+		oauth: data.oauth,
+		endpoint: data.endpoint,
+		siteUrl: data.siteUrl,
+	} );
 	const [ notice ] = useState( flagNotice );
 	const options = [
 		{ value: 'mcp', label: __( 'MCP', 'emcp-tools' ) },
@@ -109,18 +115,24 @@ export function ConnectionScreen( { data } ) {
 				}
 			/>
 			{ notice && <Notice tone={ notice[ 0 ] }>{ notice[ 1 ] }</Notice> }
-			{ 'mcp' === section && (
-				<div className="eui-conn__grid">
-					<div className="eui-conn__main">
-						<McpSetup data={ { ...data, apps } } />
-					</div>
-					<ServerRail
-						data={ data }
-						apps={ apps }
-						setApps={ setApps }
-					/>
+			{ /* Kept mounted while hidden: the open setup and a one-time password survive a section switch. */ }
+			<div className="eui-conn__grid" hidden={ 'mcp' !== section }>
+				<div className="eui-conn__main">
+					<McpSetup data={ { ...data, ...live, apps } } />
 				</div>
-			) }
+				<ServerRail
+					data={ data }
+					apps={ apps }
+					setApps={ setApps }
+					onSaved={ ( res ) =>
+						setLive( {
+							oauth: res.oauth,
+							endpoint: res.endpoint || live.endpoint,
+							siteUrl: res.siteUrl || live.siteUrl,
+						} )
+					}
+				/>
+			</div>
 			{ 'cloud' === section && <CloudSection data={ data } /> }
 			{ 'services' === section && <ServicesSection data={ data } /> }
 		</div>

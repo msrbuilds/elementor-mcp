@@ -117,6 +117,9 @@ export function RadioCard( {
 				checked={ checked }
 				disabled={ disabled }
 				onChange={ () => group.onChange( value ) }
+				// A checked radio fires no change event; a click on it still means
+				// "this one" (for example after going back to a step).
+				onClick={ () => checked && group.onChange( value ) }
 			/>
 			<span className="eui-radio-card__dot" aria-hidden="true" />
 			<span className="eui-radio-card__text">

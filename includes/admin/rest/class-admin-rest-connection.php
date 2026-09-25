@@ -110,6 +110,8 @@ final class EMCP_Tools_Admin_REST_Connection extends EMCP_Tools_Admin_REST_Contr
 				'status'   => $data->status(),
 				'oauth'    => $data->oauth(),
 				'ignored'  => $result['ignored'],
+				'endpoint' => EMCP_Tools_Site_Context::mcp_endpoint(),
+				'siteUrl'  => EMCP_Tools_Site_Context::public_base_url(),
 			)
 		);
 	}
