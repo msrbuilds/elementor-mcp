@@ -107,11 +107,25 @@ test( 'frame controls have at least 32px hit areas', async ( { page } ) => {
 				.filter(
 					( el ) => el.offsetParent && ! el.closest( '.emcp-legacy' )
 				)
-				.map( ( el ) => ( {
-					el: el.outerHTML.slice( 0, 80 ),
-					r: el.getBoundingClientRect(),
-				} ) )
-				.filter( ( { r } ) => r.width < 32 || r.height < 32 )
+				.map( ( el ) => {
+					// Controls may extend their hit area with an absolutely
+					// positioned ::before (Toggle, IconButton); count it.
+					const r = el.getBoundingClientRect();
+					const b = window.getComputedStyle( el, '::before' );
+					const px = ( v ) => Math.min( 0, parseFloat( v ) || 0 );
+					const pseudo =
+						'none' !== b.content && 'absolute' === b.position;
+					return {
+						el: el.outerHTML.slice( 0, 80 ),
+						w:
+							r.width -
+							( pseudo ? px( b.left ) + px( b.right ) : 0 ),
+						h:
+							r.height -
+							( pseudo ? px( b.top ) + px( b.bottom ) : 0 ),
+					};
+				} )
+				.filter( ( { w, h } ) => w < 32 || h < 32 )
 				.map( ( { el } ) => el )
 	);
 	expect( small ).toEqual( [] );
@@ -179,11 +193,11 @@ test( 'frame keeps its layout with an admin notice', async ( { page } ) => {
 	expect( overflow ).toBe( false );
 } );
 
-test( 'legacy Tools screen has no console errors and its toggles respond', async ( {
+test( 'legacy Redirects screen has no console errors and its toggles respond', async ( {
 	page,
 } ) => {
 	const errors = watchConsole( page );
-	await page.goto( '/wp-admin/admin.php?page=emcp-tools-tools' );
+	await page.goto( '/wp-admin/admin.php?page=emcp-tools-redirects' );
 	const toggle = page
 		.locator( '.emcp-legacy input[type="checkbox"]' )
 		.first();
