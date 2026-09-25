@@ -14,6 +14,7 @@ module.exports = {
 			library: { name: 'emcpUI', type: 'window' },
 		},
 		fallback: './admin-src/fallback/index.js',
+		shell: './admin-src/shell/index.js',
 	},
 	output: {
 		...defaultConfig.output,

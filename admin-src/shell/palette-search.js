@@ -1,0 +1,58 @@
+import Fuse from 'fuse.js';
+
+/**
+ * Flatten the shell data into palette items (spec 7). Template and prompt
+ * titles join in Part 3.
+ *
+ * @param {Object} data window.emcpShell.
+ * @return {Array<{kind: string, label: string, hint: string, url: string}>} Items.
+ */
+export function buildIndex( data ) {
+	const toolsUrl = ( data.nav || [] ).find( ( n ) => 'tools' === n.id )?.url;
+	return [
+		...( data.nav || [] ).map( ( n ) => ( {
+			kind: 'screen',
+			label: n.label,
+			hint: n.group,
+			url: n.url,
+		} ) ),
+		...( toolsUrl
+			? ( data.tools || [] ).map( ( t ) => ( {
+					kind: 'tool',
+					label: t.name,
+					hint: t.slug,
+					url: `${ toolsUrl }&q=${ encodeURIComponent( t.slug ) }`,
+				} ) )
+			: [] ),
+		...( data.settings || [] ).map( ( s ) => ( {
+			kind: 'setting',
+			label: s.label,
+			hint: '',
+			url: s.url,
+		} ) ),
+	];
+}
+
+/**
+ * Fuzzy search; an empty query lists the screens.
+ *
+ * @param {Array}  index From buildIndex().
+ * @param {string} query User input.
+ * @param {number} limit Maximum results.
+ * @return {Array} Matching items.
+ */
+export function searchPalette( index, query, limit = 12 ) {
+	const q = ( query || '' ).trim();
+	if ( ! q ) {
+		return index.filter( ( i ) => 'screen' === i.kind ).slice( 0, limit );
+	}
+	const fuse = new Fuse( index, {
+		keys: [
+			{ name: 'label', weight: 0.7 },
+			{ name: 'hint', weight: 0.3 },
+		],
+		threshold: 0.4,
+		ignoreLocation: true,
+	} );
+	return fuse.search( q, { limit } ).map( ( r ) => r.item );
+}
