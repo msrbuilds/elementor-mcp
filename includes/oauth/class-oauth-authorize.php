@@ -201,6 +201,12 @@ class EMCP_Tools_OAuth_Authorize {
 			self::redirect_error( $redirect_uri, 'invalid_target', $state );
 		}
 
+		// An app approved while this user's Connection setup is open belongs to
+		// that setup (spec 9.5); nothing is tagged otherwise.
+		if ( class_exists( 'EMCP_Tools_Connection_Setup' ) ) {
+			EMCP_Tools_Connection_Setup::tag_oauth_consent( get_current_user_id(), (string) $client['client_id'] );
+		}
+
 		$code = EMCP_Tools_OAuth_Store::issue_code(
 			array(
 				'client_id'      => $client['client_id'],
