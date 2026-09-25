@@ -191,6 +191,7 @@ class EMCP_Tools_Bootstrap {
 		require_once EMCP_TOOLS_DIR . 'includes/admin/data/class-admin-prompts-data.php';
 		require_once EMCP_TOOLS_DIR . 'includes/admin/rest/class-admin-rest-prompts.php';
 		require_once EMCP_TOOLS_DIR . 'includes/admin/data/class-admin-brand-kits-data.php';
+		require_once EMCP_TOOLS_DIR . 'includes/admin/rest/class-admin-rest-brand-kits.php';
 		require_once EMCP_TOOLS_DIR . 'includes/class-change-blobs.php';
 		require_once EMCP_TOOLS_DIR . 'includes/class-change-recorder.php';
 		require_once EMCP_TOOLS_DIR . 'includes/class-structured-import.php';
@@ -543,6 +544,7 @@ class EMCP_Tools_Bootstrap {
 		( new EMCP_Tools_Admin_REST_Modules() )->register();
 		( new EMCP_Tools_Admin_REST_Connection() )->register();
 		( new EMCP_Tools_Admin_REST_Prompts() )->register();
+		( new EMCP_Tools_Admin_REST_Brand_Kits() )->register();
 
 		// Free-tier updates from GitHub releases (self-disables on premium builds,
 		// where Freemius owns updates).
