@@ -17,6 +17,7 @@ module.exports = {
 		shell: './admin-src/shell/index.js',
 		'screen-locked': './admin-src/screens/locked/index.js',
 		'screen-tools': './admin-src/screens/tools/index.js',
+		'screen-builders': './admin-src/screens/builders/index.js',
 	},
 	output: {
 		...defaultConfig.output,
