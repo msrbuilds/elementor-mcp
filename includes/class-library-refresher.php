@@ -42,7 +42,11 @@ class EMCP_Tools_Library_Refresher {
 		if ( ! function_exists( 'emcp_tools_fs' ) ) {
 			return;
 		}
-		require_once EMCP_TOOLS_DIR . 'includes/admin/class-pro-prompts.php';
+		$file = class_exists( 'EMCP_Tools_Pro_Loader' ) ? EMCP_Tools_Pro_Loader::path( 'includes/admin/class-pro-prompts.php' ) : '';
+		if ( '' === $file || ! file_exists( $file ) ) {
+			return;
+		}
+		require_once $file;
 		if ( class_exists( 'EMCP_Tools_Pro_Prompts' ) && EMCP_Tools_Pro_Prompts::user_has_access() ) {
 			EMCP_Tools_Pro_Prompts::get_bundle( true );
 		}
@@ -57,7 +61,11 @@ class EMCP_Tools_Library_Refresher {
 		if ( ! function_exists( 'emcp_tools_fs' ) ) {
 			return;
 		}
-		require_once EMCP_TOOLS_DIR . 'includes/admin/class-pro-brand-kits.php';
+		$file = class_exists( 'EMCP_Tools_Pro_Loader' ) ? EMCP_Tools_Pro_Loader::path( 'includes/admin/class-pro-brand-kits.php' ) : '';
+		if ( '' === $file || ! file_exists( $file ) ) {
+			return;
+		}
+		require_once $file;
 		if ( class_exists( 'EMCP_Tools_Pro_Brand_Kits' ) && EMCP_Tools_Pro_Brand_Kits::user_has_access() ) {
 			EMCP_Tools_Pro_Brand_Kits::get_bundle( true );
 		}

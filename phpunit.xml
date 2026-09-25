@@ -42,6 +42,9 @@
         <testsuite name="SetupScreens">
             <directory>pro/tests/unit/setup</directory>
         </testsuite>
+        <testsuite name="Library">
+            <directory>pro/tests/unit/library</directory>
+        </testsuite>
         <testsuite name="Skills">
             <directory>pro/tests/unit/skills</directory>
         </testsuite>
