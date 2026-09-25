@@ -26,7 +26,9 @@ describe( 'component CSS rules', () => {
 			css
 				.replace( /\/\*[\s\S]*?\*\//g, '' )
 				.match( /(^|[,}\s])\.emcp-[a-z-]+/gm ) || [];
-		const allowed = selectors.filter( ( s ) => ! /\.emcp-(app|legacy)\b/.test( s ) );
+		const allowed = selectors.filter(
+			( s ) => ! /\.emcp-(app|legacy)\b/.test( s )
+		);
 		expect( allowed ).toEqual( [] );
 	} );
 
