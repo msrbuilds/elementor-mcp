@@ -142,8 +142,11 @@ class EMCP_Tools_Kit_Backup_Store {
 				'post_type'      => self::POST_TYPE,
 				'post_status'    => 'publish',
 				'posts_per_page' => max( 1, $limit ),
-				'orderby'        => 'date',
-				'order'          => 'DESC',
+				// ID breaks ties between backups made in the same second.
+				'orderby'        => array(
+					'date' => 'DESC',
+					'ID'   => 'DESC',
+				),
 				'no_found_rows'  => true,
 			)
 		);

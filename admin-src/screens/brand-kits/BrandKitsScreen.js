@@ -73,7 +73,6 @@ export function BrandKitsScreen( { data: initial } ) {
 				method: 'POST',
 				data: { backup: true },
 			} );
-			await refresh();
 			toast.success(
 				sprintf(
 					/* translators: %s: kit name. */
@@ -87,6 +86,8 @@ export function BrandKitsScreen( { data: initial } ) {
 		} catch ( e ) {
 			toast.error( errorMessage( e ) );
 		} finally {
+			// Re-read even after a failure: the site may have changed.
+			await refresh().catch( () => {} );
 			setBusy( '' );
 		}
 	};

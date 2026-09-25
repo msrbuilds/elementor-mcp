@@ -147,9 +147,12 @@ describe( 'PromptsScreen', () => {
 		expect( link ).toHaveAttribute( 'href', data.aiChatUrl );
 		link.addEventListener( 'click', ( e ) => e.preventDefault() );
 		await userEvent.click( link );
-		expect( window.sessionStorage.getItem( 'emcp.aiChat.prompt' ) ).toBe(
-			data.items[ 1 ].content
+		const handed = JSON.parse(
+			window.sessionStorage.getItem( 'emcp.aiChat.prompt' )
 		);
+		expect( handed.text ).toBe( data.items[ 1 ].content );
+		// Stamped, so AI Chat ignores a hand-off left over from long ago.
+		expect( Math.abs( Date.now() - handed.at ) ).toBeLessThan( 5000 );
 	} );
 
 	it( 'hides Use in AI Chat when AI Chat is off', () => {

@@ -33,7 +33,10 @@ export function PromptCard( { prompt, aiChatUrl, onPreview } ) {
 
 	const handOff = () => {
 		try {
-			window.sessionStorage.setItem( HANDOFF_KEY, prompt.content );
+			window.sessionStorage.setItem(
+				HANDOFF_KEY,
+				JSON.stringify( { text: prompt.content, at: Date.now() } )
+			);
 		} catch {}
 	};
 

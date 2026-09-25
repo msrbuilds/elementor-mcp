@@ -15,6 +15,8 @@ final class EMCP_Tools_Admin_Brand_Kits_Data {
 
 	const PER_PAGE       = 12;
 	const OPTION_CURRENT = 'emcp_tools_current_brand_kit';
+	/** Backup post meta: the current-kit record from before that backup's apply. */
+	const META_PREV_CURRENT = '_emcp_prev_current_kit';
 
 	private static function elementor_active(): bool {
 		if ( defined( 'EMCP_TOOLS_TESTING' ) && isset( $GLOBALS['_emcp_elementor_active'] ) ) {
@@ -93,9 +95,16 @@ final class EMCP_Tools_Admin_Brand_Kits_Data {
 				return new WP_Error( $created->get_error_code(), $created->get_error_message(), array( 'status' => 400 ) );
 			}
 			$backup_id = (int) $created;
+			update_post_meta( $backup_id, self::META_PREV_CURRENT, wp_slash( (string) wp_json_encode( self::current() ) ) );
 		}
 		$result = EMCP_Tools_System_Kit_Writer::apply_kit( $kit );
 		if ( is_wp_error( $result ) ) {
+			// The writer can fail after writing the colours: put everything back.
+			if ( null !== $backup_id && ! is_wp_error( EMCP_Tools_Kit_Backup_Store::restore( $backup_id, true ) ) ) {
+				wp_trash_post( $backup_id );
+				/* translators: %s: the reason the kit could not be applied. */
+				return new WP_Error( $result->get_error_code(), sprintf( __( 'The kit could not be applied. Your previous colors and fonts were put back. %s', 'emcp-tools' ), $result->get_error_message() ), array( 'status' => 400 ) );
+			}
 			return new WP_Error( $result->get_error_code(), $result->get_error_message(), array( 'status' => 400 ) );
 		}
 		update_option(
@@ -113,7 +122,12 @@ final class EMCP_Tools_Admin_Brand_Kits_Data {
 		return array_merge( $result, array( 'backup_id' => $backup_id ) );
 	}
 
-	/** @return array|WP_Error */
+	/**
+	 * Restore the newest restore point, then retire it, so each Restore goes
+	 * one kit further back and the current-kit record follows.
+	 *
+	 * @return array|WP_Error
+	 */
 	public function restore( bool $full_clobber ) {
 		if ( ! self::elementor_active() ) {
 			return new WP_Error( 'emcp_no_elementor', __( 'Activate Elementor to restore a brand kit.', 'emcp-tools' ), array( 'status' => 409 ) );
@@ -122,11 +136,18 @@ final class EMCP_Tools_Admin_Brand_Kits_Data {
 		if ( ! $backups ) {
 			return new WP_Error( 'emcp_no_backup', __( 'There is no restore point yet. One is saved each time you apply a kit.', 'emcp-tools' ), array( 'status' => 409 ) );
 		}
-		$result = EMCP_Tools_Kit_Backup_Store::restore( (int) $backups[0]['id'], $full_clobber );
+		$backup_id = (int) $backups[0]['id'];
+		$result    = EMCP_Tools_Kit_Backup_Store::restore( $backup_id, $full_clobber );
 		if ( is_wp_error( $result ) ) {
 			return new WP_Error( $result->get_error_code(), $result->get_error_message(), array( 'status' => 400 ) );
 		}
-		delete_option( self::OPTION_CURRENT );
+		$previous = json_decode( (string) get_post_meta( $backup_id, self::META_PREV_CURRENT, true ), true );
+		if ( is_array( $previous ) && ! empty( $previous['slug'] ) ) {
+			update_option( self::OPTION_CURRENT, $previous, false );
+		} else {
+			delete_option( self::OPTION_CURRENT );
+		}
+		wp_trash_post( $backup_id );
 		return array( 'restored' => $backups[0]['title'] );
 	}
 

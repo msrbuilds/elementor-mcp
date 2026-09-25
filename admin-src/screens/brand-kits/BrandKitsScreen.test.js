@@ -128,6 +128,29 @@ describe( 'BrandKitsScreen', () => {
 		).toBeInTheDocument();
 	} );
 
+	it( 'a failed apply still re-reads the list', async () => {
+		apiFetch
+			.mockRejectedValueOnce( {
+				code: 'emcp_writer',
+				message: 'The kit could not be applied.',
+			} )
+			.mockResolvedValueOnce( {
+				...data,
+				current: { ...data.current, title: 'Re-read kit' },
+			} );
+		mount();
+		const card = screen
+			.getByRole( 'heading', { name: 'Modern Saas' } )
+			.closest( '.eui-kit' );
+		await userEvent.click(
+			within( card ).getByRole( 'button', { name: 'Apply kit' } )
+		);
+		expect(
+			await screen.findByText( 'Current kit: Re-read kit' )
+		).toBeInTheDocument();
+		expect( apiFetch ).toHaveBeenCalledTimes( 2 );
+	} );
+
 	it( 'restore asks first and sends the custom colours choice', async () => {
 		apiFetch.mockResolvedValue( {
 			...data,
