@@ -19,6 +19,7 @@ module.exports = {
 		'screen-tools': './admin-src/screens/tools/index.js',
 		'screen-builders': './admin-src/screens/builders/index.js',
 		'screen-modules': './admin-src/screens/modules/index.js',
+		'screen-connection': './admin-src/screens/connection/index.js',
 	},
 	output: {
 		...defaultConfig.output,
