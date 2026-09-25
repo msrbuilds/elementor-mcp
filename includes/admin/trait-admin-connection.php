@@ -95,46 +95,57 @@ trait EMCP_Tools_Admin_Connection_Trait {
 		}
 
 		$user_id = isset( $_POST['user_id'] ) ? absint( wp_unslash( $_POST['user_id'] ) ) : 0;
+		$result = $this->create_app_password_for( $user_id );
+		if ( is_wp_error( $result ) ) {
+			wp_send_json_error( array( 'message' => $result->get_error_message() ), (int) ( $result->get_error_data()['status'] ?? 400 ) );
+		}
+		unset( $result['uuid'] );
+		wp_send_json_success( $result );
+	}
+
+	/**
+	 * Create an application password for an administrator (shared by the
+	 * legacy AJAX handler and admin REST). Returns the password once.
+	 *
+	 * @param int $user_id Administrator to create it for.
+	 * @return array{username:string, password:string, name:string, uuid:string}|WP_Error
+	 */
+	public function create_app_password_for( int $user_id ) {
 		if ( ! $user_id ) {
-			wp_send_json_error( array( 'message' => __( 'No user selected.', 'emcp-tools' ) ), 400 );
+			return new WP_Error( 'emcp_app_password', __( 'No user selected.', 'emcp-tools' ), array( 'status' => 400 ) );
 		}
 
 		$user = get_userdata( $user_id );
 		if ( ! $user ) {
-			wp_send_json_error( array( 'message' => __( 'That user no longer exists.', 'emcp-tools' ) ), 404 );
+			return new WP_Error( 'emcp_app_password', __( 'That user no longer exists.', 'emcp-tools' ), array( 'status' => 404 ) );
 		}
 
 		// Only administrators, and only those the current user is allowed to edit.
 		if ( ! user_can( $user, 'manage_options' ) ) {
-			wp_send_json_error( array( 'message' => __( 'Application passwords can only be generated for administrator accounts here.', 'emcp-tools' ) ), 403 );
+			return new WP_Error( 'emcp_app_password', __( 'Application passwords can only be generated for administrator accounts here.', 'emcp-tools' ), array( 'status' => 403 ) );
 		}
 		if ( ! current_user_can( 'edit_user', $user_id ) ) {
-			wp_send_json_error( array( 'message' => __( 'You cannot manage application passwords for this user.', 'emcp-tools' ) ), 403 );
+			return new WP_Error( 'emcp_app_password', __( 'You cannot manage application passwords for this user.', 'emcp-tools' ), array( 'status' => 403 ) );
 		}
 
 		if ( ! class_exists( 'WP_Application_Passwords' ) ) {
-			wp_send_json_error( array( 'message' => __( 'Application Passwords are not supported on this WordPress version.', 'emcp-tools' ) ), 400 );
+			return new WP_Error( 'emcp_app_password', __( 'Application Passwords are not supported on this WordPress version.', 'emcp-tools' ), array( 'status' => 400 ) );
 		}
 
 		// Respect WordPress core and site-policy availability filters. A security
 		// plugin may disable application passwords globally or for this user even
 		// when the core class exists.
 		if ( function_exists( 'wp_is_application_passwords_available' ) && ! wp_is_application_passwords_available() ) {
-			wp_send_json_error(
-				array(
-					'message' => __( 'Application Passwords are disabled for this site. Check HTTPS and any security-plugin policy, or use OAuth.', 'emcp-tools' ),
-				),
-				400
-			);
+			return new WP_Error( 'emcp_app_password', __( 'Application Passwords are disabled for this site. Check HTTPS and any security-plugin policy, or use OAuth.', 'emcp-tools' ), array( 'status' => 400 ) );
 		}
 		if ( function_exists( 'wp_is_application_passwords_available_for_user' ) && ! wp_is_application_passwords_available_for_user( $user ) ) {
-			wp_send_json_error( array( 'message' => __( 'Application Passwords are disabled for this user by site policy.', 'emcp-tools' ) ), 400 );
+			return new WP_Error( 'emcp_app_password', __( 'Application Passwords are disabled for this user by site policy.', 'emcp-tools' ), array( 'status' => 400 ) );
 		}
 
 		// Compatibility fallback for WordPress versions without the availability
 		// helper (the plugin normally requires a newer core release).
 		if ( ! function_exists( 'wp_is_application_passwords_available' ) && ! is_ssl() && 'local' !== wp_get_environment_type() ) {
-			wp_send_json_error( array( 'message' => __( 'Application Passwords require HTTPS.', 'emcp-tools' ) ), 400 );
+			return new WP_Error( 'emcp_app_password', __( 'Application Passwords require HTTPS.', 'emcp-tools' ), array( 'status' => 400 ) );
 		}
 
 		$app_name = sprintf(
@@ -146,21 +157,48 @@ trait EMCP_Tools_Admin_Connection_Trait {
 		$created = \WP_Application_Passwords::create_new_application_password( $user_id, array( 'name' => $app_name ) );
 
 		if ( is_wp_error( $created ) ) {
-			wp_send_json_error( array( 'message' => $created->get_error_message() ), 400 );
+			return new WP_Error( 'emcp_app_password', $created->get_error_message(), array( 'status' => 400 ) );
 		}
 
 		$raw_password = isset( $created[0] ) ? $created[0] : '';
 		if ( '' === $raw_password ) {
-			wp_send_json_error( array( 'message' => __( 'Could not create an application password.', 'emcp-tools' ) ), 500 );
+			return new WP_Error( 'emcp_app_password', __( 'Could not create an application password.', 'emcp-tools' ), array( 'status' => 500 ) );
 		}
 
-		wp_send_json_success(
-			array(
-				'username' => $user->user_login,
-				'password' => \WP_Application_Passwords::chunk_password( $raw_password ),
-				'name'     => $app_name,
-			)
+		return array(
+			'username' => $user->user_login,
+			'password' => \WP_Application_Passwords::chunk_password( $raw_password ),
+			'name'     => $app_name,
+			'uuid'     => (string) ( $created[1]['uuid'] ?? '' ),
 		);
+	}
+
+	/**
+	 * The user's application passwords, without secrets, newest first.
+	 *
+	 * @param int $user_id User.
+	 * @return array<int, array{uuid:string, name:string, created:int, last_used:int|null}>
+	 */
+	public function list_app_passwords( int $user_id ): array {
+		if ( ! class_exists( 'WP_Application_Passwords' ) || ! $user_id ) {
+			return array();
+		}
+		$out = array();
+		foreach ( (array) \WP_Application_Passwords::get_user_application_passwords( $user_id ) as $item ) {
+			$out[] = array(
+				'uuid'      => (string) ( $item['uuid'] ?? '' ),
+				'name'      => (string) ( $item['name'] ?? '' ),
+				'created'   => (int) ( $item['created'] ?? 0 ),
+				'last_used' => isset( $item['last_used'] ) ? (int) $item['last_used'] : null,
+			);
+		}
+		usort(
+			$out,
+			static function ( $a, $b ) {
+				return $b['created'] <=> $a['created'];
+			}
+		);
+		return $out;
 	}
 
 	/**
@@ -206,7 +244,7 @@ trait EMCP_Tools_Admin_Connection_Trait {
 	 * @param string $password Application Password.
 	 * @return array|WP_Error
 	 */
-	private function run_mcp_handshake( string $username, string $password ) {
+	public function run_mcp_handshake( string $username, string $password ) {
 		$endpoint = class_exists( 'EMCP_Tools_Site_Context' ) ? EMCP_Tools_Site_Context::mcp_endpoint() : rest_url( 'mcp/emcp-tools-server' );
 		$auth     = 'Basic ' . base64_encode( $username . ':' . $password );
 		$session  = '';
@@ -393,8 +431,25 @@ trait EMCP_Tools_Admin_Connection_Trait {
 		if ( ! current_user_can( 'manage_options' ) ) {
 			wp_send_json_error( array( 'message' => __( 'You do not have permission to run this test.', 'emcp-tools' ) ), 403 );
 		}
+		$report = $this->oauth_discovery_report();
+		if ( is_wp_error( $report ) ) {
+			wp_send_json_error( array( 'message' => $report->get_error_message() ), 400 );
+		}
+		if ( $report['ok'] ) {
+			wp_send_json_success( array( 'message' => $report['message'], 'checks' => $report['checks'] ) );
+		}
+		wp_send_json_error( array( 'message' => $report['message'], 'checks' => $report['checks'] ), 400 );
+	}
+
+	/**
+	 * Probe both standards-based well-known URLs and their REST aliases (shared
+	 * by the legacy AJAX handler and admin REST).
+	 *
+	 * @return array{ok:bool, message:string, checks:array}|WP_Error
+	 */
+	public function oauth_discovery_report() {
 		if ( ! class_exists( 'EMCP_Tools_OAuth_Metadata' ) || ! class_exists( 'EMCP_Tools_OAuth_Server' ) || ! EMCP_Tools_OAuth_Server::is_enabled() ) {
-			wp_send_json_error( array( 'message' => __( 'Enable OAuth before testing discovery.', 'emcp-tools' ) ), 400 );
+			return new WP_Error( 'emcp_oauth_off', __( 'Enable OAuth before testing discovery.', 'emcp-tools' ), array( 'status' => 400 ) );
 		}
 
 		$base   = class_exists( 'EMCP_Tools_Site_Context' ) ? EMCP_Tools_Site_Context::public_base_url() : rtrim( (string) home_url(), '/' );
@@ -408,19 +463,13 @@ trait EMCP_Tools_Admin_Connection_Trait {
 		$root_ok = $checks['well_known_protected_resource']['ok'] && $checks['well_known_authorization_server']['ok'];
 		$rest_ok = $checks['rest_protected_resource']['ok'] && $checks['rest_authorization_server']['ok'];
 		if ( $root_ok && $rest_ok ) {
-			wp_send_json_success( array( 'message' => __( 'OAuth discovery is publicly reachable through both standard well-known URLs and REST aliases.', 'emcp-tools' ), 'checks' => $checks ) );
+			return array( 'ok' => true, 'message' => __( 'OAuth discovery is publicly reachable through both standard well-known URLs and REST aliases.', 'emcp-tools' ), 'checks' => $checks );
 		}
 		if ( ! $root_ok && $rest_ok ) {
-			wp_send_json_error(
-				array(
-					'message' => __( 'EMCP OAuth routes work, but the public .well-known URLs do not return EMCP metadata. A CDN/host may be intercepting them, or another plugin may own the shared paths. Review the failed values, then bypass or rewrite those routes before reconnecting the client.', 'emcp-tools' ),
-					'checks'  => $checks,
-				),
-				400
-			);
+			return array( 'ok' => false, 'message' => __( 'EMCP OAuth routes work, but the public .well-known URLs do not return EMCP metadata. A CDN/host may be intercepting them, or another plugin may own the shared paths. Review the failed values, then bypass or rewrite those routes before reconnecting the client.', 'emcp-tools' ), 'checks' => $checks );
 		}
 
-		wp_send_json_error( array( 'message' => __( 'OAuth discovery is not reachable. Review the failed checks and confirm the REST API, HTTPS, permalink routing, and CDN/WAF rules.', 'emcp-tools' ), 'checks' => $checks ), 400 );
+		return array( 'ok' => false, 'message' => __( 'OAuth discovery is not reachable. Review the failed checks and confirm the REST API, HTTPS, permalink routing, and CDN/WAF rules.', 'emcp-tools' ), 'checks' => $checks );
 	}
 
 	/** Probe one public OAuth metadata document without following redirects. */
