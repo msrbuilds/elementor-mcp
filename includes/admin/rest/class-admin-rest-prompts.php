@@ -75,8 +75,8 @@ final class EMCP_Tools_Admin_REST_Prompts extends EMCP_Tools_Admin_REST_Controll
 	}
 
 	public function copied( $request ) {
-		$category = sanitize_key( (string) $request->get_param( 'category' ) );
-		$slug     = sanitize_key( (string) $request->get_param( 'slug' ) );
+		$category = sanitize_key( self::route_param( $request, 'category' ) );
+		$slug     = sanitize_key( self::route_param( $request, 'slug' ) );
 		$prompt   = ( new EMCP_Tools_Admin_Prompts_Data() )->find( $category, $slug );
 		if ( null === $prompt ) {
 			return new WP_Error( 'emcp_unknown_prompt', __( 'That prompt is not in the library.', 'emcp-tools' ), array( 'status' => 404 ) );

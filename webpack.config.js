@@ -21,6 +21,7 @@ module.exports = {
 		'screen-modules': './admin-src/screens/modules/index.js',
 		'screen-connection': './admin-src/screens/connection/index.js',
 		'screen-prompts': './admin-src/screens/prompts/index.js',
+		'screen-brand-kits': './admin-src/screens/brand-kits/index.js',
 	},
 	output: {
 		...defaultConfig.output,

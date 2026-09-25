@@ -56,7 +56,7 @@ final class EMCP_Tools_Admin_REST_Brand_Kits extends EMCP_Tools_Admin_REST_Contr
 
 	public function apply( $request ) {
 		$data   = new EMCP_Tools_Admin_Brand_Kits_Data();
-		$result = $data->apply( sanitize_key( (string) $request->get_param( 'category' ) ), sanitize_key( (string) $request->get_param( 'slug' ) ), rest_sanitize_boolean( $request->get_param( 'backup' ) ) );
+		$result = $data->apply( sanitize_key( self::route_param( $request, 'category' ) ), sanitize_key( self::route_param( $request, 'slug' ) ), rest_sanitize_boolean( $request->get_param( 'backup' ) ) );
 		if ( is_wp_error( $result ) ) {
 			return $result;
 		}

@@ -86,6 +86,19 @@ abstract class EMCP_Tools_Admin_REST_Controller {
 	 * @param string $path Route path under admin/.
 	 * @param array  $args register_rest_route() arguments.
 	 */
+	/**
+	 * A parameter from the route pattern. WP_REST_Request::get_param() reads the
+	 * query string before URL params, so `?category=` would override a route's
+	 * {category}; route-addressed items read their ids here instead.
+	 *
+	 * @param WP_REST_Request $request Request.
+	 * @param string          $key     Route parameter.
+	 */
+	protected static function route_param( $request, string $key ): string {
+		$url = method_exists( $request, 'get_url_params' ) ? (array) $request->get_url_params() : array();
+		return (string) ( $url[ $key ] ?? $request->get_param( $key ) ?? '' );
+	}
+
 	protected function route( string $path, array $args ): void {
 		$check = array( 'permission_callback' => array( $this, 'can_access' ) );
 		// A list of endpoints (GET plus POST) needs the check on each endpoint:
