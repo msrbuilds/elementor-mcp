@@ -86,8 +86,14 @@ class EMCP_Tools_MCP_Request_Log {
 		update_option( self::OPTION, $log, false );
 	}
 
-	/** All rows, oldest first. */
+	/**
+	 * All rows, oldest first. Read fresh: a long-running WP-CLI stdio process
+	 * would otherwise keep its first copy in the object cache and overwrite
+	 * rows other processes wrote (and undo a Clear log).
+	 */
 	public static function all(): array {
+		wp_cache_delete( self::OPTION, 'options' );
+		wp_cache_delete( 'notoptions', 'options' );
 		$log = get_option( self::OPTION, array() );
 		return is_array( $log ) ? array_values( $log ) : array();
 	}

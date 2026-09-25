@@ -19,6 +19,9 @@ final class EMCP_Tools_MCP_Log_Recorder {
 
 	const ROUTE = '/mcp/emcp-tools-server';
 
+	/** One row per client address per window for requests with no user (review item 3). */
+	const ANON_WINDOW = 30;
+
 	/**
 	 * Start of the current MCP HTTP request.
 	 *
@@ -61,18 +64,31 @@ final class EMCP_Tools_MCP_Log_Recorder {
 	 * @return mixed
 	 */
 	public static function post_dispatch( $response, $server, $request ) {
-		if ( ! self::is_mcp( $request ) || null === self::$start ) {
+		if ( ! self::is_mcp( $request ) ) {
 			return $response;
 		}
-		if ( ! EMCP_Tools_Request_Context::was_logged() ) {
-			$row  = self::classify( $response, self::$body );
+		$started = self::$start;
+		$body    = self::$body;
+		if ( null === $started ) {
+			// No rest_pre_dispatch: core refused the request in
+			// check_authentication() (a wrong application password, a security
+			// plugin). Log the refusal; nothing else reaches here.
+			if ( ! self::is_failure( $response ) ) {
+				return $response;
+			}
+			$started = microtime( true );
+			$body    = method_exists( $request, 'get_body' ) ? (string) $request->get_body() : '';
+		}
+		$anonymous = 0 === get_current_user_id();
+		if ( ! EMCP_Tools_Request_Context::was_logged() && ( ! $anonymous || self::claim_anonymous_slot() ) ) {
+			$row  = self::classify( $response, $body );
 			$cred = EMCP_Tools_Request_Context::http_credential( EMCP_Tools_Request_Context::http_auth() );
 			$sid  = method_exists( $request, 'get_header' ) ? (string) $request->get_header( 'mcp-session-id' ) : '';
 			EMCP_Tools_MCP_Request_Log::record(
 				array_merge(
 					$row,
 					array(
-						'ms'         => ( microtime( true ) - self::$start ) * 1000,
+						'ms'         => ( microtime( true ) - $started ) * 1000,
 						'client'     => $cred['client'],
 						'credential' => $cred['credential'],
 						'session'    => $sid,
@@ -80,7 +96,10 @@ final class EMCP_Tools_MCP_Log_Recorder {
 					)
 				)
 			);
-			EMCP_Tools_Activity_Stats::record( 'tools/call' === $row['method'] ? $row['tool'] : '', 'error' === $row['status'] );
+			// Anonymous traffic (scanners, missing credentials) is not activity.
+			if ( ! $anonymous ) {
+				EMCP_Tools_Activity_Stats::record( 'tools/call' === $row['method'] ? $row['tool'] : '', 'error' === $row['status'] );
+			}
 		}
 		self::$start = null;
 		self::$body  = '';
@@ -166,6 +185,29 @@ final class EMCP_Tools_MCP_Log_Recorder {
 			return $data['result']['content'][0]['text'];
 		}
 		return isset( $data['message'] ) && is_string( $data['message'] ) ? $data['message'] : '';
+	}
+
+	/**
+	 * Whether a response is an HTTP or REST failure.
+	 *
+	 * @param mixed $response Response.
+	 */
+	private static function is_failure( $response ): bool {
+		return is_wp_error( $response ) || ( is_object( $response ) && method_exists( $response, 'get_status' ) && (int) $response->get_status() >= 400 );
+	}
+
+	/**
+	 * Rate-limit rows for requests with no authenticated user: one per client
+	 * address per window, so a scanner cannot evict the real rows.
+	 */
+	private static function claim_anonymous_slot(): bool {
+		$ip  = isset( $_SERVER['REMOTE_ADDR'] ) ? sanitize_text_field( wp_unslash( (string) $_SERVER['REMOTE_ADDR'] ) ) : '';
+		$key = 'emcp_tools_mcp_anon_' . substr( md5( $ip ), 0, 12 );
+		if ( false !== get_transient( $key ) ) {
+			return false;
+		}
+		set_transient( $key, 1, self::ANON_WINDOW );
+		return true;
 	}
 
 	/**

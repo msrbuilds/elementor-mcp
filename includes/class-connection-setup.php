@@ -68,6 +68,9 @@ final class EMCP_Tools_Connection_Setup {
 	 * @param int|null $now     Timestamp (tests).
 	 */
 	public static function get( int $user_id, ?int $now = null ): ?array {
+		// A long-running stdio process may have cached this user's meta before
+		// the setup was opened in the browser.
+		wp_cache_delete( $user_id, 'user_meta' );
 		$record = get_user_meta( $user_id, self::META, true );
 		if ( ! is_array( $record ) || empty( $record['setup_id'] ) ) {
 			return null;
@@ -172,6 +175,8 @@ final class EMCP_Tools_Connection_Setup {
 	 * @return array<string, array{user_id:int, expires:int}>
 	 */
 	private static function index(): array {
+		wp_cache_delete( self::INDEX, 'options' );
+		wp_cache_delete( 'notoptions', 'options' );
 		$index = get_option( self::INDEX, array() );
 		return is_array( $index ) ? $index : array();
 	}

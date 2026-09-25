@@ -108,6 +108,10 @@ final class EMCP_Tools_Activity_Stats {
 	 * @return array<string,array>
 	 */
 	private static function load(): array {
+		// Fresh read, as in EMCP_Tools_MCP_Request_Log::all(): a long-running
+		// stdio process must not write from its first cached copy.
+		wp_cache_delete( self::OPTION, 'options' );
+		wp_cache_delete( 'notoptions', 'options' );
 		$stats = get_option( self::OPTION, array() );
 		return is_array( $stats ) ? $stats : array();
 	}
