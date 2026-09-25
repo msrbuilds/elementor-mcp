@@ -12,7 +12,8 @@
 	pointer-events: none;
 }
 
-.eui-search__input {
+/* Two classes: core's input[type="search"] (0,1,1) would reset it. */
+.eui-search .eui-search__input {
 	padding-inline: 36px 36px;
 	border-radius: var(--emcp-r-md);
 }

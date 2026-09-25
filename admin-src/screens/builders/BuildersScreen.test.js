@@ -114,6 +114,24 @@ describe( 'BuildersScreen', () => {
 		expect( window.location.search ).toContain( 'detected=1' );
 	} );
 
+	it( 'warns when the saved builder is no longer active', () => {
+		window.history.replaceState(
+			{},
+			'',
+			'/wp-admin/admin.php?page=emcp-tools-page-builders'
+		);
+		render(
+			<AppProviders>
+				<BuildersScreen data={ { ...data, selected: 'bricks' } } />
+			</AppProviders>
+		);
+		expect(
+			screen.getByText(
+				/Bricks is selected but is not active on this site/
+			)
+		).toBeInTheDocument();
+	} );
+
 	it( 'an unavailable pack is locked with its requirement', () => {
 		mount();
 		expect(

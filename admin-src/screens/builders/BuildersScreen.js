@@ -1,9 +1,10 @@
 import { useState } from '@wordpress/element';
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 import {
 	Badge,
 	Card,
 	Icon,
+	Notice,
 	PageHeader,
 	RadioCard,
 	RadioCardGroup,
@@ -86,6 +87,8 @@ export function BuildersScreen( { data: initialData } ) {
 			</Badge>
 		);
 	};
+	const saved = data.builders.find( ( b ) => b.id === data.selected );
+	const stale = saved && ! saved.available;
 	const builders = data.builders.filter(
 		( b ) => '1' !== detectedOnly || b.available
 	);
@@ -106,6 +109,18 @@ export function BuildersScreen( { data: initialData } ) {
 					/>
 				}
 			/>
+			{ stale && (
+				<Notice tone="warning">
+					{ sprintf(
+						/* translators: %s: page builder name. */
+						__(
+							'%s is selected but is not active on this site, so only the Gutenberg tools are on. Activate it again or pick another builder.',
+							'emcp-tools'
+						),
+						saved.label
+					) }
+				</Notice>
+			) }
 			<Card>
 				<div className="eui-builders__banner">
 					<Icon name="blocks" />
