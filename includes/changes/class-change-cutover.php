@@ -54,10 +54,22 @@ final class EMCP_Tools_Change_Cutover {
 		add_action( 'init', array( __CLASS__, 'schedule' ), 20 );
 	}
 
-	/** Schedule the cron run until cleanup is done (cached read: no query once finished). */
+	/**
+	 * Schedule the cron run until cleanup is done. Only wp-admin and cron look:
+	 * the state options are not autoloaded, so a front-end check would cost a
+	 * query on every visit. Nothing is scheduled while a fallback or a failed
+	 * copy is waiting out its back-off.
+	 */
 	public static function schedule(): void {
+		$cron = function_exists( 'wp_doing_cron' ) && wp_doing_cron();
+		if ( ! $cron && ! is_admin() ) {
+			return;
+		}
 		$state = get_option( EMCP_Tools_Change_Names::cutover() );
 		if ( is_array( $state ) && 'done' === ( $state['cleanup'] ?? '' ) ) {
+			return;
+		}
+		if ( '' !== self::waiting( self::instance()->s ) ) {
 			return;
 		}
 		if ( ! wp_next_scheduled( self::CRON_HOOK ) ) {
@@ -83,11 +95,32 @@ final class EMCP_Tools_Change_Cutover {
 				return 'done';
 			}
 		}
-		$fb = $c->s->get_meta( EMCP_Tools_Change_Names::fallback() );
+		$wait = self::waiting( $c->s );
+		if ( '' !== $wait ) {
+			return $wait;
+		}
+		return $c->run();
+	}
+
+	/**
+	 * 'fallback' or 'retry' while a fallback (a day) or a failed copy (an hour
+	 * per failed attempt, up to a day) waits to be retried; '' otherwise.
+	 *
+	 * @param EMCP_Tools_Change_Storage $s Storage.
+	 */
+	private static function waiting( EMCP_Tools_Change_Storage $s ): string {
+		$fb = $s->get_meta( EMCP_Tools_Change_Names::fallback() );
 		if ( is_array( $fb ) && time() - (int) ( $fb['ts'] ?? 0 ) < self::FALLBACK_WAIT ) {
 			return 'fallback';
 		}
-		return $c->run();
+		$err = $s->get_meta( EMCP_Tools_Change_Names::cutover_error() );
+		if ( is_array( $err ) ) {
+			$wait = min( self::FALLBACK_WAIT, 3600 * max( 1, (int) ( $err['attempts'] ?? 1 ) ) );
+			if ( time() - (int) ( $err['ts'] ?? 0 ) < $wait ) {
+				return 'retry';
+			}
+		}
+		return '';
 	}
 
 	/**
@@ -126,45 +159,60 @@ final class EMCP_Tools_Change_Cutover {
 			if ( false === $got ) {
 				return 'retry';
 			}
+			$published_elsewhere = false;
 			try {
-				$stage( 'locked' );
-				$this->s->table_truncate();
-				$stage( 'truncated' );
-				$raw  = $this->s->option_raw();
-				$rows = $this->s->option_rows( $raw );
-				foreach ( array_chunk( $rows, self::BATCH ) as $chunk ) {
-					if ( ! $this->s->table_insert_many( $chunk ) ) {
+				// Re-check inside the lock: a run that read the flag before another
+				// process published must never truncate the live table.
+				if ( 'table' === $this->s->flag() ) {
+					$published_elsewhere = true;
+				} else {
+					$stage( 'locked' );
+					if ( ! $this->s->table_truncate() ) {
+						// TRUNCATE needs the DROP privilege; DELETE empties the table as well.
+						$this->s->table_delete_upto( PHP_INT_MAX );
+					}
+					$stage( 'truncated' );
+					$raw  = $this->s->option_raw();
+					$rows = $this->s->option_rows( $raw );
+					foreach ( array_chunk( $rows, self::BATCH ) as $chunk ) {
+						if ( ! $this->s->table_insert_many( $chunk ) ) {
+							$this->failed( 'copy_failed' );
+							return 'retry';
+						}
+					}
+					$stage( 'inserted' );
+					$want = array_map(
+						static function ( $r ) {
+							return (string) ( $r['id'] ?? '' );
+						},
+						$rows
+					);
+					if ( $this->s->table_ids() !== array_values( $want ) ) {
+						$this->failed( 'verify_failed' );
 						return 'retry';
 					}
-				}
-				$stage( 'inserted' );
-				$want = array_map(
-					static function ( $r ) {
-						return (string) ( $r['id'] ?? '' );
-					},
-					$rows
-				);
-				if ( $this->s->table_ids() !== array_values( $want ) ) {
-					return 'retry';
-				}
-				$stage( 'verified' );
-				$this->s->set_meta(
-					EMCP_Tools_Change_Names::cutover(),
-					array(
-						'ts'      => time(),
-						'cleanup' => 'pending',
-					)
-				);
-				$this->s->set_flag( 'table' );
-				if ( null !== $raw ) {
-					// Only an upgrade (a ledger existed) asks admins to reconnect their clients.
-					$this->s->set_meta( EMCP_Tools_Change_Names::reconnect_notice(), 1 );
+					$stage( 'verified' );
+					$this->s->set_meta(
+						EMCP_Tools_Change_Names::cutover(),
+						array(
+							'ts'      => time(),
+							'cleanup' => 'pending',
+						)
+					);
+					$this->s->set_flag( 'table' );
+					if ( null !== $raw ) {
+						// Only an upgrade (a ledger existed) asks admins to reconnect their clients.
+						$this->s->set_meta( EMCP_Tools_Change_Names::reconnect_notice(), 1 );
+					}
 				}
 			} finally {
 				$this->s->unlock();
 			}
 			$this->s->delete_meta( EMCP_Tools_Change_Names::fallback() );
-			$stage( 'published' );
+			$this->s->delete_meta( EMCP_Tools_Change_Names::cutover_error() );
+			if ( ! $published_elsewhere ) {
+				$stage( 'published' );
+			}
 			$this->cleanup();
 			$stage( 'cleaned' );
 			return 'done';
@@ -192,6 +240,23 @@ final class EMCP_Tools_Change_Cutover {
 			$state['cleanup'] = 'done';
 			$this->s->set_meta( EMCP_Tools_Change_Names::cutover(), $state );
 		}
+	}
+
+	/**
+	 * A copy that failed: remember it so the next attempt backs off.
+	 *
+	 * @param string $reason copy_failed | verify_failed.
+	 */
+	private function failed( string $reason ): void {
+		$prev = $this->s->get_meta( EMCP_Tools_Change_Names::cutover_error() );
+		$this->s->set_meta(
+			EMCP_Tools_Change_Names::cutover_error(),
+			array(
+				'reason'   => $reason,
+				'ts'       => time(),
+				'attempts' => ( is_array( $prev ) ? (int) ( $prev['attempts'] ?? 0 ) : 0 ) + 1,
+			)
+		);
 	}
 
 	/**

@@ -58,6 +58,10 @@ final class EMCP_Tools_Change_Memory_Storage implements EMCP_Tools_Change_Storag
 	public $exists = false;
 	/** @var bool Can the table be created (false simulates no CREATE). */
 	public $can_create = true;
+	/** @var bool Do multi-row inserts succeed. */
+	public $can_insert = true;
+	/** @var bool Does TRUNCATE succeed (it needs the DROP privilege). */
+	public $can_truncate = true;
 	/** @var string free | held | unavailable */
 	public $lock_mode = 'free';
 	/** @var int Lock attempts that still report busy before it frees (-1: always busy while held). */
@@ -172,6 +176,9 @@ final class EMCP_Tools_Change_Memory_Storage implements EMCP_Tools_Change_Storag
 	}
 
 	public function table_truncate(): bool {
+		if ( ! $this->can_truncate ) {
+			return false;
+		}
 		$this->rows     = array();
 		$this->next_seq = 1;
 		$this->event( 'truncate' );
@@ -179,6 +186,9 @@ final class EMCP_Tools_Change_Memory_Storage implements EMCP_Tools_Change_Storag
 	}
 
 	public function table_insert_many( array $rows ): bool {
+		if ( ! $this->can_insert ) {
+			return false;
+		}
 		foreach ( $rows as $r ) {
 			if ( null === $this->table_insert( (array) $r ) ) {
 				return false;
@@ -229,11 +239,16 @@ final class EMCP_Tools_Change_Memory_Storage implements EMCP_Tools_Change_Storag
 		return null;
 	}
 
-	public function table_delete_all(): array {
-		ksort( $this->rows );
-		$all        = array_values( $this->rows );
-		$this->rows = array();
-		return $all;
+	public function table_delete_upto( int $seq ): int {
+		$n = 0;
+		foreach ( array_keys( $this->rows ) as $k ) {
+			if ( $k <= $seq ) {
+				unset( $this->rows[ $k ] );
+				++$n;
+			}
+		}
+		$this->event( 'delete_upto' );
+		return $n;
 	}
 
 	public function table_select( array $args ): array {

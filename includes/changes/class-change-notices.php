@@ -56,17 +56,19 @@ final class EMCP_Tools_Change_Notices {
 	/**
 	 * What the History banners (5b) and attention items (Part 6) need.
 	 *
-	 * @return array{stray:bool, upgrade:bool, unrecorded:int, fallback:string}
+	 * @return array{stray:bool, upgrade:bool, unrecorded:int, fallback:string, cutover_error:string}
 	 */
 	public static function state(): array {
 		$s  = self::s();
 		$u  = $s->get_meta( EMCP_Tools_Change_Names::unrecorded() );
 		$fb = $s->get_meta( EMCP_Tools_Change_Names::fallback() );
+		$er = $s->get_meta( EMCP_Tools_Change_Names::cutover_error() );
 		return array(
 			'stray'      => self::stray_option(),
 			'upgrade'    => self::upgrade_notice_pending(),
 			'unrecorded' => is_array( $u ) ? (int) ( $u['count'] ?? 0 ) : 0,
-			'fallback'   => is_array( $fb ) ? (string) ( $fb['reason'] ?? '' ) : '',
+			'fallback'      => is_array( $fb ) ? (string) ( $fb['reason'] ?? '' ) : '',
+			'cutover_error' => is_array( $er ) ? (string) ( $er['reason'] ?? '' ) : '',
 		);
 	}
 

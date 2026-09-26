@@ -135,11 +135,11 @@ final class EMCP_Tools_Request_Context {
 		}
 		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- only matched, never output.
 		$uri = isset( $_SERVER['REQUEST_URI'] ) ? (string) wp_unslash( $_SERVER['REQUEST_URI'] ) : '';
-		$sid = isset( $_SERVER['HTTP_MCP_SESSION_ID'] ) ? substr( sanitize_text_field( wp_unslash( $_SERVER['HTTP_MCP_SESSION_ID'] ) ), 0, 100 ) : '';
+		$sid = isset( $_SERVER['HTTP_MCP_SESSION_ID'] ) ? EMCP_Tools_Change_Codec::text( sanitize_text_field( wp_unslash( $_SERVER['HTTP_MCP_SESSION_ID'] ) ), 100 ) : '';
 		if ( '' !== $sid || false !== strpos( $uri, '/mcp/emcp-tools-server' ) ) {
 			$cred = self::http_credential( self::http_auth() );
 			return array(
-				'client'  => substr( $cred['client'], 0, 100 ),
+				'client'  => EMCP_Tools_Change_Codec::text( $cred['client'], 100 ),
 				'session' => $sid,
 			);
 		}

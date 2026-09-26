@@ -311,13 +311,12 @@ class EMCP_Tools_Change_Log {
 	 */
 	public static function clear(): int {
 		self::$last_error = null;
-		$rows             = self::store()->remove_all();
-		if ( is_wp_error( $rows ) ) {
-			self::$last_error = $rows;
+		$count            = self::store()->remove_all( array( __CLASS__, 'forget_blobs' ) );
+		if ( is_wp_error( $count ) ) {
+			self::$last_error = $count;
 			return 0;
 		}
-		self::forget_blobs( $rows );
-		return count( $rows );
+		return (int) $count;
 	}
 
 	/**

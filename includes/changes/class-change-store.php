@@ -299,20 +299,39 @@ final class EMCP_Tools_Change_Store {
 		);
 	}
 
+	/** Rows per Clear History batch in the table. */
+	const CLEAR_BATCH = 500;
+
 	/**
-	 * Delete every row.
+	 * Delete every row. The table is cleared in batches, oldest first, so a
+	 * large History is never loaded into memory at once.
 	 *
-	 * @return array|WP_Error The removed rows.
+	 * @param callable $on_removed Receives each batch of removed rows (for their blobs).
+	 * @return int|WP_Error Rows removed.
 	 */
-	public function remove_all() {
+	public function remove_all( callable $on_removed ) {
 		$guard = $this->guard_destructive();
 		if ( $guard ) {
 			return $guard;
 		}
 		return $this->with_lock(
-			function ( bool $table, bool $cas ) {
+			function ( bool $table, bool $cas ) use ( $on_removed ) {
 				if ( $table ) {
-					return $this->s->table_delete_all();
+					$n = 0;
+					do {
+						$rows = $this->s->table_select(
+							array(
+								'order' => 'asc',
+								'limit' => self::CLEAR_BATCH,
+							)
+						);
+						if ( ! $rows ) {
+							break;
+						}
+						$n += $this->s->table_delete_upto( (int) $rows[ count( $rows ) - 1 ]['seq'] );
+						$on_removed( $rows );
+					} while ( count( $rows ) === self::CLEAR_BATCH );
+					return $n;
 				}
 				$removed = array();
 				$ok      = $this->mutate_option(
@@ -322,7 +341,11 @@ final class EMCP_Tools_Change_Store {
 					},
 					$cas
 				);
-				return true === $ok ? $removed : array();
+				if ( true !== $ok ) {
+					return 0;
+				}
+				$on_removed( $removed );
+				return count( $removed );
 			}
 		);
 	}

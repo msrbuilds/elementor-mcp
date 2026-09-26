@@ -15,9 +15,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 final class EMCP_Tools_Change_Codec {
 
 	/**
-	 * Rollback payload to JSON. A payload that does not survive a round trip
-	 * (non-UTF-8 bytes in a before-image) becomes a blocked partial snapshot,
-	 * so undo is refused instead of run on a mangled payload.
+	 * Rollback payload to JSON, exactly: a payload plain JSON would change
+	 * (objects, binary bytes) goes in a serialized envelope instead.
 	 *
 	 * @param array|null $rb Rollback ref.
 	 */
@@ -30,15 +29,16 @@ final class EMCP_Tools_Change_Codec {
 		if ( false !== $json && json_decode( $json, true ) === $rb ) {
 			return $json;
 		}
-		// phpcs:ignore WordPress.WP.AlternativeFunctions.json_encode_json_encode
-		return (string) json_encode(
-			array(
-				'type'           => (string) ( $rb['type'] ?? '' ),
-				'partial'        => true,
-				'encoding_error' => true,
-			)
-		);
+		// JSON cannot hold this payload exactly (an object, binary bytes, INF):
+		// keep its PHP serialization, hex-encoded (scanner-safe), inside a JSON
+		// envelope, so a change that was reversible in the option store stays
+		// reversible in the table.
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.json_encode_json_encode, WordPress.PHP.DiscouragedPHPFunctions.serialize_serialize
+		return (string) json_encode( array( 'type' => (string) ( $rb['type'] ?? '' ), self::ENVELOPE => bin2hex( serialize( $rb ) ) ) );
 	}
+
+	/** Envelope key for payloads JSON cannot hold exactly. */
+	const ENVELOPE = '__php';
 
 	/**
 	 * @param string|null $json Stored JSON.
@@ -48,7 +48,31 @@ final class EMCP_Tools_Change_Codec {
 			return null;
 		}
 		$rb = json_decode( $json, true );
+		if ( is_array( $rb ) && isset( $rb[ self::ENVELOPE ] ) && is_string( $rb[ self::ENVELOPE ] ) ) {
+			// Only stdClass is revived; any other object stays an incomplete class.
+			$hex = $rb[ self::ENVELOPE ];
+			// phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.serialize_unserialize
+			$rb = ( '' !== $hex && ctype_xdigit( $hex ) ) ? @unserialize( (string) hex2bin( $hex ), array( 'allowed_classes' => array( 'stdClass' ) ) ) : null;
+		}
 		return is_array( $rb ) ? $rb : null;
+	}
+
+	/**
+	 * Text for a column: valid UTF-8, cut by characters (column lengths are
+	 * characters), because $wpdb refuses a query with invalid text.
+	 *
+	 * @param mixed    $s   Value.
+	 * @param int|null $max Characters, null for no limit.
+	 */
+	public static function text( $s, ?int $max = null ): string {
+		$s = (string) $s;
+		if ( function_exists( 'mb_check_encoding' ) && ! mb_check_encoding( $s, 'UTF-8' ) ) {
+			$s = function_exists( 'mb_scrub' ) ? mb_scrub( $s, 'UTF-8' ) : (string) mb_convert_encoding( $s, 'UTF-8', 'UTF-8' );
+		}
+		if ( null === $max ) {
+			return $s;
+		}
+		return function_exists( 'mb_substr' ) ? mb_substr( $s, 0, $max, 'UTF-8' ) : substr( $s, 0, $max );
 	}
 
 	/**
@@ -62,15 +86,15 @@ final class EMCP_Tools_Change_Codec {
 			'id'             => (string) ( $row['id'] ?? '' ),
 			'ts'             => $ts,
 			'ts_us'          => (int) ( $row['ts_us'] ?? $ts * 1000000 ),
-			'domain'         => substr( (string) ( $row['domain'] ?? '' ), 0, 64 ),
-			'action'         => substr( (string) ( $row['action'] ?? '' ), 0, 64 ),
-			'target'         => substr( (string) ( $row['target'] ?? '' ), 0, 191 ),
-			'summary'        => (string) ( $row['summary'] ?? '' ),
+			'domain'         => self::text( $row['domain'] ?? '', 64 ),
+			'action'         => self::text( $row['action'] ?? '', 64 ),
+			'target'         => self::text( $row['target'] ?? '', 191 ),
+			'summary'        => self::text( $row['summary'] ?? '' ),
 			'rollback'       => self::encode_rollback( $row['rollback'] ?? null ),
 			'user_id'        => (int) ( $row['user_id'] ?? 0 ),
-			'user_login'     => substr( (string) ( $row['user_login'] ?? '' ), 0, 60 ),
-			'client'         => substr( (string) ( $row['client'] ?? '' ), 0, 100 ),
-			'session'        => substr( (string) ( $row['session'] ?? '' ), 0, 100 ),
+			'user_login'     => self::text( $row['user_login'] ?? '', 60 ),
+			'client'         => self::text( $row['client'] ?? '', 100 ),
+			'session'        => self::text( $row['session'] ?? '', 100 ),
 			'rolled_back'    => empty( $row['rolled_back'] ) ? 0 : 1,
 			'rolled_back_at' => isset( $row['rolled_back_at'] ) && '' !== $row['rolled_back_at'] ? (int) $row['rolled_back_at'] : null,
 		);

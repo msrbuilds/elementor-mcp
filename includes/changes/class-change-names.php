@@ -64,6 +64,10 @@ final class EMCP_Tools_Change_Names {
 		return 'emcp_tools_changelog_premigration_ts' . self::suffix();
 	}
 
+	public static function cutover_error(): string {
+		return 'emcp_tools_changes_cutover_error' . self::suffix();
+	}
+
 	public static function db_version(): string {
 		return 'emcp_tools_changes_db_version' . self::suffix();
 	}

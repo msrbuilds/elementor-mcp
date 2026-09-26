@@ -4,8 +4,12 @@
  * without one, runs by the same client and user with no gap over 30 minutes.
  * Stamped groups come from SQL; unstamped windows are built in PHP.
  *
- * Keys: s:{session} for a stamped session, w:{first_seq}-{last_seq}:{user_id}:{rawurlencode(client)}
- * for an unstamped window.
+ * Keys: s:{session} for a stamped session; w:{first_ts}-{last_ts}:{user_id}:{rawurlencode(client)}
+ * for an unstamped window (timestamps, not seq: the option store's seq is a
+ * position that shifts on every delete or eviction, and windows of one client
+ * and user are more than 30 minutes apart, so the bounds name exactly one
+ * window); c:{id} for a change that is its own group (spec 9.2: an Admin
+ * action, or an AI Chat call without a conversation key).
  *
  * @package EMCP_Tools
  */
@@ -108,7 +112,15 @@ final class EMCP_Tools_Change_Sessions {
 		);
 		$open = array();
 		$done = array();
+		$out = array();
 		foreach ( $rows as $r ) {
+			if ( self::is_single( $r ) ) {
+				$g = self::grow( null, $r );
+				if ( null === $before || $g['last_seq'] < $before ) {
+					$out[] = $g + array( 'key' => 'c:' . $r['id'] );
+				}
+				continue;
+			}
 			$k = $r['client'] . "\0" . $r['user_id'];
 			if ( isset( $open[ $k ] ) && $r['ts'] - $open[ $k ]['last_ts'] <= self::GAP ) {
 				$open[ $k ] = self::grow( $open[ $k ], $r );
@@ -119,14 +131,23 @@ final class EMCP_Tools_Change_Sessions {
 			}
 			$open[ $k ] = self::grow( null, $r );
 		}
-		$out = array();
 		foreach ( array_merge( $done, array_values( $open ) ) as $g ) {
 			if ( null !== $before && $g['last_seq'] >= $before ) {
 				continue;
 			}
-			$out[] = $g + array( 'key' => sprintf( 'w:%d-%d:%d:%s', $g['first_seq'], $g['last_seq'], $g['user_id'], rawurlencode( $g['client'] ) ) );
+			$out[] = $g + array( 'key' => sprintf( 'w:%d-%d:%d:%s', $g['first_ts'], $g['last_ts'], $g['user_id'], rawurlencode( $g['client'] ) ) );
 		}
 		return $out;
+	}
+
+	/**
+	 * Spec 9.2: an Admin action, and an AI Chat call without a conversation
+	 * key, are each their own group.
+	 *
+	 * @param array $r Unstamped row.
+	 */
+	private static function is_single( array $r ): bool {
+		return 'Admin' === $r['client'] || 0 === strpos( $r['client'], 'AI Chat' );
 	}
 
 	/**
@@ -189,12 +210,16 @@ final class EMCP_Tools_Change_Sessions {
 					'session' => '',
 					'client'  => rawurldecode( $m[4] ),
 					'user_id' => (int) $m[3],
-					'seq_min' => (int) $m[1],
-					'seq_max' => (int) $m[2],
+					'since'   => (int) $m[1],
+					'until'   => (int) $m[2],
 					'order'   => $order,
 					'limit'   => $limit,
 				)
 			);
+		}
+		if ( 0 === strpos( $key, 'c:' ) && strlen( $key ) > 2 ) {
+			$row = $this->store->find( substr( $key, 2 ) );
+			return $row ? array( $row ) : null;
 		}
 		return null;
 	}

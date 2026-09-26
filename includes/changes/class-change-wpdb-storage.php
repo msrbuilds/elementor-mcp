@@ -264,10 +264,9 @@ final class EMCP_Tools_Change_WPDB_Storage implements EMCP_Tools_Change_Storage 
 		return $n ? $row : null;
 	}
 
-	public function table_delete_all(): array {
-		$rows = $this->table_select( array( 'order' => 'asc', 'limit' => PHP_INT_MAX ) );
-		$this->db()->query( 'DELETE FROM ' . $this->table() );
-		return $rows;
+	public function table_delete_upto( int $seq ): int {
+		$db = $this->db();
+		return (int) $db->query( $db->prepare( 'DELETE FROM ' . $this->table() . ' WHERE seq <= %d', $seq ) );
 	}
 
 	/**

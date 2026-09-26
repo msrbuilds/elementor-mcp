@@ -80,8 +80,8 @@ interface EMCP_Tools_Change_Storage {
 	/** Delete one row; the deleted row, or null. */
 	public function table_delete( string $id ): ?array;
 
-	/** Delete every row; the deleted rows. */
-	public function table_delete_all(): array;
+	/** Delete every row with seq <= $seq; the number deleted. */
+	public function table_delete_upto( int $seq ): int;
 
 	/** Rows matching EMCP_Tools_Change_Memory_Filter arguments. */
 	public function table_select( array $args ): array;
