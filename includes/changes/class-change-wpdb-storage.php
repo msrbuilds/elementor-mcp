@@ -332,6 +332,10 @@ final class EMCP_Tools_Change_WPDB_Storage implements EMCP_Tools_Change_Storage 
 		return (int) $db->get_var( $vals ? $db->prepare( $sql, $vals ) : $sql );
 	}
 
+	public function table_clients(): array {
+		return array_map( 'strval', (array) $this->db()->get_col( 'SELECT DISTINCT client FROM ' . $this->table() . " WHERE client <> '' ORDER BY client ASC LIMIT 50" ) );
+	}
+
 	public function table_ids(): array {
 		return array_map( 'strval', (array) $this->db()->get_col( 'SELECT id FROM ' . $this->table() . ' ORDER BY seq ASC' ) );
 	}

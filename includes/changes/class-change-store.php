@@ -362,6 +362,22 @@ final class EMCP_Tools_Change_Store {
 		return ( new EMCP_Tools_Change_Memory_Filter( $this->option_list() ) )->select( $args );
 	}
 
+	/** Distinct non-empty clients, sorted, at most 50. */
+	public function clients(): array {
+		if ( $this->is_table() ) {
+			return $this->s->table_clients();
+		}
+		$out = array();
+		foreach ( $this->option_list() as $r ) {
+			if ( '' !== $r['client'] ) {
+				$out[ $r['client'] ] = true;
+			}
+		}
+		$out = array_keys( $out );
+		sort( $out, SORT_STRING );
+		return array_slice( $out, 0, 50 );
+	}
+
 	/**
 	 * @param array $args Arguments.
 	 */

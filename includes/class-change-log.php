@@ -157,9 +157,57 @@ class EMCP_Tools_Change_Log {
 		return array_reverse( self::store()->select( array( 'limit' => self::MAX_COUNT ) ) );
 	}
 
-	/** Number of entries. */
-	public static function count(): int {
-		return self::store()->count();
+	/**
+	 * Number of entries matching EMCP_Tools_Change_Memory_Filter arguments.
+	 *
+	 * @param array $args Filters (domain, client, session, user_id, rolled_back, search, since, until).
+	 */
+	public static function count( array $args = array() ): int {
+		return self::store()->count( $args );
+	}
+
+	/** Distinct clients that recorded changes, sorted (at most 50). */
+	public static function clients(): array {
+		return self::store()->clients();
+	}
+
+	/** Domains per History kind (spec 8.19); anything else is settings. */
+	const KINDS = array(
+		'content' => array( 'content', 'post', 'posts', 'meta', 'acf', 'media', 'menu', 'menus', 'seo' ),
+		'design'  => array( 'elementor', 'globals', 'global-styles', 'gutenberg', 'blocks', 'block', 'atomic', 'themer' ),
+	);
+
+	/**
+	 * History kind of a domain: content, design or settings.
+	 *
+	 * @param string $domain Ledger domain.
+	 */
+	public static function kind_of( string $domain ): string {
+		foreach ( self::KINDS as $kind => $domains ) {
+			if ( in_array( strtolower( $domain ), $domains, true ) ) {
+				return $kind;
+			}
+		}
+		return 'settings';
+	}
+
+	/**
+	 * Row icon type: undo (a rollback's compensating entry), delete, add, settings or edit.
+	 *
+	 * @param array $entry Ledger entry.
+	 */
+	public static function type_of( array $entry ): string {
+		$action = strtolower( (string) ( $entry['action'] ?? '' ) );
+		if ( 'rollback' === $action ) {
+			return 'undo';
+		}
+		if ( preg_match( '/delete|trash|remove/', $action ) ) {
+			return 'delete';
+		}
+		if ( preg_match( '/create|add|upload|insert|install/', $action ) ) {
+			return 'add';
+		}
+		return 'settings' === self::kind_of( (string) ( $entry['domain'] ?? '' ) ) ? 'settings' : 'edit';
 	}
 
 	/**

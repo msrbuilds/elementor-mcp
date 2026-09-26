@@ -89,6 +89,9 @@ interface EMCP_Tools_Change_Storage {
 	/** Count of rows matching the arguments. */
 	public function table_count( array $args = array() ): int;
 
+	/** Distinct non-empty clients, sorted, at most 50. */
+	public function table_clients(): array;
+
 	/** Every id in seq order. */
 	public function table_ids(): array;
 

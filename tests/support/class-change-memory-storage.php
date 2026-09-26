@@ -259,6 +259,18 @@ final class EMCP_Tools_Change_Memory_Storage implements EMCP_Tools_Change_Storag
 		return ( new EMCP_Tools_Change_Memory_Filter( $this->rows ) )->count( $args );
 	}
 
+	public function table_clients(): array {
+		$out = array();
+		foreach ( $this->rows as $r ) {
+			if ( '' !== $r['client'] ) {
+				$out[ $r['client'] ] = true;
+			}
+		}
+		$out = array_keys( $out );
+		sort( $out, SORT_STRING );
+		return array_slice( $out, 0, 50 );
+	}
+
 	public function table_ids(): array {
 		ksort( $this->rows );
 		return array_values( array_map( static fn( $r ) => $r['id'], $this->rows ) );
