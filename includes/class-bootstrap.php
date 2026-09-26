@@ -171,11 +171,6 @@ class EMCP_Tools_Bootstrap {
 		require_once EMCP_TOOLS_DIR . 'includes/oauth/class-oauth-token.php';
 		require_once EMCP_TOOLS_DIR . 'includes/oauth/class-oauth-bearer.php';
 		require_once EMCP_TOOLS_DIR . 'includes/oauth/class-oauth-server.php';
-		require_once EMCP_TOOLS_DIR . 'includes/changes/class-change-names.php';
-		require_once EMCP_TOOLS_DIR . 'includes/changes/interface-change-storage.php';
-		require_once EMCP_TOOLS_DIR . 'includes/changes/class-change-codec.php';
-		require_once EMCP_TOOLS_DIR . 'includes/changes/class-change-memory-filter.php';
-		require_once EMCP_TOOLS_DIR . 'includes/changes/class-change-wpdb-storage.php';
 		require_once EMCP_TOOLS_DIR . 'includes/class-change-log.php';
 		require_once EMCP_TOOLS_DIR . 'includes/class-lease.php';
 		require_once EMCP_TOOLS_DIR . 'includes/class-mcp-request-log.php';

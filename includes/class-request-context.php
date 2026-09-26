@@ -116,6 +116,45 @@ final class EMCP_Tools_Request_Context {
 		return self::$chat;
 	}
 
+	/**
+	 * Client and session to stamp on a change recorded now (spec 9.2): the AI
+	 * Chat call in progress, this WP-CLI process, the MCP HTTP credential with
+	 * its Mcp-Session-Id, or Admin for wp-admin and admin REST.
+	 *
+	 * @return array{client:string, session:string}
+	 */
+	public static function current(): array {
+		if ( '' !== self::$chat['client'] ) {
+			return self::$chat;
+		}
+		if ( defined( 'WP_CLI' ) && WP_CLI ) {
+			return array(
+				'client'  => 'WP-CLI',
+				'session' => self::cli_session(),
+			);
+		}
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- only matched, never output.
+		$uri = isset( $_SERVER['REQUEST_URI'] ) ? (string) wp_unslash( $_SERVER['REQUEST_URI'] ) : '';
+		$sid = isset( $_SERVER['HTTP_MCP_SESSION_ID'] ) ? substr( sanitize_text_field( wp_unslash( $_SERVER['HTTP_MCP_SESSION_ID'] ) ), 0, 100 ) : '';
+		if ( '' !== $sid || false !== strpos( $uri, '/mcp/emcp-tools-server' ) ) {
+			$cred = self::http_credential( self::http_auth() );
+			return array(
+				'client'  => substr( $cred['client'], 0, 100 ),
+				'session' => $sid,
+			);
+		}
+		if ( ( function_exists( 'is_admin' ) && is_admin() ) || false !== strpos( $uri, '/emcp-tools/v1/admin/' ) ) {
+			return array(
+				'client'  => 'Admin',
+				'session' => '',
+			);
+		}
+		return array(
+			'client'  => '',
+			'session' => '',
+		);
+	}
+
 	/** A stable id for this WP-CLI process: pid plus process start time. */
 	public static function cli_session(): string {
 		$start = isset( $_SERVER['REQUEST_TIME_FLOAT'] ) ? (string) $_SERVER['REQUEST_TIME_FLOAT'] : '';

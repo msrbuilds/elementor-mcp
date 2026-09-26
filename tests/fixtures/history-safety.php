@@ -67,7 +67,10 @@ function add_post_meta( $id, $key, $value ) {
 function wp_get_object_terms( $id, $tax, $args = array() ) { return $GLOBALS['terms'][ $id ][ $tax ] ?? array(); }
 function wp_set_object_terms( $id, $ids, $tax, $append = false ) { $GLOBALS['terms'][ $id ][ $tax ] = $ids; return $ids; }
 function check( $condition, $message ) { if ( ! $condition ) { fwrite( STDERR, $message . "\n" ); exit( 1 ); } }
+require ABSPATH . 'includes/class-lease.php';
 require ABSPATH . 'includes/class-change-log.php';
+require ABSPATH . 'tests/support/class-change-memory-storage.php';
+EMCP_Tools_Change_Log::use_storage( new EMCP_Tools_Change_Memory_Storage(), EMCP_Tools_Change_Memory_Storage::lease() );
 require ABSPATH . 'includes/class-change-recorder.php';
 require ABSPATH . 'includes/class-elementor-data.php';
 require ABSPATH . 'includes/abilities/class-transaction-abilities.php';

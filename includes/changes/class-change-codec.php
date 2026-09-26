@@ -77,6 +77,20 @@ final class EMCP_Tools_Change_Codec {
 	}
 
 	/**
+	 * An option-store row with every key a table row has. The rollback payload
+	 * is kept as stored: the option is PHP-serialized, so it never goes
+	 * through JSON.
+	 *
+	 * @param array $row Stored row.
+	 * @param int   $seq Position in the option list (1-based).
+	 */
+	public static function normalize( array $row, int $seq ): array {
+		$out             = self::row_from_db( array_merge( self::row_to_db( array_diff_key( $row, array( 'rollback' => 1 ) ) ), array( 'seq' => $seq ) ) );
+		$out['rollback'] = isset( $row['rollback'] ) && is_array( $row['rollback'] ) ? $row['rollback'] : null;
+		return $out;
+	}
+
+	/**
 	 * Table columns (strings from $wpdb) as a ledger row.
 	 *
 	 * @param array $db Columns.

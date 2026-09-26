@@ -15,6 +15,15 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+// The storage layer is loaded here, not by the bootstrap, because standalone
+// fixtures load the ledger on its own.
+require_once __DIR__ . '/changes/class-change-names.php';
+require_once __DIR__ . '/changes/interface-change-storage.php';
+require_once __DIR__ . '/changes/class-change-codec.php';
+require_once __DIR__ . '/changes/class-change-memory-filter.php';
+require_once __DIR__ . '/changes/class-change-wpdb-storage.php';
+require_once __DIR__ . '/changes/class-change-store.php';
+
 /**
  * The change ledger.
  *
@@ -23,8 +32,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 class EMCP_Tools_Change_Log {
 
 	const OPTION    = 'emcp_tools_changelog';
-	const MAX_COUNT = 500;     // Rows are light now (before-images live out-of-band).
-	const MAX_BYTES = 2097152; // ~2 MB safety ceiling for the light rows.
+	const MAX_COUNT = 500;     // Option store only: the table has retention instead.
+	const MAX_BYTES = 2097152; // Option store only.
 
 	/**
 	 * When true, record() is a no-op. Set during rollback so the rollback's own
@@ -34,10 +43,39 @@ class EMCP_Tools_Change_Log {
 	 */
 	public static $suppress = false;
 
+	/** @var EMCP_Tools_Change_Store|null */
+	private static $store = null;
+
+	/** @var WP_Error|null Why the last delete() or clear() did nothing. */
+	private static $last_error = null;
+
+	/**
+	 * Use a storage (tests and the live acceptance); null returns to $wpdb.
+	 *
+	 * @param EMCP_Tools_Change_Storage|null $s     Storage.
+	 * @param EMCP_Tools_Lease|null          $lease Lease for the migration guard.
+	 */
+	public static function use_storage( ?EMCP_Tools_Change_Storage $s, ?EMCP_Tools_Lease $lease = null ): void {
+		self::$store = $s ? new EMCP_Tools_Change_Store( $s, $lease ) : null;
+	}
+
+	/** The store (spec 9.1 writer protocol). */
+	public static function store(): EMCP_Tools_Change_Store {
+		if ( null === self::$store ) {
+			self::$store = new EMCP_Tools_Change_Store( new EMCP_Tools_Change_WPDB_Storage() );
+		}
+		return self::$store;
+	}
+
+	/** Why the last delete() or clear() did nothing (409 history_busy / history_upgrading), or null. */
+	public static function last_error(): ?WP_Error {
+		return self::$last_error;
+	}
+
 	/**
 	 * Append an entry. Returns its id, or '' when suppressed or persistence fails.
 	 *
-	 * @param array $entry { domain, action, target?, summary?, rollback? }.
+	 * @param array $entry { domain, action, target?, summary?, rollback?, client?, session? }.
 	 * @return string
 	 */
 	public static function record( array $entry ): string {
@@ -45,44 +83,106 @@ class EMCP_Tools_Change_Log {
 			return '';
 		}
 		$id    = self::uid();
+		$ctx   = class_exists( 'EMCP_Tools_Request_Context' ) ? EMCP_Tools_Request_Context::current() : array(
+			'client'  => '',
+			'session' => '',
+		);
 		$entry = array_merge(
 			array(
 				'target'   => '',
 				'summary'  => '',
 				'rollback' => null,
+				'client'   => $ctx['client'],
+				'session'  => $ctx['session'],
 			),
 			$entry,
 			array(
-				'id'          => $id,
-				'ts'          => time(),
-				'user_id'     => function_exists( 'get_current_user_id' ) ? (int) get_current_user_id() : 0,
-				'user_login'  => self::current_login(),
-				'rolled_back' => false,
+				'id'             => $id,
+				'ts'             => time(),
+				'ts_us'          => (int) round( microtime( true ) * 1000000 ),
+				'user_id'        => function_exists( 'get_current_user_id' ) ? (int) get_current_user_id() : 0,
+				'user_login'     => self::current_login(),
+				'rolled_back'    => false,
+				'rolled_back_at' => null,
 			)
 		);
-		$log   = self::all();
-		$log[] = $entry;
-		$kept = self::cap( $log );
-		if ( ! update_option( self::OPTION, $kept, false ) ) {
-			// The change happened but its undo record did not persist: the MCP
-			// log row for this request says so (spec 9.1).
-			if ( class_exists( 'EMCP_Tools_Request_Context' ) ) {
-				EMCP_Tools_Request_Context::flag_ledger_not_recorded();
-			}
+		$dropped = array();
+		if ( '' === self::store()->add( $entry, $dropped ) ) {
+			self::not_recorded( $entry );
 			return '';
 		}
-		self::forget_blobs( array_slice( $log, 0, count( $log ) - count( $kept ) ) );
+		self::forget_blobs( $dropped );
 		return $id;
 	}
 
 	/**
-	 * All entries, oldest-first.
+	 * The change happened but its undo record did not persist (spec 9.1 step 2):
+	 * its blob is deleted, the MCP log row says so, the History banner counts it.
+	 *
+	 * @param array $entry The entry that could not be stored.
+	 */
+	private static function not_recorded( array $entry ): void {
+		self::forget_blobs( array( $entry ) );
+		if ( class_exists( 'EMCP_Tools_Request_Context' ) ) {
+			EMCP_Tools_Request_Context::flag_ledger_not_recorded();
+		}
+		$s = self::store()->storage();
+		$u = $s->get_meta( EMCP_Tools_Change_Names::unrecorded() );
+		$s->set_meta(
+			EMCP_Tools_Change_Names::unrecorded(),
+			array(
+				'count'       => ( is_array( $u ) ? (int) ( $u['count'] ?? 0 ) : 0 ) + 1,
+				'last_ts'     => time(),
+				'last_target' => (string) ( $entry['target'] ?? '' ),
+				'last_tool'   => (string) ( $entry['action'] ?? '' ),
+			)
+		);
+		if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+			// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
+			error_log( sprintf( 'EMCP Tools: a change to %s (%s) was made but could not be added to History.', (string) ( $entry['target'] ?? '' ), (string) ( $entry['action'] ?? '' ) ) );
+		}
+	}
+
+	/**
+	 * The newest 500 entries, oldest first. Internal and kept for backward
+	 * compatibility; History and list-changes use query().
 	 *
 	 * @return array[]
 	 */
 	public static function all(): array {
-		$log = get_option( self::OPTION, array() );
-		return is_array( $log ) ? array_values( $log ) : array();
+		return array_reverse( self::store()->select( array( 'limit' => self::MAX_COUNT ) ) );
+	}
+
+	/** Number of entries. */
+	public static function count(): int {
+		return self::store()->count();
+	}
+
+	/**
+	 * A page of entries, newest first.
+	 *
+	 * @param array $args domain, client, session, user_id, rolled_back, search, since, until,
+	 *                    cursor (the seq of the last row seen), limit (default 50, max 200).
+	 * @return array{items: array, next_cursor: ?int}
+	 */
+	public static function query( array $args ): array {
+		$limit = max( 1, min( 200, (int) ( $args['limit'] ?? 50 ) ) );
+		$sel   = array_intersect_key( $args, array_flip( array( 'domain', 'client', 'session', 'user_id', 'rolled_back', 'search', 'since', 'until' ) ) );
+		if ( ! empty( $args['cursor'] ) ) {
+			$sel['before_seq'] = (int) $args['cursor'];
+		}
+		$rows = self::store()->select(
+			$sel + array(
+				'order' => 'desc',
+				'limit' => $limit + 1,
+			)
+		);
+		$more = count( $rows ) > $limit;
+		$rows = array_slice( $rows, 0, $limit );
+		return array(
+			'items'       => $rows,
+			'next_cursor' => ( $more && $rows ) ? (int) $rows[ count( $rows ) - 1 ]['seq'] : null,
+		);
 	}
 
 	/**
@@ -92,12 +192,7 @@ class EMCP_Tools_Change_Log {
 	 * @return array|null
 	 */
 	public static function get( string $id ): ?array {
-		foreach ( self::all() as $e ) {
-			if ( isset( $e['id'] ) && $e['id'] === $id ) {
-				return $e;
-			}
-		}
-		return null;
+		return '' === $id ? null : self::store()->find( $id );
 	}
 
 	/**
@@ -106,20 +201,14 @@ class EMCP_Tools_Change_Log {
 	 * @param string $id Entry id.
 	 */
 	public static function mark_rolled_back( string $id ): bool {
-		$log = self::all();
-		$found = false;
-		foreach ( $log as &$e ) {
-			if ( isset( $e['id'] ) && $e['id'] === $id ) {
-				$e['rolled_back'] = true;
-				$found = true;
-			}
-		}
-		unset( $e );
-		if ( ! $found ) {
-			return false;
-		}
-		$updated = update_option( self::OPTION, $log, false );
-		return $updated || ! empty( self::get( $id )['rolled_back'] );
+		$r = self::store()->update(
+			$id,
+			array(
+				'rolled_back'    => true,
+				'rolled_back_at' => time(),
+			)
+		);
+		return true === $r;
 	}
 
 	/**
@@ -131,26 +220,19 @@ class EMCP_Tools_Change_Log {
 	 *
 	 * @since 3.4.2
 	 * @param string $id Entry id.
-	 * @return bool True when an entry was removed.
+	 * @return bool True when an entry was removed; see last_error() otherwise.
 	 */
 	public static function delete( string $id ): bool {
+		self::$last_error = null;
 		if ( '' === $id ) {
 			return false;
 		}
-		$log     = self::all();
-		$kept    = array();
-		$removed = null;
-		foreach ( $log as $e ) {
-			if ( null === $removed && isset( $e['id'] ) && $e['id'] === $id ) {
-				$removed = $e;
-				continue;
-			}
-			$kept[] = $e;
-		}
-		if ( null === $removed ) {
+		$removed = self::store()->remove( $id );
+		if ( is_wp_error( $removed ) ) {
+			self::$last_error = $removed;
 			return false;
 		}
-		if ( ! update_option( self::OPTION, array_values( $kept ), false ) ) {
+		if ( ! is_array( $removed ) ) {
 			return false;
 		}
 		self::forget_blobs( array( $removed ) );
@@ -161,32 +243,17 @@ class EMCP_Tools_Change_Log {
 	 * Wipe the whole ledger.
 	 *
 	 * @since 3.4.2
-	 * @return int Number of entries removed.
+	 * @return int Number of entries removed; see last_error() when 0.
 	 */
 	public static function clear(): int {
-		$log   = self::all();
-		$count = count( $log );
-		if ( $count && ! update_option( self::OPTION, array(), false ) ) {
+		self::$last_error = null;
+		$rows             = self::store()->remove_all();
+		if ( is_wp_error( $rows ) ) {
+			self::$last_error = $rows;
 			return 0;
 		}
-		self::forget_blobs( $log );
-		return $count;
-	}
-
-	/**
-	 * Enforce count + size caps by dropping the oldest entries.
-	 *
-	 * @param array $log Entries.
-	 * @return array
-	 */
-	private static function cap( array $log ): array {
-		if ( count( $log ) > self::MAX_COUNT ) {
-			$log     = array_slice( $log, -self::MAX_COUNT );
-		}
-		while ( count( $log ) > 1 && strlen( (string) wp_json_encode( $log ) ) > self::MAX_BYTES ) {
-			array_shift( $log );
-		}
-		return array_values( $log );
+		self::forget_blobs( $rows );
+		return count( $rows );
 	}
 
 	/**
@@ -195,7 +262,7 @@ class EMCP_Tools_Change_Log {
 	 *
 	 * @param array $rows Ledger rows being removed.
 	 */
-	private static function forget_blobs( array $rows ): void {
+	public static function forget_blobs( array $rows ): void {
 		if ( ! class_exists( 'EMCP_Tools_Change_Blobs' ) ) {
 			return;
 		}
@@ -216,6 +283,27 @@ class EMCP_Tools_Change_Log {
 	 * @return array|WP_Error
 	 */
 	public static function rollback( string $id, bool $force = false ) {
+		$guard = self::store()->guard_destructive();
+		if ( $guard ) {
+			return $guard;
+		}
+		// In the option store the whole undo holds the lock, so the conflict
+		// check, the restore and the ledger writes see one consistent list.
+		return self::store()->with_lock(
+			static function () use ( $id, $force ) {
+				return self::rollback_now( $id, $force );
+			}
+		);
+	}
+
+	/**
+	 * rollback() body, run inside the store's lock.
+	 *
+	 * @param string $id    Entry id.
+	 * @param bool   $force Skip the conflict guard.
+	 * @return array|WP_Error
+	 */
+	private static function rollback_now( string $id, bool $force ) {
 		$entry = self::get( $id );
 		if ( null === $entry ) {
 			return new WP_Error( 'not_found', __( 'Change not found.', 'emcp-tools' ) );
