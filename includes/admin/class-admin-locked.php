@@ -24,7 +24,7 @@ final class EMCP_Tools_Admin_Locked {
 			array(
 				'script' => 'screen-locked',
 				'boot'   => static function ( array $context ): array {
-					return self::feature( (string) ( $context['tab'] ?? '' ) );
+					return self::feature( (string) ( $context['key'] ?? $context['tab'] ?? '' ) );
 				},
 			)
 		);
@@ -72,6 +72,33 @@ final class EMCP_Tools_Admin_Locked {
 					__( '50 page templates across 10 industries', 'emcp-tools' ),
 					__( 'Each one creates a draft page you can edit in Elementor', 'emcp-tools' ),
 					__( 'The library stays in sync with new designs', 'emcp-tools' ),
+				),
+			),
+			'widgets:widgets' => array(
+				'title'       => __( 'Widgets', 'emcp-tools' ),
+				'description' => __( 'Custom Elementor widgets your AI agent designs and you approve.', 'emcp-tools' ),
+				'bullets'     => array(
+					__( 'The plugin compiles each widget from a spec; the AI never writes raw PHP', 'emcp-tools' ),
+					__( 'Nothing goes live until you switch it on', 'emcp-tools' ),
+					__( 'Back up and share widgets through EMCP Cloud', 'emcp-tools' ),
+				),
+			),
+			'widgets:blocks'  => array(
+				'title'       => __( 'Blocks', 'emcp-tools' ),
+				'description' => __( 'Custom Gutenberg blocks your AI agent designs and you approve.', 'emcp-tools' ),
+				'bullets'     => array(
+					__( 'Compiled from a spec; the AI never writes raw PHP or JS', 'emcp-tools' ),
+					__( 'Preview a block before you switch it on', 'emcp-tools' ),
+					__( 'Blocks appear in the inserter under EMCP', 'emcp-tools' ),
+				),
+			),
+			'widgets:export'  => array(
+				'title'       => __( 'Export as plugin', 'emcp-tools' ),
+				'description' => __( 'Package your active widgets, blocks and snippets as a standalone plugin.', 'emcp-tools' ),
+				'bullets'     => array(
+					__( 'Keeps working after EMCP Tools is removed', 'emcp-tools' ),
+					__( 'Stays dormant while EMCP Tools is active', 'emcp-tools' ),
+					__( 'API keys stay out of the ZIP unless you choose otherwise', 'emcp-tools' ),
 				),
 			),
 			'migrate' => array(

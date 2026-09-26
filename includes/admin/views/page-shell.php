@@ -14,7 +14,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 $emcp_view      = isset( $_GET['view'] ) ? sanitize_key( wp_unslash( $_GET['view'] ) ) : '';
 $emcp_nav       = $this->nav();
 $emcp_current   = $emcp_nav->current( $active_tab, $emcp_view );
-$emcp_screen    = EMCP_Tools_Admin_Screens::screen_for_tab( $active_tab );
+$emcp_screen    = EMCP_Tools_Admin_Screens::screen_for_tab( $active_tab, null, $emcp_view );
 $emcp_user      = wp_get_current_user();
 $emcp_premium   = function_exists( 'emcp_tools_fs' ) && emcp_tools_fs()->can_use_premium_code();
 $emcp_unread    = class_exists( 'EMCP_Tools_Notifications' ) ? EMCP_Tools_Notifications::unread_count( (int) $emcp_user->ID ) : 0;

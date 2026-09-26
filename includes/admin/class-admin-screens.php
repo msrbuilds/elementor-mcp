@@ -14,17 +14,22 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 final class EMCP_Tools_Admin_Screens {
 
-	/** Pro-only tabs and the Pro view that renders them; missing view means locked (spec 8.25). */
+	/** Pro-only tabs and the Pro file that renders them; missing file means locked (spec 8.25). */
 	const LOCKED_TABS = array(
-		'ai-chat'   => 'includes/admin/views/page-ai-chat.php',
-		'skills'    => 'includes/admin/views/page-skills.php',
-		'memory'    => 'includes/admin/views/page-memory.php',
-		'migrate'   => 'includes/admin/views/page-migrate.php',
-		'templates' => 'includes/admin/rest/class-admin-rest-templates.php',
+		'ai-chat'         => 'includes/admin/views/page-ai-chat.php',
+		'skills'          => 'includes/admin/views/page-skills.php',
+		'memory'          => 'includes/admin/views/page-memory.php',
+		'migrate'         => 'includes/admin/views/page-migrate.php',
+		'templates'       => 'includes/admin/rest/class-admin-rest-templates.php',
+		// Sandbox child views (tab:view). Widgets and Blocks own no Pro PHP file,
+		// so their built Pro bundle is what a free build lacks.
+		'widgets:widgets' => 'assets/admin/build-pro/screen-sandbox-widgets.asset.php',
+		'widgets:blocks'  => 'assets/admin/build-pro/screen-sandbox-blocks.asset.php',
+		'widgets:export'  => 'includes/admin/rest/class-admin-rest-sandbox-export.php',
 	);
 
 	/** Pro-only tabs that also need an active licence; unlicensed means locked (spec 8.25). */
-	const LICENCE_TABS = array( 'templates', 'skills', 'memory' );
+	const LICENCE_TABS = array( 'templates', 'skills', 'memory', 'widgets:widgets', 'widgets:blocks', 'widgets:export' );
 
 	/** Warn (under WP_DEBUG) when a screen's boot data grows past this (spec 5.2). */
 	const MAX_PAYLOAD_BYTES = 153600;
@@ -47,8 +52,10 @@ final class EMCP_Tools_Admin_Screens {
 			array(
 				'script' => '',
 				'root'   => 'free',
-				'boot'   => '__return_empty_array',
-				'tabs'   => array(),
+				'boot'    => '__return_empty_array',
+				'tabs'    => array(),
+				'when'    => null,
+				'enqueue' => null,
 			),
 			$args
 		);
@@ -80,27 +87,94 @@ final class EMCP_Tools_Admin_Screens {
 	}
 
 	/**
-	 * Which React screen renders a tab, or null for a legacy view.
+	 * Which React screen renders a tab (or a tab's ?view= child), or null for a legacy view.
 	 *
 	 * @param string        $tab             Tab id.
 	 * @param callable|null $pro_view_exists ( string $rel ): bool, injectable for tests.
+	 * @param string        $view            The ?view= child, '' for none.
 	 */
-	public static function screen_for_tab( string $tab, ?callable $pro_view_exists = null ): ?string {
+	public static function screen_for_tab( string $tab, ?callable $pro_view_exists = null, string $view = '' ): ?string {
 		$exists = $pro_view_exists ?? static function ( string $rel ): bool {
 			return class_exists( 'EMCP_Tools_Pro_Loader' ) && '' !== EMCP_Tools_Pro_Loader::path( $rel );
 		};
-		if ( isset( self::LOCKED_TABS[ $tab ] ) && ! $exists( self::LOCKED_TABS[ $tab ] ) ) {
-			return 'locked';
+		$key = self::route_key( $tab, $view );
+		if ( $key !== $tab ) {
+			$screen = self::resolve( $key, $exists );
+			if ( false !== $screen ) {
+				return $screen;
+			}
 		}
-		if ( in_array( $tab, self::LICENCE_TABS, true ) && ! ( function_exists( 'emcp_tools_fs' ) && emcp_tools_fs()->can_use_premium_code() ) ) {
-			return 'locked';
+		$screen = self::resolve( $tab, $exists );
+		return false === $screen ? null : $screen;
+	}
+
+	/**
+	 * `tab:view` when the registry knows that key, else the tab.
+	 *
+	 * @param string $tab  Tab id.
+	 * @param string $view View.
+	 */
+	public static function route_key( string $tab, string $view ): string {
+		if ( '' === $view ) {
+			return $tab;
 		}
+		$key   = $tab . ':' . $view;
+		$known = isset( self::LOCKED_TABS[ $key ] ) || in_array( $key, self::LICENCE_TABS, true ) || null !== self::registered_for( $key );
+		return $known ? $key : $tab;
+	}
+
+	/** The ?view= of the current admin request, sanitised. */
+	public static function current_view(): string {
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only routing.
+		return isset( $_GET['view'] ) ? sanitize_key( wp_unslash( $_GET['view'] ) ) : '';
+	}
+
+	/**
+	 * Run a screen's own enqueue callable (for example the snippet code editor).
+	 *
+	 * @param string $id Screen id.
+	 */
+	public static function run_enqueue_hook( string $id ): void {
+		$screen = self::get( $id );
+		if ( $screen && is_callable( $screen['enqueue'] ) ) {
+			call_user_func( $screen['enqueue'] );
+		}
+	}
+
+	/**
+	 * The screen registered for a route key, or null.
+	 *
+	 * @param string $key Tab or tab:view.
+	 */
+	private static function registered_for( string $key ): ?string {
 		foreach ( self::$screens as $id => $screen ) {
-			if ( in_array( $tab, (array) $screen['tabs'], true ) ) {
+			if ( in_array( $key, (array) $screen['tabs'], true ) ) {
 				return $id;
 			}
 		}
 		return null;
+	}
+
+	/**
+	 * Resolve one route key.
+	 *
+	 * @param string   $key    Tab or tab:view.
+	 * @param callable $exists Pro file check.
+	 * @return string|null|false Screen id, null for a legacy view, false when the
+	 *                           screen's condition sends the request back to its tab.
+	 */
+	private static function resolve( string $key, callable $exists ) {
+		$id = self::registered_for( $key );
+		if ( null !== $id && is_callable( self::$screens[ $id ]['when'] ) && ! call_user_func( self::$screens[ $id ]['when'] ) ) {
+			return false;
+		}
+		if ( isset( self::LOCKED_TABS[ $key ] ) && ! $exists( self::LOCKED_TABS[ $key ] ) ) {
+			return 'locked';
+		}
+		if ( in_array( $key, self::LICENCE_TABS, true ) && ! ( function_exists( 'emcp_tools_fs' ) && emcp_tools_fs()->can_use_premium_code() ) ) {
+			return 'locked';
+		}
+		return $id;
 	}
 
 	/**
@@ -156,6 +230,7 @@ final class EMCP_Tools_Admin_Screens {
 		$version = (string) ( $asset['version'] ?? EMCP_TOOLS_VERSION );
 		$deps    = array_values( array_unique( array_merge( (array) ( $asset['dependencies'] ?? array() ), array( 'emcp-admin-ui' ) ) ) );
 		$handle  = self::handle( $id );
+		self::run_enqueue_hook( $id );
 		wp_register_script( $handle, $paths['url'], $deps, $version, true );
 		wp_add_inline_script( $handle, self::boot_script( self::boot_payload( $id, $common, $context ) ), 'before' );
 		wp_set_script_translations( $handle, 'emcp-tools' );

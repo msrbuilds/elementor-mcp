@@ -836,7 +836,17 @@ class EMCP_Tools_Admin {
 	 * @param string $screen Screen id.
 	 */
 	private function enqueue_screen( string $screen ): void {
-		EMCP_Tools_Admin_Screens::enqueue( $screen, $this->boot_common(), array( 'tab' => $this->get_active_tab() ) );
+		$tab  = $this->get_active_tab();
+		$view = EMCP_Tools_Admin_Screens::current_view();
+		EMCP_Tools_Admin_Screens::enqueue(
+			$screen,
+			$this->boot_common(),
+			array(
+				'tab'  => $tab,
+				'view' => $view,
+				'key'  => EMCP_Tools_Admin_Screens::route_key( $tab, $view ),
+			)
+		);
 	}
 
 	/**
@@ -852,7 +862,7 @@ class EMCP_Tools_Admin {
 		}
 
 		$this->enqueue_frame_bundles();
-		$screen = EMCP_Tools_Admin_Screens::screen_for_tab( $this->get_active_tab() );
+		$screen = EMCP_Tools_Admin_Screens::screen_for_tab( $this->get_active_tab(), null, EMCP_Tools_Admin_Screens::current_view() );
 		if ( null !== $screen ) {
 			$this->enqueue_screen( $screen );
 			return;
