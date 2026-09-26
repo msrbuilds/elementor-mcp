@@ -506,6 +506,7 @@ class EMCP_Tools_Bootstrap {
 		EMCP_Tools_Change_Blobs::init();
 		// Change ledger: the one-time cutover to the emcp_changes table (spec 9.1).
 		EMCP_Tools_Change_Cutover::init();
+		EMCP_Tools_Change_Notices::init();
 		// The Redirect Manager (store table install + front-end 301/302 handler) is
 		// booted by EMCP_Tools_Redirect_Module::register() only when the module is
 		// active, a true kill switch from the Modules tab.
