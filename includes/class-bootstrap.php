@@ -161,6 +161,7 @@ class EMCP_Tools_Bootstrap {
 		require_once EMCP_TOOLS_DIR . 'includes/cloud/class-cloud-client.php';
 		require_once EMCP_TOOLS_DIR . 'includes/cloud/class-gateway-credential.php';
 		require_once EMCP_TOOLS_DIR . 'includes/cloud/class-cloud-sync.php';
+		require_once EMCP_TOOLS_DIR . 'includes/cloud/class-sandbox-cloud-state.php';
 		require_once EMCP_TOOLS_DIR . 'includes/cloud/class-marketplace-installs.php';
 		require_once EMCP_TOOLS_DIR . 'includes/cloud/class-settings-sync.php';
 		require_once EMCP_TOOLS_DIR . 'includes/oauth/class-oauth-store.php';

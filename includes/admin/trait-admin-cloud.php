@@ -71,9 +71,7 @@ trait EMCP_Tools_Admin_Cloud_Trait {
 		// Record that this artifact now exists in the cloud + the checksum of what
 		// was pushed (to later detect local edits), and refresh its marketplace
 		// state so the buttons reflect reality.
-		update_post_meta( $id, '_emcp_cloud_pushed', time() );
-		self::store_artifact_checksum( $kind, $id );
-		self::refresh_marketplace_state( $kind, $id );
+		EMCP_Tools_Sandbox_Cloud_State::after_push( $kind, $id );
 		$payload            = self::cloud_action_payload( $kind, $id );
 		$payload['message'] = __( 'Saved to cloud.', 'emcp-tools' );
 		wp_send_json_success( $payload );
@@ -115,9 +113,7 @@ trait EMCP_Tools_Admin_Cloud_Trait {
 			}
 			$emcp_iid = (int) ( $emcp_item['id'] ?? 0 );
 			if ( $emcp_iid ) {
-				update_post_meta( $emcp_iid, '_emcp_cloud_pushed', time() );
-				self::store_artifact_checksum( $kind, $emcp_iid );
-				self::refresh_marketplace_state( $kind, $emcp_iid );
+				EMCP_Tools_Sandbox_Cloud_State::after_push( $kind, $emcp_iid );
 			}
 		}
 		$pushed  = (int) ( $res['pushed'] ?? 0 );
@@ -155,106 +151,32 @@ trait EMCP_Tools_Admin_Cloud_Trait {
 
 	/** Cache the current content checksum as the last-pushed checksum. */
 	private static function store_artifact_checksum( string $kind, int $id ): void {
-		$sum = self::artifact_checksum( $kind, $id );
-		if ( '' !== $sum ) {
-			update_post_meta( $id, '_emcp_cloud_checksum', $sum );
-		}
+		EMCP_Tools_Sandbox_Cloud_State::store_checksum( $kind, $id );
 	}
 
 	/** Current content checksum for an artifact ('' if unresolvable). */
 	private static function artifact_checksum( string $kind, int $id ): string {
-		if ( ! class_exists( 'EMCP_Tools_Sandbox_Cloud_Abilities' ) ) {
-			return '';
-		}
-		$art = ( new EMCP_Tools_Sandbox_Cloud_Abilities() )->resolve_artifact( $kind );
-		return $art ? (string) $art->checksum( $id ) : '';
+		return EMCP_Tools_Sandbox_Cloud_State::checksum( $kind, $id );
 	}
 
 	/** True when local content differs from what was last pushed to the cloud. */
 	private static function artifact_changed( string $kind, int $id ): bool {
-		if ( ! get_post_meta( $id, '_emcp_cloud_pushed', true ) ) {
-			return false;
-		}
-		$pushed = (string) get_post_meta( $id, '_emcp_cloud_checksum', true );
-		if ( '' === $pushed ) {
-			// No recorded baseline — e.g. the artifact was pushed/published before
-			// checksum tracking existed. We can't prove the content is unchanged,
-			// so allow an update rather than hide "Push update" forever. Pushing (or
-			// re-saving) records a fresh baseline via store_artifact_checksum(),
-			// which self-heals the state back to "Up to date".
-			return true;
-		}
-		return self::artifact_checksum( $kind, $id ) !== $pushed;
+		return EMCP_Tools_Sandbox_Cloud_State::changed( $kind, $id );
 	}
 
-	/**
-	 * Fetch marketplace state from the cloud and cache the useful bits locally.
-	 * Best-effort — returns the state array, or null on any error.
-	 */
+	/** Fetch marketplace state from the cloud and cache it locally (best effort). */
 	private static function refresh_marketplace_state( string $kind, int $id ): ?array {
-		if ( ! class_exists( 'EMCP_Tools_Cloud_Sync' ) ) {
-			return null;
-		}
-		$state = EMCP_Tools_Cloud_Sync::marketplace_state( $kind, $id );
-		if ( is_wp_error( $state ) || ! is_array( $state ) ) {
-			return null;
-		}
-		$slug = isset( $state['slug'] ) ? (string) $state['slug'] : '';
-		if ( '' !== $slug ) {
-			update_post_meta( $id, '_emcp_marketplace_slug', $slug );
-			update_post_meta( $id, '_emcp_marketplace_status', (string) ( $state['status'] ?? '' ) );
-			update_post_meta( $id, '_emcp_marketplace_pending', ! empty( $state['hasPendingUpdate'] ) ? 1 : 0 );
-		} else {
-			delete_post_meta( $id, '_emcp_marketplace_slug' );
-			delete_post_meta( $id, '_emcp_marketplace_status' );
-			delete_post_meta( $id, '_emcp_marketplace_pending' );
-		}
-		return $state;
+		return EMCP_Tools_Sandbox_Cloud_State::refresh_marketplace( $kind, $id );
 	}
 
-	/**
-	 * Verify the artifact still exists as a CLOUD BACKUP (separate from any
-	 * marketplace listing). If it was deleted remotely, clear the local
-	 * "pushed" flag so the button reverts from "Saved" to "Save to Cloud".
-	 *
-	 * Only a definitive 404/410 resets the state — transient errors (network,
-	 * 5xx, not-connected) leave it untouched so a blip never drops a real save.
-	 */
+	/** Clear the "pushed" flags when the Cloud copy was deleted (definitive 404/410 only). */
 	private static function verify_cloud_backup( string $kind, int $id ): void {
-		if ( ! get_post_meta( $id, '_emcp_cloud_pushed', true ) ) {
-			return; // nothing claims to be pushed.
-		}
-		if ( ! class_exists( 'EMCP_Tools_Cloud_Client' ) || ! class_exists( 'EMCP_Tools_Sandbox_Cloud_Abilities' ) ) {
-			return;
-		}
-		$art  = ( new EMCP_Tools_Sandbox_Cloud_Abilities() )->resolve_artifact( $kind );
-		$uuid = $art ? (string) $art->uuid( $id ) : '';
-		if ( '' === $uuid ) {
-			return;
-		}
-		$res = EMCP_Tools_Cloud_Client::get( '/api/cloud/v1/artifacts/' . rawurlencode( $uuid ) );
-		if ( is_wp_error( $res ) && in_array( $res->get_error_code(), array( 'cloud_http_404', 'cloud_http_410' ), true ) ) {
-			delete_post_meta( $id, '_emcp_cloud_pushed' );
-			delete_post_meta( $id, '_emcp_cloud_checksum' );
-		}
+		EMCP_Tools_Sandbox_Cloud_State::verify_backup( $kind, $id );
 	}
 
 	/** JS payload describing an artifact's cloud/marketplace state (from cached meta). */
 	public static function cloud_action_payload( string $kind, int $id ): array {
-		$slug   = (string) get_post_meta( $id, '_emcp_marketplace_slug', true );
-		$status = (string) get_post_meta( $id, '_emcp_marketplace_status', true );
-		return array(
-			'kind'               => $kind,
-			'id'                 => $id,
-			'pushed'             => (bool) get_post_meta( $id, '_emcp_cloud_pushed', true ),
-			'changed'            => self::artifact_changed( $kind, $id ),
-			'slug'               => $slug,
-			'status'             => $status,
-			'published'          => ( 'published' === $status ),
-			'has_pending_update' => (bool) get_post_meta( $id, '_emcp_marketplace_pending', true ),
-			'publish_url'        => class_exists( 'EMCP_Tools_Cloud_Sync' ) ? EMCP_Tools_Cloud_Sync::publish_url( $kind, $id ) : '',
-			'view_url'           => ( '' !== $slug && class_exists( 'EMCP_Tools_Cloud_Sync' ) ) ? EMCP_Tools_Cloud_Sync::marketplace_view_url( $slug ) : '',
-		);
+		return EMCP_Tools_Sandbox_Cloud_State::payload( $kind, $id );
 	}
 
 	/**
