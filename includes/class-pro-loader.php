@@ -81,6 +81,8 @@ final class EMCP_Tools_Pro_Loader {
 		'includes/admin/rest/class-admin-rest-templates.php',
 		'includes/admin/data/class-admin-skills-data.php',
 		'includes/admin/rest/class-admin-rest-skills.php',
+		'includes/admin/data/class-admin-memory-data.php',
+		'includes/admin/rest/class-admin-rest-memory.php',
 	);
 
 	/**
@@ -299,6 +301,11 @@ final class EMCP_Tools_Pro_Loader {
 		// Agent Skills screen REST (3.18.0 redesign).
 		if ( class_exists( 'EMCP_Tools_Admin_REST_Skills' ) ) {
 			( new EMCP_Tools_Admin_REST_Skills() )->register();
+		}
+
+		// Project Memory screen REST (3.18.0 redesign).
+		if ( class_exists( 'EMCP_Tools_Admin_REST_Memory' ) ) {
+			( new EMCP_Tools_Admin_REST_Memory() )->register();
 		}
 
 		// Template titles in the command palette (3.18.0 redesign).

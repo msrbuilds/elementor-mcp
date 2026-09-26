@@ -56,6 +56,8 @@ includes/admin/data/class-admin-templates-data.php
 includes/admin/rest/class-admin-rest-templates.php
 includes/admin/data/class-admin-skills-data.php
 includes/admin/rest/class-admin-rest-skills.php
+includes/admin/data/class-admin-memory-data.php
+includes/admin/rest/class-admin-rest-memory.php
 includes/admin/views/page-ai-chat.php
 includes/admin/views/ai-chat-panel.php
 includes/admin/views/ai-chat-panel-editor.php
