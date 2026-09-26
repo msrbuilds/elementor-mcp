@@ -6,7 +6,11 @@
 module.exports = {
 	preset: '@wordpress/jest-preset-default',
 	rootDir: __dirname,
-	roots: [ '<rootDir>/admin-src', '<rootDir>/admin-build' ],
+	roots: [ '<rootDir>/admin-src', '<rootDir>/admin-build' ].concat(
+		require( 'fs' ).existsSync( __dirname + '/pro/admin-src' )
+			? [ '<rootDir>/pro/admin-src' ]
+			: []
+	),
 	transform: {
 		'\\.[jt]sx?$': [ 'babel-jest', { presets: [ '@wordpress/babel-preset-default' ] } ],
 	},
