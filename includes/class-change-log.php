@@ -27,6 +27,7 @@ require_once __DIR__ . '/changes/class-change-cutover.php';
 require_once __DIR__ . '/changes/class-change-notices.php';
 require_once __DIR__ . '/changes/class-change-sessions.php';
 require_once __DIR__ . '/changes/class-change-retention.php';
+require_once __DIR__ . '/changes/class-change-diff.php';
 
 /**
  * The change ledger.
