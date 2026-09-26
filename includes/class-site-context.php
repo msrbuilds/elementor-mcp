@@ -280,8 +280,7 @@ class EMCP_Tools_Site_Context {
 			$lines[] = $emcp_memory;
 		}
 
-		return implode( "
-", $lines );
+		return implode( "\n", $lines );
 	}
 
 	/**
@@ -300,14 +299,10 @@ class EMCP_Tools_Site_Context {
 		$lines = array();
 		foreach ( $rows as $label => $value ) {
 			if ( '' !== trim( $value ) ) {
-				$lines[] = '- ' . $label . ': ' . str_replace( array( "
-", "
-", "" ), ' ', trim( $value ) );
+				$lines[] = '- ' . $label . ': ' . str_replace( array( "\r\n", "\n", "\r" ), ' ', trim( $value ) );
 			}
 		}
-		return $lines ? "## Site profile
-" . implode( "
-", $lines ) : '';
+		return $lines ? "## Site profile\n" . implode( "\n", $lines ) : '';
 	}
 
 	/**
@@ -319,16 +314,12 @@ class EMCP_Tools_Site_Context {
 	 * @return string
 	 */
 	public static function server_instructions( ?array $draft = null ): string {
-		$base    = self::default_base() . "
-
-" . self::environment_summary( isset( $draft['sections'] ) ? (array) $draft['sections'] : null );
+		$base    = self::default_base() . "\n\n" . self::environment_summary( isset( $draft['sections'] ) ? (array) $draft['sections'] : null );
 		$enabled = isset( $draft['enabled'] ) ? (bool) $draft['enabled'] : self::is_enabled();
 		$context = isset( $draft['instructions'] ) ? (string) $draft['instructions'] : self::get_context();
 		$profile = self::profile_block( EMCP_Tools_Context_Sections::profile( isset( $draft['profile'] ) ? (array) $draft['profile'] : null ) );
 		if ( $enabled && '' !== $profile ) {
-			$base .= "
-
-" . $profile;
+			$base .= "\n\n" . $profile;
 		}
 		return self::compose( $base, $context, $enabled );
 	}
