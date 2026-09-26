@@ -23,6 +23,8 @@ require_once __DIR__ . '/changes/class-change-codec.php';
 require_once __DIR__ . '/changes/class-change-memory-filter.php';
 require_once __DIR__ . '/changes/class-change-wpdb-storage.php';
 require_once __DIR__ . '/changes/class-change-store.php';
+require_once __DIR__ . '/changes/class-change-cutover.php';
+require_once __DIR__ . '/changes/class-change-notices.php';
 
 /**
  * The change ledger.
