@@ -154,7 +154,9 @@ test( 'palette opens with Ctrl+K and navigates', async ( { page } ) => {
 		page.getByRole( 'combobox', { name: 'Search commands and settings' } )
 	).toHaveCount( 0 );
 	await page
-		.getByRole( 'combobox', { name: 'Search screens, tools and settings' } )
+		.getByRole( 'combobox', {
+			name: 'Search screens, tools, settings, prompts and templates',
+		} )
 		.fill( 'redirect' );
 	await page.keyboard.press( 'Enter' );
 	await page.waitForURL( /page=emcp-tools-redirects/ );
