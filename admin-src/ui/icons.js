@@ -57,6 +57,10 @@ import {
 	FileCode,
 	WandSparkles,
 	Package,
+	Paperclip,
+	SlidersHorizontal,
+	Send,
+	Square,
 } from 'lucide-react';
 
 export const ICONS = {
@@ -114,4 +118,8 @@ export const ICONS = {
 	'file-code': FileCode,
 	'wand-sparkles': WandSparkles,
 	package: Package,
+	paperclip: Paperclip,
+	'sliders-horizontal': SlidersHorizontal,
+	send: Send,
+	square: Square,
 };

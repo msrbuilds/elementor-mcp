@@ -83,6 +83,7 @@ final class EMCP_Tools_Pro_Loader {
 		'includes/admin/rest/class-admin-rest-skills.php',
 		'includes/admin/data/class-admin-memory-data.php',
 		'includes/admin/rest/class-admin-rest-memory.php',
+		'includes/admin/data/class-admin-ai-chat-data.php',
 		'includes/admin/data/class-admin-sandbox-export-data.php',
 		'includes/admin/rest/class-admin-rest-sandbox-export.php',
 	);

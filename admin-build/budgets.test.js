@@ -5,7 +5,7 @@ describe( 'bundle budgets', () => {
 		expect( budgetFor( 'ui' ) ).toBe( 60 * 1024 );
 		expect( budgetFor( 'shell' ) ).toBe( 25 * 1024 );
 		expect( budgetFor( 'screen-tools' ) ).toBe( 45 * 1024 );
-		expect( budgetFor( 'screen-chat' ) ).toBe( 80 * 1024 );
+		expect( budgetFor( 'screen-ai-chat' ) ).toBe( 80 * 1024 );
 		expect( budgetFor( 'screen-backup' ) ).toBe( 80 * 1024 );
 		expect( budgetFor( 'vendor-thing' ) ).toBeNull();
 	} );

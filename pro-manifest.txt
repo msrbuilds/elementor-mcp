@@ -58,13 +58,13 @@ includes/admin/data/class-admin-skills-data.php
 includes/admin/rest/class-admin-rest-skills.php
 includes/admin/data/class-admin-memory-data.php
 includes/admin/rest/class-admin-rest-memory.php
+includes/admin/data/class-admin-ai-chat-data.php
 includes/admin/data/class-admin-sandbox-export-data.php
 includes/admin/rest/class-admin-rest-sandbox-export.php
 includes/admin/views/page-ai-chat.php
 includes/admin/views/ai-chat-panel.php
 includes/admin/views/ai-chat-panel-editor.php
 includes/admin/views/page-skills.php
-assets/js/ai-chat.js
 assets/js/editor-window.js
 assets/js/editor-elementor.js
 assets/js/editor-gutenberg.js

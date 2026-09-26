@@ -16,7 +16,7 @@ final class EMCP_Tools_Admin_Screens {
 
 	/** Pro-only tabs and the Pro file that renders them; missing file means locked (spec 8.25). */
 	const LOCKED_TABS = array(
-		'ai-chat'         => 'includes/admin/views/page-ai-chat.php',
+		'ai-chat'         => 'includes/admin/data/class-admin-ai-chat-data.php',
 		'skills'          => 'includes/admin/views/page-skills.php',
 		'memory'          => 'includes/admin/views/page-memory.php',
 		'migrate'         => 'includes/admin/views/page-migrate.php',
@@ -29,7 +29,7 @@ final class EMCP_Tools_Admin_Screens {
 	);
 
 	/** Pro-only tabs that also need an active licence; unlicensed means locked (spec 8.25). */
-	const LICENCE_TABS = array( 'templates', 'skills', 'memory', 'widgets:widgets', 'widgets:blocks', 'widgets:export' );
+	const LICENCE_TABS = array( 'ai-chat', 'templates', 'skills', 'memory', 'widgets:widgets', 'widgets:blocks', 'widgets:export' );
 
 	/** Warn (under WP_DEBUG) when a screen's boot data grows past this (spec 5.2). */
 	const MAX_PAYLOAD_BYTES = 153600;

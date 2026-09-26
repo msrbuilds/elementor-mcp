@@ -347,6 +347,9 @@ class EMCP_Tools_Admin {
 		if ( class_exists( 'EMCP_Tools_Admin_REST_Memory' ) ) {
 			EMCP_Tools_Admin_REST_Memory::register_screen();
 		}
+		if ( class_exists( 'EMCP_Tools_Admin_AI_Chat_Data' ) ) {
+			EMCP_Tools_Admin_AI_Chat_Data::register_screen();
+		}
 		if ( class_exists( 'EMCP_Tools_Admin_REST_Sandbox_Export' ) ) {
 			EMCP_Tools_Admin_REST_Sandbox_Export::register_screen();
 		}
