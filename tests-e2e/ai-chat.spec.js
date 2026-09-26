@@ -1,7 +1,7 @@
 /**
  * AI Chat in the admin screen and both editor panels (Part 4c), with provider
  * replies mocked (tests-e2e/support/mock-llm.js). Tool calls run for real
- * (list-pages is read-only). Every conversation a run saves is deleted, and
+ * (list-post-types: read-only and registered whatever the page builder). Every conversation a run saves is deleted, and
  * each editor test works on its own draft page, deleted afterwards.
  * Same environment as frame.spec.js.
  */
@@ -95,7 +95,7 @@ test( 'Admin: greeting, a tool loop with a conversation key, history, settings, 
 	test.setTimeout( 120000 );
 	const ask = `E2E list my pages ${ testInfo.project.name }`;
 	const llm = await mockLlm( page, [
-		{ tool: { name: 'list-pages', input: {} } },
+		{ tool: { name: 'list-post-types', input: {} } },
 		{ text: 'E2E mocked reply' },
 	] );
 	const seen = recorder( page );
@@ -114,6 +114,10 @@ test( 'Admin: greeting, a tool loop with a conversation key, history, settings, 
 		await expect( page.getByText( 'E2E mocked reply' ) ).toBeVisible( {
 			timeout: 30000,
 		} );
+		// The tool really ran on the site, not only the mocked reply.
+		await expect( page.locator( '.emcp-chat-tool.is-ok' ) ).toContainText(
+			'list-post-types'
+		);
 		expect( llm.requests.length ).toBeGreaterThanOrEqual( 2 );
 		expect( seen.execute ).toHaveLength( 1 );
 		expect( seen.execute[ 0 ].conversation_key ).toMatch( KEY );
@@ -247,7 +251,7 @@ for ( const editor of [ 'elementor', 'gutenberg' ] ) {
 		const seen = recorder( page );
 		try {
 			await mockLlm( page, [
-				{ tool: { name: 'list-pages', input: {} } },
+				{ tool: { name: 'list-post-types', input: {} } },
 				{ text: 'Editor mocked reply' },
 			] );
 			await page.goto(
@@ -282,7 +286,7 @@ for ( const editor of [ 'elementor', 'gutenberg' ] ) {
 			// A new page has no thread: the only tool call is this run's.
 			await expect(
 				page.locator( '.emcp-ai-tool--ok .emcp-ai-tool-name' )
-			).toHaveText( 'list-pages' );
+			).toHaveText( 'list-post-types' );
 			expect( seen.execute[ 0 ].conversation_key ).toMatch( KEY );
 			await expect.poll( () => seen.saves.length ).toBeGreaterThan( 0 );
 			const saved = seen.saves.at( -1 ).postDataJSON();

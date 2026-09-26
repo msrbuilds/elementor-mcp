@@ -51,7 +51,10 @@ test( 'Prompts: Use in AI Chat fills the composer', async ( { page } ) => {
 		.first()
 		.textContent();
 	await link.click();
-	await expect( page.locator( '#emcp-ai-input' ) ).toHaveValue( text );
+	// The AI Chat screen (Part 4c) waits for the tool list before it shows the composer.
+	await expect(
+		page.getByRole( 'textbox', { name: 'Message' } )
+	).toHaveValue( text, { timeout: 60000 } );
 } );
 
 test( 'Brand Kits: the grid and the current kit strip render', async ( {
