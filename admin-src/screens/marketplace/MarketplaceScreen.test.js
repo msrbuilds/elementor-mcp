@@ -108,6 +108,15 @@ describe( 'MarketplaceScreen', () => {
 		expect( window.location.search ).not.toContain( 'category=' );
 	} );
 
+	it( 'sends no empty verified flag: the REST boolean refuses an empty string', async () => {
+		apiFetch.mockResolvedValue( page );
+		mount();
+		await screen.findByRole( 'heading', { name: 'Brands' } );
+		expect( apiFetch.mock.calls[ 0 ][ 0 ].path ).not.toContain(
+			'verified'
+		);
+	} );
+
 	it( 'the verified toggle is sent to the server', async () => {
 		apiFetch.mockResolvedValue( page );
 		mount();

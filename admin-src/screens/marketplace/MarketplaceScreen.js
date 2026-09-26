@@ -66,18 +66,21 @@ export function MarketplaceScreen( { data: boot } ) {
 	const [ busy, setBusy ] = useState( '' );
 	const [ installs, setInstalls ] = useState( null );
 
-	const load = () =>
-		request(
-			`${ API }?${ new URLSearchParams( {
-				search,
-				type,
-				category,
-				access,
-				sort,
-				verified: verified ? '1' : '',
-				page,
-			} ) }`
-		).then( setList );
+	const load = () => {
+		const query = new URLSearchParams( {
+			search,
+			type,
+			category,
+			access,
+			sort,
+			page,
+		} );
+		// The REST boolean refuses an empty string, so the flag is sent only when on.
+		if ( verified ) {
+			query.set( 'verified', '1' );
+		}
+		return request( `${ API }?${ query }` ).then( setList );
+	};
 
 	useEffect( () => {
 		if ( boot.connected ) {
