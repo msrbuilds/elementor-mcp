@@ -6,6 +6,16 @@
 	gap: 20px;
 }
 
+/* Core gives `code` a grey background that drops muted text below 4.5:1. */
+.emcp-sbo .eui-page-header__desc code {
+	padding: 1px 6px;
+	font-family: var(--emcp-mono);
+	font-size: 12px;
+	color: var(--emcp-ink-2);
+	background: var(--emcp-surface-2);
+	border-radius: var(--emcp-r-xs);
+}
+
 .emcp-sbo-cards {
 	display: grid;
 	grid-template-columns: repeat(3, minmax(0, 1fr));
