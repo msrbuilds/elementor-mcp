@@ -31,6 +31,8 @@ final class EMCP_Tools_Admin_REST_Marketplace extends EMCP_Tools_Admin_REST_Cont
 		);
 		$this->route( 'marketplace/installs', array( 'methods' => 'GET', 'callback' => array( $this, 'installs' ) ) );
 		$this->route( 'marketplace/(?P<slug>[a-z0-9-]+)/install', array( 'methods' => 'POST', 'callback' => array( $this, 'install' ) ) );
+		// Publish an update to a Sandbox item's listing (was ajax push_update, spec 8.18).
+		$this->route( 'marketplace/(?P<kind>widget|block|snippet)/(?P<id>\d+)/update', array( 'methods' => 'POST', 'callback' => array( $this, 'push_update' ) ) );
 	}
 
 	public static function register_screen(): void {
@@ -64,6 +66,11 @@ final class EMCP_Tools_Admin_REST_Marketplace extends EMCP_Tools_Admin_REST_Cont
 
 	public function installs( $request ) {
 		return new WP_REST_Response( array( 'installs' => EMCP_Tools_Marketplace_Installs::all() ) );
+	}
+
+	public function push_update( $request ) {
+		$res = ( new EMCP_Tools_Admin_Sandbox_Cloud_Data() )->marketplace_update( self::route_param( $request, 'kind' ), (int) self::route_param( $request, 'id' ), sanitize_textarea_field( (string) $request->get_param( 'changelog' ) ) );
+		return is_wp_error( $res ) ? $res : new WP_REST_Response( $res );
 	}
 
 	public function install( $request ) {

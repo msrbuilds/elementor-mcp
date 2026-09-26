@@ -200,6 +200,7 @@ class EMCP_Tools_Bootstrap {
 		require_once EMCP_TOOLS_DIR . 'includes/admin/rest/class-admin-rest-context.php';
 		require_once EMCP_TOOLS_DIR . 'includes/admin/data/class-admin-sandbox-list.php';
 		require_once EMCP_TOOLS_DIR . 'includes/admin/data/class-admin-sandbox-data.php';
+		require_once EMCP_TOOLS_DIR . 'includes/admin/data/class-admin-sandbox-cloud-data.php';
 		require_once EMCP_TOOLS_DIR . 'includes/admin/rest/class-admin-rest-sandbox.php';
 		require_once EMCP_TOOLS_DIR . 'includes/admin/data/class-admin-brand-kits-data.php';
 		require_once EMCP_TOOLS_DIR . 'includes/admin/rest/class-admin-rest-brand-kits.php';

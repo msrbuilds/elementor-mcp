@@ -420,6 +420,198 @@ final class EMCP_Tools_Admin_Sandbox_Data {
 	}
 
 	/**
+	 * Switch an artifact on or off. Activation stays human-only: the route is
+	 * cookie-only, and the stores re-validate (a critical snippet is refused).
+	 *
+	 * @param string $type   Type.
+	 * @param int    $id     Id.
+	 * @param bool   $active On or off.
+	 * @param array  $query  The list query to answer with.
+	 * @return array|WP_Error The list for $query, plus message.
+	 */
+	public function set_status( string $type, int $id, bool $active, array $query ) {
+		$ok = self::can( $type, true );
+		if ( is_wp_error( $ok ) ) {
+			return $ok;
+		}
+		$status = $active ? 'active' : 'draft';
+		$kind   = self::kind( $type );
+		if ( 'widget' === $kind ) {
+			$res = EMCP_Tools_Widget_Store::set_status( $id, $status );
+		} elseif ( 'block' === $kind ) {
+			$res = EMCP_Tools_Block_Store::instance()->set_status( $id, $status );
+		} else {
+			$res = EMCP_Tools_PHP_Snippet_Store::set_status( $id, $status );
+		}
+		if ( is_wp_error( $res ) ) {
+			return self::as_rest_error( $res );
+		}
+		return $this->after_write( $type, $query, $active ? __( 'Switched on.', 'emcp-tools' ) : __( 'Switched off.', 'emcp-tools' ) );
+	}
+
+	/**
+	 * Delete an artifact.
+	 *
+	 * @param string $type  Type.
+	 * @param int    $id    Id.
+	 * @param array  $query The list query to answer with.
+	 * @return array|WP_Error
+	 */
+	public function delete( string $type, int $id, array $query ) {
+		$ok = self::can( $type, true );
+		if ( is_wp_error( $ok ) ) {
+			return $ok;
+		}
+		$kind = self::kind( $type );
+		if ( 'widget' === $kind ) {
+			$res = EMCP_Tools_Widget_Store::delete( $id );
+		} elseif ( 'block' === $kind ) {
+			$res = EMCP_Tools_Block_Store::instance()->delete( $id );
+		} else {
+			$res = EMCP_Tools_PHP_Snippet_Store::delete( $id );
+		}
+		if ( is_wp_error( $res ) ) {
+			return self::as_rest_error( $res );
+		}
+		return $this->after_write( $type, $query, __( 'Deleted.', 'emcp-tools' ) );
+	}
+
+	/**
+	 * Create (id 0) or edit a snippet as a human. It is validated and stored as
+	 * written; a new one starts inactive like an agent's draft.
+	 *
+	 * @param int   $id    Snippet id, 0 for a new one.
+	 * @param array $args  { title?, code?, context?, hook?, priority? } straight from REST (not slashed).
+	 * @param array $query The list query to answer with.
+	 * @return array|WP_Error
+	 */
+	public function save_snippet( int $id, array $args, array $query ) {
+		$ok = self::can( 'snippets', true );
+		if ( is_wp_error( $ok ) ) {
+			return $ok;
+		}
+		$clean = array();
+		if ( isset( $args['title'] ) ) {
+			$clean['title'] = sanitize_text_field( (string) $args['title'] );
+		}
+		if ( isset( $args['code'] ) ) {
+			$clean['code'] = (string) $args['code']; // Raw PHP source: validated by the store, never run here.
+		}
+		if ( isset( $args['context'] ) ) {
+			$clean['context'] = in_array( $args['context'], EMCP_Tools_PHP_Snippet_Store::CONTEXTS, true ) ? (string) $args['context'] : 'shortcode';
+		}
+		if ( isset( $args['hook'] ) ) {
+			$clean['hook'] = sanitize_text_field( (string) $args['hook'] );
+		}
+		if ( isset( $args['priority'] ) ) {
+			$clean['priority'] = absint( $args['priority'] );
+		}
+		$res = $id > 0 ? EMCP_Tools_PHP_Snippet_Store::update( $id, $clean ) : EMCP_Tools_PHP_Snippet_Store::create_draft( $clean );
+		if ( is_wp_error( $res ) ) {
+			return self::as_rest_error( $res );
+		}
+		$out           = $this->after_write( 'snippets', $query, $id > 0 ? __( 'Snippet updated.', 'emcp-tools' ) : __( 'Saved as an inactive draft.', 'emcp-tools' ) );
+		$out['itemId'] = (int) $res['snippet_id'];
+		return $out;
+	}
+
+	/**
+	 * A portable bundle for download.
+	 *
+	 * @param string $type Type.
+	 * @param int    $id   Id.
+	 * @return array{filename:string,bundle:array}|WP_Error
+	 */
+	public function export_bundle( string $type, int $id ) {
+		$ok = self::can( $type );
+		if ( is_wp_error( $ok ) ) {
+			return $ok;
+		}
+		$kind = self::kind( $type );
+		$art  = EMCP_Tools_Sandbox_Cloud_State::artifact( $kind );
+		if ( null === $art ) {
+			return new WP_Error( 'emcp_sandbox_pro_required', __( 'This part of the Sandbox needs EMCP Pro.', 'emcp-tools' ), array( 'status' => 403 ) );
+		}
+		$bundle = $art->to_bundle( $id );
+		if ( is_wp_error( $bundle ) ) {
+			return self::as_rest_error( $bundle );
+		}
+		return array(
+			'filename' => sanitize_file_name( 'emcp-' . $kind . '-' . $id . '.json' ),
+			'bundle'   => $bundle,
+		);
+	}
+
+	/**
+	 * Import a portable bundle. Always a new inactive draft (the artifacts' own
+	 * apply_bundle() guarantees it).
+	 *
+	 * @param string $json Bundle JSON.
+	 * @return array|WP_Error
+	 */
+	public function import_json( string $json ) {
+		$data = json_decode( $json, true );
+		if ( ! is_array( $data ) || array() === $data ) {
+			return new WP_Error( 'emcp_sandbox_bad_bundle', __( 'The bundle is not valid JSON.', 'emcp-tools' ), array( 'status' => 400 ) );
+		}
+		$valid = EMCP_Tools_Sandbox_Bundle::validate( $data );
+		if ( is_wp_error( $valid ) ) {
+			return new WP_Error( 'emcp_sandbox_bad_bundle', $valid->get_error_message(), array( 'status' => 400 ) );
+		}
+		$kind = (string) $data['kind'];
+		$type = self::type_of( $kind );
+		$ok   = self::can( $type, true );
+		if ( is_wp_error( $ok ) ) {
+			return $ok;
+		}
+		$art = EMCP_Tools_Sandbox_Cloud_State::artifact( $kind );
+		if ( null === $art ) {
+			return new WP_Error( 'emcp_sandbox_pro_required', __( 'This part of the Sandbox needs EMCP Pro.', 'emcp-tools' ), array( 'status' => 403 ) );
+		}
+		$id = $art->apply_bundle( $data );
+		if ( is_wp_error( $id ) ) {
+			return self::as_rest_error( $id );
+		}
+		self::flush_nav();
+		return array(
+			'kind'      => $kind,
+			'type'      => $type,
+			'id'        => (int) $id,
+			'message'   => __( 'Imported as a new inactive draft.', 'emcp-tools' ),
+			'reviewUrl' => self::view_url( $type, (int) $id ),
+		);
+	}
+
+	/**
+	 * Server-side render of a block with its defaults (spec 8.13).
+	 *
+	 * @param int $id Block id.
+	 * @return array|WP_Error
+	 */
+	public function block_preview( int $id ) {
+		$ok = self::can( 'blocks' );
+		if ( is_wp_error( $ok ) ) {
+			return $ok;
+		}
+		$res = EMCP_Tools_Block_Store::instance()->preview( $id );
+		return is_wp_error( $res ) ? self::as_rest_error( $res ) : $res;
+	}
+
+	/**
+	 * The fresh list after a change, with a message.
+	 *
+	 * @param string $type    Type.
+	 * @param array  $query   List query.
+	 * @param string $message Toast text.
+	 */
+	private function after_write( string $type, array $query, string $message ): array {
+		self::flush_nav();
+		$this->cache = array();
+		$list        = $this->list( $type, $query );
+		return array_merge( is_wp_error( $list ) ? array() : $list, array( 'message' => $message ) );
+	}
+
+	/**
 	 * Store errors carry no HTTP status: not_found is 404, forbidden 403, the rest
 	 * 400. A validation report travels with the error, summarised here so every
 	 * screen words it the same way.
