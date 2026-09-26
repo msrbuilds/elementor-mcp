@@ -45,11 +45,25 @@ final class EMCP_Tools_Request_Context {
 	 */
 	private static $http_auth = null;
 
+	/**
+	 * Client and session of the AI Chat tool call being executed (spec 9.2).
+	 *
+	 * @var array{client:string, session:string}
+	 */
+	private static $chat = array(
+		'client'  => '',
+		'session' => '',
+	);
+
 	/** Start of a new HTTP request. */
 	public static function reset(): void {
 		self::$logged    = false;
 		self::$ledger    = '';
 		self::$http_auth = null;
+		self::$chat      = array(
+			'client'  => '',
+			'session' => '',
+		);
 	}
 
 	/** Tests: also forget the per-process stdio cache. */
@@ -78,6 +92,28 @@ final class EMCP_Tools_Request_Context {
 		$flag         = self::$ledger;
 		self::$ledger = '';
 		return $flag;
+	}
+
+	/**
+	 * Record who runs the AI Chat tool call in progress ('' and '' clear it).
+	 *
+	 * @param string $client  Label: AI Chat, AI Chat (Elementor) or AI Chat (Gutenberg).
+	 * @param string $session chat-{user_id}-{key}, or '' when the call has no group.
+	 */
+	public static function set_chat( string $client, string $session ): void {
+		self::$chat = array(
+			'client'  => $client,
+			'session' => $session,
+		);
+	}
+
+	/**
+	 * The AI Chat call in progress; empty strings outside one.
+	 *
+	 * @return array{client:string, session:string}
+	 */
+	public static function chat(): array {
+		return self::$chat;
 	}
 
 	/** A stable id for this WP-CLI process: pid plus process start time. */
