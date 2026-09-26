@@ -337,6 +337,7 @@ class EMCP_Tools_Admin {
 		EMCP_Tools_Admin_REST_Brand_Kits::register_screen();
 		EMCP_Tools_Admin_REST_Marketplace::register_screen();
 		EMCP_Tools_Admin_REST_Context::register_screen();
+		EMCP_Tools_Admin_REST_History::register_screen();
 		EMCP_Tools_Admin_REST_Sandbox::register_screens();
 		if ( class_exists( 'EMCP_Tools_Admin_REST_Templates' ) ) {
 			EMCP_Tools_Admin_REST_Templates::register_screen();
