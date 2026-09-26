@@ -2049,7 +2049,7 @@ trait EMCP_Tools_Admin_Catalog_Trait {
 					),
 					'emcp-tools/create-custom-widget' => array(
 						'label'       => __( 'Create Custom Widget', 'emcp-tools' ),
-						'description' => __( 'Generates a custom Elementor widget from a spec into an isolated sandbox and activates it.', 'emcp-tools' ),
+						'description' => __( 'Generates a custom Elementor widget from a spec into an isolated sandbox as an inactive draft. You activate it in Sandbox, Widgets.', 'emcp-tools' ),
 						'badges'      => array( 'pro' ),
 					),
 					'emcp-tools/update-custom-widget' => array(
@@ -2069,7 +2069,7 @@ trait EMCP_Tools_Admin_Catalog_Trait {
 					),
 					'emcp-tools/set-widget-status'    => array(
 						'label'       => __( 'Set Widget Status', 'emcp-tools' ),
-						'description' => __( 'Activates or deactivates a custom widget.', 'emcp-tools' ),
+						'description' => __( 'Returns a custom widget to draft. Activation is yours, in Sandbox, Widgets.', 'emcp-tools' ),
 						'badges'      => array( 'pro' ),
 					),
 					'emcp-tools/delete-custom-widget' => array(
@@ -2097,7 +2097,7 @@ trait EMCP_Tools_Admin_Catalog_Trait {
 					),
 					'emcp-tools/create-custom-block'      => array(
 						'label'       => __( 'Create Custom Block', 'emcp-tools' ),
-						'description' => __( 'Generates a custom Gutenberg block from a spec into an isolated sandbox and activates it.', 'emcp-tools' ),
+						'description' => __( 'Generates a custom Gutenberg block from a spec into an isolated sandbox as an inactive draft. You activate it in Sandbox, Blocks.', 'emcp-tools' ),
 						'badges'      => array( 'pro' ),
 					),
 					'emcp-tools/update-custom-block'      => array(
@@ -2117,7 +2117,7 @@ trait EMCP_Tools_Admin_Catalog_Trait {
 					),
 					'emcp-tools/set-block-status'          => array(
 						'label'       => __( 'Set Block Status', 'emcp-tools' ),
-						'description' => __( 'Activates or deactivates a custom block.', 'emcp-tools' ),
+						'description' => __( 'Returns a custom block to draft. Activation is yours, in Sandbox, Blocks.', 'emcp-tools' ),
 						'badges'      => array( 'pro' ),
 					),
 					'emcp-tools/delete-custom-block'       => array(
