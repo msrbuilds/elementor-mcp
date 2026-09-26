@@ -59,6 +59,8 @@ $emcp_rb = isset( $_GET['rollback'] ) ? sanitize_key( wp_unslash( $_GET['rollbac
 $emcp_del = isset( $_GET['deleted'] ) ? sanitize_key( wp_unslash( $_GET['deleted'] ) ) : '';
 // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- display-only notice.
 $emcp_cleared = isset( $_GET['cleared'] ) ? absint( wp_unslash( $_GET['cleared'] ) ) : -1;
+// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- display-only notice.
+$emcp_history_error = isset( $_GET['history_error'] ) ? sanitize_key( wp_unslash( $_GET['history_error'] ) ) : '';
 ?>
 
 <div class="emcp-history">
@@ -92,7 +94,11 @@ $emcp_cleared = isset( $_GET['cleared'] ) ? absint( wp_unslash( $_GET['cleared']
 		</p></div>
 	<?php endif; ?>
 
-	<?php if ( '1' === $emcp_del ) : ?>
+	<?php if ( 'history_busy' === $emcp_history_error ) : ?>
+		<div class="notice notice-warning is-dismissible"><p><strong><?php esc_html_e( 'History is busy, try again in a moment.', 'emcp-tools' ); ?></strong></p></div>
+	<?php elseif ( 'history_upgrading' === $emcp_history_error ) : ?>
+		<div class="notice notice-warning is-dismissible"><p><strong><?php esc_html_e( 'History is being upgraded, try again in a moment.', 'emcp-tools' ); ?></strong></p></div>
+	<?php elseif ( '1' === $emcp_del ) : ?>
 		<div class="notice notice-success is-dismissible"><p><strong><?php esc_html_e( 'History entry deleted.', 'emcp-tools' ); ?></strong></p></div>
 	<?php elseif ( '0' === $emcp_del ) : ?>
 		<div class="notice notice-error is-dismissible"><p><strong><?php esc_html_e( 'That history entry no longer exists.', 'emcp-tools' ); ?></strong></p></div>

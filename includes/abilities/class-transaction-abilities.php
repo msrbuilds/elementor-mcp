@@ -108,44 +108,65 @@ class EMCP_Tools_Transaction_Abilities {
 	 * @return array
 	 */
 	public function execute_list( $input ) {
-		$entries = array_reverse( EMCP_Tools_Change_Log::all() ); // newest first.
-		$domain  = isset( $input['domain'] ) ? (string) $input['domain'] : '';
-		$limit   = isset( $input['limit'] ) ? max( 1, (int) $input['limit'] ) : 50;
+		$domain = isset( $input['domain'] ) ? (string) $input['domain'] : '';
+		$limit  = isset( $input['limit'] ) ? max( 1, (int) $input['limit'] ) : 50;
+		$args   = array( 'limit' => 100 );
+		if ( '' !== $domain ) {
+			$args['domain'] = $domain;
+		}
+		if ( isset( $input['rolled_back'] ) ) {
+			$args['rolled_back'] = (bool) $input['rolled_back'];
+		}
 
 		$out = array();
-		foreach ( $entries as $e ) {
-			if ( '' !== $domain && ( $e['domain'] ?? '' ) !== $domain ) {
-				continue;
+		// Newest first, page by page: the reversible filter can skip any number of rows.
+		do {
+			$page = EMCP_Tools_Change_Log::query( $args );
+			foreach ( $page['items'] as $e ) {
+				$row = $this->list_row( $e, $input );
+				if ( null !== $row ) {
+					$out[] = $row;
+				}
+				if ( count( $out ) >= $limit ) {
+					break 2;
+				}
 			}
-			$blocker    = EMCP_Tools_Change_Log::rollback_blocker( $e );
-			$reversible = ! is_wp_error( $blocker );
-			if ( isset( $input['rolled_back'] ) && (bool) $input['rolled_back'] !== ! empty( $e['rolled_back'] ) ) {
-				continue;
-			}
-			if ( isset( $input['reversible'] ) && (bool) $input['reversible'] !== $reversible ) {
-				continue;
-			}
-			$out[] = array(
-				'id'          => $e['id'] ?? '',
-				'ts'          => $e['ts'] ?? 0,
-				'user_login'  => $e['user_login'] ?? '',
-				'domain'      => $e['domain'] ?? '',
-				'action'      => $e['action'] ?? '',
-				'target'      => $e['target'] ?? '',
-				'summary'     => $e['summary'] ?? '',
-				'rolled_back' => ! empty( $e['rolled_back'] ),
-				'reversible'  => $reversible,
-				'rollback_unavailable_reason' => is_wp_error( $blocker ) ? $blocker->get_error_message() : '',
-				'rollback'    => self::light_rollback( $e['rollback'] ?? null ),
-			);
-			if ( count( $out ) >= $limit ) {
-				break;
-			}
-		}
+			$args['cursor'] = $page['next_cursor'];
+		} while ( null !== $page['next_cursor'] );
 
 		return array(
 			'changes' => $out,
-			'total'   => count( EMCP_Tools_Change_Log::all() ),
+			'total'   => EMCP_Tools_Change_Log::count(),
+		);
+	}
+
+	/**
+	 * One list-changes row, or null when the filters drop it.
+	 *
+	 * @param array $e     Ledger entry.
+	 * @param array $input Input.
+	 */
+	private function list_row( array $e, $input ): ?array {
+		$blocker    = EMCP_Tools_Change_Log::rollback_blocker( $e );
+		$reversible = ! is_wp_error( $blocker );
+		if ( isset( $input['rolled_back'] ) && (bool) $input['rolled_back'] !== ! empty( $e['rolled_back'] ) ) {
+			return null;
+		}
+		if ( isset( $input['reversible'] ) && (bool) $input['reversible'] !== $reversible ) {
+			return null;
+		}
+		return array(
+			'id'          => $e['id'] ?? '',
+			'ts'          => $e['ts'] ?? 0,
+			'user_login'  => $e['user_login'] ?? '',
+			'domain'      => $e['domain'] ?? '',
+			'action'      => $e['action'] ?? '',
+			'target'      => $e['target'] ?? '',
+			'summary'     => $e['summary'] ?? '',
+			'rolled_back' => ! empty( $e['rolled_back'] ),
+			'reversible'  => $reversible,
+			'rollback_unavailable_reason' => is_wp_error( $blocker ) ? $blocker->get_error_message() : '',
+			'rollback'    => self::light_rollback( $e['rollback'] ?? null ),
 		);
 	}
 

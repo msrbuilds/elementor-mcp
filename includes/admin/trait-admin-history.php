@@ -163,6 +163,7 @@ trait EMCP_Tools_Admin_History_Trait {
 				'page'    => self::PAGE_SLUG . '-history',
 				'deleted' => $deleted ? '1' : '0',
 			),
+			self::history_error_args(),
 			self::history_return_args()
 		);
 		wp_safe_redirect( add_query_arg( $redirect_args, admin_url( 'admin.php' ) ) );
@@ -182,7 +183,19 @@ trait EMCP_Tools_Admin_History_Trait {
 
 		$count = class_exists( 'EMCP_Tools_Change_Log' ) ? EMCP_Tools_Change_Log::clear() : 0;
 
-		wp_safe_redirect( admin_url( 'admin.php?page=' . self::PAGE_SLUG . '-history&cleared=' . (int) $count ) );
+		$args = self::history_error_args();
+		$args = $args ? $args : array( 'cleared' => (int) $count );
+		wp_safe_redirect( add_query_arg( $args, admin_url( 'admin.php?page=' . self::PAGE_SLUG . '-history' ) ) );
 		exit;
+	}
+
+	/**
+	 * Query args naming why the last delete or clear did nothing (409 history_busy or history_upgrading, spec 9.1).
+	 *
+	 * @return array
+	 */
+	private static function history_error_args(): array {
+		$error = class_exists( 'EMCP_Tools_Change_Log' ) ? EMCP_Tools_Change_Log::last_error() : null;
+		return $error ? array( 'history_error' => $error->get_error_code() ) : array();
 	}
 }
