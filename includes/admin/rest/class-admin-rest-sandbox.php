@@ -120,12 +120,25 @@ final class EMCP_Tools_Admin_REST_Sandbox extends EMCP_Tools_Admin_REST_Controll
 				},
 			)
 		);
+		$snippets_boot = $list_boot( 'snippets' );
 		EMCP_Tools_Admin_Screens::register(
 			'snippets',
 			array(
-				'script' => 'screen-snippets',
-				'tabs'   => array( 'widgets:snippets' ),
-				'boot'   => $list_boot( 'snippets' ),
+				'script'  => 'screen-snippets',
+				'tabs'    => array( 'widgets:snippets' ),
+				// WordPress's own code editor (CodeMirror) for the snippet Drawer.
+				'enqueue' => static function (): void {
+					if ( function_exists( 'wp_enqueue_code_editor' ) ) {
+						$GLOBALS['emcp_tools_snippet_editor'] = wp_enqueue_code_editor( array( 'type' => 'application/x-httpd-php' ) );
+					}
+				},
+				'boot'    => static function () use ( $snippets_boot ): array {
+					$data = $snippets_boot();
+					// false when the user switched syntax highlighting off: plain textarea.
+					$data['codeEditor'] = $GLOBALS['emcp_tools_snippet_editor']
+						?? ( function_exists( 'wp_get_code_editor_settings' ) ? wp_get_code_editor_settings( array( 'type' => 'application/x-httpd-php' ) ) : false );
+					return $data;
+				},
 			)
 		);
 		EMCP_Tools_Admin_Screens::register(

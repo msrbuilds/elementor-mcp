@@ -24,6 +24,8 @@ module.exports = {
 		'screen-brand-kits': './admin-src/screens/brand-kits/index.js',
 		'screen-marketplace': './admin-src/screens/marketplace/index.js',
 		'screen-context': './admin-src/screens/context/index.js',
+		'screen-sandbox': './admin-src/screens/sandbox/index.js',
+		'screen-snippets': './admin-src/screens/snippets/index.js',
 	},
 	output: {
 		...defaultConfig.output,

@@ -1,0 +1,87 @@
+/* PHP Snippets (spec 8.14, screenshot 14). Flat colours only. */
+
+.emcp-sn-shortcode {
+	font-family: var(--emcp-mono);
+	font-size: 12px;
+	color: var(--emcp-text-2);
+	background: transparent;
+	padding: 0;
+}
+
+.emcp-sn-review {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	font-size: 13px;
+	color: var(--emcp-text-2);
+}
+
+.emcp-sn-review.is-warning {
+	color: var(--emcp-warning-fg);
+}
+
+.emcp-sn-review.is-critical,
+.emcp-sn-review.is-error {
+	color: var(--emcp-danger-fg);
+}
+
+.emcp-sn-form {
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+}
+
+.emcp-sn-form__row {
+	display: grid;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	gap: 12px;
+}
+
+.emcp-sn-form .CodeMirror {
+	height: 360px;
+	font-family: var(--emcp-mono);
+	font-size: 13px;
+	border: 1px solid var(--emcp-border-input);
+	border-radius: var(--emcp-r-sm);
+}
+
+.emcp-sn-findings__head {
+	margin: 8px 0 4px;
+}
+
+.emcp-sn-findings__head .is-blocked {
+	color: var(--emcp-danger-fg);
+}
+
+.emcp-sn-findings__head .is-ok {
+	color: var(--emcp-success-fg);
+}
+
+.emcp-sn-findings__list {
+	margin: 4px 0 0 18px;
+	padding: 0;
+	list-style: disc;
+}
+
+.emcp-sn-findings__list li {
+	margin: 3px 0;
+}
+
+.emcp-sn-findings__list .is-critical strong {
+	color: var(--emcp-danger-fg);
+}
+
+.emcp-sn-findings__list .is-warning strong {
+	color: var(--emcp-warning-fg);
+}
+
+.emcp-sn-activate__head {
+	margin: 12px 0 4px;
+	font-weight: 600;
+}
+
+@media (max-width: 782px) {
+	.emcp-sn-form__row {
+		grid-template-columns: 1fr;
+	}
+}
