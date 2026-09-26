@@ -1,6 +1,6 @@
 <?php
 /**
- * A categorised library (prompts, brand kits) as one filtered, counted page
+ * A categorised library (prompts, brand kits, templates) as one filtered, counted page
  * for the admin screens (spec 8.8, 8.17). Pure: no WordPress calls.
  *
  * @package EMCP_Tools
@@ -14,12 +14,13 @@ final class EMCP_Tools_Admin_Library_List {
 
 	/**
 	 * @param array[]  $categories [ { slug, label, $items_key: [ item ] } ].
-	 * @param string   $items_key  'prompts' or 'kits'.
+	 * @param string   $items_key  'prompts', 'kits' or 'templates'.
 	 * @param callable $haystack   item => searchable text.
 	 * @param array    $query      { search?, category?, page? }.
-	 * @param int      $per_page   Page size.
+	 * @param int           $per_page Page size.
+	 * @param callable|null $compare  ( a, b ): int, sorts matches before paging.
 	 */
-	public static function build( array $categories, string $items_key, callable $haystack, array $query, int $per_page = 12 ): array {
+	public static function build( array $categories, string $items_key, callable $haystack, array $query, int $per_page = 12, ?callable $compare = null ): array {
 		$search   = strtolower( trim( (string) ( $query['search'] ?? '' ) ) );
 		$category = (string) ( $query['category'] ?? '' );
 		$counts   = array();
@@ -44,6 +45,9 @@ final class EMCP_Tools_Admin_Library_List {
 				}
 				$matched[] = array_merge( $item, array( 'category' => $slug, 'categoryLabel' => $label ) );
 			}
+		}
+		if ( null !== $compare ) {
+			usort( $matched, $compare );
 		}
 		$total = count( $matched );
 		$pages = max( 1, (int) ceil( $total / max( 1, $per_page ) ) );

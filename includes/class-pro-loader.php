@@ -76,6 +76,8 @@ final class EMCP_Tools_Pro_Loader {
 		// Alternate Loop Item templates render on the front end, so runtime.
 		'includes/themer/class-themer-loop-pro.php',
 		'includes/themer/class-themer-pro.php',
+		// Admin screens served over REST (3.18.0 redesign).
+		'includes/admin/data/class-admin-templates-data.php',
 	);
 
 	/**
