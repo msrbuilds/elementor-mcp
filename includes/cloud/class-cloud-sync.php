@@ -331,7 +331,20 @@ class EMCP_Tools_Cloud_Sync {
 			return new \WP_Error( 'unknown_kind', __( 'Unknown artifact kind.', 'emcp-tools' ) );
 		}
 		$new_id = $art->apply_bundle( $bundle );
-		return is_wp_error( $new_id ) ? $new_id : array( 'id' => (int) $new_id );
+		if ( is_wp_error( $new_id ) ) {
+			return $new_id;
+		}
+		// Remembered locally so the Marketplace screen can say "Installed",
+		// whether the install came from the screen or the MCP tool.
+		if ( class_exists( 'EMCP_Tools_Marketplace_Installs' ) ) {
+			EMCP_Tools_Marketplace_Installs::record(
+				$slug,
+				(string) ( $res['kind'] ?? $bundle['kind'] ?? '' ),
+				(int) $new_id,
+				(string) ( $bundle['meta']['title'] ?? $slug )
+			);
+		}
+		return array( 'id' => (int) $new_id );
 	}
 
 	/**

@@ -160,6 +160,7 @@ class EMCP_Tools_Bootstrap {
 		require_once EMCP_TOOLS_DIR . 'includes/cloud/class-cloud-client.php';
 		require_once EMCP_TOOLS_DIR . 'includes/cloud/class-gateway-credential.php';
 		require_once EMCP_TOOLS_DIR . 'includes/cloud/class-cloud-sync.php';
+		require_once EMCP_TOOLS_DIR . 'includes/cloud/class-marketplace-installs.php';
 		require_once EMCP_TOOLS_DIR . 'includes/cloud/class-settings-sync.php';
 		require_once EMCP_TOOLS_DIR . 'includes/oauth/class-oauth-store.php';
 		require_once EMCP_TOOLS_DIR . 'includes/oauth/class-oauth-metadata.php';
@@ -190,6 +191,8 @@ class EMCP_Tools_Bootstrap {
 		require_once EMCP_TOOLS_DIR . 'includes/admin/data/class-admin-library-list.php';
 		require_once EMCP_TOOLS_DIR . 'includes/admin/data/class-admin-prompts-data.php';
 		require_once EMCP_TOOLS_DIR . 'includes/admin/rest/class-admin-rest-prompts.php';
+		require_once EMCP_TOOLS_DIR . 'includes/admin/data/class-admin-marketplace-data.php';
+		require_once EMCP_TOOLS_DIR . 'includes/admin/rest/class-admin-rest-marketplace.php';
 		require_once EMCP_TOOLS_DIR . 'includes/admin/data/class-admin-brand-kits-data.php';
 		require_once EMCP_TOOLS_DIR . 'includes/admin/rest/class-admin-rest-brand-kits.php';
 		require_once EMCP_TOOLS_DIR . 'includes/class-change-blobs.php';
@@ -545,6 +548,7 @@ class EMCP_Tools_Bootstrap {
 		( new EMCP_Tools_Admin_REST_Connection() )->register();
 		( new EMCP_Tools_Admin_REST_Prompts() )->register();
 		( new EMCP_Tools_Admin_REST_Brand_Kits() )->register();
+		( new EMCP_Tools_Admin_REST_Marketplace() )->register();
 
 		// Free-tier updates from GitHub releases (self-disables on premium builds,
 		// where Freemius owns updates).
