@@ -132,6 +132,20 @@ class EMCP_Tools_Admin {
 	}
 
 	/**
+	 * Whether a module is switched on, whether or not it is available here. A
+	 * Pro-only tab stays in the menu on free builds and shows the locked screen.
+	 *
+	 * @param string $module_id Module id.
+	 */
+	private function module_switched_on( string $module_id ): bool {
+		if ( ! class_exists( 'EMCP_Tools_Modules_Registry' ) ) {
+			return true;
+		}
+		$module = EMCP_Tools_Modules_Registry::instance()->get( $module_id );
+		return ! $module || $module->is_active();
+	}
+
+	/**
 	 * Whether the AI Chat submenu tab should show.
 	 *
 	 * @return bool
@@ -238,8 +252,13 @@ class EMCP_Tools_Admin {
 				unset( $this->submenus[ self::PAGE_SLUG . '-migrate' ] );
 			}
 			// Module-backed tabs: drop each when its module is off/unavailable.
+			// Templates stays in the menu whenever its module is switched on, so
+			// free and unlicensed builds reach the locked screen (spec 8.25).
 			foreach ( array( 'prompts', 'templates', 'brand-kits' ) as $emcp_mod_id ) {
-				if ( ! $this->module_tab_visible( $emcp_mod_id ) ) {
+				$emcp_visible = 'templates' === $emcp_mod_id
+					? $this->module_switched_on( 'templates' )
+					: $this->module_tab_visible( $emcp_mod_id );
+				if ( ! $emcp_visible ) {
 					unset( $this->submenus[ self::PAGE_SLUG . '-' . $emcp_mod_id ] );
 				}
 			}
@@ -316,6 +335,9 @@ class EMCP_Tools_Admin {
 		EMCP_Tools_Admin_REST_Connection::register_screen( $this );
 		EMCP_Tools_Admin_REST_Prompts::register_screen();
 		EMCP_Tools_Admin_REST_Brand_Kits::register_screen();
+		if ( class_exists( 'EMCP_Tools_Admin_REST_Templates' ) ) {
+			EMCP_Tools_Admin_REST_Templates::register_screen();
+		}
 		add_action( 'admin_head', array( $this, 'print_menu_icon_style' ) );
 		add_action( 'wp_ajax_emcp_tools_create_app_password', array( $this, 'ajax_create_app_password' ) );
 		add_action( 'wp_ajax_emcp_tools_test_connection', array( $this, 'ajax_test_connection' ) );

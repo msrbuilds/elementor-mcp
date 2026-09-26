@@ -65,6 +65,15 @@ final class EMCP_Tools_Admin_Locked {
 					__( 'Session summaries you can review', 'emcp-tools' ),
 				),
 			),
+			'templates' => array(
+				'title'       => __( 'Templates', 'emcp-tools' ),
+				'description' => __( 'Ready-made page designs you apply in one click, then edit visually.', 'emcp-tools' ),
+				'bullets'     => array(
+					__( '50 page templates across 10 industries', 'emcp-tools' ),
+					__( 'Each one creates a draft page you can edit in Elementor', 'emcp-tools' ),
+					__( 'The library stays in sync with new designs', 'emcp-tools' ),
+				),
+			),
 			'migrate' => array(
 				'title'       => __( 'Backup & Migrate', 'emcp-tools' ),
 				'description' => __( 'Back up the whole site, restore it, and move it to another server.', 'emcp-tools' ),

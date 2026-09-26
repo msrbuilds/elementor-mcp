@@ -78,6 +78,7 @@ final class EMCP_Tools_Pro_Loader {
 		'includes/themer/class-themer-pro.php',
 		// Admin screens served over REST (3.18.0 redesign).
 		'includes/admin/data/class-admin-templates-data.php',
+		'includes/admin/rest/class-admin-rest-templates.php',
 	);
 
 	/**
@@ -286,6 +287,11 @@ final class EMCP_Tools_Pro_Loader {
 		// Page-snapshot Pro sections (a11y + deep seo) attach to the free seam.
 		if ( class_exists( 'EMCP_Tools_Page_Snapshot_Pro' ) ) {
 			EMCP_Tools_Page_Snapshot_Pro::init();
+		}
+
+		// Templates screen REST (3.18.0 redesign): served on REST requests.
+		if ( class_exists( 'EMCP_Tools_Admin_REST_Templates' ) ) {
+			( new EMCP_Tools_Admin_REST_Templates() )->register();
 		}
 	}
 

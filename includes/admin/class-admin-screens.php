@@ -16,11 +16,15 @@ final class EMCP_Tools_Admin_Screens {
 
 	/** Pro-only tabs and the Pro view that renders them; missing view means locked (spec 8.25). */
 	const LOCKED_TABS = array(
-		'ai-chat' => 'includes/admin/views/page-ai-chat.php',
-		'skills'  => 'includes/admin/views/page-skills.php',
-		'memory'  => 'includes/admin/views/page-memory.php',
-		'migrate' => 'includes/admin/views/page-migrate.php',
+		'ai-chat'   => 'includes/admin/views/page-ai-chat.php',
+		'skills'    => 'includes/admin/views/page-skills.php',
+		'memory'    => 'includes/admin/views/page-memory.php',
+		'migrate'   => 'includes/admin/views/page-migrate.php',
+		'templates' => 'includes/admin/rest/class-admin-rest-templates.php',
 	);
+
+	/** Pro-only tabs that also need an active licence; unlicensed means locked (spec 8.25). */
+	const LICENCE_TABS = array( 'templates' );
 
 	/** Warn (under WP_DEBUG) when a screen's boot data grows past this (spec 5.2). */
 	const MAX_PAYLOAD_BYTES = 153600;
@@ -86,6 +90,9 @@ final class EMCP_Tools_Admin_Screens {
 			return class_exists( 'EMCP_Tools_Pro_Loader' ) && '' !== EMCP_Tools_Pro_Loader::path( $rel );
 		};
 		if ( isset( self::LOCKED_TABS[ $tab ] ) && ! $exists( self::LOCKED_TABS[ $tab ] ) ) {
+			return 'locked';
+		}
+		if ( in_array( $tab, self::LICENCE_TABS, true ) && ! ( function_exists( 'emcp_tools_fs' ) && emcp_tools_fs()->can_use_premium_code() ) ) {
 			return 'locked';
 		}
 		foreach ( self::$screens as $id => $screen ) {
