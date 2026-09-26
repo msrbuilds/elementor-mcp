@@ -25,6 +25,7 @@ require_once __DIR__ . '/changes/class-change-wpdb-storage.php';
 require_once __DIR__ . '/changes/class-change-store.php';
 require_once __DIR__ . '/changes/class-change-cutover.php';
 require_once __DIR__ . '/changes/class-change-notices.php';
+require_once __DIR__ . '/changes/class-change-sessions.php';
 
 /**
  * The change ledger.
@@ -184,6 +185,66 @@ class EMCP_Tools_Change_Log {
 		return array(
 			'items'       => $rows,
 			'next_cursor' => ( $more && $rows ) ? (int) $rows[ count( $rows ) - 1 ]['seq'] : null,
+		);
+	}
+
+	/**
+	 * A page of sessions, newest first (spec 9.1).
+	 *
+	 * @param array $args limit (default 20), cursor, client, user_id.
+	 * @return array{items: array, next_cursor: ?int}
+	 */
+	public static function sessions( array $args ): array {
+		return ( new EMCP_Tools_Change_Sessions( self::store() ) )->page( $args );
+	}
+
+	/**
+	 * Undo a whole session, newest first. Each undo is a normal rollback();
+	 * the run stops at the first blocker or failure. Not transactional across
+	 * rows: the report says what was undone and where it stopped.
+	 *
+	 * @param string $session Session key from sessions().
+	 * @param bool   $force   Passed to each rollback.
+	 * @return array{undone: string[], stopped_at: ?string, reason: ?string, remaining: int}|WP_Error
+	 */
+	public static function rollback_session( string $session, bool $force = false ) {
+		$guard = self::store()->guard_destructive();
+		if ( $guard ) {
+			return $guard;
+		}
+		$rows = ( new EMCP_Tools_Change_Sessions( self::store() ) )->rows_for( $session, 'desc' );
+		if ( ! $rows ) {
+			return new WP_Error( 'not_found', __( 'Session not found.', 'emcp-tools' ), array( 'status' => 404 ) );
+		}
+		$todo   = array_values(
+			array_filter(
+				$rows,
+				static function ( $r ) {
+					return empty( $r['rolled_back'] );
+				}
+			)
+		);
+		$undone = array();
+		foreach ( $todo as $i => $row ) {
+			$result = self::rollback_blocker( $row );
+			if ( ! is_wp_error( $result ) ) {
+				$result = self::rollback( $row['id'], $force );
+			}
+			if ( is_wp_error( $result ) ) {
+				return array(
+					'undone'     => $undone,
+					'stopped_at' => $row['id'],
+					'reason'     => $result->get_error_message(),
+					'remaining'  => count( $todo ) - $i,
+				);
+			}
+			$undone[] = $row['id'];
+		}
+		return array(
+			'undone'     => $undone,
+			'stopped_at' => null,
+			'reason'     => null,
+			'remaining'  => 0,
 		);
 	}
 
