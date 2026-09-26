@@ -1,0 +1,145 @@
+/* Sandbox list pattern (spec 8.11): Widgets, Blocks, PHP Snippets. Flat colours only. */
+
+.emcp-sb {
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+}
+
+.emcp-sb-toolbar {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	padding: 12px 16px;
+	border-bottom: 1px solid var(--emcp-divider);
+}
+
+.emcp-sb-toolbar__end {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 8px;
+}
+
+.emcp-sb-toolbar__end .eui-search {
+	min-width: 220px;
+}
+
+.emcp-sb-name {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+}
+
+.emcp-sb-name__title {
+	font-weight: 500;
+	color: var(--emcp-ink);
+}
+
+.emcp-sb-name__error {
+	font-size: 12px;
+	color: var(--emcp-danger-fg);
+}
+
+.emcp-sb-chip {
+	display: inline-block;
+	padding: 2px 8px;
+	font-family: var(--emcp-mono);
+	font-size: 12px;
+	color: var(--emcp-ink-2);
+	background: var(--emcp-surface-2);
+	border-radius: var(--emcp-r-xs);
+}
+
+.emcp-sb-cloud {
+	font-size: 13px;
+	color: var(--emcp-text-2);
+}
+
+.emcp-sb-cloud.is-synced {
+	color: var(--emcp-success-fg);
+}
+
+.emcp-sb-cloud.is-changed {
+	color: var(--emcp-warning-fg);
+}
+
+.emcp-sb-actions {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+}
+
+.emcp-sb-foot {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	padding: 12px 16px;
+	font-size: 13px;
+	color: var(--emcp-text-2);
+	border-top: 1px solid var(--emcp-divider);
+}
+
+.emcp-sb-tag {
+	margin-left: 6px;
+	font-size: 10px;
+	font-weight: 600;
+	letter-spacing: 0.04em;
+	color: var(--emcp-primary-strong);
+}
+
+.emcp-sb-count {
+	margin-left: 6px;
+	padding: 0 6px;
+	font-size: 11px;
+	color: var(--emcp-primary-strong);
+	background: var(--emcp-primary-tint);
+	border-radius: var(--emcp-r-pill);
+}
+
+.emcp-sb-connect {
+	font-weight: 500;
+	color: var(--emcp-primary-strong);
+}
+
+.emcp-sb-blocked {
+	padding: 16px;
+}
+
+.emcp-sb-prompt {
+	padding: 0 16px 16px;
+}
+
+.emcp-sb-prompt .eui-copy-field {
+	background: var(--emcp-dark);
+	border-color: var(--emcp-dark);
+}
+
+.emcp-sb-prompt .eui-copy-field__value {
+	color: var(--emcp-code-fg);
+	background: transparent;
+}
+
+.emcp-sb-code {
+	margin-top: 12px;
+}
+
+.emcp-sb-lib__intro {
+	margin: 0 0 12px;
+	color: var(--emcp-text-2);
+}
+
+@media (max-width: 782px) {
+	.emcp-sb-toolbar__end {
+		width: 100%;
+	}
+
+	.emcp-sb-toolbar__end .eui-search {
+		flex: 1 1 100%;
+		min-width: 0;
+	}
+}

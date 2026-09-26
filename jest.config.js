@@ -18,5 +18,6 @@ module.exports = {
 	moduleNameMapper: {
 		'\\.css$': '<rootDir>/admin-src/test-style-stub.js',
 		'^@emcp/ui$': '<rootDir>/admin-src/ui/index.js',
+		'^@emcp/sandbox$': '<rootDir>/admin-src/shared/sandbox/index.js',
 	},
 };

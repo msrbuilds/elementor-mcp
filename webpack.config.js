@@ -30,6 +30,15 @@ module.exports = {
 		path: path.resolve( __dirname, 'assets/admin/build' ),
 		clean: true,
 	},
+	resolve: {
+		...defaultConfig.resolve,
+		alias: {
+			...( defaultConfig.resolve && defaultConfig.resolve.alias ),
+			// Shared Sandbox list code: bundled into each screen that imports it
+			// (the Pro config inherits this through its spread of this file).
+			'@emcp/sandbox': path.resolve( __dirname, 'admin-src/shared/sandbox' ),
+		},
+	},
 	plugins: [
 		...defaultConfig.plugins.filter(
 			( plugin ) =>

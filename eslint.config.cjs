@@ -31,7 +31,8 @@ module.exports = [
 	{
 		// Screens import the shared library as @emcp/ui; webpack maps it to the
 		// emcp-admin-ui handle (window.emcpUI), so it never resolves on disk.
-		settings: { 'import/core-modules': [ '@emcp/ui' ] },
+		// @emcp/sandbox is a webpack alias for admin-src/shared/sandbox.
+		settings: { 'import/core-modules': [ '@emcp/ui', '@emcp/sandbox' ] },
 	},
 	{
 		...jestPlugin.configs[ 'flat/recommended' ],
