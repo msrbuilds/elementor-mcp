@@ -159,6 +159,18 @@ final class EMCP_Tools_Lease {
 		return $holder === $owner && $expires > $this->now();
 	}
 
+	/**
+	 * Whether anyone holds an unexpired lease (a crashed owner's expired lease does not count).
+	 */
+	public function active( string $name ): bool {
+		$current = $this->store->get( self::PREFIX . $name );
+		if ( null === $current ) {
+			return false;
+		}
+		list( , $expires ) = $this->decode( $current );
+		return $expires > $this->now();
+	}
+
 	private function valid( string $owner, int $ttl ): bool {
 		return '' !== $owner && false === strpbrk( $owner, "\r\n" ) && $ttl > 0;
 	}
