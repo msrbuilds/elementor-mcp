@@ -83,6 +83,8 @@ final class EMCP_Tools_Pro_Loader {
 		'includes/admin/rest/class-admin-rest-skills.php',
 		'includes/admin/data/class-admin-memory-data.php',
 		'includes/admin/rest/class-admin-rest-memory.php',
+		'includes/admin/data/class-admin-sandbox-export-data.php',
+		'includes/admin/rest/class-admin-rest-sandbox-export.php',
 	);
 
 	/**
@@ -306,6 +308,11 @@ final class EMCP_Tools_Pro_Loader {
 		// Project Memory screen REST (3.18.0 redesign).
 		if ( class_exists( 'EMCP_Tools_Admin_REST_Memory' ) ) {
 			( new EMCP_Tools_Admin_REST_Memory() )->register();
+		}
+
+		// Sandbox Export as plugin screen REST (3.18.0 redesign).
+		if ( class_exists( 'EMCP_Tools_Admin_REST_Sandbox_Export' ) ) {
+			( new EMCP_Tools_Admin_REST_Sandbox_Export() )->register();
 		}
 
 		// Template titles in the command palette (3.18.0 redesign).
