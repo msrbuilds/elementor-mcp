@@ -1,4 +1,4 @@
-import { render, screen, within } from '@testing-library/react';
+import { render, screen, within, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import apiFetch from '@wordpress/api-fetch';
 import { AppProviders } from '@emcp/ui';
@@ -58,6 +58,11 @@ function mount( d = data ) {
 		</AppProviders>
 	);
 }
+
+const searchPaths = () =>
+	apiFetch.mock.calls
+		.map( ( [ o ] ) => o.path )
+		.filter( ( p ) => /[?&]search=[^&]/.test( p ) );
 
 describe( 'BrandKitsScreen', () => {
 	beforeEach( () => apiFetch.mockReset() );
@@ -217,5 +222,16 @@ describe( 'BrandKitsScreen', () => {
 			name: 'Modern Saas',
 		} );
 		expect( within( drawer ).getByText( '#2563eb' ) ).toBeInTheDocument();
+	} );
+
+	it( 'debounces search: typing a word sends one request', async () => {
+		apiFetch.mockResolvedValue( data );
+		mount();
+		await userEvent.type(
+			screen.getByRole( 'searchbox', { name: 'Search kits' } ),
+			'abc'
+		);
+		await waitFor( () => expect( searchPaths() ).toHaveLength( 1 ) );
+		expect( searchPaths()[ 0 ] ).toContain( 'search=abc' );
 	} );
 } );

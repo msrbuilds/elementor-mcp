@@ -38,14 +38,16 @@ final class EMCP_Tools_Marketplace_Installs {
 
 	/** @return array{id:int, reviewUrl:string}|null */
 	public static function installed( string $slug ): ?array {
-		$rec = self::raw()[ $slug ] ?? null;
-		if ( ! is_array( $rec ) || false === get_post_status( (int) $rec['id'] ) ) {
+		$rec    = self::raw()[ $slug ] ?? null;
+		$status = is_array( $rec ) ? get_post_status( (int) $rec['id'] ) : false;
+		// A trashed draft is not installed: the listing can be installed again.
+		if ( false === $status || 'trash' === $status ) {
 			return null;
 		}
 		return array( 'id' => (int) $rec['id'], 'reviewUrl' => self::review_url( (int) $rec['id'] ) );
 	}
 
-	/** Installs whose draft still exists, newest first; records of deleted posts are dropped. */
+	/** Installs whose draft still exists and is not trashed, newest first; records of deleted posts are dropped. */
 	public static function all(): array {
 		$all  = self::raw();
 		$out  = array();
@@ -56,7 +58,10 @@ final class EMCP_Tools_Marketplace_Installs {
 				continue;
 			}
 			$kept[ $slug ] = $rec;
-			$out[]         = array(
+			if ( 'trash' === $status ) {
+				continue;
+			}
+			$out[] = array(
 				'slug'      => (string) $slug,
 				'kind'      => (string) $rec['kind'],
 				'id'        => (int) $rec['id'],

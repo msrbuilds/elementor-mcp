@@ -1,4 +1,4 @@
-import { render, screen, within } from '@testing-library/react';
+import { act, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import apiFetch from '@wordpress/api-fetch';
 import { AppProviders } from '@emcp/ui';
@@ -63,6 +63,11 @@ const cardOf = async ( name ) =>
 	( await screen.findByRole( 'heading', { name } ) ).closest(
 		'.eui-mk-card'
 	);
+
+const searchPaths = () =>
+	apiFetch.mock.calls
+		.map( ( [ o ] ) => o.path )
+		.filter( ( p ) => /[?&]search=[^&]/.test( p ) );
 
 describe( 'MarketplaceScreen', () => {
 	beforeEach( () => {
@@ -231,5 +236,41 @@ describe( 'MarketplaceScreen', () => {
 				name: 'Review Brands',
 			} )
 		).toHaveAttribute( 'href', '/review/4' );
+	} );
+
+	it( 'debounces search: typing a word sends one request', async () => {
+		apiFetch.mockResolvedValue( page );
+		mount();
+		await screen.findByRole( 'heading', { name: 'Brands' } );
+		await userEvent.type(
+			screen.getByRole( 'searchbox', { name: 'Search the marketplace' } ),
+			'tes'
+		);
+		await waitFor( () => expect( searchPaths() ).toHaveLength( 1 ) );
+		expect( searchPaths()[ 0 ] ).toContain( 'search=tes' );
+	} );
+
+	it( 'only the latest response is shown', async () => {
+		let first;
+		apiFetch
+			.mockImplementationOnce(
+				() => new Promise( ( r ) => ( first = r ) )
+			)
+			.mockResolvedValueOnce( {
+				...page,
+				items: [ listing( 'newest' ) ],
+				total: 1,
+			} );
+		mount();
+		await userEvent.click(
+			screen.getByRole( 'radio', { name: /^Blocks/ } )
+		);
+		expect(
+			await screen.findByRole( 'heading', { name: 'Newest' } )
+		).toBeInTheDocument();
+		await act( async () => first( page ) );
+		expect(
+			screen.queryByRole( 'heading', { name: 'Brands' } )
+		).not.toBeInTheDocument();
 	} );
 } );

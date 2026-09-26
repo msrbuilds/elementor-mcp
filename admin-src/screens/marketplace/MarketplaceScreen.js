@@ -1,4 +1,4 @@
-import { useEffect, useState } from '@wordpress/element';
+import { useEffect, useRef, useState } from '@wordpress/element';
 import { __, _n, sprintf } from '@wordpress/i18n';
 import {
 	Button,
@@ -65,6 +65,8 @@ export function MarketplaceScreen( { data: boot } ) {
 	const [ view, setView ] = useState( readView );
 	const [ busy, setBusy ] = useState( '' );
 	const [ installs, setInstalls ] = useState( null );
+	// Only the latest request's answer is shown: an older, slower one is dropped.
+	const latest = useRef( 0 );
 
 	const load = () => {
 		const query = new URLSearchParams( {
@@ -79,7 +81,12 @@ export function MarketplaceScreen( { data: boot } ) {
 		if ( verified ) {
 			query.set( 'verified', '1' );
 		}
-		return request( `${ API }?${ query }` ).then( setList );
+		const ticket = ++latest.current;
+		return request( `${ API }?${ query }` ).then( ( res ) => {
+			if ( ticket === latest.current ) {
+				setList( res );
+			}
+		} );
 	};
 
 	useEffect( () => {
@@ -212,6 +219,7 @@ export function MarketplaceScreen( { data: boot } ) {
 			{ header }
 			<div className="eui-mk__toolbar">
 				<SearchInput
+					debounce={ 250 }
 					label={ __( 'Search the marketplace', 'emcp-tools' ) }
 					value={ search }
 					onChange={ reset( setSearch ) }

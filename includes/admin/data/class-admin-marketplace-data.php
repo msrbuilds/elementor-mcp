@@ -17,6 +17,8 @@ final class EMCP_Tools_Admin_Marketplace_Data {
 	const PER_PAGE  = 24;
 	const CACHE_TTL = 300;
 	const ERROR_TTL = 60;
+	/** Set for ERROR_TTL after any Cloud failure, whatever the query, so typing through an outage makes no requests. */
+	const DOWN_KEY = 'emcp_tools_mk_down';
 	const TYPES     = array( 'block', 'widget', 'snippet', 'template' );
 
 	private static function connected(): bool {
@@ -58,12 +60,17 @@ final class EMCP_Tools_Admin_Marketplace_Data {
 		if ( is_array( $cached ) ) {
 			return $cached;
 		}
+		$down = get_transient( self::DOWN_KEY );
+		if ( is_string( $down ) && '' !== $down ) {
+			return array( 'rows' => array(), 'categories' => array(), 'error' => $down );
+		}
 		$res = EMCP_Tools_Cloud_Sync::marketplace_list( $remote );
 		if ( is_wp_error( $res ) ) {
-			$out = array( 'rows' => array(), 'categories' => array(), 'error' => $res->get_error_message() );
-			set_transient( $key, $out, self::ERROR_TTL );
-			return $out;
+			$message = $res->get_error_message();
+			set_transient( self::DOWN_KEY, '' !== $message ? $message : __( 'EMCP Cloud did not answer.', 'emcp-tools' ), self::ERROR_TTL );
+			return array( 'rows' => array(), 'categories' => array(), 'error' => $message );
 		}
+		delete_transient( self::DOWN_KEY );
 		$out = array(
 			'rows'       => is_array( $res['listings'] ?? null ) ? $res['listings'] : array(),
 			'categories' => array_values( array_map( 'strval', (array) ( $res['facets']['categories'] ?? array() ) ) ),

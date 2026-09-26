@@ -282,6 +282,7 @@ export function BrandKitsScreen( { data: initial } ) {
 			</h2>
 			<div className="eui-kits__filters">
 				<SearchInput
+					debounce={ 250 }
 					label={ __( 'Search kits', 'emcp-tools' ) }
 					value={ search }
 					onChange={ ( v ) => {

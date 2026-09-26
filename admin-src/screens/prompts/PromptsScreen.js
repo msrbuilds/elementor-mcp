@@ -192,6 +192,7 @@ export function PromptsScreen( { data: initial } ) {
 			</h2>
 			<div className="eui-prompts__filters">
 				<SearchInput
+					debounce={ 250 }
 					label={ __( 'Search prompts', 'emcp-tools' ) }
 					value={ search }
 					onChange={ ( v ) => {

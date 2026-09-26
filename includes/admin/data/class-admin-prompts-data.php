@@ -61,6 +61,13 @@ final class EMCP_Tools_Admin_Prompts_Data {
 	 * fetches (spec 7: the palette must stay instant).
 	 */
 	public static function palette_items(): array {
+		// No titles for a screen that is switched off: WordPress would refuse the link.
+		if ( class_exists( 'EMCP_Tools_Modules_Registry' ) ) {
+			$module = EMCP_Tools_Modules_Registry::instance()->get( 'prompts' );
+			if ( $module && ! ( $module->is_active() && $module->is_available() ) ) {
+				return array();
+			}
+		}
 		$categories = array();
 		if ( self::pro_class() ) {
 			$bundle = get_transient( EMCP_Tools_Pro_Prompts::CACHE_KEY );
