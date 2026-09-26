@@ -33,7 +33,7 @@ final class EMCP_Tools_Marketplace_Installs {
 
 	public static function review_url( int $id ): string {
 		$view = self::VIEWS[ (string) get_post_type( $id ) ] ?? '';
-		return '' === $view ? '' : admin_url( 'admin.php?page=emcp-tools-widgets&view=' . $view );
+		return '' === $view ? '' : admin_url( 'admin.php?page=emcp-tools-widgets&view=' . $view . '&review=' . $id );
 	}
 
 	/** @return array{id:int, reviewUrl:string}|null */

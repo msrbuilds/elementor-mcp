@@ -198,6 +198,9 @@ class EMCP_Tools_Bootstrap {
 		require_once EMCP_TOOLS_DIR . 'includes/admin/rest/class-admin-rest-palette.php';
 		require_once EMCP_TOOLS_DIR . 'includes/admin/data/class-admin-context-data.php';
 		require_once EMCP_TOOLS_DIR . 'includes/admin/rest/class-admin-rest-context.php';
+		require_once EMCP_TOOLS_DIR . 'includes/admin/data/class-admin-sandbox-list.php';
+		require_once EMCP_TOOLS_DIR . 'includes/admin/data/class-admin-sandbox-data.php';
+		require_once EMCP_TOOLS_DIR . 'includes/admin/rest/class-admin-rest-sandbox.php';
 		require_once EMCP_TOOLS_DIR . 'includes/admin/data/class-admin-brand-kits-data.php';
 		require_once EMCP_TOOLS_DIR . 'includes/admin/rest/class-admin-rest-brand-kits.php';
 		require_once EMCP_TOOLS_DIR . 'includes/class-change-blobs.php';
@@ -560,6 +563,7 @@ class EMCP_Tools_Bootstrap {
 		( new EMCP_Tools_Admin_REST_Marketplace() )->register();
 		( new EMCP_Tools_Admin_REST_Palette() )->register();
 		( new EMCP_Tools_Admin_REST_Context() )->register();
+		( new EMCP_Tools_Admin_REST_Sandbox() )->register();
 
 		// Free-tier updates from GitHub releases (self-disables on premium builds,
 		// where Freemius owns updates).

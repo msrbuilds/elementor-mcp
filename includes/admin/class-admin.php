@@ -337,6 +337,7 @@ class EMCP_Tools_Admin {
 		EMCP_Tools_Admin_REST_Brand_Kits::register_screen();
 		EMCP_Tools_Admin_REST_Marketplace::register_screen();
 		EMCP_Tools_Admin_REST_Context::register_screen();
+		EMCP_Tools_Admin_REST_Sandbox::register_screens();
 		if ( class_exists( 'EMCP_Tools_Admin_REST_Templates' ) ) {
 			EMCP_Tools_Admin_REST_Templates::register_screen();
 		}
@@ -660,8 +661,9 @@ class EMCP_Tools_Admin {
 			return $cached;
 		}
 		$counts = array(
-			'tools'  => $this->get_enabled_tool_count(),
-			'memory' => $this->memory_pending_count(),
+			'tools'   => $this->get_enabled_tool_count(),
+			'memory'  => $this->memory_pending_count(),
+			'widgets' => class_exists( 'EMCP_Tools_Admin_Sandbox_Data' ) ? EMCP_Tools_Admin_Sandbox_Data::flagged_count() : 0,
 		);
 		// Cached reads only: the frame must never make a remote call (spec 5.1).
 		foreach ( $this->get_dashboard_stats( true ) as $stat ) {
