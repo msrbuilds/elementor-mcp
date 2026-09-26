@@ -86,7 +86,7 @@
 }
 .emcp-history__meta code {
 	font-family: var(--emcp-mono);
-	color: var(--emcp-code-fg);
+	color: var(--emcp-text-2);
 	background: none;
 	padding: 0;
 }
