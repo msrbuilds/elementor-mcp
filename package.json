@@ -29,6 +29,7 @@
     "@wordpress/element": "^8.8.0",
     "@wordpress/hooks": "^4.56.0",
     "@wordpress/i18n": "^6.29.0",
+    "diff": "^7.0.0",
     "fuse.js": "^7.5.0",
     "lucide-react": "^1.48.0"
   },
