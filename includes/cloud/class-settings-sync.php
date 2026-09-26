@@ -30,6 +30,8 @@ class EMCP_Tools_Settings_Sync {
 			'emcp_tools_strict_schemas',            // behavior pref
 			'emcp_tools_content_mirror_enabled',    // content mirror opt-in
 			'emcp_tools_context_settings',          // discovery context prefs
+			'emcp_tools_context_sections',          // which context sections agents receive
+			'emcp_tools_site_profile',              // site profile shown to agents
 			'emcp_tools_module_themer_force_render', // themer render pref
 			'emcp_tools_memory_require_approval',   // memory prefs
 			'emcp_tools_memory_auto_summarize',

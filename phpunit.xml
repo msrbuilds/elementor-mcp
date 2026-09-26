@@ -45,6 +45,9 @@
         <testsuite name="Library">
             <directory>pro/tests/unit/library</directory>
         </testsuite>
+        <testsuite name="Build">
+            <directory>pro/tests/unit/build</directory>
+        </testsuite>
         <testsuite name="Skills">
             <directory>pro/tests/unit/skills</directory>
         </testsuite>

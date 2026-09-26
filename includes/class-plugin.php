@@ -293,7 +293,7 @@ class EMCP_Tools_Plugin {
 			'mcp',                                                    // route_namespace
 			'emcp-tools-server',                                   // route
 			__( 'MCP Tools for Elementor Server', 'emcp-tools' ),            // server_name
-			EMCP_Tools_Site_Context::compose_instructions( EMCP_Tools_Site_Context::default_base() . "\n\n" . EMCP_Tools_Site_Context::environment_summary() ), // description (base + env + site context)
+			EMCP_Tools_Site_Context::server_instructions(),         // description (base + env + profile + site context)
 			'v' . EMCP_TOOLS_VERSION,                              // version
 			array( \WP\MCP\Transport\HttpTransport::class ),          // transports
 			null,                                                     // error_handler (use default)

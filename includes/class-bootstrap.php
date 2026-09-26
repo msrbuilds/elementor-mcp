@@ -142,6 +142,7 @@ class EMCP_Tools_Bootstrap {
 		require_once EMCP_TOOLS_DIR . 'includes/class-id-generator.php';
 		require_once EMCP_TOOLS_DIR . 'includes/class-url-guard.php';
 		require_once EMCP_TOOLS_DIR . 'includes/class-frontend-page-fetcher.php';
+		require_once EMCP_TOOLS_DIR . 'includes/class-context-sections.php';
 		require_once EMCP_TOOLS_DIR . 'includes/class-site-context.php';
 		require_once EMCP_TOOLS_DIR . 'includes/class-elementor-data.php';
 		require_once EMCP_TOOLS_DIR . 'includes/class-element-factory.php';
@@ -491,6 +492,10 @@ class EMCP_Tools_Bootstrap {
 		EMCP_Tools_Data::init();
 		// Content search index: install-on-init + incremental re-index on save/delete.
 		EMCP_Tools_Search_Index::init();
+		// Detected context summaries go stale when the theme or plugins change.
+		foreach ( array( 'switch_theme', 'activated_plugin', 'deactivated_plugin' ) as $emcp_hook ) {
+			add_action( $emcp_hook, array( 'EMCP_Tools_Context_Sections', 'flush' ) );
+		}
 		EMCP_Tools_Change_Blobs::init();
 		// The Redirect Manager (store table install + front-end 301/302 handler) is
 		// booted by EMCP_Tools_Redirect_Module::register() only when the module is

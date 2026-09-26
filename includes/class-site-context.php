@@ -206,26 +206,49 @@ class EMCP_Tools_Site_Context {
 	 *
 	 * @return string
 	 */
-	public static function environment_summary(): string {
+	public static function environment_summary( ?array $sections = null ): string {
+		$on    = EMCP_Tools_Context_Sections::enabled( $sections );
 		$wp    = function_exists( 'get_bloginfo' ) ? get_bloginfo( 'version' ) : '';
 		$php   = PHP_VERSION;
 		$lines = array( '## Environment' );
 		$lines[] = sprintf( '- WordPress %s · PHP %s', $wp, $php );
 
-		if ( defined( 'ELEMENTOR_VERSION' ) ) {
-			$atomic  = version_compare( ELEMENTOR_VERSION, '4.0.0', '>=' ) ? ' (atomic elements supported)' : '';
-			$pro     = defined( 'ELEMENTOR_PRO_VERSION' ) ? ' + Pro ' . ELEMENTOR_PRO_VERSION : '';
-			$lines[] = sprintf( '- Elementor %s%s%s', ELEMENTOR_VERSION, $pro, $atomic );
-		} else {
-			$lines[] = '- Elementor: not active (Elementor tools are unavailable; use the WordPress/Gutenberg tools)';
+		if ( $on['builder'] ) {
+			if ( defined( 'ELEMENTOR_VERSION' ) ) {
+				$atomic  = version_compare( ELEMENTOR_VERSION, '4.0.0', '>=' ) ? ' (atomic elements supported)' : '';
+				$pro     = defined( 'ELEMENTOR_PRO_VERSION' ) ? ' + Pro ' . ELEMENTOR_PRO_VERSION : '';
+				$lines[] = sprintf( '- Elementor %s%s%s', ELEMENTOR_VERSION, $pro, $atomic );
+			} else {
+				$lines[] = '- Elementor: not active (Elementor tools are unavailable; use the WordPress/Gutenberg tools)';
+			}
 		}
 
 		$inventory = self::plugin_inventory();
-		if ( '' !== $inventory ) {
+		if ( $on['plugins'] && '' !== $inventory ) {
 			$lines[] = '- Active plugins of note: ' . $inventory;
 		}
 
-		$emcp_official = self::elementor_mcp_note();
+		// Sections added in 3.18.0, from a cached summary (EMCP_Tools_Context_Sections::detected()).
+		$new_labels = array(
+			'theme'         => 'Theme',
+			'global_styles' => 'Global styles',
+			'structure'     => 'Site structure',
+			'woocommerce'   => 'WooCommerce',
+		);
+		if ( $on['theme'] || $on['global_styles'] || $on['structure'] || $on['woocommerce'] ) {
+			$detected = EMCP_Tools_Context_Sections::detected();
+			foreach ( $new_labels as $id => $label ) {
+				if ( ! $on[ $id ] || '' === (string) ( $detected[ $id ] ?? '' ) ) {
+					continue;
+				}
+				if ( 'woocommerce' === $id && ! EMCP_Tools_Context_Sections::woocommerce_active() ) {
+					continue;
+				}
+				$lines[] = '- ' . $label . ': ' . $detected[ $id ];
+			}
+		}
+
+		$emcp_official = $on['elementor_mcp_note'] ? self::elementor_mcp_note() : '';
 		if ( '' !== $emcp_official ) {
 			$lines[] = '';
 			$lines[] = $emcp_official;
@@ -243,7 +266,7 @@ class EMCP_Tools_Site_Context {
 
 		// Discovery-context skills catalog (Pro hooks this to inject a "## Skills"
 		// block; free ships only the empty seam).
-		$emcp_skills = (string) apply_filters( 'emcp_tools_discovery_skills', '' );
+		$emcp_skills = $on['skills'] ? (string) apply_filters( 'emcp_tools_discovery_skills', '' ) : '';
 		if ( '' !== $emcp_skills ) {
 			$lines[] = '';
 			$lines[] = $emcp_skills;
@@ -251,13 +274,63 @@ class EMCP_Tools_Site_Context {
 
 		// Discovery-context project memory (Pro hooks this to inject a
 		// "## Project memory" block of approved guidance; free ships the empty seam).
-		$emcp_memory = (string) apply_filters( 'emcp_tools_discovery_memory', '' );
+		$emcp_memory = $on['memory'] ? (string) apply_filters( 'emcp_tools_discovery_memory', '' ) : '';
 		if ( '' !== $emcp_memory ) {
 			$lines[] = '';
 			$lines[] = $emcp_memory;
 		}
 
-		return implode( "\n", $lines );
+		return implode( "
+", $lines );
+	}
+
+	/**
+	 * The site profile as a "## Site profile" block, '' when nothing is filled.
+	 *
+	 * @param array $profile Sanitised profile.
+	 * @return string
+	 */
+	public static function profile_block( array $profile ): string {
+		$rows  = array(
+			'Business'             => (string) ( $profile['name'] ?? '' ),
+			'Industry'             => (string) ( $profile['industry'] ?? '' ),
+			'What the site is for' => (string) ( $profile['purpose'] ?? '' ),
+			'Brand voice'          => implode( ', ', (array) ( $profile['voice'] ?? array() ) ),
+		);
+		$lines = array();
+		foreach ( $rows as $label => $value ) {
+			if ( '' !== trim( $value ) ) {
+				$lines[] = '- ' . $label . ': ' . str_replace( array( "
+", "
+", "" ), ' ', trim( $value ) );
+			}
+		}
+		return $lines ? "## Site profile
+" . implode( "
+", $lines ) : '';
+	}
+
+	/**
+	 * Exactly what the MCP server sends as its instructions. The Context
+	 * screen's preview passes an unsaved draft: { profile, sections,
+	 * instructions, enabled }.
+	 *
+	 * @param array|null $draft Draft values that override the stored ones.
+	 * @return string
+	 */
+	public static function server_instructions( ?array $draft = null ): string {
+		$base    = self::default_base() . "
+
+" . self::environment_summary( isset( $draft['sections'] ) ? (array) $draft['sections'] : null );
+		$enabled = isset( $draft['enabled'] ) ? (bool) $draft['enabled'] : self::is_enabled();
+		$context = isset( $draft['instructions'] ) ? (string) $draft['instructions'] : self::get_context();
+		$profile = self::profile_block( EMCP_Tools_Context_Sections::profile( isset( $draft['profile'] ) ? (array) $draft['profile'] : null ) );
+		if ( $enabled && '' !== $profile ) {
+			$base .= "
+
+" . $profile;
+		}
+		return self::compose( $base, $context, $enabled );
 	}
 
 	/**
