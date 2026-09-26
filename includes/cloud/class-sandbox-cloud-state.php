@@ -137,21 +137,27 @@ final class EMCP_Tools_Sandbox_Cloud_State {
 	 *
 	 * @param string $kind Kind.
 	 * @param int    $id   Artifact id.
+	 * @return WP_Error|null The Cloud failure when it could not answer (flags kept), else null.
 	 */
-	public static function verify_backup( string $kind, int $id ): void {
+	public static function verify_backup( string $kind, int $id ): ?WP_Error {
 		if ( ! get_post_meta( $id, '_emcp_cloud_pushed', true ) || ! class_exists( 'EMCP_Tools_Cloud_Client' ) ) {
-			return;
+			return null;
 		}
 		$art  = self::artifact( $kind );
 		$uuid = $art ? (string) $art->uuid( $id ) : '';
 		if ( '' === $uuid ) {
-			return;
+			return null;
 		}
 		$res = EMCP_Tools_Cloud_Client::get( '/api/cloud/v1/artifacts/' . rawurlencode( $uuid ) );
-		if ( is_wp_error( $res ) && in_array( $res->get_error_code(), array( 'cloud_http_404', 'cloud_http_410' ), true ) ) {
+		if ( ! is_wp_error( $res ) ) {
+			return null;
+		}
+		if ( in_array( $res->get_error_code(), array( 'cloud_http_404', 'cloud_http_410' ), true ) ) {
 			delete_post_meta( $id, '_emcp_cloud_pushed' );
 			delete_post_meta( $id, '_emcp_cloud_checksum' );
+			return null;
 		}
+		return $res;
 	}
 
 	/**

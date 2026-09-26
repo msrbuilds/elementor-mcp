@@ -18,7 +18,8 @@ final class EMCP_Tools_Admin_Sandbox_Cloud_Data {
 
 	const LIB_TTL       = 300;
 	const LIB_ERROR_TTL = 60;
-	const REFRESH_MAX   = 50;
+	const REFRESH_MAX    = 50;
+	const REFRESH_BUDGET = 15;
 	const LIB_KEY       = 'emcp_tools_sb_library_';
 
 	private static function connected(): bool {
@@ -137,7 +138,9 @@ final class EMCP_Tools_Admin_Sandbox_Cloud_Data {
 	}
 
 	/**
-	 * Re-verify pushed items (at most REFRESH_MAX per call).
+	 * Re-verify pushed items (at most REFRESH_MAX per call, within
+	 * REFRESH_BUDGET seconds). The first Cloud failure ends the pass as a 502,
+	 * so an outage is reported as one instead of "refreshed".
 	 *
 	 * @param string $type  Type.
 	 * @param array  $query List query.
@@ -159,19 +162,28 @@ final class EMCP_Tools_Admin_Sandbox_Cloud_Data {
 				'no_found_rows'  => true,
 			)
 		);
+		$start = microtime( true );
+		$more  = false;
 		foreach ( (array) $ids as $id ) {
 			$id = (int) $id;
-			if ( $done >= self::REFRESH_MAX ) {
-				break;
-			}
 			if ( ! get_post_meta( $id, '_emcp_cloud_pushed', true ) || null === EMCP_Tools_Admin_Sandbox_Data::row( $kind, $id, false ) ) {
 				continue;
 			}
-			EMCP_Tools_Sandbox_Cloud_State::verify_backup( $kind, $id );
+			if ( $done >= self::REFRESH_MAX || microtime( true ) - $start > self::REFRESH_BUDGET ) {
+				$more = true;
+				break;
+			}
+			$err = EMCP_Tools_Sandbox_Cloud_State::verify_backup( $kind, $id );
+			if ( $err instanceof WP_Error ) {
+				return self::upstream( $err );
+			}
 			EMCP_Tools_Sandbox_Cloud_State::refresh_marketplace( $kind, $id );
 			++$done;
 		}
-		return self::list_with( $type, $query, array( 'message' => __( 'Cloud status refreshed.', 'emcp-tools' ) ) );
+		$message = $more
+			? __( 'Cloud status refreshed for part of the list. Refresh again for the rest.', 'emcp-tools' )
+			: __( 'Cloud status refreshed.', 'emcp-tools' );
+		return self::list_with( $type, $query, array( 'message' => $message ) );
 	}
 
 	/**

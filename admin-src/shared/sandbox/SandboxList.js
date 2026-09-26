@@ -50,18 +50,37 @@ export function SandboxList( { data: initial, config } ) {
 	const latest = useRef( 0 );
 	const first = useRef( true );
 	const { type, kind } = initial;
-	const query = () => ( { status, search, page: Number( page ) || 1 } );
+	// The current query, readable from callbacks that outlive their render.
+	const current = useRef();
+	current.current = { status, search, page: Number( page ) || 1 };
+	const skipLoad = useRef( false );
+	const query = () => current.current;
+
+	// Show a list answer and follow the page the server clamped to, without
+	// letting that URL change trigger another request.
+	const apply = ( res ) => {
+		setData( res );
+		const clamped = res && res.query ? Number( res.query.page ) || 1 : null;
+		if ( clamped && clamped !== current.current.page ) {
+			skipLoad.current = true;
+			setPage( String( clamped ) );
+		}
+	};
 
 	const load = () => {
 		const ticket = ++latest.current;
 		return request( listPath( type, query() ) ).then( ( res ) => {
 			if ( ticket === latest.current ) {
-				setData( res );
+				apply( res );
 			}
 		} );
 	};
 
 	useEffect( () => {
+		if ( skipLoad.current ) {
+			skipLoad.current = false;
+			return;
+		}
 		if ( first.current ) {
 			first.current = false;
 			const q = initial.query || {};
@@ -94,19 +113,25 @@ export function SandboxList( { data: initial, config } ) {
 	}, [] ); // eslint-disable-line react-hooks/exhaustive-deps
 
 	// Every write returns the list for the query it carried; a failure re-reads it.
+	// A write answered after a newer list request is not shown: the list is
+	// re-read for the query in force now.
 	// rethrow: the caller shows the error itself (the snippet editor keeps its
 	// Drawer open and lists the validator's findings).
 	const write = async ( key, path, { rethrow = false, ...options } = {} ) => {
 		setBusy( key );
+		const ticket = ++latest.current;
 		try {
 			const res = await request( path, {
 				method: 'POST',
 				...options,
 				data: { ...( options.data || {} ), ...query() },
 			} );
-			latest.current++;
 			if ( res && res.items ) {
-				setData( res );
+				if ( ticket === latest.current ) {
+					apply( res );
+				} else {
+					load().catch( () => {} );
+				}
 			}
 			if ( res && res.message ) {
 				toast.success( res.message );

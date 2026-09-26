@@ -493,6 +493,91 @@ describe( 'SandboxList', () => {
 		expect( paths() ).toContain( `${ API }/cloud/library?kind=widget` );
 	} );
 
+	it( 'a write answered after a newer list request never overwrites it', async () => {
+		let finishWrite;
+		answer( {
+			other: ( o ) => {
+				if ( o.path === `${ API }/widgets/2/status` ) {
+					return new Promise( ( r ) => ( finishWrite = r ) );
+				}
+				return Promise.resolve(
+					payload( {
+						items: [ row( 7, { title: 'Fresh Row' } ) ],
+						counts: { all: 1, active: 1, inactive: 0, review: 0 },
+						query: { status: 'active', search: '', page: 1 },
+					} )
+				);
+			},
+		} );
+		mount();
+		await userEvent.click(
+			screen.getByRole( 'switch', { name: 'Activate Widget 2' } )
+		);
+		await userEvent.click(
+			screen.getByRole( 'radio', { name: 'Active 1' } )
+		);
+		expect( await screen.findByText( 'Fresh Row' ) ).toBeInTheDocument();
+		const before = paths().filter( ( p ) =>
+			p.startsWith( `${ API }/widgets?` )
+		).length;
+		await act( async () =>
+			finishWrite(
+				payload( { items: [ row( 5, { title: 'Stale Row' } ) ] } )
+			)
+		);
+		expect( screen.queryByText( 'Stale Row' ) ).not.toBeInTheDocument();
+		await waitFor( () =>
+			expect(
+				paths().filter( ( p ) => p.startsWith( `${ API }/widgets?` ) )
+					.length
+			).toBe( before + 1 )
+		);
+		expect( await screen.findByText( 'Fresh Row' ) ).toBeInTheDocument();
+	} );
+
+	it( 'follows the page the server clamped to', async () => {
+		answer( {
+			other: () =>
+				Promise.resolve(
+					payload( {
+						query: { status: 'all', search: '', page: 1 },
+						page: 1,
+					} )
+				),
+		} );
+		mount(
+			payload( {
+				page: 2,
+				pages: 2,
+				query: { status: 'all', search: '', page: 2 },
+			} ),
+			config,
+			'&paged=2'
+		);
+		await userEvent.click(
+			screen.getByRole( 'switch', { name: 'Activate Widget 2' } )
+		);
+		await waitFor( () =>
+			expect( window.location.search ).not.toContain( 'paged=2' )
+		);
+		await userEvent.click(
+			screen.getByRole( 'switch', { name: 'Activate Widget 1' } )
+		);
+		await waitFor( () =>
+			expect(
+				calls().find( ( o ) => o.path === `${ API }/widgets/1/status` )
+			).toBeTruthy()
+		);
+		expect(
+			calls().find( ( o ) => o.path === `${ API }/widgets/1/status` ).data
+				.page
+		).toBe( 1 );
+		expect(
+			paths().filter( ( p ) => p.startsWith( `${ API }/widgets?` ) )
+		).toHaveLength( 0 );
+		await settled();
+	} );
+
 	it( 'rethrow keeps the caller in charge of the error', async () => {
 		answer( {
 			other: ( o ) =>

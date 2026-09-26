@@ -99,17 +99,23 @@ export function SnippetEditor( { open, item, codeEditor, onClose, onSave } ) {
 	const [ loading, setLoading ] = useState( false );
 	const [ saving, setSaving ] = useState( false );
 	const [ failure, setFailure ] = useState( null );
+	// Which snippet the fields hold (0 for a new one, null for none yet). The
+	// form, and CodeMirror with it, only mounts once it matches, so a new
+	// snippet never opens on the code of the one edited before.
+	const [ loadedFor, setLoadedFor ] = useState( null );
 	const area = useRef();
 	const editor = useRef( null );
 	const id = item && item.id ? item.id : 0;
 
 	useEffect( () => {
 		if ( ! open ) {
+			setLoadedFor( null );
 			return;
 		}
 		setFailure( null );
 		if ( ! id ) {
 			setFields( EMPTY );
+			setLoadedFor( 0 );
 			return;
 		}
 		let live = true;
@@ -121,6 +127,7 @@ export function SnippetEditor( { open, item, codeEditor, onClose, onSave } ) {
 						...d.snippet,
 						priority: String( d.snippet.priority || 10 ),
 					} );
+					setLoadedFor( id );
 				}
 			} )
 			.catch(
@@ -132,12 +139,13 @@ export function SnippetEditor( { open, item, codeEditor, onClose, onSave } ) {
 		};
 	}, [ open, id ] );
 
-	// CodeMirror takes over the textarea once it exists (after the detail loads).
+	const ready = open && ! loading && loadedFor === id;
+
+	// CodeMirror takes over the textarea once it holds this snippet's code.
 	useEffect( () => {
 		const wp = window.wp;
 		if (
-			! open ||
-			loading ||
+			! ready ||
 			! codeEditor ||
 			! area.current ||
 			! wp ||
@@ -152,7 +160,7 @@ export function SnippetEditor( { open, item, codeEditor, onClose, onSave } ) {
 			}
 			editor.current = null;
 		};
-	}, [ open, loading, codeEditor ] );
+	}, [ ready, codeEditor ] );
 
 	const set = ( key ) => ( value ) =>
 		setFields( ( f ) => ( { ...f, [ key ]: value } ) );
@@ -202,7 +210,7 @@ export function SnippetEditor( { open, item, codeEditor, onClose, onSave } ) {
 					<Button
 						variant="primary"
 						loading={ saving }
-						disabled={ loading }
+						disabled={ ! ready }
 						onClick={ save }
 					>
 						{ id
@@ -212,9 +220,11 @@ export function SnippetEditor( { open, item, codeEditor, onClose, onSave } ) {
 				</>
 			}
 		>
-			{ loading ? (
-				<Skeleton lines={ 6 } />
-			) : (
+			{ ! ready && failure && (
+				<Notice tone="danger">{ failure.message }</Notice>
+			) }
+			{ ! ready && ! failure && <Skeleton lines={ 6 } /> }
+			{ ready && (
 				<div className="emcp-sn-form">
 					<Field label={ __( 'Title', 'emcp-tools' ) }>
 						{ ( p ) => (

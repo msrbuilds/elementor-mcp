@@ -360,6 +360,49 @@ describe( 'SnippetsScreen', () => {
 		);
 	} );
 
+	it( 'a new snippet never starts with the code of the one edited before', async () => {
+		const seen = [];
+		const cm = {
+			getValue: () => '',
+			setValue: jest.fn(),
+			on: jest.fn(),
+			toTextArea: jest.fn(),
+			refresh: jest.fn(),
+		};
+		window.wp = {
+			codeEditor: {
+				initialize: jest.fn( ( area ) => {
+					seen.push( area.value );
+					return { codemirror: cm };
+				} ),
+			},
+		};
+		apiFetch.mockImplementation( ( o ) =>
+			o.path === `${ API }/snippets/7` && ! o.method
+				? Promise.resolve( detail( 7 ) )
+				: Promise.resolve( payload() )
+		);
+		const d = payload( { codeEditor: { codemirror: {} } } );
+		mount( d );
+		await userEvent.click(
+			screen.getByRole( 'button', { name: 'Edit Alpha' } )
+		);
+		const edit = await screen.findByRole( 'dialog', {
+			name: 'Edit snippet',
+		} );
+		await waitFor( () => expect( seen ).toContain( 'return 1;' ) );
+		await userEvent.click(
+			within( edit ).getByRole( 'button', { name: 'Cancel' } )
+		);
+		await userEvent.click(
+			screen.getByRole( 'button', { name: 'Add snippet' } )
+		);
+		await screen.findByRole( 'dialog', { name: 'Add snippet' } );
+		await waitFor( () => expect( seen.length ).toBeGreaterThan( 1 ) );
+		expect( seen[ seen.length - 1 ] ).toBe( '' );
+		expect( seen.filter( ( v ) => 'return 1;' === v ) ).toHaveLength( 1 );
+	} );
+
 	it( 'disables editing without the capabilities', () => {
 		mount( payload( { canEdit: false } ) );
 		expect(
