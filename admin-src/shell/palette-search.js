@@ -1,13 +1,14 @@
 import Fuse from 'fuse.js';
 
 /**
- * Flatten the shell data into palette items (spec 7). Template and prompt
- * titles join in Part 3.
+ * Flatten the shell data into palette items (spec 7), plus the library
+ * (prompt and template titles) once it has been fetched.
  *
- * @param {Object} data window.emcpShell.
+ * @param {Object} data    window.emcpShell.
+ * @param {Array}  library Items from GET admin/palette/library.
  * @return {Array<{kind: string, label: string, hint: string, url: string}>} Items.
  */
-export function buildIndex( data ) {
+export function buildIndex( data, library = [] ) {
 	const toolsUrl = ( data.nav || [] ).find( ( n ) => 'tools' === n.id )?.url;
 	return [
 		...( data.nav || [] ).map( ( n ) => ( {
@@ -30,13 +31,20 @@ export function buildIndex( data ) {
 			hint: '',
 			url: s.url,
 		} ) ),
+		...library,
 	];
 }
 
 // Added to a result's fuzzy score (0 = perfect) so that, for comparable
 // matches, a screen outranks a setting and a setting outranks a tool: someone
 // typing "redirect" is usually looking for the Redirects screen.
-const KIND_PENALTY = { screen: 0, setting: 0.1, tool: 0.2 };
+const KIND_PENALTY = {
+	screen: 0,
+	setting: 0.1,
+	tool: 0.2,
+	prompt: 0.3,
+	template: 0.3,
+};
 
 /**
  * Fuzzy search; an empty query lists the screens.

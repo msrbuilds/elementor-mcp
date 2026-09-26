@@ -55,6 +55,41 @@ final class EMCP_Tools_Admin_Prompts_Data {
 		return class_exists( 'EMCP_Tools_Pro_Prompts' ) && EMCP_Tools_Pro_Prompts::user_has_access();
 	}
 
+	/**
+	 * Prompt titles for the command palette, from cached data only: the free
+	 * samples, or the synced Pro library's transient or stored copy. Never
+	 * fetches (spec 7: the palette must stay instant).
+	 */
+	public static function palette_items(): array {
+		$categories = array();
+		if ( self::pro_class() ) {
+			$bundle = get_transient( EMCP_Tools_Pro_Prompts::CACHE_KEY );
+			if ( ! is_array( $bundle ) ) {
+				$bundle = get_option( EMCP_Tools_Pro_Prompts::STORE_KEY );
+			}
+			$categories = is_array( $bundle ) ? (array) ( $bundle['categories'] ?? array() ) : array();
+		}
+		if ( ! $categories ) {
+			$categories = self::free_bundle()['categories'];
+		}
+		$base = admin_url( 'admin.php?page=emcp-tools-prompts' );
+		$out  = array();
+		foreach ( $categories as $cat ) {
+			foreach ( (array) ( $cat['prompts'] ?? array() ) as $p ) {
+				$title = (string) ( $p['title'] ?? '' );
+				if ( '' !== $title ) {
+					$out[] = array(
+						'kind'  => 'prompt',
+						'label' => $title,
+						'hint'  => (string) ( $cat['label'] ?? '' ),
+						'url'   => $base . '&q=' . rawurlencode( $title ),
+					);
+				}
+			}
+		}
+		return $out;
+	}
+
 	/** @return array{bundle: array, source: string, error: string} */
 	private function library(): array {
 		if ( self::pro_class() ) {

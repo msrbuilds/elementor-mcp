@@ -1,16 +1,25 @@
-import { useEffect, useId, useMemo, useState } from '@wordpress/element';
+import {
+	useEffect,
+	useId,
+	useMemo,
+	useRef,
+	useState,
+} from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
-import { Dialog, cx } from '@emcp/ui';
+import { Dialog, cx, request } from '@emcp/ui';
 import { buildIndex, searchPalette } from './palette-search';
 
 const kindLabels = () => ( {
 	screen: __( 'Screen', 'emcp-tools' ),
 	tool: __( 'Tool', 'emcp-tools' ),
 	setting: __( 'Setting', 'emcp-tools' ),
+	prompt: __( 'Prompt', 'emcp-tools' ),
+	template: __( 'Template', 'emcp-tools' ),
 } );
 
 /**
- * Command palette: screens, tools and settings (spec 7).
+ * Command palette: screens, tools, settings, and prompt and template titles
+ * fetched on the first keystroke (spec 7).
  *
  * @param {Object}                props          Props.
  * @param {boolean}               props.open     Whether it is open.
@@ -19,7 +28,12 @@ const kindLabels = () => ( {
  * @param {(url: string) => void} props.navigate Navigation.
  */
 export function Palette( { open, onClose, data, navigate } ) {
-	const index = useMemo( () => buildIndex( data ), [ data ] );
+	const [ library, setLibrary ] = useState( [] );
+	const asked = useRef( false );
+	const index = useMemo(
+		() => buildIndex( data, library ),
+		[ data, library ]
+	);
 	const [ query, setQuery ] = useState( '' );
 	const [ active, setActive ] = useState( 0 );
 	const listId = useId();
@@ -35,6 +49,18 @@ export function Palette( { open, onClose, data, navigate } ) {
 		}
 	}, [ open ] );
 	useEffect( () => setActive( 0 ), [ query ] );
+	useEffect( () => {
+		if ( ! query.trim() || asked.current ) {
+			return;
+		}
+		asked.current = true;
+		// A failed fetch leaves screens, tools and settings searchable.
+		request( '/emcp-tools/v1/admin/palette/library' )
+			.then( ( res ) =>
+				setLibrary( Array.isArray( res?.items ) ? res.items : [] )
+			)
+			.catch( () => {} );
+	}, [ query ] );
 
 	const go = ( item ) => {
 		if ( item ) {
@@ -68,7 +94,7 @@ export function Palette( { open, onClose, data, navigate } ) {
 				className="eui-input eui-palette__input"
 				role="combobox"
 				aria-label={ __(
-					'Search screens, tools and settings',
+					'Search screens, tools, settings, prompts and templates',
 					'emcp-tools'
 				) }
 				aria-expanded="true"

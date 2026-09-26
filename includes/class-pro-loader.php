@@ -293,6 +293,11 @@ final class EMCP_Tools_Pro_Loader {
 		if ( class_exists( 'EMCP_Tools_Admin_REST_Templates' ) ) {
 			( new EMCP_Tools_Admin_REST_Templates() )->register();
 		}
+
+		// Template titles in the command palette (3.18.0 redesign).
+		if ( class_exists( 'EMCP_Tools_Admin_Templates_Data' ) ) {
+			EMCP_Tools_Admin_Templates_Data::hook_palette();
+		}
 	}
 
 	/** Wire Pro admin hooks, each guarded by class_exists. */

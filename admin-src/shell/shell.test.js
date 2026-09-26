@@ -275,3 +275,54 @@ describe( 'ShellApp', () => {
 		expect( reachedCore ).toBe( false );
 	} );
 } );
+
+describe( 'palette library', () => {
+	const library = [
+		{
+			kind: 'template',
+			label: 'Ironclad Auto Repair',
+			hint: 'Automotive',
+			url: '/t&q=Ironclad',
+		},
+	];
+
+	it( 'adds library items to the index', () => {
+		expect(
+			buildIndex( data, library )
+				.filter( ( i ) => 'template' === i.kind )
+				.map( ( i ) => i.label )
+		).toEqual( [ 'Ironclad Auto Repair' ] );
+	} );
+
+	it( 'finds a template by title', () => {
+		expect(
+			searchPalette( buildIndex( data, library ), 'ironclad' )[ 0 ].label
+		).toBe( 'Ironclad Auto Repair' );
+	} );
+
+	it( 'fetches the library once, on the first keystroke', async () => {
+		apiFetch.mockClear();
+		apiFetch.mockImplementation( ( { path } ) =>
+			Promise.resolve(
+				path.includes( 'palette/library' )
+					? { items: library }
+					: { unread: 0, dismissed: [ 'cloud' ] }
+			)
+		);
+		mount();
+		await userEvent.keyboard( '{Control>}k{/Control}' );
+		const input = await screen.findByRole( 'combobox', { name: /Search/ } );
+		const calls = () =>
+			apiFetch.mock.calls.filter( ( [ o ] ) =>
+				o.path.includes( 'palette/library' )
+			).length;
+		expect( calls() ).toBe( 0 );
+		await userEvent.type( input, 'iro' );
+		expect(
+			await screen.findByRole( 'option', {
+				name: /Ironclad Auto Repair/,
+			} )
+		).toBeInTheDocument();
+		expect( calls() ).toBe( 1 );
+	} );
+} );
