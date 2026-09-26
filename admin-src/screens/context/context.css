@@ -1,0 +1,140 @@
+.eui-ctx {
+	display: flex;
+	flex-direction: column;
+	gap: 18px;
+}
+
+.eui-ctx__layout {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) 320px;
+	align-items: start;
+	gap: 20px;
+}
+
+@media (max-width: 1100px) {
+
+	.eui-ctx__layout {
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
+
+.eui-ctx__main {
+	display: flex;
+	flex-direction: column;
+	gap: 20px;
+	min-inline-size: 0;
+}
+
+.eui-ctx__rail {
+	position: sticky;
+	inset-block-start: 20px;
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+}
+
+.eui-ctx__muted {
+	margin: 0;
+	color: var(--emcp-text-2);
+	font-size: 13px;
+}
+
+.eui-ctx__profile-grid {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 16px;
+}
+
+.eui-ctx__voice {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+
+.eui-ctx__chips {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+}
+
+.eui-ctx__add-voice {
+	display: flex;
+	gap: 8px;
+	max-inline-size: 360px;
+}
+
+.eui-ctx__refresh {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+}
+
+.eui-ctx__sections {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.eui-ctx__section {
+	display: grid;
+	grid-template-columns: 32px minmax(180px, 1fr) minmax(0, 1.4fr);
+	align-items: center;
+	gap: 12px;
+	padding-block: 12px;
+	border-block-start: 1px solid var(--emcp-divider);
+}
+
+.eui-ctx__section:first-child {
+	border-block-start: 0;
+}
+
+.eui-ctx__icon {
+	display: grid;
+	inline-size: 32px;
+	block-size: 32px;
+	border-radius: var(--emcp-r-md);
+	place-items: center;
+	background: var(--emcp-primary-tint);
+	color: var(--emcp-primary-strong);
+}
+
+.eui-ctx__summary {
+	color: var(--emcp-text-2);
+	font-size: 13px;
+}
+
+.eui-ctx__hint {
+	margin: 10px 0 0;
+	color: var(--emcp-text-2);
+	font-size: 12.5px;
+}
+
+.eui-ctx__hint.is-over {
+	color: var(--emcp-warning-fg);
+}
+
+.eui-ctx__preview {
+	padding: 16px;
+	border-radius: var(--emcp-r-card);
+	background: var(--emcp-dark);
+}
+
+.eui-ctx__preview-label {
+	margin: 0 0 8px;
+	color: var(--emcp-faint);
+	font-size: 11px;
+	font-weight: 700;
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+}
+
+.eui-ctx__preview-text {
+	overflow: auto;
+	max-block-size: 260px;
+	margin: 0;
+	color: var(--emcp-surface);
+	font-family: var(--emcp-mono);
+	font-size: 12px;
+	line-height: 1.55;
+	white-space: pre-wrap;
+}

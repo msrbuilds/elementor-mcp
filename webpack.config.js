@@ -23,6 +23,7 @@ module.exports = {
 		'screen-prompts': './admin-src/screens/prompts/index.js',
 		'screen-brand-kits': './admin-src/screens/brand-kits/index.js',
 		'screen-marketplace': './admin-src/screens/marketplace/index.js',
+		'screen-context': './admin-src/screens/context/index.js',
 	},
 	output: {
 		...defaultConfig.output,
