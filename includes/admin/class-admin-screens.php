@@ -24,7 +24,7 @@ final class EMCP_Tools_Admin_Screens {
 	);
 
 	/** Pro-only tabs that also need an active licence; unlicensed means locked (spec 8.25). */
-	const LICENCE_TABS = array( 'templates' );
+	const LICENCE_TABS = array( 'templates', 'skills', 'memory' );
 
 	/** Warn (under WP_DEBUG) when a screen's boot data grows past this (spec 5.2). */
 	const MAX_PAYLOAD_BYTES = 153600;

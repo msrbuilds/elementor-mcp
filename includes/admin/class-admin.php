@@ -340,6 +340,9 @@ class EMCP_Tools_Admin {
 		if ( class_exists( 'EMCP_Tools_Admin_REST_Templates' ) ) {
 			EMCP_Tools_Admin_REST_Templates::register_screen();
 		}
+		if ( class_exists( 'EMCP_Tools_Admin_REST_Skills' ) ) {
+			EMCP_Tools_Admin_REST_Skills::register_screen();
+		}
 		add_action( 'admin_head', array( $this, 'print_menu_icon_style' ) );
 		add_action( 'wp_ajax_emcp_tools_create_app_password', array( $this, 'ajax_create_app_password' ) );
 		add_action( 'wp_ajax_emcp_tools_test_connection', array( $this, 'ajax_test_connection' ) );
