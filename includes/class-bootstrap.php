@@ -198,6 +198,7 @@ class EMCP_Tools_Bootstrap {
 		require_once EMCP_TOOLS_DIR . 'includes/admin/rest/class-admin-rest-palette.php';
 		require_once EMCP_TOOLS_DIR . 'includes/admin/data/class-admin-context-data.php';
 		require_once EMCP_TOOLS_DIR . 'includes/admin/rest/class-admin-rest-context.php';
+		require_once EMCP_TOOLS_DIR . 'includes/admin/data/class-admin-history-data.php';
 		require_once EMCP_TOOLS_DIR . 'includes/admin/data/class-admin-sandbox-list.php';
 		require_once EMCP_TOOLS_DIR . 'includes/admin/data/class-admin-sandbox-data.php';
 		require_once EMCP_TOOLS_DIR . 'includes/admin/data/class-admin-sandbox-cloud-data.php';
