@@ -22,6 +22,7 @@ module.exports = {
 		'screen-connection': './admin-src/screens/connection/index.js',
 		'screen-prompts': './admin-src/screens/prompts/index.js',
 		'screen-brand-kits': './admin-src/screens/brand-kits/index.js',
+		'screen-marketplace': './admin-src/screens/marketplace/index.js',
 	},
 	output: {
 		...defaultConfig.output,
