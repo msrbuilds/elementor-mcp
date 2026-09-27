@@ -346,6 +346,9 @@ class EMCP_Tools_Admin {
 		if ( class_exists( 'EMCP_Tools_Admin_REST_Templates' ) ) {
 			EMCP_Tools_Admin_REST_Templates::register_screen();
 		}
+		if ( class_exists( 'EMCP_Tools_Admin_REST_Backup' ) && class_exists( 'EMCP_Tools_Migrate_Module' ) && EMCP_Tools_Migrate_Module::is_enabled() ) {
+			EMCP_Tools_Admin_REST_Backup::register_screen();
+		}
 		if ( class_exists( 'EMCP_Tools_Admin_REST_Skills' ) ) {
 			EMCP_Tools_Admin_REST_Skills::register_screen();
 		}

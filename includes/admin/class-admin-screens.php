@@ -29,7 +29,7 @@ final class EMCP_Tools_Admin_Screens {
 	);
 
 	/** Pro-only tabs that also need an active licence; unlicensed means locked (spec 8.25). */
-	const LICENCE_TABS = array( 'ai-chat', 'templates', 'skills', 'memory', 'widgets:widgets', 'widgets:blocks', 'widgets:export' );
+	const LICENCE_TABS = array( 'ai-chat', 'templates', 'skills', 'memory', 'migrate', 'widgets:widgets', 'widgets:blocks', 'widgets:export' );
 
 	/** Warn (under WP_DEBUG) when a screen's boot data grows past this (spec 5.2). */
 	const MAX_PAYLOAD_BYTES = 153600;
@@ -139,6 +139,15 @@ final class EMCP_Tools_Admin_Screens {
 		if ( $screen && is_callable( $screen['enqueue'] ) ) {
 			call_user_func( $screen['enqueue'] );
 		}
+	}
+
+	/**
+	 * Whether a React screen is registered for a route key.
+	 *
+	 * @param string $key Tab or tab:view.
+	 */
+	public static function is_registered( string $key ): bool {
+		return null !== self::registered_for( $key );
 	}
 
 	/**
