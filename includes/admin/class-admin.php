@@ -339,6 +339,7 @@ class EMCP_Tools_Admin {
 		EMCP_Tools_Admin_REST_Context::register_screen();
 		EMCP_Tools_Admin_REST_History::register_screen();
 		EMCP_Tools_Admin_REST_Log::register_screen();
+		EMCP_Tools_Admin_REST_Dashboard::register_screen( $this );
 		if ( class_exists( 'EMCP_Tools_Redirect_Module' ) && EMCP_Tools_Redirect_Module::is_enabled() ) {
 			EMCP_Tools_Admin_REST_Redirects::register_screen();
 		}
