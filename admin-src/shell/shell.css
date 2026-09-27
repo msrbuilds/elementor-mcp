@@ -370,6 +370,38 @@
 	display: none;
 }
 
+/* Our notices keep core's `notice` class so core moves them here; undo
+ * core's notice box so the eui-notice look applies. */
+.eui-frame__content > .notice.eui-notice {
+	margin: 0;
+	padding-block: 12px;
+	padding-inline: 16px;
+	border-width: 1px;
+	border-style: solid;
+	box-shadow: none;
+}
+
+.eui-frame__content > .notice.eui-notice--warning {
+	border-color: var(--emcp-warning-dot);
+	background: var(--emcp-warning-bg);
+	color: var(--emcp-warning-fg);
+}
+
+.eui-frame__content > .notice.eui-notice .eui-notice__body {
+	align-self: center;
+	line-height: 1.5;
+}
+
+.eui-frame__content > .notice.eui-notice .eui-btn {
+	text-decoration: none;
+	white-space: nowrap;
+}
+
+.eui-frame__content > .notice.eui-notice .eui-notice__icon {
+	display: inline-flex;
+	margin-block-start: 2px;
+}
+
 .eui-frame-fallback .eui-skeleton {
 	max-inline-size: 640px;
 }

@@ -72,15 +72,39 @@ final class EMCP_Tools_Change_Notices {
 		);
 	}
 
+	/** Whether this request renders an EMCP admin screen (the frame). */
+	private static function on_frame(): bool {
+		$page = isset( $GLOBALS['plugin_page'] ) ? (string) $GLOBALS['plugin_page'] : '';
+		return class_exists( 'EMCP_Tools_Admin' ) && ( EMCP_Tools_Admin::PAGE_SLUG === $page || 0 === strpos( $page, EMCP_Tools_Admin::PAGE_SLUG . '-' ) );
+	}
+
 	/**
+	 * A warning notice. On EMCP screens it takes the plugin's own notice look;
+	 * it keeps core's `notice` class so core still moves it after
+	 * `.wp-header-end`, inside the frame. Other admin screens get a core notice.
+	 *
+	 * @param string $title  Short title.
 	 * @param string $text   Notice text.
 	 * @param string $action admin-post action of its Dismiss button.
 	 */
-	private static function notice( string $text, string $action ): void {
+	private static function notice( string $title, string $text, string $action ): void {
+		$url = wp_nonce_url( admin_url( 'admin-post.php?action=' . $action ), $action );
+		if ( self::on_frame() && class_exists( 'EMCP_Tools_Admin_Icons' ) ) {
+			printf(
+				'<div class="notice emcp-frame-notice eui-notice eui-notice--warning" role="status"><span class="eui-notice__icon">%1$s</span><div class="eui-notice__body"><strong class="eui-notice__title">%2$s</strong> %3$s</div><div class="eui-notice__actions"><a class="eui-btn eui-btn--secondary eui-btn--sm" href="%4$s"><span class="eui-btn__label">%5$s</span></a></div></div>',
+				EMCP_Tools_Admin_Icons::svg( 'triangle-alert', 16 ), // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- static, trusted SVG.
+				esc_html( $title ),
+				esc_html( $text ),
+				esc_url( $url ),
+				esc_html__( 'Dismiss', 'emcp-tools' )
+			);
+			return;
+		}
 		printf(
-			'<div class="notice notice-warning"><p>%1$s</p><p><a class="button" href="%2$s">%3$s</a></p></div>',
+			'<div class="notice notice-warning"><p><strong>%1$s</strong> %2$s</p><p><a class="button" href="%3$s">%4$s</a></p></div>',
+			esc_html( $title ),
 			esc_html( $text ),
-			esc_url( wp_nonce_url( admin_url( 'admin-post.php?action=' . $action ), $action ) ),
+			esc_url( $url ),
 			esc_html__( 'Dismiss', 'emcp-tools' )
 		);
 	}
@@ -90,10 +114,10 @@ final class EMCP_Tools_Change_Notices {
 			return;
 		}
 		if ( self::stray_option() ) {
-			self::notice( __( "An AI connection is still running the previous version of EMCP Tools. Its changes aren't being recorded in History and can't be undone. Reconnect your AI client (restart it, or reload its MCP server) to fix this.", 'emcp-tools' ), self::DISMISS_STRAY );
+			self::notice( __( 'An AI client needs to reconnect.', 'emcp-tools' ), __( "An AI connection is still running the previous version of EMCP Tools. Its changes aren't being recorded in History and can't be undone. Reconnect your AI client (restart it, or reload its MCP server) to fix this.", 'emcp-tools' ), self::DISMISS_STRAY );
 		}
 		if ( self::upgrade_notice_pending() ) {
-			self::notice( __( 'EMCP Tools 3.18.0 moved History to its own table. Reconnect every AI client (restart it, or reload its MCP server) so its changes keep being recorded.', 'emcp-tools' ), self::DISMISS_UPGRADE );
+			self::notice( __( 'Reconnect your AI clients.', 'emcp-tools' ), __( 'EMCP Tools 3.18.0 moved History to its own table. Reconnect every AI client (restart it, or reload its MCP server) so its changes keep being recorded.', 'emcp-tools' ), self::DISMISS_UPGRADE );
 		}
 	}
 

@@ -152,7 +152,9 @@
 	color: var(--emcp-danger-fg);
 }
 
-.eui-input {
+/* Doubled classes: core wp-admin styles fields with input[type="text"] and
+ * .wp-core-ui select (0,1,1) and draws its own blue focus ring. */
+.eui-input.eui-input {
 	inline-size: 100%;
 	min-block-size: 38px;
 	padding-block: 8px;
@@ -160,8 +162,28 @@
 	border: 1px solid var(--emcp-border-input);
 	border-radius: var(--emcp-r-sm);
 	background: var(--emcp-surface);
+	box-shadow: none;
 	color: var(--emcp-ink);
 	font: 400 14px/1.4 var(--emcp-font);
+	transition:
+		border-color 120ms ease,
+		box-shadow 120ms ease;
+}
+
+.eui-input.eui-input:hover {
+	border-color: var(--emcp-hover-border);
+}
+
+.eui-input.eui-input:focus,
+.eui-input.eui-input:focus-visible {
+	border-color: var(--emcp-primary);
+	box-shadow: 0 0 0 3px var(--emcp-primary-tint);
+	outline: 2px solid transparent;
+}
+
+.eui-input.eui-input:disabled {
+	background: var(--emcp-surface-2);
+	color: var(--emcp-text-2);
 }
 
 .eui-input::placeholder {
@@ -186,16 +208,35 @@
 	display: inline-flex;
 }
 
-.eui-select select {
+.eui-select.eui-select select {
 	appearance: none;
 	min-block-size: 38px;
+	margin: 0;
 	padding-block: 0;
 	padding-inline: 12px 34px;
 	border: 1px solid var(--emcp-border-input);
 	border-radius: var(--emcp-r-sm);
 	background: var(--emcp-surface);
+	box-shadow: none;
 	color: var(--emcp-ink-2);
 	font: 500 14px/1 var(--emcp-font);
+	cursor: pointer;
+	transition:
+		border-color 120ms ease,
+		box-shadow 120ms ease;
+}
+
+.eui-select.eui-select select:hover {
+	border-color: var(--emcp-hover-border);
+	color: var(--emcp-ink-2);
+}
+
+.eui-select.eui-select select:focus,
+.eui-select.eui-select select:focus-visible {
+	border-color: var(--emcp-primary);
+	box-shadow: 0 0 0 3px var(--emcp-primary-tint);
+	color: var(--emcp-ink-2);
+	outline: 2px solid transparent;
 }
 
 .eui-select__chevron {

@@ -12,8 +12,9 @@
 	pointer-events: none;
 }
 
-/* Two classes: core's input[type="search"] (0,1,1) would reset it. */
-.eui-search .eui-search__input {
+/* Three classes: core's input[type="search"] (0,1,1) would reset it, and
+ * the base .eui-input.eui-input rule (0,2,0) must not undo the icon room. */
+.eui-search .eui-search__input.eui-input {
 	padding-inline: 36px 36px;
 	border-radius: var(--emcp-r-md);
 }
