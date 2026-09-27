@@ -87,6 +87,23 @@ export function BuildersScreen( { data: initialData } ) {
 			</Badge>
 		);
 	};
+	const gutenberg = data.gutenberg || { available: true, reason: '' };
+	const gutenbergTag = () => {
+		if ( ! gutenberg.available ) {
+			return (
+				<Badge kind="status" value="warning">
+					{ __( 'Unavailable', 'emcp-tools' ) }
+				</Badge>
+			);
+		}
+		return (
+			<Badge kind="status" value="success">
+				{ '' === data.selected
+					? __( 'Active', 'emcp-tools' )
+					: __( 'Detected', 'emcp-tools' ) }
+			</Badge>
+		);
+	};
 	const saved = data.builders.find( ( b ) => b.id === data.selected );
 	const stale = saved && ! saved.available;
 	const builders = data.builders.filter(
@@ -126,18 +143,31 @@ export function BuildersScreen( { data: initialData } ) {
 					<Icon name="blocks" />
 					<div>
 						<p className="eui-builders__banner-title">
-							{ __( 'Gutenberg is always on', 'emcp-tools' ) }
+							{ gutenberg.available
+								? __( 'Gutenberg is always on', 'emcp-tools' )
+								: __(
+										'Gutenberg is unavailable',
+										'emcp-tools'
+									) }
 						</p>
 						<p className="eui-builders__banner-text">
-							{ __(
-								'Core block tools plus any block plugins you enable below work alongside the standalone builder you pick.',
-								'emcp-tools'
-							) }
+							{ gutenberg.available
+								? __(
+										'Core block tools plus any block plugins you enable below work alongside the standalone builder you pick.',
+										'emcp-tools'
+									)
+								: gutenberg.reason }
 						</p>
 					</div>
-					<Badge kind="status" value="success">
-						{ __( 'Active', 'emcp-tools' ) }
-					</Badge>
+					{ gutenberg.available ? (
+						<Badge kind="status" value="success">
+							{ __( 'Active', 'emcp-tools' ) }
+						</Badge>
+					) : (
+						<Badge kind="status" value="warning">
+							{ __( 'Unavailable', 'emcp-tools' ) }
+						</Badge>
+					) }
 				</div>
 			</Card>
 
@@ -164,12 +194,10 @@ export function BuildersScreen( { data: initialData } ) {
 						'Use the block editor and the block plugins below. No standalone builder.',
 						'emcp-tools'
 					) }
-					tag={
-						'' === data.selected ? (
-							<Badge kind="status" value="success">
-								{ __( 'Active', 'emcp-tools' ) }
-							</Badge>
-						) : null
+					tag={ gutenbergTag() }
+					disabled={ ! gutenberg.available }
+					requirement={
+						gutenberg.available ? undefined : gutenberg.reason
 					}
 				/>
 				{ builders.map( ( b ) => (

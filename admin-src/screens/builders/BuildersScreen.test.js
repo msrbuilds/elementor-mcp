@@ -8,6 +8,7 @@ jest.mock( '@wordpress/api-fetch', () => jest.fn() );
 
 const data = {
 	selected: '',
+	gutenberg: { available: true, reason: '' },
 	builders: [
 		{
 			id: 'elementor',
@@ -42,7 +43,7 @@ const data = {
 	],
 };
 
-function mount() {
+function mount( over = {} ) {
 	window.history.replaceState(
 		{},
 		'',
@@ -50,13 +51,47 @@ function mount() {
 	);
 	return render(
 		<AppProviders>
-			<BuildersScreen data={ data } />
+			<BuildersScreen data={ { ...data, ...over } } />
 		</AppProviders>
 	);
 }
 
 describe( 'BuildersScreen', () => {
 	beforeEach( () => apiFetch.mockReset() );
+
+	it( 'shows Gutenberg as detected while the block editor is there', () => {
+		mount( { selected: 'elementor' } );
+		expect(
+			screen.getByText( 'Gutenberg is always on' )
+		).toBeInTheDocument();
+		const card = screen
+			.getByRole( 'radio', { name: /Gutenberg only/ } )
+			.closest( 'label' );
+		expect( card ).toHaveTextContent( 'Detected' );
+		expect(
+			screen.getByRole( 'radio', { name: /Gutenberg only/ } )
+		).toBeEnabled();
+	} );
+
+	it( 'marks Gutenberg unavailable while the Classic Editor is active', () => {
+		mount( {
+			selected: 'elementor',
+			gutenberg: {
+				available: false,
+				reason: 'The Classic Editor plugin is active.',
+			},
+		} );
+		expect(
+			screen.getByText( 'Gutenberg is unavailable' )
+		).toBeInTheDocument();
+		expect( screen.queryByText( 'Gutenberg is always on' ) ).toBeNull();
+		expect(
+			screen.getAllByText( 'The Classic Editor plugin is active.' )
+		).toHaveLength( 2 );
+		const radio = screen.getByRole( 'radio', { name: /Gutenberg only/ } );
+		expect( radio ).toBeDisabled();
+		expect( radio.closest( 'label' ) ).toHaveTextContent( 'Unavailable' );
+	} );
 
 	it( 'shows Gutenberg only as the active choice and statuses on each card', () => {
 		mount();

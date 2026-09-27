@@ -123,11 +123,22 @@
 	color: var(--emcp-text-2);
 }
 
-.eui-radio-card__input {
+/* Three classes: core shows disabled radios at opacity .7 with
+   input[type=radio]:disabled (0,2,1), which would put the native radio over
+   the custom dot. */
+.eui-radio-card .eui-radio-card__input.eui-radio-card__input {
 	position: absolute;
-	opacity: 0;
 	inline-size: 1px;
+	min-inline-size: 0;
 	block-size: 1px;
+	margin: 0;
+	padding: 0;
+	border: 0;
+	opacity: 0;
+	clip-path: inset(50%);
+	box-shadow: none;
+	appearance: none;
+	pointer-events: none;
 }
 
 .eui-radio-card__input:focus-visible ~ .eui-radio-card__dot {
@@ -147,6 +158,11 @@
 
 .eui-radio-card.is-checked .eui-radio-card__dot {
 	border: 5px solid var(--emcp-primary);
+}
+
+.eui-radio-card.is-disabled .eui-radio-card__dot {
+	border-color: var(--emcp-toggle-off);
+	background: var(--emcp-divider-2);
 }
 
 .eui-radio-card__text {
@@ -171,10 +187,17 @@
 
 .eui-radio-card__req {
 	display: inline-flex;
-	align-items: center;
+	align-items: flex-start;
 	gap: 5px;
 	font-size: 12px;
+	line-height: 1.5;
 	color: var(--emcp-muted);
+}
+
+/* The lock keeps its size and sits on the first line when the text wraps. */
+.eui-radio-card__req .eui-icon {
+	flex: none;
+	margin-block-start: 3px;
 }
 
 .eui-radio-card__icon {

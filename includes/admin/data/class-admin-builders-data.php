@@ -34,9 +34,24 @@ final class EMCP_Tools_Admin_Builders_Data {
 			);
 		}
 		return array(
-			'selected' => EMCP_Tools_Page_Builders::selected(),
-			'builders' => $builders,
-			'packs'    => $packs,
+			'selected'  => EMCP_Tools_Page_Builders::selected(),
+			'gutenberg' => self::gutenberg(),
+			'builders'  => $builders,
+			'packs'     => $packs,
+		);
+	}
+
+	/**
+	 * Whether the block editor is there to build with. It always is, unless
+	 * the Classic Editor plugin is active and switches it off.
+	 *
+	 * @return array{available:bool,reason:string}
+	 */
+	public static function gutenberg(): array {
+		$available = (bool) apply_filters( 'emcp_tools_block_editor_available', ! class_exists( 'Classic_Editor' ) );
+		return array(
+			'available' => $available,
+			'reason'    => $available ? '' : __( 'The Classic Editor plugin is active, so the block editor is switched off. Deactivate Classic Editor to build with Gutenberg.', 'emcp-tools' ),
 		);
 	}
 

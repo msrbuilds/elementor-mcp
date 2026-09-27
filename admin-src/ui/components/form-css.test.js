@@ -8,6 +8,7 @@ const path = require( 'path' );
 
 const form = fs.readFileSync( path.join( __dirname, 'Form.css' ), 'utf8' );
 const layout = fs.readFileSync( path.join( __dirname, 'Layout.css' ), 'utf8' );
+const steps = fs.readFileSync( path.join( __dirname, 'Steps.css' ), 'utf8' );
 const shell = fs.readFileSync(
 	path.join( __dirname, '../../shell/shell.css' ),
 	'utf8'
@@ -25,6 +26,21 @@ describe( 'form field styles outrank core wp-admin', () => {
 		);
 		expect( form ).toMatch(
 			/\.eui-select\.eui-select select:focus[^{]*\{[^}]*border-color:\s*var\(--emcp-primary\)/
+		);
+	} );
+
+	// Core shows disabled radios at opacity .7 with input[type=radio]:disabled
+	// (0,2,1), which beat a two-class hide: the native radio then sat over the
+	// custom dot on every unavailable card.
+	it( 'keeps the native radio hidden over core’s disabled style', () => {
+		expect( steps ).toMatch(
+			/\.eui-radio-card \.eui-radio-card__input\.eui-radio-card__input\s*\{[^}]*opacity:\s*0[^}]*clip-path:\s*inset\(50%\)/
+		);
+	} );
+
+	it( 'keeps the requirement lock full size on wrapped lines', () => {
+		expect( steps ).toMatch(
+			/\.eui-radio-card__req \.eui-icon\s*\{[^}]*flex:\s*none/
 		);
 	} );
 
