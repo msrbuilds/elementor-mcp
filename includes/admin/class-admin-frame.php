@@ -37,14 +37,24 @@ final class EMCP_Tools_Admin_Frame {
 			),
 		);
 		if ( $show_upgrade ) {
-			$list[] = array(
+			$upgrade = function_exists( 'emcp_tools_upgrade_url' ) ? emcp_tools_upgrade_url() : 'https://emcptools.com/pricing';
+			$list[]  = array(
+				'key'   => 'pro',
+				'badge' => __( 'Pro', 'emcp-tools' ),
+				'icon'  => 'crown',
+				'title' => __( 'Upgrade to EMCP Pro.', 'emcp-tools' ),
+				'text'  => __( 'Unlock AI Chat, the Widget and Block Builder, Templates, Skills and scheduled backups.', 'emcp-tools' ),
+				'cta'   => __( 'Upgrade to Pro', 'emcp-tools' ),
+				'url'   => $upgrade,
+			);
+			$list[]  = array(
 				'key'   => 'ltd',
 				'badge' => __( 'Limited', 'emcp-tools' ),
 				'icon'  => 'sparkles',
 				'title' => __( 'Lifetime deal ends soon.', 'emcp-tools' ),
 				'text'  => __( 'Pay once and own EMCP Pro forever. This lifetime deal is going away for good.', 'emcp-tools' ),
 				'cta'   => __( 'Get the LTD', 'emcp-tools' ),
-				'url'   => function_exists( 'emcp_tools_upgrade_url' ) ? emcp_tools_upgrade_url() : 'https://emcptools.com/pricing',
+				'url'   => $upgrade,
 			);
 		}
 		$list[] = array(
@@ -64,6 +74,8 @@ final class EMCP_Tools_Admin_Frame {
 	 * The announcement bar: every announcement as a slide, rotated by the shell
 	 * (promo.js), with previous/next arrows and dots beside the CTA. It cannot
 	 * be dismissed. Slides after the first are hidden until the shell shows them.
+	 * Each slide names its colour (data-emcp-promo-tone, the announcement key);
+	 * the bar's data-tone follows the slide on show.
 	 *
 	 * @param array[] $announcements From announcements().
 	 */
@@ -78,6 +90,7 @@ final class EMCP_Tools_Admin_Frame {
 		foreach ( $announcements as $i => $a ) {
 			$external = 0 === strpos( (string) $a['url'], 'http' ) && 0 !== strpos( (string) $a['url'], admin_url() );
 			$slides  .= '<div class="eui-frame-promo__slide' . ( 0 === $i ? ' is-active"' : '" hidden' )
+				. ' data-emcp-promo-tone="' . esc_attr( $a['key'] ) . '"'
 				. ' role="group" aria-roledescription="slide" aria-label="' . esc_attr(
 					/* translators: 1: slide number, 2: slide count. */
 					sprintf( __( '%1$d of %2$d', 'emcp-tools' ), $i + 1, $count )
@@ -101,7 +114,7 @@ final class EMCP_Tools_Admin_Frame {
 				. '<button type="button" class="eui-frame-promo__arrow" data-emcp-promo-next aria-label="' . esc_attr__( 'Next announcement', 'emcp-tools' ) . '">' . EMCP_Tools_Admin_Icons::svg( 'chevron-right', 16 ) . '</button>'
 				. '</div>';
 		}
-		return '<div class="eui-frame-promo" data-emcp-promo role="region" aria-roledescription="carousel" aria-label="' . esc_attr__( 'Announcements', 'emcp-tools' ) . '">'
+		return '<div class="eui-frame-promo" data-emcp-promo data-tone="' . esc_attr( $announcements[0]['key'] ) . '" role="region" aria-roledescription="carousel" aria-label="' . esc_attr__( 'Announcements', 'emcp-tools' ) . '">'
 			. '<div class="eui-frame-promo__slides">' . $slides . '</div>'
 			. $nav
 			. '</div>';

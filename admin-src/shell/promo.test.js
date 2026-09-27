@@ -80,6 +80,24 @@ describe( 'initPromo', () => {
 		expect( active() ).toEqual( [ 0, 1 ] );
 	} );
 
+	it( 'gives the bar the colour of the slide it shows', () => {
+		const root = bar( 3 );
+		root.querySelectorAll( '.eui-frame-promo__slide' ).forEach( ( s, i ) =>
+			s.setAttribute(
+				'data-emcp-promo-tone',
+				[ 'cloud', 'pro', 'ltd' ][ i ]
+			)
+		);
+		initPromo( root, { interval: 7000 } );
+		expect( root.dataset.tone ).toBe( 'cloud' );
+		document.querySelector( '[data-emcp-promo-next]' ).click();
+		expect( root.dataset.tone ).toBe( 'pro' );
+		jest.advanceTimersByTime( 7000 );
+		expect( root.dataset.tone ).toBe( 'ltd' );
+		document.querySelector( '[data-emcp-promo-dot="0"]' ).click();
+		expect( root.dataset.tone ).toBe( 'cloud' );
+	} );
+
 	it( 'leaves a single announcement alone', () => {
 		initPromo( bar( 1 ), { interval: 7000 } );
 		jest.advanceTimersByTime( 30000 );

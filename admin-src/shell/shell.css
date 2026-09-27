@@ -6,22 +6,50 @@
 	min-block-size: calc(100vh - 32px);
 }
 
+/* Each announcement has its own flat colour (white text at 4.5:1 or more on
+ * both the fill and its strong shade); promo.js sets data-tone to the slide
+ * on show. */
 .eui-frame-promo {
+	--emcp-promo-bg: var(--emcp-primary);
+	--emcp-promo-strong: var(--emcp-primary-strong);
 	display: flex;
 	align-items: center;
 	gap: 12px;
 	padding-block: 9px;
 	padding-inline: 24px;
-	background: var(--emcp-primary);
+	background: var(--emcp-promo-bg);
 	color: var(--emcp-surface);
 	font-size: 13px;
+	transition: background-color 0.3s ease;
+}
+
+.eui-frame-promo[data-tone="pro"] {
+	--emcp-promo-bg: var(--emcp-dark);
+	--emcp-promo-strong: #2e2a6b;
+}
+
+.eui-frame-promo[data-tone="ltd"] {
+	--emcp-promo-bg: #c2410c;
+	--emcp-promo-strong: #9a3412;
+}
+
+.eui-frame-promo[data-tone="whatsnew"] {
+	--emcp-promo-bg: #0f766e;
+	--emcp-promo-strong: #115e59;
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+	.eui-frame-promo {
+		transition: none;
+	}
 }
 
 .eui-frame-promo__badge {
 	padding-block: 2px;
 	padding-inline: 8px;
 	border-radius: var(--emcp-r-pill);
-	background: var(--emcp-primary-strong);
+	background: var(--emcp-promo-strong);
 	font-size: 11px;
 	font-weight: 700;
 	text-transform: uppercase;
@@ -39,7 +67,7 @@
 	min-block-size: 32px;
 	padding-inline: 12px;
 	border-radius: var(--emcp-r-sm);
-	background: var(--emcp-primary-strong);
+	background: var(--emcp-promo-strong);
 	color: var(--emcp-surface);
 	font-weight: 600;
 	text-decoration: none;
@@ -91,7 +119,7 @@
 }
 
 .eui-frame-promo__arrow:hover {
-	background: var(--emcp-primary-strong);
+	background: var(--emcp-promo-strong);
 }
 
 .eui-frame-promo__dots {

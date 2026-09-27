@@ -26,6 +26,11 @@ export function initPromo( root, { interval = 7000, reducedMotion = false } ) {
 			return;
 		}
 		index = ( n + slides.length ) % slides.length;
+		// Each announcement has its own colour; the bar takes the active one's.
+		const tone = slides[ index ].getAttribute( 'data-emcp-promo-tone' );
+		if ( tone ) {
+			root.dataset.tone = tone;
+		}
 		slides.forEach( ( s, i ) => {
 			s.hidden = i !== index;
 			s.classList.toggle( 'is-active', i === index );
@@ -89,6 +94,7 @@ export function initPromo( root, { interval = 7000, reducedMotion = false } ) {
 		}
 	} );
 
+	go( index );
 	start();
 	return { go, stop };
 }
