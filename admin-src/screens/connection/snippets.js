@@ -1,8 +1,7 @@
 /**
- * Client config snippets for the Connection screen. A port of the builders in
- * assets/js/admin.js (emcpServerName, emcpJsonConfig, emcpOpenclawConfig,
- * emcpHermesConfig, emcpTomlConfig, emcpTomlStdioConfig, emcpRenderOAuth), so
- * the new screen and the legacy view produce identical configs. Pure: no DOM.
+ * Client config snippets for the Connection screen, ported from the builders
+ * of the old admin.js (removed in 3.18.0), so configs users already copied
+ * keep their exact shape. Pure: no DOM.
  */
 import { __, sprintf } from '@wordpress/i18n';
 
