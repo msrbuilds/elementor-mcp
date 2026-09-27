@@ -26,6 +26,9 @@
 	block-size: 100%;
 	border-radius: inherit;
 	background: var(--emcp-primary);
+	transform-origin: left;
+	transition: width var(--emcp-dur-slow) var(--emcp-ease), background-color var(--emcp-dur);
+	animation: eui-grow-x 0.7s var(--emcp-ease) backwards;
 }
 
 .eui-meter.is-warning .eui-meter__fill {
@@ -34,6 +37,14 @@
 
 .eui-chart {
 	margin: 0;
+}
+
+/* Each column grows from the baseline, one after another. */
+.eui-chart__col {
+	transform-box: view-box;
+	transform-origin: 50% 100%;
+	animation: eui-bar-grow 0.6s var(--emcp-ease) backwards;
+	animation-delay: calc(var(--i, 0) * 25ms);
 }
 
 .eui-chart__svg {
@@ -111,4 +122,8 @@
 	block-size: 100%;
 	border-radius: inherit;
 	background: var(--emcp-primary);
+	transform-origin: left;
+	transition: width var(--emcp-dur-slow) var(--emcp-ease);
+	animation: eui-grow-x 0.7s var(--emcp-ease) backwards;
+	animation-delay: calc(var(--i, 0) * 70ms);
 }

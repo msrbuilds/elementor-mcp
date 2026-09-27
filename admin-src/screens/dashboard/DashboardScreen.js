@@ -35,6 +35,7 @@ export function DashboardScreen( { data } ) {
 	const [ recent, setRecent ] = useState( data.recent );
 	const [ attention, setAttention ] = useState( data.attention );
 	const [ busy, setBusy ] = useState( '' );
+	const [ loading, setLoading ] = useState( false );
 	const gen = useRef( 0 );
 	const toast = useToast();
 	const confirm = useConfirm();
@@ -43,6 +44,7 @@ export function DashboardScreen( { data } ) {
 	// never show the first answer last.
 	const load = async ( days ) => {
 		const mine = ++gen.current;
+		setLoading( true );
 		try {
 			const res = await request( `${ API }?range=${ days }` );
 			if ( mine !== gen.current ) {
@@ -54,6 +56,10 @@ export function DashboardScreen( { data } ) {
 		} catch ( e ) {
 			if ( mine === gen.current ) {
 				toast.error( errorMessage( e ) );
+			}
+		} finally {
+			if ( mine === gen.current ) {
+				setLoading( false );
 			}
 		}
 	};
@@ -151,6 +157,7 @@ export function DashboardScreen( { data } ) {
 				<ActivityCard
 					activity={ activity }
 					range={ range }
+					loading={ loading }
 					onRange={ onRange }
 				/>
 				<MostUsed items={ activity.mostUsed } logUrl={ data.logUrl } />

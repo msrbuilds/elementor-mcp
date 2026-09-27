@@ -1,4 +1,5 @@
 .eui-seg {
+	position: relative;
 	display: inline-flex;
 	gap: 2px;
 	padding: 3px;
@@ -19,6 +20,11 @@
 	font: 500 13px/1 var(--emcp-font);
 	white-space: nowrap;
 	cursor: pointer;
+	transition: color var(--emcp-dur-fast), background-color var(--emcp-dur-fast);
+}
+
+.eui-seg__opt:hover:not(:disabled) {
+	color: var(--emcp-ink);
 }
 
 .eui-seg__opt.is-active {
@@ -27,12 +33,34 @@
 	box-shadow: var(--emcp-shadow-seg);
 }
 
+/* One thumb slides under the selected option once it can be measured; the
+   options sit above it. Until then the active option draws its own fill. */
+.eui-seg__thumb {
+	position: absolute;
+	inset-block: 3px;
+	inset-inline-start: 0;
+	border-radius: 8px;
+	background: var(--emcp-surface);
+	box-shadow: var(--emcp-shadow-seg);
+	transition: transform var(--emcp-dur) var(--emcp-ease), width var(--emcp-dur) var(--emcp-ease);
+}
+
+.eui-seg.has-thumb .eui-seg__opt {
+	position: relative;
+}
+
+.eui-seg.has-thumb .eui-seg__opt.is-active {
+	background: transparent;
+	box-shadow: none;
+}
+
 .eui-seg__count {
 	color: var(--emcp-text-3);
 	font-weight: 600;
 }
 
 .eui-tabs {
+	position: relative;
 	display: flex;
 	gap: 4px;
 	border-block-end: 1px solid var(--emcp-divider);
@@ -52,11 +80,30 @@
 	font: 500 14px/1 var(--emcp-font);
 	white-space: nowrap;
 	cursor: pointer;
+	transition: color var(--emcp-dur-fast);
+}
+
+.eui-tabs__tab:hover {
+	color: var(--emcp-ink);
 }
 
 .eui-tabs__tab.is-active {
 	color: var(--emcp-primary-strong);
 	border-block-end-color: var(--emcp-primary);
+}
+
+.eui-tabs__ink {
+	position: absolute;
+	inset-block-end: 0;
+	inset-inline-start: 0;
+	block-size: 2px;
+	border-radius: 2px 2px 0 0;
+	background: var(--emcp-primary);
+	transition: transform var(--emcp-dur) var(--emcp-ease), width var(--emcp-dur) var(--emcp-ease);
+}
+
+.eui-tabs.has-ink .eui-tabs__tab.is-active {
+	border-block-end-color: transparent;
 }
 
 .eui-tabs__count {
@@ -78,6 +125,7 @@
 	border-radius: var(--emcp-r-pill);
 	background: var(--emcp-surface);
 	border: 1px solid var(--emcp-border-input);
+	transition: background-color var(--emcp-dur-fast), border-color var(--emcp-dur-fast);
 }
 
 .eui-chip.is-active {

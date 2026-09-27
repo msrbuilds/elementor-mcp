@@ -278,6 +278,7 @@
 	font-size: 14px;
 	font-weight: 500;
 	text-decoration: none;
+	transition: background-color var(--emcp-dur-fast), color var(--emcp-dur-fast);
 }
 
 .eui-frame-nav__item:hover,

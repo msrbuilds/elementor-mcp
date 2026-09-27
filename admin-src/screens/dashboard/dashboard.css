@@ -82,7 +82,16 @@ a.emcp-dash__cell:hover .emcp-dash__health-text strong {
 	white-space: nowrap;
 }
 
-/* AI activity */
+/* AI activity. While a range loads the old numbers dim, then the new ones
+   count and the bars grow again. */
+.emcp-dash__activity {
+	transition: opacity var(--emcp-dur) ease;
+}
+
+.emcp-dash__activity[aria-busy="true"] {
+	opacity: 0.55;
+}
+
 .emcp-dash__kpis {
 	display: grid;
 	grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -105,6 +114,7 @@ a.emcp-dash__cell:hover .emcp-dash__health-text strong {
 	font-size: 28px;
 	font-weight: 600;
 	line-height: 1.2;
+	font-variant-numeric: tabular-nums;
 }
 
 .emcp-dash__kpi-sub {

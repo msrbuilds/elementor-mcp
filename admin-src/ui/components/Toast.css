@@ -21,6 +21,7 @@
 	box-shadow: var(--emcp-shadow-dropdown);
 	font-size: 14px;
 	color: var(--emcp-ink);
+	animation: eui-toast-in var(--emcp-dur) var(--emcp-ease) backwards;
 }
 
 .eui-toast__message {

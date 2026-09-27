@@ -1,6 +1,13 @@
 import { createInterpolateElement } from '@wordpress/element';
 import { __, sprintf } from '@wordpress/i18n';
-import { Badge, Button, Card, Icon, PageHeader } from '@emcp/ui';
+import {
+	AnimatedNumber,
+	Badge,
+	Button,
+	Card,
+	Icon,
+	PageHeader,
+} from '@emcp/ui';
 
 const CARDS = () => ( {
 	widgets: {
@@ -98,15 +105,17 @@ function OverviewCard( { card } ) {
 				{ card.available ? (
 					<>
 						<span className="emcp-sbo-card__stat">
-							<span className="emcp-sbo-card__num">
-								{ card.active }
-							</span>
+							<AnimatedNumber
+								className="emcp-sbo-card__num"
+								value={ card.active }
+							/>
 							<span>{ __( 'active', 'emcp-tools' ) }</span>
 						</span>
 						<span className="emcp-sbo-card__stat">
-							<span className="emcp-sbo-card__num">
-								{ card.inactive }
-							</span>
+							<AnimatedNumber
+								className="emcp-sbo-card__num"
+								value={ card.inactive }
+							/>
 							<span>
 								{ __( 'inactive / drafts', 'emcp-tools' ) }
 							</span>

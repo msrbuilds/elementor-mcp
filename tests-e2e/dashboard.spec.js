@@ -66,3 +66,55 @@ test( 'Dashboard: sections, range switch, layout and axe', async ( {
 	expect( results.violations ).toEqual( [] );
 	expect( errors ).toEqual( [] );
 } );
+
+test.describe( 'with motion', () => {
+	test.use( { contextOptions: { reducedMotion: 'no-preference' } } );
+
+	test( 'Dashboard: numbers count up, bars grow and the range thumb slides', async ( {
+		page,
+	} ) => {
+		await page.goto( '/wp-admin/admin.php?page=emcp-tools' );
+		const kpi = page.locator( '.emcp-dash__kpi-value' ).first();
+		await expect( kpi ).toBeVisible();
+		// The count settles on the server's number.
+		const settled = await page.evaluate(
+			() =>
+				new Promise( ( resolve ) => {
+					let last = '';
+					let same = 0;
+					const el = document.querySelector(
+						'.emcp-dash__kpi-value'
+					);
+					const t = setInterval( () => {
+						same = el.textContent === last ? same + 1 : 0;
+						last = el.textContent;
+						if ( same >= 5 ) {
+							clearInterval( t );
+							resolve( last );
+						}
+					}, 100 );
+				} )
+		);
+		expect( settled ).toMatch( /^\d+$/ );
+		await expect( page.locator( '.eui-chart__col' ).first() ).toHaveCSS(
+			'animation-name',
+			'eui-bar-grow'
+		);
+		const thumb = page.locator( '.emcp-dash .eui-seg__thumb' );
+		await expect( thumb ).toHaveCount( 1 );
+		await expect( thumb ).toHaveCSS( 'transition-property', /transform/ );
+		const before = await thumb.evaluate( ( e ) => e.style.transform );
+		await page.getByRole( 'radio', { name: '7d' } ).click();
+		await expect
+			.poll( () => thumb.evaluate( ( e ) => e.style.transform ) )
+			.not.toBe( before );
+		// The thumb ends under the chosen option.
+		await page.waitForTimeout( 400 );
+		const [ t, o ] = await Promise.all( [
+			thumb.boundingBox(),
+			page.getByRole( 'radio', { name: '7d' } ).boundingBox(),
+		] );
+		expect( Math.abs( t.x - o.x ) ).toBeLessThan( 1 );
+		expect( Math.abs( t.width - o.width ) ).toBeLessThan( 1 );
+	} );
+} );

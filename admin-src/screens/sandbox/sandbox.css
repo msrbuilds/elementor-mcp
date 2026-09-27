@@ -103,6 +103,7 @@
 }
 
 .emcp-sbo-card__num {
+	font-variant-numeric: tabular-nums;
 	font-size: 22px;
 	font-weight: 600;
 	color: var(--emcp-ink);

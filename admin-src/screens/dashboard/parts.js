@@ -1,5 +1,6 @@
 import { __, sprintf } from '@wordpress/i18n';
 import {
+	AnimatedNumber,
 	BarChart,
 	Button,
 	Card,
@@ -95,9 +96,10 @@ export function HealthStrip( { health } ) {
  * @param {Object}   props
  * @param {Object}   props.activity activity() payload.
  * @param {number}   props.range    Selected range.
+ * @param {boolean}  props.loading  A refetch is in flight.
  * @param {Function} props.onRange  ( days ).
  */
-export function ActivityCard( { activity, range, onRange } ) {
+export function ActivityCard( { activity, range, loading, onRange } ) {
 	const last = activity.days.length - 1;
 	const chart = activity.days.map( ( d, i ) => ( {
 		label: i === last ? __( 'Today', 'emcp-tools' ) : dayLabel( d.date ),
@@ -119,37 +121,43 @@ export function ActivityCard( { activity, range, onRange } ) {
 				/>
 			}
 		>
-			<dl className="emcp-dash__kpis">
-				{ activity.kpis.map( ( k ) => (
-					<div key={ k.key } className="emcp-dash__kpi">
-						<dt>{ k.label }</dt>
-						<dd>
-							<span className="emcp-dash__kpi-value">
-								{ k.value }
-							</span>
-							<span className="emcp-dash__kpi-sub">
-								{ k.sub }
-							</span>
-						</dd>
-					</div>
-				) ) }
-			</dl>
-			<BarChart
-				label={ __( 'Changes per day', 'emcp-tools' ) }
-				data={ chart }
-				series={ [
-					{
-						key: 'kept',
-						label: __( 'Changes kept', 'emcp-tools' ),
-						colorVar: '--emcp-primary',
-					},
-					{
-						key: 'rolled',
-						label: __( 'Rolled back', 'emcp-tools' ),
-						colorVar: '--emcp-primary-soft',
-					},
-				] }
-			/>
+			<div
+				className="emcp-dash__activity"
+				aria-busy={ loading ? 'true' : 'false' }
+			>
+				<dl className="emcp-dash__kpis">
+					{ activity.kpis.map( ( k ) => (
+						<div key={ k.key } className="emcp-dash__kpi">
+							<dt>{ k.label }</dt>
+							<dd>
+								<AnimatedNumber
+									className="emcp-dash__kpi-value"
+									value={ k.value }
+								/>
+								<span className="emcp-dash__kpi-sub">
+									{ k.sub }
+								</span>
+							</dd>
+						</div>
+					) ) }
+				</dl>
+				<BarChart
+					label={ __( 'Changes per day', 'emcp-tools' ) }
+					data={ chart }
+					series={ [
+						{
+							key: 'kept',
+							label: __( 'Changes kept', 'emcp-tools' ),
+							colorVar: '--emcp-primary',
+						},
+						{
+							key: 'rolled',
+							label: __( 'Rolled back', 'emcp-tools' ),
+							colorVar: '--emcp-primary-soft',
+						},
+					] }
+				/>
+			</div>
 		</Card>
 	);
 }

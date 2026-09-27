@@ -4,6 +4,7 @@
 	z-index: 100000;
 	display: flex;
 	background: rgba(17, 24, 39, 0.45);
+	animation: eui-fade var(--emcp-dur) ease-out backwards;
 }
 
 .eui-overlay--dialog {
@@ -25,6 +26,7 @@
 }
 
 .eui-dialog {
+	animation: eui-pop-in var(--emcp-dur) var(--emcp-ease) backwards;
 	inline-size: 100%;
 	max-block-size: calc(100vh - 48px);
 	border-radius: var(--emcp-r-hero);
@@ -43,6 +45,7 @@
 }
 
 .eui-drawer {
+	animation: eui-slide-in 0.32s var(--emcp-ease) backwards;
 	inline-size: min(560px, 100vw);
 	block-size: 100%;
 }

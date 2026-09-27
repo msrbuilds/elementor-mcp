@@ -2,15 +2,38 @@
 	border: 1px solid var(--emcp-border);
 	border-radius: var(--emcp-r-card);
 	background: var(--emcp-surface);
+	animation: eui-rise 0.4s var(--emcp-ease) backwards;
+}
+
+/* Sibling cards rise one after another. */
+.eui-card:nth-child(2) {
+	animation-delay: 40ms;
+}
+
+.eui-card:nth-child(3) {
+	animation-delay: 80ms;
+}
+
+.eui-card:nth-child(4) {
+	animation-delay: 120ms;
+}
+
+.eui-card:nth-child(5) {
+	animation-delay: 160ms;
+}
+
+.eui-card:nth-child(n + 6) {
+	animation-delay: 200ms;
 }
 
 .eui-card--interactive {
-	transition: border-color 0.15s, box-shadow 0.15s;
+	transition: border-color var(--emcp-dur-fast), box-shadow var(--emcp-dur), transform var(--emcp-dur) var(--emcp-ease);
 }
 
 .eui-card--interactive:hover {
 	border-color: var(--emcp-hover-border);
 	box-shadow: var(--emcp-shadow-hover);
+	transform: translateY(-2px);
 }
 
 .eui-card__head {
@@ -41,6 +64,7 @@
 }
 
 .eui-page-header {
+	animation: eui-fade 0.3s ease-out backwards;
 	display: flex;
 	flex-direction: column;
 	gap: 8px;
@@ -150,6 +174,7 @@
 }
 
 .eui-notice {
+	animation: eui-rise var(--emcp-dur) var(--emcp-ease) backwards;
 	display: flex;
 	align-items: flex-start;
 	gap: 10px;

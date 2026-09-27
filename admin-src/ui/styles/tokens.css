@@ -49,6 +49,12 @@
 	--emcp-shadow-savebar: 0 12px 30px rgba(22, 20, 58, 0.3);
 	--emcp-shadow-dropdown: 0 12px 32px rgba(17, 24, 39, 0.12);
 
+	/* Motion (the kill switch for reduced motion is in base.css). */
+	--emcp-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+	--emcp-dur-fast: 0.15s;
+	--emcp-dur: 0.25s;
+	--emcp-dur-slow: 0.5s;
+
 	--emcp-font: "Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
 	--emcp-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", menlo, consolas, monospace;
 }

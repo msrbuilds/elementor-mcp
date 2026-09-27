@@ -12,6 +12,10 @@ module.exports = defineConfig( {
 	use: {
 		baseURL: process.env.EMCP_E2E_URL,
 		ignoreHTTPSErrors: true,
+		// Screens animate in (cards rise, numbers count). Layout, hit-area and
+		// axe checks assert the settled page, so they run with reduced motion;
+		// dashboard.spec.js turns motion on to check the animations themselves.
+		contextOptions: { reducedMotion: 'reduce' },
 	},
 	projects: [
 		{ name: '1440', use: { viewport: { width: 1440, height: 900 } } },

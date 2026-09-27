@@ -1,6 +1,7 @@
 import { useRef, useState } from '@wordpress/element';
 import { __, sprintf } from '@wordpress/i18n';
 import {
+	AnimatedNumber,
 	Button,
 	EmptyState,
 	PageHeader,
@@ -195,11 +196,21 @@ export function LogScreen( { data } ) {
 			<dl className="emcp-log__stats">
 				<div>
 					<dt>{ __( 'Requests', 'emcp-tools' ) }</dt>
-					<dd>{ s.requests.toLocaleString() }</dd>
+					<dd>
+						<AnimatedNumber
+							value={ s.requests }
+							format={ ( n ) => n.toLocaleString() }
+						/>
+					</dd>
 				</div>
 				<div>
 					<dt>{ __( 'Errors', 'emcp-tools' ) }</dt>
-					<dd>{ s.errors.toLocaleString() }</dd>
+					<dd>
+						<AnimatedNumber
+							value={ s.errors }
+							format={ ( n ) => n.toLocaleString() }
+						/>
+					</dd>
 				</div>
 				<div>
 					<dt>{ __( 'Median', 'emcp-tools' ) }</dt>

@@ -3,6 +3,7 @@ import * as ui from './index';
 it( 'exposes the full emcpUI API', () => {
 	expect( Object.keys( ui ).sort() ).toEqual(
 		[
+			'AnimatedNumber',
 			'AppProviders',
 			'Badge',
 			'BarChart',
@@ -55,6 +56,7 @@ it( 'exposes the full emcpUI API', () => {
 			'markReady',
 			'mountScreen',
 			'pageList',
+			'prefersReducedMotion',
 			'request',
 			'rovingKeyDown',
 			'useConfirm',

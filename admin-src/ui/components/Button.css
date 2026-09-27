@@ -11,7 +11,11 @@
 	white-space: nowrap;
 	text-decoration: none;
 	cursor: pointer;
-	transition: background-color 0.15s, border-color 0.15s, color 0.15s;
+	transition: background-color var(--emcp-dur-fast), border-color var(--emcp-dur-fast), color var(--emcp-dur-fast), box-shadow var(--emcp-dur-fast), transform var(--emcp-dur-fast);
+}
+
+.eui-btn:active:not(:disabled) {
+	transform: translateY(1px);
 }
 
 .eui-btn--sm {

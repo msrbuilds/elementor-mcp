@@ -8,6 +8,11 @@
 	font-size: 14px;
 }
 
+/* New rows (a page change, a filter) fade in. */
+.eui-table tbody tr {
+	animation: eui-fade var(--emcp-dur) ease-out backwards;
+}
+
 .eui-table th {
 	padding-block: 11px;
 	padding-inline: 16px;

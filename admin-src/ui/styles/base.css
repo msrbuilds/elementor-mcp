@@ -61,3 +61,62 @@
 		transition-duration: 0.01ms !important;
 	}
 }
+
+/* Shared keyframes. Entrance animations use fill-mode backwards, so after
+   they end, hover transforms and other styles apply normally. */
+@keyframes eui-rise {
+
+	from {
+		opacity: 0;
+		transform: translateY(8px);
+	}
+}
+
+@keyframes eui-fade {
+
+	from {
+		opacity: 0;
+	}
+}
+
+@keyframes eui-pop-in {
+
+	from {
+		opacity: 0;
+		transform: translateY(4px) scale(0.98);
+	}
+}
+
+@keyframes eui-slide-in {
+
+	from {
+		transform: translateX(100%);
+	}
+}
+
+@keyframes eui-toast-in {
+
+	from {
+		opacity: 0;
+		transform: translateY(12px);
+	}
+}
+
+@keyframes eui-bar-grow {
+
+	from {
+		transform: scaleY(0);
+	}
+}
+
+@keyframes eui-grow-x {
+
+	from {
+		transform: scaleX(0);
+	}
+}
+
+/* A tab panel fades in when it is shown (display: none restarts it). */
+:where(.emcp-app) [role="tabpanel"]:not([hidden]) {
+	animation: eui-fade var(--emcp-dur) ease-out backwards;
+}

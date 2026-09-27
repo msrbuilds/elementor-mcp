@@ -196,6 +196,32 @@ describe( 'DashboardScreen', () => {
 		expect( screen.getByRole( 'radio', { name: '30d' } ) ).toBeChecked();
 	} );
 
+	it( 'marks the activity card busy while a range loads', async () => {
+		let resolve;
+		apiFetch.mockImplementationOnce(
+			() => new Promise( ( r ) => ( resolve = r ) )
+		);
+		mount();
+		const card = screen
+			.getByRole( 'heading', { name: 'AI activity' } )
+			.closest( '.eui-card' );
+		expect( card.querySelector( '.emcp-dash__activity' ) ).toHaveAttribute(
+			'aria-busy',
+			'false'
+		);
+		await userEvent.click( screen.getByRole( 'radio', { name: '7d' } ) );
+		expect( card.querySelector( '.emcp-dash__activity' ) ).toHaveAttribute(
+			'aria-busy',
+			'true'
+		);
+		resolve( { activity: activity( 7 ), recent: [], attention: [] } );
+		await waitFor( () =>
+			expect(
+				card.querySelector( '.emcp-dash__activity' )
+			).toHaveAttribute( 'aria-busy', 'false' )
+		);
+	} );
+
 	it( 'undoes a change and asks again on a conflict', async () => {
 		apiFetch
 			.mockRejectedValueOnce( {

@@ -21,6 +21,7 @@
 }
 
 .emcp-log__stats dd {
+	font-variant-numeric: tabular-nums;
 	margin: 4px 0 0;
 	color: var(--emcp-ink);
 	font-size: 22px;

@@ -2,6 +2,7 @@ import { useRef } from '@wordpress/element';
 import { rovingKeyDown } from '../utils/roving';
 import { cx } from '../utils/cx';
 import { Icon } from './Icon';
+import { useIndicator } from './Motion';
 import './Choice.css';
 
 function useGroup( options, value, onChange ) {
@@ -12,17 +13,35 @@ function useGroup( options, value, onChange ) {
 		onChange( options[ i ].value );
 		refs.current[ i ]?.focus();
 	};
-	return { refs, tabStop, move };
+	return { refs, tabStop, move, selected };
 }
 
+const labelsOf = ( options ) =>
+	options.map( ( o ) => `${ o.label }|${ o.count ?? '' }` ).join( ',' );
+
 export function Segmented( { label, options, value, onChange, className } ) {
-	const { refs, tabStop, move } = useGroup( options, value, onChange );
+	const { refs, tabStop, move, selected } = useGroup(
+		options,
+		value,
+		onChange
+	);
+	const thumb = useIndicator( refs, selected, [ labelsOf( options ) ] );
 	return (
 		<div
 			role="radiogroup"
 			aria-label={ label }
-			className={ cx( 'eui-seg', className ) }
+			className={ cx( 'eui-seg', thumb && 'has-thumb', className ) }
 		>
+			{ thumb && (
+				<span
+					className="eui-seg__thumb"
+					aria-hidden="true"
+					style={ {
+						transform: `translateX(${ thumb.x }px)`,
+						width: `${ thumb.w }px`,
+					} }
+				/>
+			) }
 			{ options.map( ( o, i ) => (
 				<button
 					key={ o.value }
@@ -64,13 +83,28 @@ export function Tabs( {
 	idPrefix,
 	className,
 } ) {
-	const { refs, tabStop, move } = useGroup( options, value, onChange );
+	const { refs, tabStop, move, selected } = useGroup(
+		options,
+		value,
+		onChange
+	);
+	const ink = useIndicator( refs, selected, [ labelsOf( options ) ] );
 	return (
 		<div
 			role="tablist"
 			aria-label={ label }
-			className={ cx( 'eui-tabs', className ) }
+			className={ cx( 'eui-tabs', ink && 'has-ink', className ) }
 		>
+			{ ink && (
+				<span
+					className="eui-tabs__ink"
+					aria-hidden="true"
+					style={ {
+						transform: `translateX(${ ink.x }px)`,
+						width: `${ ink.w }px`,
+					} }
+				/>
+			) }
 			{ options.map( ( o, i ) => (
 				<button
 					key={ o.value }

@@ -50,9 +50,18 @@ export function BarChart( { label, data, series, height = 160 } ) {
 	const max = Math.max( 0, ...totals );
 	const scale = max > 0 ? ( height - 4 ) / max : 0;
 	const mid = Math.floor( ( data.length - 1 ) / 2 );
+	// A new key remounts the SVG, so the bars grow again when the data changes
+	// (a range switch) and stay put on a re-render with the same numbers.
+	const signature = data
+		.map(
+			( d ) =>
+				`${ d.label }:${ series.map( ( s ) => d.values[ s.key ] || 0 ).join( '/' ) }`
+		)
+		.join( ',' );
 	return (
 		<figure className="eui-chart">
 			<svg
+				key={ signature }
 				className="eui-chart__svg"
 				viewBox={ `0 0 ${ data.length * SLOT } ${ height }` }
 				preserveAspectRatio="none"
@@ -62,7 +71,11 @@ export function BarChart( { label, data, series, height = 160 } ) {
 				{ data.map( ( d, i ) => {
 					let y = height;
 					return (
-						<g key={ d.label }>
+						<g
+							key={ d.label }
+							className="eui-chart__col"
+							style={ { '--i': i } }
+						>
 							<title>{ `${ d.label }: ${ series.map( ( s ) => `${ s.label } ${ d.values[ s.key ] || 0 }` ).join( ', ' ) }` }</title>
 							{ series.map( ( s ) => {
 								const h = ( d.values[ s.key ] || 0 ) * scale;
@@ -137,7 +150,7 @@ export function HBarList( { label, items } ) {
 	const max = Math.max( 1, ...items.map( ( it ) => it.value ) );
 	return (
 		<ul className="eui-hbars" aria-label={ label }>
-			{ items.map( ( it ) => (
+			{ items.map( ( it, i ) => (
 				<li key={ it.label } className="eui-hbars__item">
 					<div className="eui-hbars__row">
 						<span className="eui-hbars__label eui-mono">
@@ -150,6 +163,7 @@ export function HBarList( { label, items } ) {
 							className="eui-hbars__fill"
 							style={ {
 								width: `${ ( it.value / max ) * 100 }%`,
+								'--i': i,
 							} }
 						/>
 					</div>

@@ -56,6 +56,7 @@ export {
 	SafeHtml,
 } from './components/Code';
 export { Meter, BarChart, HBarList } from './components/Charts';
+export { AnimatedNumber, prefersReducedMotion } from './components/Motion';
 export { isEqual } from './utils/isEqual';
 export { useSettingsForm } from './hooks/useSettingsForm';
 export { SaveBar } from './components/SaveBar';

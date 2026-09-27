@@ -19,6 +19,8 @@
 	border-radius: var(--emcp-r-md);
 	background: var(--emcp-surface);
 	box-shadow: var(--emcp-shadow-dropdown);
+	transform-origin: top;
+	animation: eui-pop-in var(--emcp-dur-fast) var(--emcp-ease) backwards;
 }
 
 .eui-pop--start {
