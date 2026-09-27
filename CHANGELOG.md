@@ -25,6 +25,26 @@ All notable changes to MCP Tools for Elementor are documented in this file.
 
 - New: **Sandbox Plugin Export (Pro module, off by default).** Sandbox > Export as plugin packages every ACTIVE Sandbox widget, block and PHP snippet as a standalone WordPress plugin ZIP that keeps working after EMCP Tools is deactivated. Widget types, block names, snippet functions, the `[emcp_snippet]` shortcode, asset handles and the `emcp-custom` category are preserved verbatim, so existing pages keep rendering. Widgets that use the `query`, `shortcode` or `remote` controls get the runtime they call bundled under `includes/lib/`; remote API keys are read from `EMCP_TOOLS_REMOTE_KEY_*` constants (placeholders in `config.php`, embedding is opt-in). The exported plugin decides ownership on `plugins_loaded` (priority 50): it stays dormant while EMCP Tools is active or another export owns the site, and takes over on the first request after EMCP is deactivated. The ZIP is built in a directory verified to sit outside every web-served path, streamed once and deleted. Enable it on the Modules tab; the Sandbox overview then shows a fourth card.
 
+- New: **A redesigned admin.** Every EMCP Tools screen was rebuilt inside one frame: a grouped sidebar with counts, a search palette (Ctrl or Cmd + K) over screens, tools, prompts and templates, a notifications drawer, a save bar that warns before you leave with unsaved changes, and a recovery panel if a screen fails to load. Tools, Modules, Page Builders, Connection, Prompts, Brand Kits, Templates, Marketplace, Context, Skills, Memory, the Sandbox screens, AI Chat, History, Backup & Migrate, Redirects, the MCP Log, the Dashboard and the Changelog are all new. The old screens, their scripts and the admin-ajax handlers only they used are removed. No MCP tools were added or removed.
+
+- New: **Dashboard.** What your AI did over the last 7, 14 or 30 days: changes kept and rolled back per day, tool calls and errors (Templates applied and Prompts copied on Pro), the most used tools, the five newest changes with Undo, and a health strip for the MCP server, connected clients, tools and version. **Needs your attention** lists what to act on: the MCP server switched off, changes History could not record, sandbox items awaiting review, disabled tools, plugin and theme updates, EMCP Cloud disconnected while Marketplace items depend on it, and on Pro no backup in 14 days or a failed scheduled backup. A dismissed item comes back when its situation changes.
+
+- New: **Guided connection setup.** The Connection screen walks you through choosing a client, a sign-in method (OAuth, an application password, or WP-CLI on local sites) and the client's own steps, then waits for that client's first MCP call and confirms it arrived.
+
+- New: **History with sessions, diffs and session undo.** Changes are grouped by the AI session that made them and can be searched and filtered by kind, client and date. Each change shows a before and after diff where one is available, a whole session can be undone newest first, and History keeps 30, 90, 180 or 365 days. History now has its own database table; your existing history moves there on the first admin page load after updating.
+
+- Changed: **Reconnect your AI clients after updating.** An AI client that stays connected through the update keeps running the previous version, so its changes are not recorded in History until it reconnects. A notice says so while that happens.
+
+- New: **MCP Log screen.** Every MCP request with its client, session, sign-in, status and timing, filterable, with CSV export (spreadsheet formulas are neutralised) and a per-day activity count.
+
+- New: **Scheduled backups (Pro).** Daily or weekly backups at a set time run through WP-Cron in short steps, keep the newest copies you choose, and can be continued from the Backup & Migrate screen if WP-Cron stalls. Two tabs or a tab and WP-Cron never drive the same backup at once.
+
+- New: **Redirects match query strings.** A redirect can now match one query string (`/page?ref=ad`) while another redirect for the same path catches the rest. Existing redirects behave exactly as before.
+
+- New: **Context sections and a site profile.** Choose which parts of the site description connected agents receive (builder, plugins, theme, global styles, site structure, WooCommerce) and describe the site's name, industry, purpose and voice, with a preview of exactly what agents see.
+
+- Changed: **Sandbox items created over MCP are always drafts.** An agent can create and edit custom widgets, blocks and PHP snippets but can no longer activate them; activation happens on the Sandbox screens.
+
 ## [3.17.1]
 
 > Patch release: three data-safety fixes for Elementor writes, a Cloud gateway reconnect fix, an OAuth discovery fix for sites running a second MCP plugin, and a community-contributed Visibility SEO integration.

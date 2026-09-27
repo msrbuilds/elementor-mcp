@@ -164,6 +164,10 @@ Yes. Open the **EMCP Tools** top-level admin menu and use the **Tools** screen t
 
 Yes. The MCP Adapter handles the MCP protocol transport layer. This plugin registers its tools through the Adapter's server infrastructure.
 
+= What does EMCP Tools store in the database? =
+
+Settings are WordPress options named `emcp_tools_*`. Since 3.18.0 History lives in its own table, `{prefix}emcp_changes`, with its state in `emcp_tools_changes_*` options (store, schema version, retention, cutover and notices). The MCP request log is `emcp_tools_mcp_request_log` (500 rows), daily activity counts are `emcp_tools_activity_daily` (90 days), and the Dashboard's attention items are cached in the `emcp_tools_attention` transient, with dismissals in the `emcp_tools_attention_dismissed` user meta. Context sections and the site profile are `emcp_tools_context_sections` and `emcp_tools_site_profile`. On Pro, scheduled backups use `emcp_tools_backup_schedule`. Redirects keep their `{prefix}emcp_redirects` table and the search index its `{prefix}emcp_search_index` table. Deleting the plugin does not remove this data.
+
 = Is this plugin safe to use on production sites? =
 
 The plugin enforces WordPress capability checks on every tool. Read operations require `edit_posts`, write operations check `edit_post` ownership, and global settings require `manage_options`. All input is sanitized and validated.
@@ -181,7 +185,7 @@ On shared LiteSpeed hosting (e.g. Hostinger) this is usually the host caching/bu
 
 = 3.18.0 =
 
-Adds a loop builder to EMCP Themer, so one post card can be repeated in grids and carousels in Elementor or Gutenberg, a Pro module that exports your active Sandbox widgets, blocks and snippets as a standalone plugin, and OpenCode Go and OpenCode Zen in AI Chat. It also fixes a crash with Themer image sources in Elementor, blank padding and margin sides, and curated widget settings that Elementor ignored.
+Adds a loop builder to EMCP Themer, so one post card can be repeated in grids and carousels in Elementor or Gutenberg, a Pro module that exports your active Sandbox widgets, blocks and snippets as a standalone plugin, and OpenCode Go and OpenCode Zen in AI Chat. The whole admin is redesigned, with a Dashboard, guided connection setup, History sessions and diffs, an MCP Log, and scheduled backups on Pro. It also fixes a crash with Themer image sources in Elementor, blank padding and margin sides, and curated widget settings that Elementor ignored.
 
 * New: Loop Items, Loop Grid and Loop Carousel in EMCP Themer (free). Design one post card and repeat it in a responsive grid or a carousel, in Elementor or Gutenberg, with queries over posts, the current archive, related posts, a manual selection or WooCommerce products, and pagination from page numbers to load more and infinite scroll. Free includes one Loop Item; Pro adds unlimited Loop Items and alternate templates for the Loop Grid widget.
 * New: OpenCode Go and OpenCode Zen in AI Chat (Pro, #150). Two new providers; their requests go through a server relay because OpenCode's API refuses browser requests, and your keys stay on the server. OpenCode describes Go as designed for coding agents, so review its terms before use. Zen bills a prepaid balance that reloads $20 below $5 by default. Gemini models are not offered on Zen (use the Gemini provider), and Zen's free models are hidden because OpenCode limits them to its own client.
@@ -194,6 +198,17 @@ Adds a loop builder to EMCP Themer, so one post card can be repeated in grids an
 * Changed: EMCP Themer is off by default on new installs; turn it on from EMCP Tools > Modules. Sites that already use it keep it on.
 * New: Starter prompts in AI Chat (Pro). A new chat suggests six prompts above the message box, your most used one first and the rest shuffled from ones you have not tried: site tasks on the AI Chat page, page tasks in the editors.
 * New: Sandbox Plugin Export (Pro module, off by default). Package every active Sandbox widget, block and PHP snippet as a standalone plugin that keeps working after EMCP Tools is deactivated. Identities are preserved, the runtime the widgets call is bundled, API keys come from constants, and the export stays dormant while EMCP Tools is active.
+
+* New: A redesigned admin. Every screen was rebuilt in one frame with a grouped sidebar, a search palette (Ctrl or Cmd + K), notifications, a save bar and a recovery panel. The old screens and the admin-ajax handlers only they used are removed; no MCP tools were added or removed.
+* New: Dashboard with AI activity over 7, 14 or 30 days, the most used tools, recent changes with Undo, a health strip, and Needs your attention (server off, unrecorded changes, sandbox review, disabled tools, updates, Cloud, and on Pro backups).
+* New: Guided connection setup that waits for your client's first MCP call and confirms it.
+* New: History with sessions, diffs, search and filters, session undo and a retention setting, stored in its own table (migrated automatically).
+* Changed: Reconnect your AI clients after updating; a client that stays connected keeps the previous version and its changes are not recorded until it reconnects.
+* New: MCP Log screen with filters and CSV export.
+* New: Scheduled backups (Pro), daily or weekly through WP-Cron, with retention and a Continue option if WP-Cron stalls.
+* New: Redirects can match a query string; existing redirects behave as before.
+* New: Context sections and a site profile for what connected agents are told, with a preview.
+* Changed: Sandbox items created over MCP are always drafts; activate them on the Sandbox screens.
 
 = 3.17.1 =
 
