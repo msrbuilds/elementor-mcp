@@ -352,6 +352,28 @@ A free React screen (`admin-src/screens/log/`, `screen-log`, tab `mcp-log`) on `
   - Every WP-CLI process spawns a WP-Cron loopback on `init`, which runs due ticks between smoke steps: the acceptance starts the jobs it must drive 'parked' (no tick) and releases each hold explicitly.
   - msrplugins.test is too large for a quick full backup (node_modules, vendor); the acceptance uses database backups, and `EMCP_ACC_ONLY=full` runs the full-backup check alone.
 
+### Backup & Migrate screen (3.18.0, Part 5e-2, spec 8.20)
+
+A Pro React screen (`pro/admin-src/screens/migrate/`, `screen-migrate`, tab `migrate`, in `LICENCE_TABS`) registered by `EMCP_Tools_Admin_REST_Backup::register_screen()` while the module is on. It has five views (Backup, Restore, Migrate, Sync, History) on `?view=`. `EMCP_Tools_Migrate_Module::enqueue_assets()` skips the legacy `migrate.js` once the screen is registered; the legacy panels stay until Part 6.
+- **Drivers** (`lib/`): framework-free ports of `migrate.js`, with the same delays, chunk ladder and messages. Each takes an injectable `wait`, so Jest scripts them.
+  - `createTransport()` wraps the admin-ajax actions (the job transport stays admin-ajax) and rejects with `{ status, responseText }` like the jQuery `fail()` branches did.
+  - `driveJob` sends the tab's lease `owner`. `driveRestore` uses the token endpoint with no nonce.
+  - `uploadFile` shrinks the chunk on 413, 500 or 0 down to a 256 KB floor, switches to base64 on another 4xx (4 MB cap), and retries 4 times.
+  - `pushBackup` / `watchRemoteRestore`: a connector that goes offline after progress, or for 3 polls, counts as complete.
+  - `startSync` runs the advanced sync.
+- **Handover (spec 9.6):** the boot's `activeJob` is the newest unfinished scheduled job. While its lease is held the screen follows it read-only; once the lease is free it offers "Continue in this tab" with a fresh `newOwner()`. A chunk answered `status: 'elsewhere'` switches to read-only polling ("This backup is now being processed elsewhere").
+- **Other rules:**
+  - The schedule Drawer saves through `POST admin/backup/schedule` and shows the WP-Cron warning.
+  - History deletes through `DELETE admin/backup/{id}`.
+  - The restore run needs RESTORE typed.
+  - There are three backup type cards, because the engine has no content backup.
+  - The Cloud panel is a teaser linking to emcptools.com/cloud.
+- **Tests:** `pro/admin-src/screens/migrate/lib/drivers.test.js`, `MigrateScreen.test.js`, `pro/tests/unit/migrate/BackupScreenDataTest.php`, and `tests-e2e/migrate.spec.js` (axe on every view; the 1440 project runs a real database backup and deletes it). The handover was checked live: park a job with `scheduled-backup-helper.php start database park`, then Continue on the screen.
+- **Release-gate items still owed (they overwrite a site):** a full restore run through the screen, and a push to emcp-bckup-test.test.
+- **Traps:**
+  - With an instant `wait`, a scripted driver that never reaches a final status loops forever and Jest runs out of memory; end every script with a terminal answer.
+  - A Python `re.sub` replacement string holding `` next to other text can emit a literal ``: check the file for control characters after scripted edits.
+
 ### MCP Server Registration
 
 The plugin registers a dedicated MCP server `emcp-tools-server` at `/wp-json/mcp/emcp-tools-server`. All abilities use the `emcp-tools/` namespace.
