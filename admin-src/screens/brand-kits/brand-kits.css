@@ -11,7 +11,7 @@
 	gap: 16px;
 	padding: 14px 16px;
 	border: 1px solid var(--emcp-border);
-	border-radius: var(--emcp-r-lg);
+	border-radius: var(--emcp-r-card);
 	background: var(--emcp-surface);
 }
 
@@ -81,7 +81,7 @@
 	flex-direction: column;
 	overflow: hidden;
 	border: 1px solid var(--emcp-border);
-	border-radius: var(--emcp-r-lg);
+	border-radius: var(--emcp-r-card);
 	background: var(--emcp-surface);
 }
 

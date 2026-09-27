@@ -132,7 +132,7 @@ final class EMCP_Tools_Admin_Frame {
 		// A div, not <aside>: the frame sits inside core's role="main" (#wpbody-content),
 		// where a nested complementary landmark is an accessibility error.
 		$html  = '<div class="eui-frame__sidebar">';
-		$html .= '<div class="eui-frame-brand"><span class="eui-frame-brand__logo" aria-hidden="true">' . EMCP_Tools_Admin_Icons::svg( 'blocks', 18 ) . '</span>'
+		$html .= '<div class="eui-frame-brand"><img class="eui-frame-brand__logo" src="' . esc_url( EMCP_TOOLS_URL . 'assets/img/icon-sm.png' ) . '" alt="" width="32" height="32">'
 			. '<span class="eui-frame-brand__text"><span class="eui-frame-brand__name">' . esc_html__( 'EMCP Tools', 'emcp-tools' ) . '</span>'
 			. '<span class="eui-frame-brand__version eui-mono">v' . esc_html( $version ) . ' · ' . esc_html( $premium ? __( 'Pro', 'emcp-tools' ) : __( 'Free', 'emcp-tools' ) ) . '</span></span></div>';
 		$html .= '<button type="button" class="eui-frame-search" data-emcp-palette-open>' . EMCP_Tools_Admin_Icons::svg( 'search', 16 )

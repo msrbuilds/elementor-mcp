@@ -55,9 +55,17 @@ test( 'wizard walks to step 4 and waits for the bound call', async ( {
 
 test( 'sections switch and keep the URL', async ( { page } ) => {
 	await page.goto( '/wp-admin/admin.php?page=emcp-tools-connection' );
+	const steps = page.getByText( 'Choose your AI client' );
+	await expect( steps ).toBeVisible();
 	await page.getByRole( 'radio', { name: '3rd-party services' } ).click();
 	await expect( page ).toHaveURL( /section=services/ );
 	await expect( page.getByText( 'Stock images' ) ).toBeVisible();
+	// The section replaces the MCP setup instead of stacking under it.
+	await expect( steps ).toBeHidden();
+	await page.getByRole( 'radio', { name: 'MCP' } ).click();
+	await expect( steps ).toBeVisible();
+	await expect( page.getByText( 'Stock images' ) ).toBeHidden();
+	await page.getByRole( 'radio', { name: '3rd-party services' } ).click();
 	await page.reload();
 	await expect( page.getByText( 'Stock images' ) ).toBeVisible();
 } );

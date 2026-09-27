@@ -1,4 +1,12 @@
 /* Admin frame (spec 5.1). Tokens come from emcpUI (loaded first). */
+
+/* The page scrolls on html, outside the token scope, so the colours are
+   literal here (--emcp-scrollbar in tokens.css). */
+html:has(.eui-frame) {
+	scrollbar-width: thin;
+	scrollbar-color: #c7c9fb transparent;
+}
+
 .eui-frame {
 	margin-block: 0;
 	margin-inline: -20px 0;
@@ -194,14 +202,10 @@
 }
 
 .eui-frame-brand__logo {
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
+	flex: none;
 	inline-size: 32px;
 	block-size: 32px;
 	border-radius: var(--emcp-r-sm);
-	background: var(--emcp-primary);
-	color: var(--emcp-surface);
 }
 
 .eui-frame-brand__text {
@@ -285,6 +289,18 @@
 .eui-frame-nav__item:focus {
 	background: var(--emcp-divider-2);
 	color: var(--emcp-ink);
+}
+
+/* Core wp-admin draws a blue box-shadow on every focused link, a mouse
+   click included; keyboard focus gets our ring instead. */
+.eui-frame-nav__item:focus {
+	box-shadow: none;
+	outline: none;
+}
+
+.eui-frame-nav__item:focus-visible {
+	outline: 2px solid var(--emcp-primary);
+	outline-offset: 1px;
 }
 
 .eui-frame-nav__item.is-active {

@@ -27,6 +27,8 @@ export const COLORS = {
 	dark: '#16143a',
 	'code-fg': '#e5e7ff',
 	'hover-border': '#b9bbf7',
+	scrollbar: '#c7c9fb',
+	'scrollbar-hover': '#a5a8f5',
 	'success-bg': '#ecfdf5',
 	'success-fg': '#047857',
 	'success-dot': '#10b981',

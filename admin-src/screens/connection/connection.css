@@ -14,7 +14,7 @@
 .eui-conn__main {
 	padding: 22px 24px;
 	border: 1px solid var(--emcp-border);
-	border-radius: var(--emcp-r-lg);
+	border-radius: var(--emcp-r-card);
 	background: var(--emcp-surface);
 }
 

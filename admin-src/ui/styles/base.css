@@ -14,6 +14,41 @@
 	box-sizing: border-box;
 }
 
+/* The hidden attribute always hides, even over a component's display rule
+   (a hidden grid or flex section otherwise stays on screen). */
+:where(.emcp-app, .eui-portal) [hidden] {
+	display: none !important;
+}
+
+/* Thin scrollbars in the accent tint. scrollbar-color inherits;
+   scrollbar-width does not, so it is set on every element. */
+:where(.emcp-app, .eui-portal) {
+	scrollbar-color: var(--emcp-scrollbar) transparent;
+}
+
+:where(.emcp-app, .eui-portal) :where(*:not(.emcp-legacy, .emcp-legacy *)) {
+	scrollbar-width: thin;
+}
+
+/* Browsers without scrollbar-color (older Safari) read these. */
+:where(.emcp-app, .eui-portal) ::-webkit-scrollbar {
+	inline-size: 8px;
+	block-size: 8px;
+}
+
+:where(.emcp-app, .eui-portal) ::-webkit-scrollbar-track {
+	background: transparent;
+}
+
+:where(.emcp-app, .eui-portal) ::-webkit-scrollbar-thumb {
+	border-radius: var(--emcp-r-pill);
+	background: var(--emcp-scrollbar);
+}
+
+:where(.emcp-app, .eui-portal) ::-webkit-scrollbar-thumb:hover {
+	background: var(--emcp-scrollbar-hover);
+}
+
 :where(.emcp-app, .eui-portal) :where(:focus-visible:not(.emcp-legacy *)) {
 	outline: 2px solid var(--emcp-primary);
 	outline-offset: 2px;
