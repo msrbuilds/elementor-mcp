@@ -327,6 +327,23 @@ A free React screen (`admin-src/screens/log/`, `screen-log`, tab `mcp-log`) on `
   - A Playwright locator by accessible name re-resolves after the name changes ("Show more" to "Show less").
   - The legacy `page-mcp-log.php` stays until Part 6.
 
+### Scheduled backups and backup leases (3.18.0, Part 5e-1, spec 9.6)
+
+- **Backups are local-only.** `EMCP_Tools_Backup_Engine::normalize_args()` forces `storage_destinations` to `local`. The upload phase and `ajax_push_backup()` (which called a class that never existed) are gone. A failed job marks its backup record `failed`, and records carry `source` (`manual`, `scheduled`, `mcp`; migrate DB version 4).
+- **One lease per job.** `EMCP_Tools_Backup_Lease` (`backup-job-{id}`, 60 s TTL over the free `EMCP_Tools_Lease`) runs every chunk: it claims or renews before the chunk and renews again before that chunk's progress is saved. Three paths use it:
+  - the browser `emcp_backup_chunk`, whose owner is the POST `owner`, or `ajax-user-{id}` for the legacy screen;
+  - the MCP `create-backup` loop (`mcp-…`);
+  - the scheduled tick (`cron-…`).
+
+  A refused start is `lease_busy` and a lost lease is `lease_lost`; neither is a job failure. The engine's `reschedule()` is a no-op, so no lease-less cron or Action Scheduler worker is ever queued for a backup.
+- **Scheduled backups** (`EMCP_Tools_Scheduled_Backup`, option `emcp_tools_backup_schedule`). The recurring `emcp_tools_scheduled_backup` event starts a job, unless one is still unfinished. `emcp_tools_backup_worker` ticks (job id argument, one queued at a time) run 20 s under the lease and requeue in 30 s. A refused tick requeues in 60 s. Failures retry at 30 s, 2 min and 10 min and then fail the job. Hourly `emcp_tools_backup_recovery` re-queues orphans. Retention keeps the newest `keep` scheduled completed backups. `health()` reports the last success, staleness at 14 days and the `DISABLE_WP_CRON` warning. The worker reaches the engine through `EMCP_Tools_Backup_Runner`, so its logic unit-tests against `FakeBackupRunner`.
+- **Admin REST** (`EMCP_Tools_Admin_REST_Backup`, Pro): `GET admin/backup`, `POST admin/backup/schedule`, `DELETE admin/backup/{id}` (confirm; a running backup is refused). The existing `emcp_tools_migrate_*` ajax actions stay the job transport.
+- **Tests:** `pro/tests/unit/migrate/{BackupEngineLocalOnlyTest,BackupLeaseTest,ScheduledBackupTest,RestBackupTest}.php`. The live acceptance is `bash pro/tests/smoke/scheduled-backup-acceptance.sh`, about 10 minutes including the mandatory 5-minute takeover.
+- **Traps:**
+  - The unit cron stubs now key events by hook and args (`$GLOBALS['_wp_cron_events']`).
+  - Backups table timestamps are GMT (`current_time( 'mysql', true )`), so `health()` parses them as UTC.
+  - msrplugins.test is too large for a quick full backup (node_modules, vendor); the acceptance uses database backups, and `EMCP_ACC_ONLY=full` runs the full-backup check alone.
+
 ### MCP Server Registration
 
 The plugin registers a dedicated MCP server `emcp-tools-server` at `/wp-json/mcp/emcp-tools-server`. All abilities use the `emcp-tools/` namespace.
