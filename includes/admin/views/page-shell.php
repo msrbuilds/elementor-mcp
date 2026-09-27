@@ -19,8 +19,12 @@ $emcp_user      = wp_get_current_user();
 $emcp_premium   = function_exists( 'emcp_tools_fs' ) && emcp_tools_fs()->can_use_premium_code();
 $emcp_unread    = class_exists( 'EMCP_Tools_Notifications' ) ? EMCP_Tools_Notifications::unread_count( (int) $emcp_user->ID ) : 0;
 $emcp_status    = ( new EMCP_Tools_Admin_Bar() )->status();
+$emcp_collapsed = EMCP_Tools_Admin_Frame::sidebar_collapsed(
+	(int) $emcp_user->ID,
+	isset( $_COOKIE[ EMCP_Tools_Admin_Frame::SIDEBAR_COOKIE ] ) ? sanitize_key( wp_unslash( $_COOKIE[ EMCP_Tools_Admin_Frame::SIDEBAR_COOKIE ] ) ) : null
+);
 ?>
-<div class="wrap emcp-app eui-frame">
+<div class="wrap emcp-app eui-frame<?php echo $emcp_collapsed ? ' is-collapsed' : ''; ?>">
 	<?php
 	// Every Frame method returns markup assembled from escaped parts.
 	echo EMCP_Tools_Admin_Frame::promo( EMCP_Tools_Admin_Frame::announcements( ! $emcp_premium ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
@@ -28,7 +32,7 @@ $emcp_status    = ( new EMCP_Tools_Admin_Bar() )->status();
 	<div class="eui-frame__layout">
 		<?php echo EMCP_Tools_Admin_Frame::sidebar( $emcp_nav, $active_tab, EMCP_TOOLS_VERSION, $emcp_premium ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 		<div class="eui-frame__main">
-			<?php echo EMCP_Tools_Admin_Frame::topbar( $emcp_current['crumbs'], $emcp_status, (int) $emcp_unread, EMCP_Tools_Admin_Frame::user_summary( $emcp_user ), $emcp_nav->topbar_links() ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+			<?php echo EMCP_Tools_Admin_Frame::topbar( $emcp_current['crumbs'], $emcp_status, (int) $emcp_unread, EMCP_Tools_Admin_Frame::user_summary( $emcp_user ), $emcp_nav->topbar_links(), $emcp_collapsed ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 			<div class="eui-frame__content" id="emcp-main">
 				<?php // Core moves admin notices to just after this marker. ?>
 				<hr class="wp-header-end">

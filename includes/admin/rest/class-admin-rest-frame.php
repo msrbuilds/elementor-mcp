@@ -10,7 +10,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Notification read state.
+ * Notification read state and the sidebar's collapsed state.
  */
 final class EMCP_Tools_Admin_REST_Frame extends EMCP_Tools_Admin_REST_Controller {
 
@@ -32,6 +32,35 @@ final class EMCP_Tools_Admin_REST_Frame extends EMCP_Tools_Admin_REST_Controller
 				),
 			)
 		);
+		$this->route(
+			'frame/sidebar',
+			array(
+				'methods'  => 'POST',
+				'callback' => array( $this, 'save_sidebar' ),
+				'args'     => array(
+					'collapsed' => array(
+						'type'     => 'boolean',
+						'required' => true,
+					),
+				),
+			)
+		);
+	}
+
+	/**
+	 * Remember whether the current user keeps the sidebar collapsed.
+	 *
+	 * @param WP_REST_Request $request Request.
+	 * @return WP_REST_Response
+	 */
+	public function save_sidebar( $request ) {
+		$collapsed = rest_sanitize_boolean( $request->get_param( 'collapsed' ) );
+		if ( $collapsed ) {
+			update_user_meta( get_current_user_id(), EMCP_Tools_Admin_Frame::SIDEBAR_META, '1' );
+		} else {
+			delete_user_meta( get_current_user_id(), EMCP_Tools_Admin_Frame::SIDEBAR_META );
+		}
+		return new WP_REST_Response( array( 'collapsed' => $collapsed ) );
 	}
 
 	/**

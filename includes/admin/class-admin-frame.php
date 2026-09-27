@@ -17,6 +17,27 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 final class EMCP_Tools_Admin_Frame {
 
+	/** User meta: '1' while the user keeps the sidebar collapsed to its icon rail. */
+	const SIDEBAR_META = 'emcp_tools_sidebar_collapsed';
+
+	/** Cookie the toggle writes, so the next page renders the new state at once. */
+	const SIDEBAR_COOKIE = 'emcp_tools_sidebar';
+
+	/**
+	 * Whether a user collapsed the sidebar. The toggle's cookie wins: the REST
+	 * save can land after the next page is already rendering. User meta
+	 * carries the choice to other browsers.
+	 *
+	 * @param int         $user_id User.
+	 * @param string|null $cookie  The SIDEBAR_COOKIE value, if sent.
+	 */
+	public static function sidebar_collapsed( int $user_id, ?string $cookie = null ): bool {
+		if ( '1' === $cookie || '0' === $cookie ) {
+			return '1' === $cookie;
+		}
+		return $user_id > 0 && '1' === (string) get_user_meta( $user_id, self::SIDEBAR_META, true );
+	}
+
 
 	/**
 	 * Announcements for the promo bar, in display order.
@@ -131,7 +152,7 @@ final class EMCP_Tools_Admin_Frame {
 	public static function sidebar( EMCP_Tools_Admin_Nav $nav, string $active_tab, string $version, bool $premium ): string {
 		// A div, not <aside>: the frame sits inside core's role="main" (#wpbody-content),
 		// where a nested complementary landmark is an accessibility error.
-		$html  = '<div class="eui-frame__sidebar">';
+		$html  = '<div class="eui-frame__sidebar" id="emcp-frame-sidebar">';
 		$html .= '<div class="eui-frame-brand"><img class="eui-frame-brand__logo" src="' . esc_url( EMCP_TOOLS_URL . 'assets/img/icon-sm.png' ) . '" alt="" width="32" height="32">'
 			. '<span class="eui-frame-brand__text"><span class="eui-frame-brand__name">' . esc_html__( 'EMCP Tools', 'emcp-tools' ) . '</span>'
 			. '<span class="eui-frame-brand__version eui-mono">v' . esc_html( $version ) . ' · ' . esc_html( $premium ? __( 'Pro', 'emcp-tools' ) : __( 'Free', 'emcp-tools' ) ) . '</span></span></div>';
@@ -167,7 +188,8 @@ final class EMCP_Tools_Admin_Frame {
 	 */
 	private static function nav_link( array $item, bool $active ): string {
 		$external = ! empty( $item['external'] );
-		$attrs    = ' href="' . esc_url( $item['url'] ) . '" class="eui-frame-nav__item' . ( $active ? ' is-active' : '' ) . '" data-emcp-nav';
+		// The title names the link on hover when the sidebar is an icon rail.
+		$attrs    = ' href="' . esc_url( $item['url'] ) . '" class="eui-frame-nav__item' . ( $active ? ' is-active' : '' ) . '" data-emcp-nav title="' . esc_attr( $item['label'] ) . '"';
 		$attrs   .= $active ? ' aria-current="page"' : '';
 		$attrs   .= $external ? ' target="_blank" rel="noopener noreferrer"' : '';
 		$tail     = '';
@@ -187,9 +209,13 @@ final class EMCP_Tools_Admin_Frame {
 	 * @param int      $unread Unread notification count.
 	 * @param array    $user   user_summary().
 	 */
-	public static function topbar( array $crumbs, array $status, int $unread, array $user, array $links = array() ): string {
+	public static function topbar( array $crumbs, array $status, int $unread, array $user, array $links = array(), bool $collapsed = false ): string {
 		// A div, not <header>: a banner landmark cannot sit inside core's role="main".
-		$html = '<div class="eui-frame__topbar"><nav aria-label="' . esc_attr__( 'Breadcrumb', 'emcp-tools' ) . '"><ol class="eui-frame-crumbs">';
+		$toggle = $collapsed ? __( 'Expand sidebar', 'emcp-tools' ) : __( 'Collapse sidebar', 'emcp-tools' );
+		$html   = '<div class="eui-frame__topbar"><button type="button" class="eui-frame-iconlink eui-frame-collapse" data-emcp-sidebar-toggle aria-controls="emcp-frame-sidebar" aria-expanded="' . ( $collapsed ? 'false' : 'true' ) . '" aria-label="' . esc_attr( $toggle ) . '" title="' . esc_attr( $toggle ) . '">'
+			. '<span class="eui-frame-collapse__close">' . EMCP_Tools_Admin_Icons::svg( 'panel-left-close', 18 ) . '</span>'
+			. '<span class="eui-frame-collapse__open">' . EMCP_Tools_Admin_Icons::svg( 'panel-left-open', 18 ) . '</span></button>';
+		$html  .= '<nav aria-label="' . esc_attr__( 'Breadcrumb', 'emcp-tools' ) . '"><ol class="eui-frame-crumbs">';
 		$last = count( $crumbs ) - 1;
 		foreach ( array_values( $crumbs ) as $i => $label ) {
 			$html .= $i === $last ? '<li aria-current="page">' . esc_html( $label ) . '</li>' : '<li>' . esc_html( $label ) . '</li>';

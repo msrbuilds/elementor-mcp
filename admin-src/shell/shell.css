@@ -191,6 +191,37 @@ html:has(.eui-frame) {
 	padding-inline: 12px;
 	border-inline-end: 1px solid var(--emcp-border);
 	background: var(--emcp-surface);
+	transition: inline-size var(--emcp-dur) var(--emcp-ease), padding var(--emcp-dur) var(--emcp-ease);
+}
+
+/* Collapsed by the top-bar toggle: the same icon rail narrow screens get. */
+.eui-frame.is-collapsed .eui-frame__sidebar {
+	inline-size: 64px;
+	padding-inline: 8px;
+}
+
+.eui-frame.is-collapsed :is(.eui-frame-brand__text, .eui-frame-search__label, .eui-frame-search__kbd, .eui-frame-nav__group, .eui-frame-nav__label, .eui-frame-nav__count, .eui-frame-nav__badge) {
+	position: absolute !important;
+	inline-size: 1px;
+	block-size: 1px;
+	overflow: hidden;
+	clip-path: inset(50%);
+	white-space: nowrap;
+}
+
+.eui-frame.is-collapsed :is(.eui-frame-nav__item, .eui-frame-search) {
+	justify-content: center;
+	padding-inline: 0;
+}
+
+.eui-frame-collapse__open,
+.eui-frame.is-collapsed .eui-frame-collapse__close {
+	display: none;
+}
+
+.eui-frame-collapse__close,
+.eui-frame.is-collapsed .eui-frame-collapse__open {
+	display: inline-flex;
 }
 
 .eui-frame-brand {
@@ -587,6 +618,11 @@ a.eui-frame-user:focus-visible {
 }
 
 @media (max-width: 1200px) {
+
+	/* The rail is forced here, so the toggle has nothing to do. */
+	.eui-frame-collapse {
+		display: none;
+	}
 
 	.eui-frame__sidebar {
 		inline-size: 64px;

@@ -5,6 +5,7 @@ import { createRoot } from '@wordpress/element';
 import { AppProviders } from '@emcp/ui';
 import { ShellApp } from './ShellApp';
 import { initPromo } from './promo';
+import { initSidebarToggle } from './sidebar';
 import './shell.css';
 import './palette.css';
 
@@ -16,6 +17,11 @@ if ( promo ) {
 			!! window.matchMedia &&
 			window.matchMedia( '(prefers-reduced-motion: reduce)' ).matches,
 	} );
+}
+
+const frame = document.querySelector( '.eui-frame' );
+if ( frame ) {
+	initSidebarToggle( frame );
 }
 
 const root = document.getElementById( 'emcp-shell-root' );
