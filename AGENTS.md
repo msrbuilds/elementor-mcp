@@ -361,7 +361,13 @@ A Pro React screen (`pro/admin-src/screens/migrate/`, `screen-migrate`, tab `mig
   - `uploadFile` shrinks the chunk on 413, 500 or 0 down to a 256 KB floor, switches to base64 on another 4xx (4 MB cap), and retries 4 times.
   - `pushBackup` / `watchRemoteRestore`: a connector that goes offline after progress, or for 3 polls, counts as complete.
   - `startSync` runs the advanced sync.
-- **Handover (spec 9.6):** the boot's `activeJob` is the newest unfinished scheduled job. While its lease is held the screen follows it read-only; once the lease is free it offers "Continue in this tab" with a fresh `newOwner()`. A chunk answered `status: 'elsewhere'` switches to read-only polling ("This backup is now being processed elsewhere").
+- **Handover (spec 9.6):**
+  - The boot's `activeJob` is the newest unfinished scheduled job. It carries `stalled`: no lease and no heartbeat for `EMCP_Tools_Admin_Backup_Data::STALL_SECONDS` (90 s, a cron tick plus the lease TTL).
+  - The scheduler releases the lease between ticks, so "unleased" alone never means stuck.
+  - A job that is not stalled is followed read-only (`job_progress` every 2 s). A stalled one offers "Continue in this tab" with a fresh `newOwner()`.
+  - A chunk answered `status: 'elsewhere'` switches to read-only polling. `pollJob` calls `onStall( true )` after 45 unchanged polls, so a job that nobody drives any more (the tab's own retry refused while its first request still ran) offers Continue again.
+- **Views stay mounted once opened**, hidden while another is shown. A backup, restore, push or sync keeps running when the user switches sections; unmounting a view would stop its driver, and a restore mid-import cannot be resumed through the nonce-checked `get_active_restore_job`.
+- **An empty table or area pick is sent as `'none'`.** The transport drops an empty array, and a missing `db` / `files` field means `'all'` in `ajax_sync_start`, which would push every table.
 - **Other rules:**
   - The schedule Drawer saves through `POST admin/backup/schedule` and shows the WP-Cron warning.
   - History deletes through `DELETE admin/backup/{id}`.
