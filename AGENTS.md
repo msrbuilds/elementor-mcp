@@ -337,11 +337,19 @@ A free React screen (`admin-src/screens/log/`, `screen-log`, tab `mcp-log`) on `
 
   A refused start is `lease_busy` and a lost lease is `lease_lost`; neither is a job failure. The engine's `reschedule()` is a no-op, so no lease-less cron or Action Scheduler worker is ever queued for a backup.
 - **Scheduled backups** (`EMCP_Tools_Scheduled_Backup`, option `emcp_tools_backup_schedule`). The recurring `emcp_tools_scheduled_backup` event starts a job, unless one is still unfinished. `emcp_tools_backup_worker` ticks (job id argument, one queued at a time) run 20 s under the lease and requeue in 30 s. A refused tick requeues in 60 s. Failures retry at 30 s, 2 min and 10 min and then fail the job. Hourly `emcp_tools_backup_recovery` re-queues orphans. Retention keeps the newest `keep` scheduled completed backups. `health()` reports the last success, staleness at 14 days and the `DISABLE_WP_CRON` warning. The worker reaches the engine through `EMCP_Tools_Backup_Runner`, so its logic unit-tests against `FakeBackupRunner`.
+- **Review fixes (two locks, not one).** The lease says who owns a job; a MySQL `GET_LOCK` held for the length of each chunk (`EMCP_Tools_Backup_Lease::run()`) says a chunk is running now. Without it, a retried request from the same owner, or a taker after the 60 s lease expired during a long chunk (enumerating files, packaging a multi-GB dump), replayed non-idempotent work: the DB exporter appends. Chunk requests read the job only after claiming it.
+
+  A tick queues a watchdog successor before working and counts `sched_stall` in the job data, cleared by any progress, so a tick that dies (a fatal, a host time limit) cannot wedge the schedule. After 4 stalled ticks the job fails. A throwing chunk takes the retry ladder.
+
+  `on_start()` runs only while the schedule is enabled, anchors the next run to local time again (WP-Cron repeats fixed seconds, so DST would drift it), and prunes. A failed scheduled backup keeps its record but loses its partial archive. A cancelled job cancels its record. The MCP loop fails its job and record on an error. DELETE decides "running" from the job (`is_backup_busy()`: an unfinished job with a held lease or a heartbeat within 5 minutes), never from the record.
+
+  The tick chain still needs WP-Cron traffic (spec 9.6); `health()['stalled']` flags an unfinished scheduled job idle for 2 hours.
 - **Admin REST** (`EMCP_Tools_Admin_REST_Backup`, Pro): `GET admin/backup`, `POST admin/backup/schedule`, `DELETE admin/backup/{id}` (confirm; a running backup is refused). The existing `emcp_tools_migrate_*` ajax actions stay the job transport.
 - **Tests:** `pro/tests/unit/migrate/{BackupEngineLocalOnlyTest,BackupLeaseTest,ScheduledBackupTest,RestBackupTest}.php`. The live acceptance is `bash pro/tests/smoke/scheduled-backup-acceptance.sh`, about 10 minutes including the mandatory 5-minute takeover.
 - **Traps:**
   - The unit cron stubs now key events by hook and args (`$GLOBALS['_wp_cron_events']`).
   - Backups table timestamps are GMT (`current_time( 'mysql', true )`), so `health()` parses them as UTC.
+  - Every WP-CLI process spawns a WP-Cron loopback on `init`, which runs due ticks between smoke steps: the acceptance starts the jobs it must drive 'parked' (no tick) and releases each hold explicitly.
   - msrplugins.test is too large for a quick full backup (node_modules, vendor); the acceptance uses database backups, and `EMCP_ACC_ONLY=full` runs the full-backup check alone.
 
 ### MCP Server Registration
