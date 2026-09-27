@@ -54,6 +54,8 @@ includes/admin/class-pro-skills.php
 includes/admin/class-pro-brand-kits.php
 includes/admin/data/class-admin-templates-data.php
 includes/admin/rest/class-admin-rest-templates.php
+includes/admin/data/class-admin-backup-data.php
+includes/admin/rest/class-admin-rest-backup.php
 includes/admin/data/class-admin-skills-data.php
 includes/admin/rest/class-admin-rest-skills.php
 includes/admin/data/class-admin-memory-data.php

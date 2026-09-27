@@ -79,6 +79,8 @@ final class EMCP_Tools_Pro_Loader {
 		// Admin screens served over REST (3.18.0 redesign).
 		'includes/admin/data/class-admin-templates-data.php',
 		'includes/admin/rest/class-admin-rest-templates.php',
+		'includes/admin/data/class-admin-backup-data.php',
+		'includes/admin/rest/class-admin-rest-backup.php',
 		'includes/admin/data/class-admin-skills-data.php',
 		'includes/admin/rest/class-admin-rest-skills.php',
 		'includes/admin/data/class-admin-memory-data.php',
@@ -299,6 +301,11 @@ final class EMCP_Tools_Pro_Loader {
 		// Templates screen REST (3.18.0 redesign): served on REST requests.
 		if ( class_exists( 'EMCP_Tools_Admin_REST_Templates' ) ) {
 			( new EMCP_Tools_Admin_REST_Templates() )->register();
+		}
+
+		// Backup & Migrate screen REST (3.18.0 redesign, spec 8.20).
+		if ( class_exists( 'EMCP_Tools_Admin_REST_Backup' ) ) {
+			( new EMCP_Tools_Admin_REST_Backup() )->register();
 		}
 
 		// Agent Skills screen REST (3.18.0 redesign).
