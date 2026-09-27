@@ -205,6 +205,7 @@
 }
 
 @media (max-width: 1100px) {
+
 	.emcp-cl__layout {
 		grid-template-columns: minmax(0, 1fr);
 	}

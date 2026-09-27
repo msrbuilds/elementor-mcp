@@ -14,12 +14,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Keep direct includes (including the test harness and Pro overlay) self-contained.
-require_once __DIR__ . '/trait-admin-history.php';
-require_once __DIR__ . '/trait-admin-redirects.php';
 require_once __DIR__ . '/trait-admin-cloud.php';
 require_once __DIR__ . '/trait-admin-connection.php';
 require_once __DIR__ . '/trait-admin-settings.php';
-require_once __DIR__ . '/trait-admin-sandbox.php';
 require_once __DIR__ . '/trait-admin-tool-groups.php';
 require_once __DIR__ . '/trait-admin-integrations.php';
 require_once __DIR__ . '/trait-admin-catalog.php';
@@ -31,12 +28,9 @@ require_once __DIR__ . '/trait-admin-catalog.php';
  */
 class EMCP_Tools_Admin {
 
-	use EMCP_Tools_Admin_History_Trait;
-	use EMCP_Tools_Admin_Redirects_Trait;
 	use EMCP_Tools_Admin_Cloud_Trait;
 	use EMCP_Tools_Admin_Connection_Trait;
 	use EMCP_Tools_Admin_Settings_Trait;
-	use EMCP_Tools_Admin_Sandbox_Trait;
 	use EMCP_Tools_Admin_Tool_Groups_Trait;
 	use EMCP_Tools_Admin_Integrations_Trait;
 	use EMCP_Tools_Admin_Catalog_Trait;
@@ -177,37 +171,6 @@ class EMCP_Tools_Admin {
 			return 0;
 		}
 		return EMCP_Tools_Memory_Store::instance()->pending_count();
-	}
-
-	/**
-	 * Dashicon class for a tab id, used by the in-header nav. Falls back to a
-	 * generic marker for unknown ids.
-	 *
-	 * @param string $tab_id Tab id as returned by get_active_tab().
-	 * @return string Dashicon class.
-	 */
-	public static function tab_icon( string $tab_id ): string {
-		$icons = array(
-			'dashboard'  => 'dashicons-dashboard',
-			'tools'      => 'dashicons-admin-tools',
-			'page-builders' => 'dashicons-layout',
-			'history'    => 'dashicons-undo',
-			'redirects'  => 'dashicons-randomize',
-			'migrate'    => 'dashicons-migrate',
-			'modules'    => 'dashicons-screenoptions',
-			'connection' => 'dashicons-admin-links',
-			'ai-chat'    => 'dashicons-format-chat',
-			'context'    => 'dashicons-info-outline',
-			'memory'     => 'dashicons-database',
-			'prompts'    => 'dashicons-lightbulb',
-			'templates'  => 'dashicons-layout',
-			'brand-kits' => 'dashicons-art',
-			'skills'     => 'dashicons-superhero',
-			'widgets'    => 'dashicons-editor-code',
-			'mcp-log'    => 'dashicons-list-view',
-			'changelog'  => 'dashicons-backup',
-		);
-		return $icons[ $tab_id ] ?? 'dashicons-marker';
 	}
 
 	private function get_submenus(): array {
@@ -364,86 +327,14 @@ class EMCP_Tools_Admin {
 			EMCP_Tools_Admin_REST_Sandbox_Export::register_screen();
 		}
 		add_action( 'admin_head', array( $this, 'print_menu_icon_style' ) );
-		add_action( 'wp_ajax_emcp_tools_create_app_password', array( $this, 'ajax_create_app_password' ) );
-		add_action( 'wp_ajax_emcp_tools_test_connection', array( $this, 'ajax_test_connection' ) );
-		add_action( 'wp_ajax_emcp_tools_test_oauth_discovery', array( $this, 'ajax_test_oauth_discovery' ) );
-		add_action( 'wp_ajax_emcp_tools_toggle_widget', array( $this, 'ajax_toggle_widget' ) );
-		add_action( 'wp_ajax_emcp_tools_delete_widget', array( $this, 'ajax_delete_widget' ) );
-		add_action( 'wp_ajax_emcp_tools_toggle_block', array( $this, 'ajax_toggle_block' ) );
-		add_action( 'wp_ajax_emcp_tools_delete_block', array( $this, 'ajax_delete_block' ) );
-		add_action( 'wp_ajax_emcp_tools_backup_artifact', array( $this, 'ajax_backup_artifact' ) );
-		add_action( 'wp_ajax_emcp_tools_bulk_backup_artifacts', array( $this, 'ajax_bulk_backup_artifacts' ) );
-		add_action( 'wp_ajax_emcp_tools_push_update', array( $this, 'ajax_push_update' ) );
-		add_action( 'wp_ajax_emcp_tools_marketplace_state', array( $this, 'ajax_marketplace_state' ) );
-		add_action( 'wp_ajax_emcp_tools_resync_cloud', array( $this, 'ajax_resync_cloud' ) );
-		add_action( 'wp_ajax_emcp_tools_cloud_library', array( $this, 'ajax_cloud_library' ) );
-		add_action( 'wp_ajax_emcp_tools_cloud_import', array( $this, 'ajax_cloud_import' ) );
-		add_action( 'wp_ajax_emcp_tools_memory_set_status', array( $this, 'ajax_memory_set_status' ) );
-		add_action( 'wp_ajax_emcp_tools_memory_save_guidance', array( $this, 'ajax_memory_save_guidance' ) );
-		add_action( 'wp_ajax_emcp_tools_memory_save_settings', array( $this, 'ajax_memory_save_settings' ) );
-		add_action( 'wp_ajax_emcp_tools_save_php_snippet', array( $this, 'ajax_save_php_snippet' ) );
-		add_action( 'wp_ajax_emcp_tools_toggle_php_snippet', array( $this, 'ajax_toggle_php_snippet' ) );
-		add_action( 'wp_ajax_emcp_tools_delete_php_snippet', array( $this, 'ajax_delete_php_snippet' ) );
-		add_action( 'wp_ajax_emcp_tools_notifications_read', array( $this, 'ajax_notifications_read' ) );
 		add_action( 'admin_post_emcp_tools_download_mcpb', array( $this, 'handle_download_mcpb' ) );
-		add_action( 'admin_post_' . self::ACTION_DISMISS_PROMPTS_NOTICE, array( $this, 'handle_dismiss_prompts_notice' ) );
-		add_action( 'admin_post_' . self::ACTION_ROLLBACK_CHANGE, array( $this, 'handle_rollback_change' ) );
-		add_action( 'admin_post_' . self::ACTION_DELETE_CHANGE, array( $this, 'handle_delete_change' ) );
-		add_action( 'admin_post_' . self::ACTION_CLEAR_CHANGES, array( $this, 'handle_clear_changes' ) );
-		add_action( 'admin_post_' . self::ACTION_REVOKE_OAUTH, array( $this, 'handle_revoke_oauth_client' ) );
-		add_action( 'admin_post_' . self::ACTION_DELETE_OAUTH_CLIENT, array( $this, 'handle_delete_oauth_client' ) );
-		add_action( 'admin_post_' . self::ACTION_EXPORT_ARTIFACT, array( $this, 'handle_export_artifact' ) );
-		add_action( 'admin_post_' . self::ACTION_IMPORT_ARTIFACT, array( $this, 'handle_import_artifact' ) );
 		add_action( 'admin_post_emcp_tools_settings_push', array( $this, 'handle_settings_push' ) );
 		add_action( 'admin_post_emcp_tools_settings_pull', array( $this, 'handle_settings_pull' ) );
-		add_action( 'admin_post_emcp_tools_marketplace_install', array( $this, 'handle_marketplace_install' ) );
-		add_action( 'admin_post_emcp_tools_redirect_save', array( $this, 'handle_redirect_save' ) );
-		add_action( 'admin_post_emcp_tools_redirect_delete', array( $this, 'handle_redirect_delete' ) );
-		add_action( 'admin_post_emcp_tools_redirect_toggle', array( $this, 'handle_redirect_toggle' ) );
 	}
 
 	/** Nonce action for the .mcpb bundle download. */
 	const NONCE_DOWNLOAD_MCPB = 'emcp_tools_download_mcpb';
 
-	/** admin-post action that dismisses the "prompts rewritten" notice. */
-	const ACTION_DISMISS_PROMPTS_NOTICE = 'emcp_tools_dismiss_prompts_notice';
-
-	/** admin-post action that rolls back a change from the History tab. */
-	const ACTION_ROLLBACK_CHANGE = 'emcp_tools_rollback_change';
-
-	/** admin-post action that deletes one entry from the History ledger. */
-	const ACTION_DELETE_CHANGE = 'emcp_tools_delete_change';
-
-	/** admin-post action that clears the whole History ledger. */
-	const ACTION_CLEAR_CHANGES = 'emcp_tools_clear_changes';
-
-	/** Nonce action shared by the sandbox artifact export/import admin-post handlers. */
-	const NONCE_SANDBOX_BUNDLE = 'emcp_tools_sandbox_bundle';
-
-	/** admin-post action that streams a sandbox artifact as a portable JSON bundle download. */
-	const ACTION_EXPORT_ARTIFACT = 'emcp_tools_export_artifact';
-
-	/** admin-post action that imports an uploaded sandbox artifact bundle. */
-	const ACTION_IMPORT_ARTIFACT = 'emcp_tools_import_artifact';
-
-	/**
-	 * admin-post action: revoke all tokens for one OAuth client.
-	 *
-	 * @var string
-	 */
-	const ACTION_REVOKE_OAUTH = 'emcp_tools_revoke_oauth_client';
-
-	/**
-	 * Delete an OAuth client registration outright (tokens included).
-	 *
-	 * Distinct from ACTION_REVOKE_OAUTH, which signs an app out but keeps the
-	 * registration so it can sign back in. This one is for a registration that
-	 * can never be used again, typically because the app now asks for a
-	 * different callback than the one it registered.
-	 *
-	 * @since 3.15.0
-	 */
-	const ACTION_DELETE_OAUTH_CLIENT = 'emcp_tools_delete_oauth_client';
 
 	/**
 	 * User meta flag recording that the current user has dismissed the notice
@@ -465,37 +356,6 @@ class EMCP_Tools_Admin {
 	 */
 	public static function prompts_notice_dismissed(): bool {
 		return (bool) get_user_meta( get_current_user_id(), self::META_PROMPTS_NOTICE_DISMISSED, true );
-	}
-
-	/**
-	 * Nonce-protected URL that dismisses the rewritten-prompts notice.
-	 *
-	 * @since 3.2.0
-	 * @return string
-	 */
-	public static function prompts_notice_dismiss_url(): string {
-		return wp_nonce_url(
-			admin_url( 'admin-post.php?action=' . self::ACTION_DISMISS_PROMPTS_NOTICE ),
-			self::ACTION_DISMISS_PROMPTS_NOTICE
-		);
-	}
-
-	/**
-	 * Persist the dismissal, then bounce back to the Prompts screen.
-	 *
-	 * @since 3.2.0
-	 */
-	public function handle_dismiss_prompts_notice(): void {
-		if ( ! current_user_can( 'manage_options' ) ) {
-			wp_die( esc_html__( 'You do not have permission to do that.', 'emcp-tools' ), '', array( 'response' => 403 ) );
-		}
-
-		check_admin_referer( self::ACTION_DISMISS_PROMPTS_NOTICE );
-
-		update_user_meta( get_current_user_id(), self::META_PROMPTS_NOTICE_DISMISSED, '1' );
-
-		wp_safe_redirect( admin_url( 'admin.php?page=' . self::PAGE_SLUG . '-prompts' ) );
-		exit;
 	}
 
 	/**
@@ -883,275 +743,7 @@ class EMCP_Tools_Admin {
 		$screen = EMCP_Tools_Admin_Screens::screen_for_tab( $this->get_active_tab(), null, EMCP_Tools_Admin_Screens::current_view() );
 		if ( null !== $screen ) {
 			$this->enqueue_screen( $screen );
-			return;
 		}
-
-		// Legacy view: its scoped stylesheet plus the old admin scripts.
-		$css_path = EMCP_TOOLS_DIR . 'assets/admin/build/legacy.css';
-		$js_path  = EMCP_TOOLS_DIR . 'assets/js/admin.js';
-
-		// Some security software and hosts rename or quarantine .js files on
-		// upload (admin.js -> admin.j_), which makes the script 404 and silently
-		// breaks JS-driven features like the Connection-tab config generator. If
-		// the asset is missing, warn the admin with an actionable fix instead of
-		// failing silently. (GitHub #44)
-		if ( ! file_exists( $js_path ) ) {
-			add_action( 'admin_notices', array( $this, 'notice_missing_js_asset' ) );
-		}
-
-		// Use filemtime in dev (when WP_DEBUG is on) so iterating on CSS/JS doesn't get stuck
-		// behind a cached file under the same plugin version. Falls back to EMCP_TOOLS_VERSION.
-		$css_ver = ( defined( 'WP_DEBUG' ) && WP_DEBUG && file_exists( $css_path ) ) ? filemtime( $css_path ) : EMCP_TOOLS_VERSION;
-		$js_ver  = ( defined( 'WP_DEBUG' ) && WP_DEBUG && file_exists( $js_path ) ) ? filemtime( $js_path ) : EMCP_TOOLS_VERSION;
-
-		if ( file_exists( $css_path ) ) {
-			wp_enqueue_style(
-				'elementor-mcp-admin',
-				EMCP_TOOLS_URL . 'assets/admin/build/legacy.css',
-				array( 'emcp-admin-ui' ),
-				$css_ver
-			);
-		}
-
-		// No script on disk -> nothing to enqueue or localize (the notice above
-		// tells the admin how to fix it).
-		if ( ! file_exists( $js_path ) ) {
-			return;
-		}
-
-		wp_enqueue_script(
-			'elementor-mcp-admin',
-			EMCP_TOOLS_URL . 'assets/js/admin.js',
-			array(),
-			$js_ver,
-			true
-		);
-
-		// Sandbox cloud/marketplace button state machine (no-op unless the page
-		// renders .emcp-sb-cloud clusters).
-		$sb_js = EMCP_TOOLS_DIR . 'assets/js/sandbox-cloud.js';
-		if ( file_exists( $sb_js ) ) {
-			wp_enqueue_script( 'emcp-tools-sandbox-cloud', EMCP_TOOLS_URL . 'assets/js/sandbox-cloud.js', array(), (string) filemtime( $sb_js ), true );
-		}
-
-		// Cloud Library: lazy list + import of the workspace's cloud artifacts
-		// (no-op unless the page renders a .emcp-cloud-lib panel).
-		$cl_js = EMCP_TOOLS_DIR . 'assets/js/cloud-library.js';
-		if ( file_exists( $cl_js ) ) {
-			wp_enqueue_script( 'emcp-tools-cloud-library', EMCP_TOOLS_URL . 'assets/js/cloud-library.js', array(), (string) filemtime( $cl_js ), true );
-		}
-
-		wp_localize_script(
-			'elementor-mcp-admin',
-			'emcpToolsAdmin',
-			array(
-				'copied'      => __( 'Copied!', 'emcp-tools' ),
-				'copy'        => __( 'Copy', 'emcp-tools' ),
-				'copyFailed'  => __( 'Copy failed', 'emcp-tools' ),
-				'download'    => __( 'Download', 'emcp-tools' ),
-				'mcpEndpoint' => class_exists( 'EMCP_Tools_Site_Context' ) ? EMCP_Tools_Site_Context::mcp_endpoint() : rest_url( 'mcp/emcp-tools-server' ),
-				'oauthEnabled' => class_exists( 'EMCP_Tools_OAuth_Server' ) && EMCP_Tools_OAuth_Server::is_enabled(),
-				'oauthSignin'  => __( 'The next time your AI client connects, your browser opens so you can authorize it. Approve to finish connecting.', 'emcp-tools' ),
-				/* translators: %s: client label */
-				'genFirst'     => __( 'Generate your credentials above, the config for %s then appears here.', 'emcp-tools' ),
-				'siteUrl'     => class_exists( 'EMCP_Tools_Site_Context' ) ? EMCP_Tools_Site_Context::public_base_url() : site_url(),
-				// Only the filename — never the absolute server path. The proxy runs
-				// on the CLIENT machine, so the server path is both useless to the
-				// user and a needless path disclosure (F-020). The UI points users at
-				// the npx runner or their own local copy of the proxy.
-				'proxyPath'   => 'mcp-proxy.mjs',
-				// Full MCP connection + OAuth discovery diagnostics.
-				'authTesting' => __( 'Testing the full MCP handshake…', 'emcp-tools' ),
-				'authOk'      => __( '✓ Full MCP handshake succeeded: initialize, initialized notification, and tools/list all worked.', 'emcp-tools' ),
-				'authError'   => __( 'Could not run the MCP connection test.', 'emcp-tools' ),
-				'oauthTesting' => __( 'Checking public OAuth discovery endpoints…', 'emcp-tools' ),
-				'ajaxUrl'       => admin_url( 'admin-ajax.php' ),
-				'createPwNonce' => wp_create_nonce( 'emcp_tools_create_app_password' ),
-				'testConnNonce' => wp_create_nonce( 'emcp_tools_test_connection' ),
-				'testOAuthNonce' => wp_create_nonce( 'emcp_tools_test_oauth_discovery' ),
-				'trackPromptNonce' => wp_create_nonce( 'emcp_tools_track_prompt_copy' ),
-				'generating'    => __( 'Generating…', 'emcp-tools' ),
-				'pwCreated'     => __( 'Application password created, save it below, it is shown only once.', 'emcp-tools' ),
-				'syncing'       => __( 'Syncing…', 'emcp-tools' ),
-				// Brand Kits.
-				'applying'      => __( 'Applying…', 'emcp-tools' ),
-				'restoring'     => __( 'Restoring…', 'emcp-tools' ),
-				/* translators: %s: brand kit title */
-				'applyKitTitle' => __( 'Apply "%s" brand kit?', 'emcp-tools' ),
-				/* translators: %s: brand kit title */
-				'kitApplied'    => __( '%s applied.', 'emcp-tools' ),
-				'restoreConfirm'     => __( 'Restore global colors and typography from this backup?', 'emcp-tools' ),
-				'viewSite'           => __( 'View site →', 'emcp-tools' ),
-				// Connection-tab client picker + .mcpb bundle.
-				'connectionClients'  => self::connection_clients(),
-				'mcpbNonce'          => wp_create_nonce( self::NONCE_DOWNLOAD_MCPB ),
-				'adminPostUrl'       => admin_url( 'admin-post.php' ),
-				'siteContextBase'      => EMCP_Tools_Site_Context::default_base(),
-				'siteContextDelimiter' => EMCP_Tools_Site_Context::DELIMITER,
-			)
-		);
-
-		// Modules tab: the bulk-optimizer progress UI.
-		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only page routing.
-		if ( isset( $_GET['page'] ) && ( self::PAGE_SLUG . '-modules' ) === sanitize_key( wp_unslash( $_GET['page'] ) ) ) {
-			$bulk_path = EMCP_TOOLS_DIR . 'assets/js/modules-bulk.js';
-			if ( file_exists( $bulk_path ) && class_exists( 'EMCP_Tools_Bulk_Optimizer' ) ) {
-				$bulk_ver = ( defined( 'WP_DEBUG' ) && WP_DEBUG ) ? filemtime( $bulk_path ) : EMCP_TOOLS_VERSION;
-				wp_enqueue_script( 'emcp-tools-modules-bulk', EMCP_TOOLS_URL . 'assets/js/modules-bulk.js', array(), $bulk_ver, true );
-				wp_localize_script(
-					'emcp-tools-modules-bulk',
-					'emcpToolsModules',
-					array(
-						'ajaxUrl'       => admin_url( 'admin-ajax.php' ),
-						'nonce'         => wp_create_nonce( EMCP_Tools_Bulk_Optimizer::NONCE ),
-						'batchAction'   => EMCP_Tools_Bulk_Optimizer::ACTION_BATCH,
-						'restoreAction' => EMCP_Tools_Bulk_Optimizer::ACTION_RESTORE,
-						'batchSize'     => 10,
-						'optimizing'    => __( 'Optimizing…', 'emcp-tools' ),
-						'restoring'     => __( 'Restoring…', 'emcp-tools' ),
-						'done'          => __( 'Done', 'emcp-tools' ),
-						'unsaved'       => __( 'Unsaved changes, click Save Modules to apply.', 'emcp-tools' ),
-					)
-				);
-			}
-		}
-	}
-
-	/**
-	 * Admin notice shown when assets/js/admin.js is missing from the plugin
-	 * folder — usually because security software or a host renamed/quarantined
-	 * the .js file on upload (e.g. admin.js -> admin.j_). Without it, JS-driven
-	 * features (the Connection-tab config generator, tool toggles, etc.) silently
-	 * do nothing, so we surface a precise, actionable message. (GitHub #44)
-	 *
-	 * @since 2.1.0
-	 */
-	public function notice_missing_js_asset(): void {
-		if ( ! current_user_can( 'manage_options' ) ) {
-			return;
-		}
-
-		// Detect a mangled copy so we can name the exact file to restore.
-		$dir     = EMCP_TOOLS_DIR . 'assets/js/';
-		$mangled = '';
-		foreach ( array( 'admin.j_', 'admin.js_', 'admin._s', 'admin.js.quarantine' ) as $candidate ) {
-			if ( file_exists( $dir . $candidate ) ) {
-				$mangled = $candidate;
-				break;
-			}
-		}
-
-		echo '<div class="notice notice-error"><p><strong>EMCP Tools:</strong> ';
-		echo esc_html__( 'A required script is missing, assets/js/admin.js was not found in the plugin folder, so admin features like the Connection-tab config generator will not work.', 'emcp-tools' );
-		echo ' ';
-		if ( '' !== $mangled ) {
-			printf(
-				/* translators: %s: the mangled filename found, e.g. admin.j_ */
-				esc_html__( 'It looks like security software renamed it to assets/js/%s, rename that file back to admin.js.', 'emcp-tools' ),
-				esc_html( $mangled )
-			);
-		} else {
-			echo esc_html__( 'Some security software and hosts rename or quarantine .js files on upload. Re-upload a fresh copy of the plugin from the official release, and restore assets/js/admin.js if your host renamed it.', 'emcp-tools' );
-		}
-		echo '</p></div>';
-	}
-
-	/**
-	 * AJAX: mark app-bar notifications as read for the current user, called
-	 * when the notifications dropdown is opened.
-	 *
-	 * @since 3.10.0
-	 */
-	public function ajax_notifications_read(): void {
-		if ( ! current_user_can( 'manage_options' ) ) {
-			wp_send_json_error( array( 'message' => __( 'Forbidden.', 'emcp-tools' ) ), 403 );
-		}
-		if ( ! check_ajax_referer( 'emcp_tools_notifications', 'nonce', false ) ) {
-			wp_send_json_error( array( 'message' => __( 'Security check failed.', 'emcp-tools' ) ), 403 );
-		}
-
-		$ids = isset( $_POST['ids'] ) ? (array) wp_unslash( $_POST['ids'] ) : array();
-		$ids = array_map( 'sanitize_text_field', $ids );
-
-		$user_id = get_current_user_id();
-		EMCP_Tools_Notifications::mark_read( $user_id, $ids );
-
-		wp_send_json_success( array( 'unread' => EMCP_Tools_Notifications::unread_count( $user_id ) ) );
-	}
-
-	/**
-	 * Guards a Memory AJAX request (nonce + Pro/cap). wp_die/returns on failure.
-	 *
-	 * @since 3.7.0
-	 */
-	private function memory_ajax_guard(): void {
-		check_ajax_referer( 'emcp_tools_memory', 'nonce' );
-		if ( ! class_exists( 'EMCP_Tools_Memory_Store' ) || ! EMCP_Tools_Memory_Store::user_has_access() ) {
-			wp_send_json_error( array( 'message' => __( 'You do not have permission to do this.', 'emcp-tools' ) ), 403 );
-		}
-	}
-
-	/**
-	 * AJAX: approve/reject/toggle a guidance entry from the Memory tab.
-	 *
-	 * @since 3.7.0
-	 */
-	public function ajax_memory_set_status(): void {
-		$this->memory_ajax_guard();
-		$id     = isset( $_POST['id'] ) ? absint( wp_unslash( $_POST['id'] ) ) : 0;
-		$status = isset( $_POST['status'] ) ? sanitize_key( wp_unslash( $_POST['status'] ) ) : '';
-		if ( ! $id || ! in_array( $status, array( 'publish', 'pending', 'draft', 'trash' ), true ) ) {
-			wp_send_json_error( array( 'message' => __( 'Invalid request.', 'emcp-tools' ) ), 400 );
-		}
-		$ok = EMCP_Tools_Memory_Store::instance()->set_guidance_status( $id, $status );
-		$ok ? wp_send_json_success( array( 'id' => $id, 'status' => $status ) )
-			: wp_send_json_error( array( 'message' => __( 'Not found.', 'emcp-tools' ) ), 400 );
-	}
-
-	/**
-	 * AJAX: create (admin, approved) or edit a guidance entry from the Memory tab.
-	 *
-	 * @since 3.7.0
-	 */
-	public function ajax_memory_save_guidance(): void {
-		$this->memory_ajax_guard();
-		$store = EMCP_Tools_Memory_Store::instance();
-		$id    = isset( $_POST['id'] ) ? absint( wp_unslash( $_POST['id'] ) ) : 0;
-		$type  = isset( $_POST['type'] ) ? sanitize_key( wp_unslash( $_POST['type'] ) ) : '';
-		$body  = isset( $_POST['body'] ) ? sanitize_textarea_field( wp_unslash( $_POST['body'] ) ) : '';
-		if ( ! in_array( $type, EMCP_Tools_Memory_Store::TYPES, true ) || '' === trim( $body ) ) {
-			wp_send_json_error( array( 'message' => __( 'A type and non-empty guidance are required.', 'emcp-tools' ) ), 400 );
-		}
-		if ( $id > 0 ) {
-			$store->update_guidance( $id, array( 'type' => $type, 'body' => $body, 'title' => wp_trim_words( $body, 8, '' ) ) );
-			wp_send_json_success( array( 'id' => $id ) );
-		}
-		$new = $store->add_guidance( array(
-			'title'  => wp_trim_words( $body, 8, '' ),
-			'body'   => $body,
-			'type'   => $type,
-			'source' => 'admin',
-			'status' => 'publish',
-		) );
-		is_wp_error( $new )
-			? wp_send_json_error( array( 'message' => $new->get_error_message() ), 400 )
-			: wp_send_json_success( array( 'id' => (int) $new ) );
-	}
-
-	/**
-	 * AJAX: persist Memory settings (auto-summarize, require-approval).
-	 *
-	 * @since 3.7.0
-	 */
-	public function ajax_memory_save_settings(): void {
-		$this->memory_ajax_guard();
-		if ( isset( $_POST['auto_summarize'] ) ) {
-			update_option( 'emcp_tools_memory_auto_summarize', '1' === sanitize_text_field( wp_unslash( $_POST['auto_summarize'] ) ) ? '1' : '0' );
-		}
-		if ( isset( $_POST['require_approval'] ) ) {
-			update_option( 'emcp_tools_memory_require_approval', '1' === sanitize_text_field( wp_unslash( $_POST['require_approval'] ) ) ? '1' : '0' );
-		}
-		wp_send_json_success( array( 'saved' => true ) );
 	}
 
 	/**

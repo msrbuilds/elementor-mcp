@@ -3,13 +3,13 @@
   "version": "1.0.0",
   "description": "Build tooling for the EMCP Tools admin screens.",
   "scripts": {
-    "build": "wp-scripts build && node admin-build/build-pro.mjs && node admin-build/generate-php-icons.mjs && node admin-build/scope-legacy-css.mjs",
+    "build": "wp-scripts build && node admin-build/build-pro.mjs && node admin-build/generate-php-icons.mjs",
     "start": "wp-scripts start",
     "test": "wp-scripts test-unit-jest --config jest.config.js",
     "size": "node admin-build/check-size.mjs",
     "lint:js": "wp-scripts lint-js admin-src admin-build",
     "lint:js:pro": "wp-scripts lint-js pro/admin-src",
-    "lint:style": "wp-scripts lint-style \"admin-src/**/*.css\" --ignore-pattern \"admin-src/legacy/**\"",
+    "lint:style": "wp-scripts lint-style \"admin-src/**/*.css\"",
     "test:e2e": "playwright test"
   },
   "repository": {

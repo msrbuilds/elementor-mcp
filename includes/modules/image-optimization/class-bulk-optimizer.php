@@ -22,9 +22,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class EMCP_Tools_Bulk_Optimizer {
 
-	const ACTION_BATCH   = 'emcp_tools_optimize_batch';
 	const ACTION_RESTORE = 'emcp_tools_optimize_restore';
-	const NONCE          = 'emcp_tools_modules';
 	const OPTION_CURSOR  = 'emcp_tools_module_image_optimization_bulk_cursor';
 
 	/** @var array Module settings. */
@@ -35,12 +33,6 @@ class EMCP_Tools_Bulk_Optimizer {
 	 */
 	public function __construct( array $settings ) {
 		$this->settings = $settings;
-	}
-
-	/** Wire the ajax handlers. */
-	public function register(): void {
-		add_action( 'wp_ajax_' . self::ACTION_BATCH, array( $this, 'ajax_batch' ) );
-		add_action( 'wp_ajax_' . self::ACTION_RESTORE, array( $this, 'ajax_restore' ) );
 	}
 
 	/**
@@ -75,26 +67,6 @@ class EMCP_Tools_Bulk_Optimizer {
 			'percent'   => $percent,
 			'done'      => 0 === $remaining,
 		);
-	}
-
-	/** admin-ajax: process one batch. */
-	public function ajax_batch(): void {
-		check_ajax_referer( self::NONCE, 'nonce' );
-		if ( ! current_user_can( 'manage_options' ) ) {
-			wp_send_json_error( array( 'message' => __( 'Permission denied.', 'emcp-tools' ) ), 403 );
-		}
-
-		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- checked by check_ajax_referer() above.
-		wp_send_json_success( $this->run_batch( isset( $_POST['batch'] ) ? (int) $_POST['batch'] : 0 ) );
-	}
-
-	/** admin-ajax: restore originals from backups. */
-	public function ajax_restore(): void {
-		check_ajax_referer( self::NONCE, 'nonce' );
-		if ( ! current_user_can( 'manage_options' ) ) {
-			wp_send_json_error( array( 'message' => __( 'Permission denied.', 'emcp-tools' ) ), 403 );
-		}
-		wp_send_json_success( $this->restore() );
 	}
 
 	/**

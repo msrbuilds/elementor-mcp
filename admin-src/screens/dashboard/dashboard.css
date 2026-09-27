@@ -562,6 +562,7 @@ a.emcp-dash__cell:hover .emcp-dash__health-text strong {
 }
 
 @media (max-width: 1279px) {
+
 	.emcp-dash__feature-grid {
 		grid-template-columns: repeat(3, minmax(0, 1fr));
 	}
@@ -576,6 +577,7 @@ a.emcp-dash__cell:hover .emcp-dash__health-text strong {
 }
 
 @media (max-width: 1100px) {
+
 	.emcp-dash__row,
 	.emcp-dash__cloud {
 		grid-template-columns: minmax(0, 1fr);

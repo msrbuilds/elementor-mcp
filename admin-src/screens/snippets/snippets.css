@@ -81,6 +81,7 @@
 }
 
 @media (max-width: 782px) {
+
 	.emcp-sn-form__row {
 		grid-template-columns: 1fr;
 	}

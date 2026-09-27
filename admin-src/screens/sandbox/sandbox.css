@@ -180,6 +180,7 @@
 }
 
 @media (max-width: 960px) {
+
 	.emcp-sbo-cards {
 		grid-template-columns: 1fr;
 	}

@@ -1,4 +1,5 @@
-/* Sandbox list pattern (spec 8.11): Widgets, Blocks, PHP Snippets. Flat colours only. */
+/* Sandbox list pattern (spec 8.11): Widgets, Blocks, PHP Snippets.
+ * Flat colours only. */
 
 .emcp-sb {
 	display: flex;
@@ -134,6 +135,7 @@
 }
 
 @media (max-width: 782px) {
+
 	.emcp-sb-toolbar__end {
 		width: 100%;
 	}

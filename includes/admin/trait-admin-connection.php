@@ -18,94 +18,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 trait EMCP_Tools_Admin_Connection_Trait {
 
 	/**
-	 * Revoke every token issued to an OAuth client (disconnects it).
-	 */
-	public function handle_revoke_oauth_client(): void {
-		if ( ! current_user_can( 'manage_options' ) ) {
-			wp_die( esc_html__( 'You do not have permission to do that.', 'emcp-tools' ), '', array( 'response' => 403 ) );
-		}
-		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- nonce verified just below against the per-client action.
-		$client_id = isset( $_GET['client'] ) ? sanitize_text_field( wp_unslash( $_GET['client'] ) ) : '';
-		check_admin_referer( self::ACTION_REVOKE_OAUTH . '_' . $client_id );
-
-		if ( '' !== $client_id && class_exists( 'EMCP_Tools_Gateway_Credential' ) ) {
-			// Run before revoke_client() below so the gateway teardown observes the
-			// still-live token count. (Identity itself survives revoke_client(), which
-			// only deletes token rows, not the client registration.)
-			EMCP_Tools_Gateway_Credential::handle_client_revoked( $client_id );
-		}
-
-		if ( '' !== $client_id && class_exists( 'EMCP_Tools_OAuth_Store' ) ) {
-			EMCP_Tools_OAuth_Store::revoke_client( $client_id );
-		}
-
-		wp_safe_redirect( admin_url( 'admin.php?page=' . self::PAGE_SLUG . '-connection&oauth_revoked=1#emcp-conn-manage-apps' ) );
-		exit;
-	}
-
-	/**
-	 * Delete an OAuth client registration and every token issued to it.
-	 *
-	 * The recovery path for a registration an app can no longer use: it asks to
-	 * come back at a different callback than the one it registered, so every
-	 * authorization attempt is refused and nothing on the client side clears it.
-	 * Removing the row here means the next connection attempt registers afresh.
-	 *
-	 * @since 3.15.0
-	 */
-	public function handle_delete_oauth_client(): void {
-		if ( ! current_user_can( 'manage_options' ) ) {
-			wp_die( esc_html__( 'You do not have permission to do that.', 'emcp-tools' ), '', array( 'response' => 403 ) );
-		}
-		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- nonce verified just below against the per-client action.
-		$client_id = isset( $_GET['client'] ) ? sanitize_text_field( wp_unslash( $_GET['client'] ) ) : '';
-		check_admin_referer( self::ACTION_DELETE_OAUTH_CLIENT . '_' . $client_id );
-
-		if ( '' !== $client_id && class_exists( 'EMCP_Tools_Gateway_Credential' ) ) {
-			// Same ordering as the revoke path: the teardown wants to see the
-			// token count before the tokens go.
-			EMCP_Tools_Gateway_Credential::handle_client_revoked( $client_id );
-		}
-
-		$removed = ( '' !== $client_id && class_exists( 'EMCP_Tools_OAuth_Store' ) )
-			? EMCP_Tools_OAuth_Store::delete_client( $client_id )
-			: false;
-
-		wp_safe_redirect(
-			admin_url(
-				'admin.php?page=' . self::PAGE_SLUG . '-connection&oauth_removed=' . ( $removed ? '1' : '0' ) . '#emcp-conn-manage-apps'
-			)
-		);
-		exit;
-	}
-
-	/**
-	 * AJAX: create a fresh Application Password for a chosen administrator.
-	 *
-	 * Returns the chunked plaintext password once so the Connection tab can drop
-	 * it straight into the generated client configs — no profile visit needed.
-	 *
-	 * @since 1.8.3
-	 */
-	public function ajax_create_app_password(): void {
-		check_ajax_referer( 'emcp_tools_create_app_password', 'nonce' );
-
-		if ( ! current_user_can( 'manage_options' ) ) {
-			wp_send_json_error( array( 'message' => __( 'You do not have permission to do this.', 'emcp-tools' ) ), 403 );
-		}
-
-		$user_id = isset( $_POST['user_id'] ) ? absint( wp_unslash( $_POST['user_id'] ) ) : 0;
-		$result = $this->create_app_password_for( $user_id );
-		if ( is_wp_error( $result ) ) {
-			wp_send_json_error( array( 'message' => $result->get_error_message() ), (int) ( $result->get_error_data()['status'] ?? 400 ) );
-		}
-		unset( $result['uuid'] );
-		wp_send_json_success( $result );
-	}
-
-	/**
 	 * Create an application password for an administrator (shared by the
-	 * legacy AJAX handler and admin REST). Returns the password once.
+	 * REST handler and admin REST). Returns the password once.
 	 *
 	 * @param int $user_id Administrator to create it for.
 	 * @return array{username:string, password:string, name:string, uuid:string}|WP_Error
@@ -199,42 +113,6 @@ trait EMCP_Tools_Admin_Connection_Trait {
 			}
 		);
 		return $out;
-	}
-
-	/**
-	 * AJAX: test Application Password credentials against the real MCP endpoint.
-	 *
-	 * Unlike the old `/wp/v2/users/me` probe, this exercises the complete MCP
-	 * session lifecycle and therefore catches transport, routing, session, and
-	 * tool-registration failures as well as a stripped Authorization header.
-	 *
-	 * @since 3.15.0
-	 */
-	public function ajax_test_connection(): void {
-		check_ajax_referer( 'emcp_tools_test_connection', 'nonce' );
-
-		if ( ! current_user_can( 'manage_options' ) ) {
-			wp_send_json_error( array( 'message' => __( 'You do not have permission to run this test.', 'emcp-tools' ) ), 403 );
-		}
-
-		$username = isset( $_POST['username'] ) ? sanitize_text_field( wp_unslash( $_POST['username'] ) ) : '';
-		$password = isset( $_POST['password'] ) ? trim( (string) wp_unslash( $_POST['password'] ) ) : '';
-		if ( '' === $username || '' === $password ) {
-			wp_send_json_error( array( 'message' => __( 'Enter a username and Application Password first.', 'emcp-tools' ) ), 400 );
-		}
-
-		$result = $this->run_mcp_handshake( $username, $password );
-		if ( is_wp_error( $result ) ) {
-			wp_send_json_error(
-				array(
-					'message' => $result->get_error_message(),
-					'stage'   => $result->get_error_code(),
-				),
-				400
-			);
-		}
-
-		wp_send_json_success( $result );
 	}
 
 	/**
@@ -421,29 +299,8 @@ trait EMCP_Tools_Admin_Connection_Trait {
 	}
 
 	/**
-	 * AJAX: check both standards-based well-known URLs and their REST aliases.
-	 *
-	 * @since 3.15.0
-	 */
-	public function ajax_test_oauth_discovery(): void {
-		check_ajax_referer( 'emcp_tools_test_oauth_discovery', 'nonce' );
-
-		if ( ! current_user_can( 'manage_options' ) ) {
-			wp_send_json_error( array( 'message' => __( 'You do not have permission to run this test.', 'emcp-tools' ) ), 403 );
-		}
-		$report = $this->oauth_discovery_report();
-		if ( is_wp_error( $report ) ) {
-			wp_send_json_error( array( 'message' => $report->get_error_message() ), 400 );
-		}
-		if ( $report['ok'] ) {
-			wp_send_json_success( array( 'message' => $report['message'], 'checks' => $report['checks'] ) );
-		}
-		wp_send_json_error( array( 'message' => $report['message'], 'checks' => $report['checks'] ), 400 );
-	}
-
-	/**
 	 * Probe both standards-based well-known URLs and their REST aliases (shared
-	 * by the legacy AJAX handler and admin REST).
+	 * by the REST handler and admin REST).
 	 *
 	 * @return array{ok:bool, message:string, checks:array}|WP_Error
 	 */

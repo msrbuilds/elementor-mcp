@@ -168,9 +168,6 @@ class EMCP_Tools_Image_Optimization_Module extends EMCP_Tools_Module {
 			// rewrite is gated by the separate "serve on frontend" toggle.
 			( new EMCP_Tools_Webp_Rewriter( $settings['webp_serve'] ) )->register();
 		}
-		if ( is_admin() ) {
-			( new EMCP_Tools_Bulk_Optimizer( $settings ) )->register();
-		}
 	}
 
 	/** Render the card knobs. Delegates to the shared view partial. */

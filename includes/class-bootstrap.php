@@ -607,7 +607,6 @@ class EMCP_Tools_Bootstrap {
 	 * endpoints need them, and REST requests are not is_admin().
 	 */
 	public static function require_admin_classes(): void {
-		require_once EMCP_TOOLS_DIR . 'includes/admin/class-admin-pager.php';
 		require_once EMCP_TOOLS_DIR . 'includes/admin/class-admin-icons.php';
 		require_once EMCP_TOOLS_DIR . 'includes/admin/class-admin-nav.php';
 		require_once EMCP_TOOLS_DIR . 'includes/admin/class-admin-screens.php';

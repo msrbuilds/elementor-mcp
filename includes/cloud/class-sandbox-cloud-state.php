@@ -181,25 +181,4 @@ final class EMCP_Tools_Sandbox_Cloud_State {
 		);
 	}
 
-	/**
-	 * The legacy sandbox-cloud.js payload.
-	 *
-	 * @param string $kind Kind.
-	 * @param int    $id   Artifact id.
-	 */
-	public static function payload( string $kind, int $id ): array {
-		$m = self::marketplace( $kind, $id );
-		return array(
-			'kind'               => $kind,
-			'id'                 => $id,
-			'pushed'             => (bool) get_post_meta( $id, '_emcp_cloud_pushed', true ),
-			'changed'            => self::changed( $kind, $id ),
-			'slug'               => $m['slug'],
-			'status'             => $m['status'],
-			'published'          => $m['published'],
-			'has_pending_update' => $m['pending'],
-			'publish_url'        => $m['publishUrl'],
-			'view_url'           => $m['viewUrl'],
-		);
-	}
 }
