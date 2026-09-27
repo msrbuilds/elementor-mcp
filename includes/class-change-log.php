@@ -167,6 +167,37 @@ class EMCP_Tools_Change_Log {
 		return self::store()->count( $args );
 	}
 
+	/**
+	 * Changes kept and rolled back per site-local day, oldest first (spec 9.3).
+	 * Two indexed counts per day; the Dashboard range is at most 30 days.
+	 *
+	 * @param int      $days Days ending today (1..90).
+	 * @param int|null $now  Timestamp (tests).
+	 * @return array<int, array{date: string, kept: int, rolled: int}>
+	 */
+	public static function daily( int $days, ?int $now = null ): array {
+		$now   = $now ?? time();
+		$days  = max( 1, min( 90, $days ) );
+		$tz    = function_exists( 'wp_timezone' ) ? wp_timezone() : new DateTimeZone( 'UTC' );
+		$today = ( new DateTimeImmutable( '@' . $now ) )->setTimezone( $tz )->setTime( 0, 0 );
+		$out   = array();
+		for ( $i = $days - 1; $i >= 0; $i-- ) {
+			$start  = $today->modify( '-' . $i . ' days' );
+			$range  = array(
+				'since' => $start->getTimestamp(),
+				'until' => $start->modify( '+1 day' )->getTimestamp() - 1,
+			);
+			$all    = self::count( $range );
+			$rolled = $all ? self::count( $range + array( 'rolled_back' => true ) ) : 0;
+			$out[]  = array(
+				'date'   => $start->format( 'Y-m-d' ),
+				'kept'   => $all - $rolled,
+				'rolled' => $rolled,
+			);
+		}
+		return $out;
+	}
+
 	/** Distinct clients that recorded changes, sorted (at most 50). */
 	public static function clients(): array {
 		return self::store()->clients();

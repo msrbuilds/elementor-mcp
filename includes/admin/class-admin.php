@@ -118,7 +118,7 @@ class EMCP_Tools_Admin {
 	 * @param string $module_id Module id.
 	 * @return bool
 	 */
-	private function module_tab_visible( string $module_id ): bool {
+	public function module_tab_visible( string $module_id ): bool {
 		// Templates and Brand Kits follow their module switch only, never the
 		// selected page builder; each page explains itself when Elementor is off.
 		if ( ! class_exists( 'EMCP_Tools_Modules_Registry' ) ) {
@@ -150,7 +150,7 @@ class EMCP_Tools_Admin {
 	 *
 	 * @return bool
 	 */
-	private function ai_chat_tab_visible(): bool {
+	public function ai_chat_tab_visible(): bool {
 		return $this->module_tab_visible( 'ai-chat' );
 	}
 

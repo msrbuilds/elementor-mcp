@@ -111,6 +111,9 @@
         <testsuite name="Transactions">
             <directory>pro/tests/unit/transactions</directory>
         </testsuite>
+        <testsuite name="Dashboard">
+            <directory>pro/tests/unit/dashboard</directory>
+        </testsuite>
         <testsuite name="Safety">
             <directory>pro/tests/unit/safety</directory>
         </testsuite>

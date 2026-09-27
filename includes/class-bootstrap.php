@@ -199,6 +199,7 @@ class EMCP_Tools_Bootstrap {
 		require_once EMCP_TOOLS_DIR . 'includes/admin/data/class-admin-context-data.php';
 		require_once EMCP_TOOLS_DIR . 'includes/admin/rest/class-admin-rest-context.php';
 		require_once EMCP_TOOLS_DIR . 'includes/admin/data/class-admin-history-data.php';
+		require_once EMCP_TOOLS_DIR . 'includes/admin/data/class-admin-dashboard-data.php';
 		require_once EMCP_TOOLS_DIR . 'includes/admin/rest/class-admin-rest-history.php';
 		require_once EMCP_TOOLS_DIR . 'includes/admin/data/class-admin-redirects-data.php';
 		require_once EMCP_TOOLS_DIR . 'includes/admin/rest/class-admin-rest-redirects.php';
