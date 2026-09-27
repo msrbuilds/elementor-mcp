@@ -27,6 +27,7 @@ module.exports = {
 		'screen-sandbox': './admin-src/screens/sandbox/index.js',
 		'screen-snippets': './admin-src/screens/snippets/index.js',
 		'screen-history': './admin-src/screens/history/index.js',
+		'screen-redirects': './admin-src/screens/redirects/index.js',
 	},
 	output: {
 		...defaultConfig.output,
