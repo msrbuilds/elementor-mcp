@@ -25,9 +25,10 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class EMCP_Tools_Redirect_Store {
 
-	const DB_VERSION        = 1;
-	const DB_VERSION_OPTION = 'emcp_tools_redirects_db_version';
-	const MAX_SOURCE_LEN    = 191;
+	const DB_VERSION         = 2;
+	const DB_VERSION_OPTION  = 'emcp_tools_redirects_db_version';
+	const UPGRADE_LOG_OPTION = 'emcp_tools_redirects_upgrade_log';
+	const MAX_SOURCE_LEN     = 191;
 
 	/**
 	 * The redirects table name.
@@ -53,6 +54,25 @@ class EMCP_Tools_Redirect_Store {
 		if ( (int) get_option( self::DB_VERSION_OPTION, 0 ) >= self::DB_VERSION ) {
 			return;
 		}
+		global $wpdb;
+		$table  = self::table();
+		$exists = $table === $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $wpdb->esc_like( $table ) ) );
+		if ( ! $exists ) {
+			if ( ! self::create_table() ) {
+				return;
+			}
+		} elseif ( ! self::upgrade() ) {
+			return; // Stay on version 1; the handler keeps path-only matching.
+		}
+		update_option( self::DB_VERSION_OPTION, self::DB_VERSION, false );
+	}
+
+	/**
+	 * Create the schema 2 table (fresh installs).
+	 *
+	 * @return bool Whether dbDelta ran.
+	 */
+	private static function create_table(): bool {
 		if ( ! function_exists( 'dbDelta' ) ) {
 			$upgrade = ABSPATH . 'wp-admin/includes/upgrade.php';
 			if ( is_readable( $upgrade ) ) {
@@ -66,6 +86,8 @@ class EMCP_Tools_Redirect_Store {
 			$sql     = "CREATE TABLE {$table} (
 				id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
 				source_path VARCHAR(191) NOT NULL,
+				source_query VARCHAR(191) NOT NULL DEFAULT '',
+				source_key CHAR(40) NOT NULL DEFAULT '',
 				target TEXT NOT NULL,
 				target_post_id BIGINT UNSIGNED NULL,
 				status_code SMALLINT NOT NULL DEFAULT 301,
@@ -78,12 +100,100 @@ class EMCP_Tools_Redirect_Store {
 				created_at DATETIME NOT NULL,
 				updated_at DATETIME NOT NULL,
 				PRIMARY KEY (id),
-				UNIQUE KEY source_unique (source_path),
+				UNIQUE KEY source_key (source_key),
+				KEY source_path (source_path),
 				KEY enabled_idx (enabled)
 			) {$charset};";
 			dbDelta( $sql );
+			return true;
 		}
-		update_option( self::DB_VERSION_OPTION, self::DB_VERSION, false );
+		return false;
+	}
+
+	/**
+	 * Steps still needed to reach schema 2 from a table state (pure). The two
+	 * backfills are idempotent and always run.
+	 *
+	 * @param array $state { has_query_col, has_key_col, has_old_unique, has_key_unique }.
+	 * @return string[]
+	 */
+	public static function upgrade_plan( array $state ): array {
+		$steps = array();
+		if ( empty( $state['has_query_col'] ) ) {
+			$steps[] = 'add_query_col';
+		}
+		if ( empty( $state['has_key_col'] ) ) {
+			$steps[] = 'add_key_col';
+		}
+		$steps[] = 'backfill_keys';
+		$steps[] = 'path_rules';
+		if ( ! empty( $state['has_old_unique'] ) ) {
+			$steps[] = 'drop_old_unique';
+		}
+		if ( empty( $state['has_key_unique'] ) ) {
+			$steps[] = 'add_key_unique';
+		}
+		return $steps;
+	}
+
+	/**
+	 * Schema 1 to 2 (spec 9.8), resumable: each step checks its own target
+	 * state, so a run cut short picks up where it stopped. dbDelta cannot drop
+	 * an index or swap a unique key, hence the guarded ALTERs.
+	 *
+	 * @return bool Whether the table is now on schema 2.
+	 */
+	private static function upgrade(): bool {
+		global $wpdb;
+		$t     = self::table();
+		$cols  = (array) $wpdb->get_col( "SHOW COLUMNS FROM {$t}" ); // phpcs:ignore WordPress.DB
+		$keys  = (array) $wpdb->get_col( "SHOW INDEX FROM {$t}", 2 ); // phpcs:ignore WordPress.DB -- column 2 is Key_name.
+		$state = array(
+			'has_query_col'  => in_array( 'source_query', $cols, true ),
+			'has_key_col'    => in_array( 'source_key', $cols, true ),
+			'has_old_unique' => in_array( 'source_unique', $keys, true ),
+			'has_key_unique' => in_array( 'source_key', $keys, true ),
+		);
+		$changed = 0;
+		foreach ( self::upgrade_plan( $state ) as $step ) {
+			switch ( $step ) {
+				case 'add_query_col':
+					$ok = false !== $wpdb->query( "ALTER TABLE {$t} ADD COLUMN source_query VARCHAR(191) NOT NULL DEFAULT '' AFTER source_path" ); // phpcs:ignore WordPress.DB
+					break;
+				case 'add_key_col':
+					$ok = false !== $wpdb->query( "ALTER TABLE {$t} ADD COLUMN source_key CHAR(40) NOT NULL DEFAULT '' AFTER source_query" ); // phpcs:ignore WordPress.DB
+					break;
+				case 'backfill_keys':
+					$ok = false !== $wpdb->query( "UPDATE {$t} SET source_key = SHA1( CONCAT( source_path, '?', source_query ) ) WHERE source_key <> SHA1( CONCAT( source_path, '?', source_query ) )" ); // phpcs:ignore WordPress.DB
+					break;
+				case 'path_rules':
+					$n       = $wpdb->query( "UPDATE {$t} SET ignore_query = 1 WHERE source_query = '' AND ignore_query <> 1" ); // phpcs:ignore WordPress.DB
+					$ok      = false !== $n;
+					$changed = (int) $n;
+					break;
+				case 'drop_old_unique':
+					$ok = false !== $wpdb->query( "ALTER TABLE {$t} DROP INDEX source_unique, ADD INDEX source_path (source_path)" ); // phpcs:ignore WordPress.DB
+					break;
+				default: // add_key_unique.
+					$ok = false !== $wpdb->query( "ALTER TABLE {$t} ADD UNIQUE KEY source_key (source_key)" ); // phpcs:ignore WordPress.DB
+			}
+			if ( ! $ok ) {
+				return false;
+			}
+		}
+		update_option(
+			self::UPGRADE_LOG_OPTION,
+			array(
+				'ts'         => time(),
+				'path_rules' => $changed,
+			),
+			false
+		);
+		if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+			// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
+			error_log( sprintf( 'EMCP Tools: redirects upgraded to schema 2; %d rule(s) set to match regardless of query string, as they already behaved.', $changed ) );
+		}
+		return true;
 	}
 
 	// ---------------------------------------------------------------------
@@ -121,6 +231,80 @@ class EMCP_Tools_Redirect_Store {
 	}
 
 	/**
+	 * Normalized query of a URL, a path with a query, or a bare query string
+	 * (spec 9.8): parameters sorted by key then value, empty values and bare
+	 * keys kept, re-encoded with rawurlencode, case kept, fragment dropped.
+	 *
+	 * @param string $url_or_query URL, path with query, or query string.
+	 * @return string
+	 */
+	public static function normalize_query( string $url_or_query ): string {
+		$s   = trim( $url_or_query );
+		$pos = strpos( $s, '?' );
+		if ( false !== $pos ) {
+			$q = substr( $s, $pos + 1 );
+		} elseif ( '' !== $s && '/' !== $s[0] && false === strpos( $s, '://' ) && ( false !== strpos( $s, '=' ) || false !== strpos( $s, '&' ) ) ) {
+			$q = $s;
+		} else {
+			$q = '';
+		}
+		$q = explode( '#', $q, 2 )[0];
+		if ( '' === $q ) {
+			return '';
+		}
+		$pairs = array();
+		foreach ( explode( '&', $q ) as $part ) {
+			if ( '' === $part ) {
+				continue;
+			}
+			$kv      = explode( '=', $part, 2 );
+			$pairs[] = array(
+				rawurlencode( urldecode( $kv[0] ) ),
+				array_key_exists( 1, $kv ) ? rawurlencode( urldecode( $kv[1] ) ) : null,
+			);
+		}
+		usort(
+			$pairs,
+			static function ( $a, $b ) {
+				return array( $a[0], (string) $a[1] ) <=> array( $b[0], (string) $b[1] );
+			}
+		);
+		return implode(
+			'&',
+			array_map(
+				static function ( $p ) {
+					return null === $p[1] ? $p[0] : $p[0] . '=' . $p[1];
+				},
+				$pairs
+			)
+		);
+	}
+
+	/**
+	 * Path and normalized query of a From value.
+	 *
+	 * @param string $source URL or path, optionally with a query.
+	 * @return array{path: string, query: string}
+	 */
+	public static function split_source( string $source ): array {
+		return array(
+			'path'  => self::normalize_path( $source ),
+			'query' => self::normalize_query( $source ),
+		);
+	}
+
+	/**
+	 * Unique key of a rule: sha1( path . '?' . query ).
+	 *
+	 * @param string $path  Normalized path.
+	 * @param string $query Normalized query ('' for a path rule).
+	 * @return string
+	 */
+	public static function key_for( string $path, string $query ): string {
+		return sha1( $path . '?' . $query );
+	}
+
+	/**
 	 * True when the source and target normalize to the same path (a self-loop).
 	 *
 	 * @param string $source Source path.
@@ -129,6 +313,23 @@ class EMCP_Tools_Redirect_Store {
 	 */
 	public static function would_loop( string $source, string $target ): bool {
 		return self::normalize_path( $source ) === self::normalize_path( $target );
+	}
+
+	/**
+	 * True when a rule would send a matching request to itself: a path rule
+	 * when the target has the same path; a query rule only when the target has
+	 * the same path and the same query.
+	 *
+	 * @param string $source Normalized source path.
+	 * @param string $query  Normalized rule query ('' for a path rule).
+	 * @param string $target Target URL/path.
+	 * @return bool
+	 */
+	public static function rule_loops( string $source, string $query, string $target ): bool {
+		if ( ! self::would_loop( $source, $target ) ) {
+			return false;
+		}
+		return '' === $query || self::normalize_query( $target ) === $query;
 	}
 
 	/**
@@ -159,7 +360,16 @@ class EMCP_Tools_Redirect_Store {
 	 * @return array|WP_Error
 	 */
 	public static function create( array $data ) {
-		$source = self::normalize_path( (string) ( $data['source'] ?? '' ) );
+		$split        = self::split_source( (string) ( $data['source'] ?? '' ) );
+		$source       = $split['path'];
+		$ignore_query = ! array_key_exists( 'ignore_query', $data ) || ! empty( $data['ignore_query'] );
+		$query        = $ignore_query ? '' : $split['query'];
+		if ( ! $ignore_query && '' === $query ) {
+			return self::query_required();
+		}
+		if ( strlen( $query ) > self::MAX_SOURCE_LEN ) {
+			return new \WP_Error( 'source_too_long', __( 'The query string exceeds 191 characters.', 'emcp-tools' ) );
+		}
 		if ( '/' === $source || '' === $source ) {
 			return new \WP_Error( 'invalid_source', __( 'A non-empty source path is required.', 'emcp-tools' ) );
 		}
@@ -174,10 +384,10 @@ class EMCP_Tools_Redirect_Store {
 		if ( ! $post_id && '' === $target ) {
 			return new \WP_Error( 'missing_target', __( 'A target URL or target_post_id is required.', 'emcp-tools' ) );
 		}
-		if ( '' !== $target && self::would_loop( $source, $target ) ) {
+		if ( '' !== $target && self::rule_loops( $source, $query, $target ) ) {
 			return new \WP_Error( 'redirect_loop', __( 'A redirect cannot point to itself.', 'emcp-tools' ) );
 		}
-		if ( self::find_by_source( $source ) ) {
+		if ( self::find_by_key( $source, $query ) ) {
 			return new \WP_Error( 'duplicate_source', __( 'A redirect for this source already exists.', 'emcp-tools' ) );
 		}
 		$now = function_exists( 'current_time' ) ? current_time( 'mysql' ) : gmdate( 'Y-m-d H:i:s' );
@@ -186,18 +396,20 @@ class EMCP_Tools_Redirect_Store {
 			self::table(),
 			array(
 				'source_path'    => $source,
+				'source_query'   => $query,
+				'source_key'     => self::key_for( $source, $query ),
 				'target'         => $post_id ? '' : $target,
 				'target_post_id' => $post_id ? $post_id : null,
 				'status_code'    => self::clamp_code( $data['status_code'] ?? 301 ),
 				'match_type'     => 'exact',
-				'ignore_query'   => empty( $data['ignore_query'] ) ? 0 : 1,
+				'ignore_query'   => $ignore_query ? 1 : 0,
 				'enabled'        => ( isset( $data['enabled'] ) && ! $data['enabled'] ) ? 0 : 1,
 				'hits'           => 0,
 				'notes'          => isset( $data['notes'] ) ? (string) $data['notes'] : null,
 				'created_at'     => $now,
 				'updated_at'     => $now,
 			),
-			array( '%s', '%s', '%d', '%d', '%s', '%d', '%d', '%d', '%s', '%s', '%s' )
+			array( '%s', '%s', '%s', '%s', '%d', '%d', '%s', '%d', '%d', '%d', '%s', '%s', '%s' )
 		);
 		return self::get( (int) $wpdb->insert_id );
 	}
@@ -217,17 +429,31 @@ class EMCP_Tools_Redirect_Store {
 		}
 		$set     = array();
 		$formats = array();
-		if ( array_key_exists( 'source', $data ) ) {
-			$source = self::normalize_path( (string) $data['source'] );
-			if ( '/' === $source || strlen( $source ) > self::MAX_SOURCE_LEN ) {
+		if ( array_key_exists( 'source', $data ) || array_key_exists( 'ignore_query', $data ) ) {
+			$split        = array_key_exists( 'source', $data )
+				? self::split_source( (string) $data['source'] )
+				: array(
+					'path'  => (string) $row['source_path'],
+					'query' => (string) ( $row['source_query'] ?? '' ),
+				);
+			$ignore_query = array_key_exists( 'ignore_query', $data ) ? ! empty( $data['ignore_query'] ) : 1 === (int) $row['ignore_query'];
+			$source       = $split['path'];
+			$query        = $ignore_query ? '' : $split['query'];
+			if ( '/' === $source || strlen( $source ) > self::MAX_SOURCE_LEN || strlen( $query ) > self::MAX_SOURCE_LEN ) {
 				return new \WP_Error( 'invalid_source', __( 'Invalid source path.', 'emcp-tools' ) );
 			}
-			$dupe = self::find_by_source( $source );
+			if ( ! $ignore_query && '' === $query ) {
+				return self::query_required();
+			}
+			$dupe = self::find_by_key( $source, $query );
 			if ( $dupe && (int) $dupe['id'] !== $id ) {
 				return new \WP_Error( 'duplicate_source', __( 'Another redirect already uses this source.', 'emcp-tools' ) );
 			}
-			$set['source_path'] = $source;
-			$formats[]          = '%s';
+			$set['source_path']  = $source;
+			$set['source_query'] = $query;
+			$set['source_key']   = self::key_for( $source, $query );
+			$set['ignore_query'] = $ignore_query ? 1 : 0;
+			array_push( $formats, '%s', '%s', '%s', '%d' );
 		}
 		if ( array_key_exists( 'target', $data ) ) {
 			$set['target']         = trim( (string) $data['target'] );
@@ -244,10 +470,6 @@ class EMCP_Tools_Redirect_Store {
 			$set['status_code'] = self::clamp_code( $data['status_code'] );
 			$formats[]          = '%d';
 		}
-		if ( array_key_exists( 'ignore_query', $data ) ) {
-			$set['ignore_query'] = empty( $data['ignore_query'] ) ? 0 : 1;
-			$formats[]           = '%d';
-		}
 		if ( array_key_exists( 'enabled', $data ) ) {
 			$set['enabled'] = empty( $data['enabled'] ) ? 0 : 1;
 			$formats[]      = '%d';
@@ -257,8 +479,9 @@ class EMCP_Tools_Redirect_Store {
 			$formats[]    = '%s';
 		}
 		$effective_source = $set['source_path'] ?? $row['source_path'];
+		$effective_query  = $set['source_query'] ?? (string) ( $row['source_query'] ?? '' );
 		$effective_target = array_key_exists( 'target', $set ) ? $set['target'] : $row['target'];
-		if ( '' !== (string) $effective_target && self::would_loop( (string) $effective_source, (string) $effective_target ) ) {
+		if ( '' !== (string) $effective_target && self::rule_loops( (string) $effective_source, $effective_query, (string) $effective_target ) ) {
 			return new \WP_Error( 'redirect_loop', __( 'A redirect cannot point to itself.', 'emcp-tools' ) );
 		}
 		if ( empty( $set ) ) {
@@ -307,6 +530,19 @@ class EMCP_Tools_Redirect_Store {
 	}
 
 	/**
+	 * Get one rule by path and normalized query ('' for the path rule).
+	 *
+	 * @param string $path  Normalized path.
+	 * @param string $query Normalized query.
+	 * @return array|null
+	 */
+	public static function find_by_key( string $path, string $query ): ?array {
+		global $wpdb;
+		$row = $wpdb->get_row( $wpdb->prepare( 'SELECT * FROM ' . self::table() . ' WHERE source_key = %s LIMIT 1', self::key_for( $path, $query ) ), ARRAY_A ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+		return $row ? self::cast( $row ) : null;
+	}
+
+	/**
 	 * List rows with optional filters.
 	 *
 	 * @param array $filters { enabled:bool, search:string, limit:int, offset:int }.
@@ -322,7 +558,8 @@ class EMCP_Tools_Redirect_Store {
 		}
 		if ( ! empty( $filters['search'] ) ) {
 			$like     = '%' . $wpdb->esc_like( (string) $filters['search'] ) . '%';
-			$where[]  = '(source_path LIKE %s OR target LIKE %s)';
+			$where[]  = '(source_path LIKE %s OR source_query LIKE %s OR target LIKE %s)';
+			$params[] = $like;
 			$params[] = $like;
 			$params[] = $like;
 		}
@@ -351,7 +588,8 @@ class EMCP_Tools_Redirect_Store {
 		}
 		if ( ! empty( $filters['search'] ) ) {
 			$like     = '%' . $wpdb->esc_like( (string) $filters['search'] ) . '%';
-			$where[]  = '(source_path LIKE %s OR target LIKE %s)';
+			$where[]  = '(source_path LIKE %s OR source_query LIKE %s OR target LIKE %s)';
+			$params[] = $like;
 			$params[] = $like;
 			$params[] = $like;
 		}
@@ -414,6 +652,15 @@ class EMCP_Tools_Redirect_Store {
 	// ---------------------------------------------------------------------
 
 	/**
+	 * The error for a query rule whose source has no query.
+	 *
+	 * @return WP_Error
+	 */
+	private static function query_required(): \WP_Error {
+		return new \WP_Error( 'query_required', __( 'To match one query string only, include it in the source, for example /page?ref=ad.', 'emcp-tools' ) );
+	}
+
+	/**
 	 * Clamp a status code to the supported 301/302 set (default 301).
 	 *
 	 * @param mixed $code Raw code.
@@ -434,6 +681,7 @@ class EMCP_Tools_Redirect_Store {
 		$row['target_post_id'] = isset( $row['target_post_id'] ) ? (int) $row['target_post_id'] : 0;
 		$row['status_code']    = (int) ( $row['status_code'] ?? 301 );
 		$row['ignore_query']   = (int) ( $row['ignore_query'] ?? 1 );
+		$row['source_query']   = (string) ( $row['source_query'] ?? '' );
 		$row['enabled']        = (int) ( $row['enabled'] ?? 1 );
 		$row['hits']           = (int) ( $row['hits'] ?? 0 );
 		return $row;
@@ -445,10 +693,12 @@ class EMCP_Tools_Redirect_Store {
 	 * @param array $row Prior row.
 	 * @return array
 	 */
-	private static function row_for_write( array $row ): array {
+	public static function row_for_write( array $row ): array {
 		return array(
 			'id'             => (int) $row['id'],
 			'source_path'    => (string) ( $row['source_path'] ?? '' ),
+			'source_query'   => (string) ( $row['source_query'] ?? '' ),
+			'source_key'     => self::key_for( (string) ( $row['source_path'] ?? '' ), (string) ( $row['source_query'] ?? '' ) ),
 			'target'         => (string) ( $row['target'] ?? '' ),
 			'target_post_id' => ! empty( $row['target_post_id'] ) ? (int) $row['target_post_id'] : null,
 			'status_code'    => self::clamp_code( $row['status_code'] ?? 301 ),
@@ -468,8 +718,8 @@ class EMCP_Tools_Redirect_Store {
 	 *
 	 * @return string[]
 	 */
-	private static function write_formats(): array {
-		return array( '%d', '%s', '%s', '%d', '%d', '%s', '%d', '%d', '%d', '%s', '%s', '%s', '%s' );
+	public static function write_formats(): array {
+		return array( '%d', '%s', '%s', '%s', '%s', '%d', '%d', '%s', '%d', '%d', '%d', '%s', '%s', '%s', '%s' );
 	}
 
 	/**
@@ -478,6 +728,6 @@ class EMCP_Tools_Redirect_Store {
 	 * @return string[]
 	 */
 	private static function write_formats_no_id(): array {
-		return array( '%s', '%s', '%d', '%d', '%s', '%d', '%d', '%d', '%s', '%s', '%s', '%s' );
+		return array( '%s', '%s', '%s', '%s', '%d', '%d', '%s', '%d', '%d', '%d', '%s', '%s', '%s', '%s' );
 	}
 }
