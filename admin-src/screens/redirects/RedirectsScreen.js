@@ -348,6 +348,7 @@ export function RedirectsScreen( { data } ) {
 				actions={
 					<SearchInput
 						label={ __( 'Search redirects', 'emcp-tools' ) }
+						placeholder={ __( 'Search redirects', 'emcp-tools' ) }
 						value={ search }
 						debounce={ 250 }
 						onChange={ ( v ) => {
@@ -407,6 +408,7 @@ export function RedirectsScreen( { data } ) {
 							code: editing.code,
 							ignoreQuery: editing.ignoreQuery,
 						} }
+						stacked
 						submitLabel={ __( 'Save', 'emcp-tools' ) }
 						busy={ busy === `edit:${ editing.id }` }
 						onSubmit={ save }

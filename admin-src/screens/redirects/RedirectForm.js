@@ -18,6 +18,7 @@ const CODES = [
  * @param {string}                          props.submitLabel Submit button text.
  * @param {boolean}                         props.busy        A request is running.
  * @param {boolean}                         props.focusTarget Focus the To field on mount.
+ * @param {boolean}                         props.stacked     One column (the edit drawer).
  * @param {(body: Object) => Promise<void>} props.onSubmit    Submit handler.
  */
 export function RedirectForm( {
@@ -26,6 +27,7 @@ export function RedirectForm( {
 	submitLabel,
 	busy,
 	focusTarget = false,
+	stacked = false,
 	onSubmit,
 } ) {
 	const [ source, setSource ] = useState( initial.source || '' );
@@ -84,7 +86,11 @@ export function RedirectForm( {
 
 	return (
 		<form
-			className="emcp-redirects__form"
+			className={
+				stacked
+					? 'emcp-redirects__form is-stacked'
+					: 'emcp-redirects__form'
+			}
 			aria-label={ label }
 			onSubmit={ submit }
 			noValidate
