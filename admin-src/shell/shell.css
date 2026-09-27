@@ -458,8 +458,39 @@ html:has(.eui-frame) {
 	display: none;
 }
 
+.eui-frame-iconlink__dot {
+	position: absolute;
+	inset-block-start: 7px;
+	inset-inline-end: 7px;
+	inline-size: 8px;
+	block-size: 8px;
+	border: 2px solid var(--emcp-surface);
+	border-radius: 50%;
+	background: var(--emcp-primary);
+}
+
 .eui-frame-user {
 	display: inline-flex;
+	border-radius: 50%;
+}
+
+/* The avatar links to Account; core's link focus box-shadow is replaced. */
+a.eui-frame-user {
+	transition: box-shadow var(--emcp-dur-fast);
+}
+
+a.eui-frame-user:hover {
+	box-shadow: 0 0 0 3px var(--emcp-primary-tint);
+}
+
+a.eui-frame-user:focus {
+	box-shadow: none;
+	outline: none;
+}
+
+a.eui-frame-user:focus-visible {
+	outline: 2px solid var(--emcp-primary);
+	outline-offset: 2px;
 }
 
 .eui-frame-avatar {

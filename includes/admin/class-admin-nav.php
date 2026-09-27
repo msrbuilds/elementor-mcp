@@ -207,6 +207,40 @@ final class EMCP_Tools_Admin_Nav {
 		return $this->footer;
 	}
 
+	/** Footer items the top bar shows as icons (the avatar is Account). */
+	const TOPBAR_LINKS = array( 'help', 'changelog', 'account', 'affiliate' );
+
+	/**
+	 * The footer items the top bar carries, keyed by id.
+	 *
+	 * @return array<string, array>
+	 */
+	public function topbar_links(): array {
+		$out = array();
+		foreach ( $this->footer as $item ) {
+			if ( in_array( $item['id'], self::TOPBAR_LINKS, true ) ) {
+				$out[ $item['id'] ] = $item;
+			}
+		}
+		return $out;
+	}
+
+	/**
+	 * The footer items that stay in the sidebar (Upgrade to Pro).
+	 *
+	 * @return array[]
+	 */
+	public function sidebar_footer(): array {
+		return array_values(
+			array_filter(
+				$this->footer,
+				static function ( $item ) {
+					return ! in_array( $item['id'], self::TOPBAR_LINKS, true );
+				}
+			)
+		);
+	}
+
 	/**
 	 * Entries grouped, empty groups dropped.
 	 *

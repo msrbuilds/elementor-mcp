@@ -147,11 +147,16 @@ final class EMCP_Tools_Admin_Frame {
 			}
 			$html .= '</ul>';
 		}
-		$html .= '</nav><ul class="eui-frame-nav__list eui-frame-nav__footer">';
-		foreach ( $nav->footer() as $item ) {
-			$html .= '<li>' . self::nav_link( $item, $item['id'] === $active_tab ) . '</li>';
+		$html  .= '</nav>';
+		$footer = $nav->sidebar_footer();
+		if ( $footer ) {
+			$html .= '<ul class="eui-frame-nav__list eui-frame-nav__footer">';
+			foreach ( $footer as $item ) {
+				$html .= '<li>' . self::nav_link( $item, $item['id'] === $active_tab ) . '</li>';
+			}
+			$html .= '</ul>';
 		}
-		return $html . '</ul></div>';
+		return $html . '</div>';
 	}
 
 	/**
@@ -182,7 +187,7 @@ final class EMCP_Tools_Admin_Frame {
 	 * @param int      $unread Unread notification count.
 	 * @param array    $user   user_summary().
 	 */
-	public static function topbar( array $crumbs, array $status, int $unread, array $user ): string {
+	public static function topbar( array $crumbs, array $status, int $unread, array $user, array $links = array() ): string {
 		// A div, not <header>: a banner landmark cannot sit inside core's role="main".
 		$html = '<div class="eui-frame__topbar"><nav aria-label="' . esc_attr__( 'Breadcrumb', 'emcp-tools' ) . '"><ol class="eui-frame-crumbs">';
 		$last = count( $crumbs ) - 1;
@@ -201,7 +206,16 @@ final class EMCP_Tools_Admin_Frame {
 			$color = 'grey';
 		}
 		$html .= '<a class="eui-frame-status is-' . esc_attr( $color ) . '" href="' . esc_url( EMCP_Tools_Admin_Nav::url( 'connection' ) ) . '"><span class="eui-frame-status__dot" aria-hidden="true"></span>' . esc_html( $labels[ $color ] ) . '</a>';
-		$html .= '<a class="eui-frame-iconlink" href="' . esc_url( EMCP_Tools_Admin_Nav::url( 'changelog' ) ) . '" aria-label="' . esc_attr__( 'Changelog', 'emcp-tools' ) . '" title="' . esc_attr__( 'Changelog', 'emcp-tools' ) . '">' . EMCP_Tools_Admin_Icons::svg( 'gift', 18 ) . '</a>';
+		if ( isset( $links['help'] ) ) {
+			$help  = __( 'Get help (opens in a new tab)', 'emcp-tools' );
+			$html .= '<a class="eui-frame-iconlink" href="' . esc_url( $links['help']['url'] ) . '" target="_blank" rel="noopener noreferrer" aria-label="' . esc_attr( $help ) . '" title="' . esc_attr__( 'Get help', 'emcp-tools' ) . '">' . EMCP_Tools_Admin_Icons::svg( 'life-buoy', 18 ) . '</a>';
+		}
+		if ( isset( $links['affiliate'] ) ) {
+			$html .= '<a class="eui-frame-iconlink" href="' . esc_url( $links['affiliate']['url'] ) . '" aria-label="' . esc_attr__( 'Affiliate', 'emcp-tools' ) . '" title="' . esc_attr__( 'Affiliate', 'emcp-tools' ) . '">' . EMCP_Tools_Admin_Icons::svg( 'dollar-sign', 18 ) . '</a>';
+		}
+		// The sidebar's static New badge moved here as a dot.
+		$changelog = __( 'Changelog: new release', 'emcp-tools' );
+		$html     .= '<a class="eui-frame-iconlink" href="' . esc_url( EMCP_Tools_Admin_Nav::url( 'changelog' ) ) . '" aria-label="' . esc_attr( $changelog ) . '" title="' . esc_attr__( 'Changelog', 'emcp-tools' ) . '">' . EMCP_Tools_Admin_Icons::svg( 'newspaper', 18 ) . '<span class="eui-frame-iconlink__dot" aria-hidden="true"></span></a>';
 		$bell_label = $unread > 0
 			/* translators: %d: number of unread notifications. */
 			? sprintf( _n( 'Notifications (%d unread)', 'Notifications (%d unread)', $unread, 'emcp-tools' ), $unread )
@@ -211,6 +225,11 @@ final class EMCP_Tools_Admin_Frame {
 		$avatar     = '' !== ( $user['avatar'] ?? '' )
 			? '<img class="eui-frame-avatar" src="' . esc_url( $user['avatar'] ) . '" alt="" width="32" height="32" />'
 			: '<span class="eui-frame-avatar" aria-hidden="true">' . esc_html( $user['initials'] ?? '' ) . '</span>';
+		if ( isset( $links['account'] ) ) {
+			/* translators: %s: user display name. */
+			$label = sprintf( __( 'Account: %s', 'emcp-tools' ), (string) ( $user['name'] ?? '' ) );
+			return $html . '<a class="eui-frame-user" href="' . esc_url( $links['account']['url'] ) . '" aria-label="' . esc_attr( $label ) . '" title="' . esc_attr( $label ) . '">' . $avatar . '</a></div></div>';
+		}
 		return $html . '<span class="eui-frame-user" title="' . esc_attr( $user['name'] ?? '' ) . '">' . $avatar . '<span class="eui-visually-hidden">' . esc_html( $user['name'] ?? '' ) . '</span></span></div></div>';
 	}
 
