@@ -15,7 +15,7 @@ final class EMCP_Tools_Admin_Prompts_Data {
 
 	const PER_PAGE = 12;
 
-	/** Samples shown on free builds (file name => meta), as page-prompts.php. */
+	/** Samples shown on free builds (file name => meta) (the bundled prompts/ folder). */
 	private static function samples(): array {
 		return array(
 			'LOCAL_BUSINESS'          => array( __( 'Local Business', 'emcp-tools' ), __( 'General', 'emcp-tools' ), __( 'Multi-purpose small business landing page with hero, services, testimonials, and contact section.', 'emcp-tools' ) ),

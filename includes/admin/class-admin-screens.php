@@ -17,9 +17,9 @@ final class EMCP_Tools_Admin_Screens {
 	/** Pro-only tabs and the Pro file that renders them; missing file means locked (spec 8.25). */
 	const LOCKED_TABS = array(
 		'ai-chat'         => 'includes/admin/data/class-admin-ai-chat-data.php',
-		'skills'          => 'includes/admin/views/page-skills.php',
-		'memory'          => 'includes/admin/views/page-memory.php',
-		'migrate'         => 'includes/admin/views/page-migrate.php',
+		'skills'          => 'includes/admin/rest/class-admin-rest-skills.php',
+		'memory'          => 'includes/admin/rest/class-admin-rest-memory.php',
+		'migrate'         => 'includes/admin/rest/class-admin-rest-backup.php',
 		'templates'       => 'includes/admin/rest/class-admin-rest-templates.php',
 		// Sandbox child views (tab:view). Widgets and Blocks own no Pro PHP file,
 		// so their built Pro bundle is what a free build lacks.

@@ -41,7 +41,7 @@ final class EMCP_Tools_Admin_Builders_Data {
 	}
 
 	/**
-	 * Requirement line for a block pack (moved from page-builders.php).
+	 * Requirement line for a block pack.
 	 *
 	 * @param string $id   Pack id.
 	 * @param array  $pack Pack entry.

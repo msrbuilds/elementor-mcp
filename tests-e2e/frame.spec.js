@@ -104,9 +104,7 @@ test( 'frame controls have at least 32px hit areas', async ( { page } ) => {
 		'.eui-frame a, .eui-frame button',
 		( els ) =>
 			els
-				.filter(
-					( el ) => el.offsetParent && ! el.closest( '.emcp-legacy' )
-				)
+				.filter( ( el ) => el.offsetParent )
 				.map( ( el ) => {
 					// Controls may extend their hit area with an absolutely
 					// positioned ::before (Toggle, IconButton); count it.
@@ -193,18 +191,4 @@ test( 'frame keeps its layout with an admin notice', async ( { page } ) => {
 			document.documentElement.clientWidth
 	);
 	expect( overflow ).toBe( false );
-} );
-
-test( 'legacy Redirects screen has no console errors and its toggles respond', async ( {
-	page,
-} ) => {
-	const errors = watchConsole( page );
-	await page.goto( '/wp-admin/admin.php?page=emcp-tools-redirects' );
-	const toggle = page
-		.locator( '.emcp-legacy input[type="checkbox"]' )
-		.first();
-	const before = await toggle.isChecked();
-	await toggle.click( { force: true } );
-	expect( await toggle.isChecked() ).toBe( ! before );
-	expect( errors.filter( ( e ) => ! ignorable( e ) ) ).toEqual( [] );
 } );

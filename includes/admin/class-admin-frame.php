@@ -167,6 +167,15 @@ final class EMCP_Tools_Admin_Frame {
 		return $html . '<span class="eui-frame-user" title="' . esc_attr( $user['name'] ?? '' ) . '">' . $avatar . '<span class="eui-visually-hidden">' . esc_html( $user['name'] ?? '' ) . '</span></span></div></div>';
 	}
 
+	/** The card for a tab with no screen: switched off, or an unknown slug. */
+	public static function unavailable(): string {
+		return '<div class="eui-card emcp-unavailable"><div class="eui-card__body">'
+			. '<h1>' . esc_html__( 'This page isn’t available', 'emcp-tools' ) . '</h1>'
+			. '<p>' . esc_html__( 'This screen is switched off or needs a module that isn’t active.', 'emcp-tools' ) . '</p>'
+			. '<p><a class="eui-btn eui-btn--primary eui-btn--md" href="' . esc_url( admin_url( 'admin.php?page=' . EMCP_Tools_Admin::PAGE_SLUG ) ) . '">' . esc_html__( 'Go to the Dashboard', 'emcp-tools' ) . '</a></p>'
+			. '</div></div>';
+	}
+
 	/**
 	 * The React mount point with its server-rendered fallback (spec 5.2 layer 1).
 	 *

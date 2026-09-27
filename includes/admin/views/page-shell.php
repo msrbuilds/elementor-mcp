@@ -42,12 +42,7 @@ $emcp_status    = ( new EMCP_Tools_Admin_Bar() )->status();
 					}
 					?>
 				<?php else : ?>
-					<div class="emcp-legacy">
-						<div class="elementor-mcp-admin">
-							<h1 class="eui-visually-hidden"><?php echo esc_html( end( $emcp_current['crumbs'] ) ?: __( 'EMCP Tools', 'emcp-tools' ) ); ?></h1>
-							<?php include __DIR__ . '/legacy-content.php'; ?>
-						</div>
-					</div>
+					<?php echo EMCP_Tools_Admin_Frame::unavailable(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped parts. ?>
 				<?php endif; ?>
 			</div>
 		</div>

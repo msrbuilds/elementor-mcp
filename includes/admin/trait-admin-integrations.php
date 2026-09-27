@@ -77,7 +77,7 @@ trait EMCP_Tools_Admin_Integrations_Trait {
 
 	/**
 	 * Plugin-integration groups, in display order. Categories on the Plugins tab
-	 * carry a `group` key naming one of these; page-tools.php clusters each
+	 * carry a `group` key naming one of these; the Tools screen clusters each
 	 * plugin card under its group heading so the tab stays organized as the
 	 * number of integrations grows. A category with no (or an unknown) group
 	 * renders inline, ungrouped.
