@@ -72,6 +72,12 @@ describe( 'admin CSS', () => {
 		);
 	} );
 
+	it( 'puts the sidebar toggle on the sidebar edge as a round handle', () => {
+		expect( read( 'admin-src/shell/shell.css' ) ).toMatch(
+			/\.eui-frame-collapse\.eui-frame-iconlink\s*\{[^}]*position:\s*absolute[^}]*inset-inline-start:\s*-16px[^}]*border-radius:\s*50%/
+		);
+	} );
+
 	it( 'replaces core’s focus box-shadow on sidebar links with our ring', () => {
 		const shell = read( 'admin-src/shell/shell.css' );
 		expect( shell ).toMatch(

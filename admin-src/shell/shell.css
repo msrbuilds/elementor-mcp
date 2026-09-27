@@ -214,6 +214,30 @@ html:has(.eui-frame) {
 	padding-inline: 0;
 }
 
+/* The toggle straddles the sidebar's edge as a round handle. It lives in the
+   sticky top bar (so it stays put on scroll) and sits over the sidebar's
+   scrollbar, half on each side. */
+.eui-frame-collapse.eui-frame-iconlink {
+	position: absolute;
+	inset-block-start: 50%;
+	inset-inline-start: -16px;
+	z-index: 1;
+	inline-size: 32px;
+	block-size: 32px;
+	border: 1px solid var(--emcp-border);
+	border-radius: 50%;
+	background: var(--emcp-surface);
+	box-shadow: var(--emcp-shadow-seg);
+	transform: translateY(-50%);
+}
+
+.eui-frame-collapse.eui-frame-iconlink:hover,
+.eui-frame-collapse.eui-frame-iconlink:focus-visible {
+	border-color: var(--emcp-hover-border);
+	background: var(--emcp-primary-tint);
+	color: var(--emcp-primary-strong);
+}
+
 .eui-frame-collapse__open,
 .eui-frame.is-collapsed .eui-frame-collapse__close {
 	display: none;
