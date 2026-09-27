@@ -61,6 +61,11 @@ import {
 	SlidersHorizontal,
 	Send,
 	Square,
+	HardDrive,
+	Database,
+	Folder,
+	Play,
+	Archive,
 } from 'lucide-react';
 
 export const ICONS = {
@@ -122,4 +127,9 @@ export const ICONS = {
 	'sliders-horizontal': SlidersHorizontal,
 	send: Send,
 	square: Square,
+	'hard-drive': HardDrive,
+	database: Database,
+	folder: Folder,
+	play: Play,
+	archive: Archive,
 };

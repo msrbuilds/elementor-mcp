@@ -72,6 +72,7 @@ export function RadioCardGroup( {
 	value,
 	onChange,
 	columns = 2,
+	legendVisible = false,
 	children,
 } ) {
 	return (
@@ -79,7 +80,15 @@ export function RadioCardGroup( {
 			className="eui-radio-cards"
 			style={ { '--eui-cols': columns } }
 		>
-			<legend className="eui-visually-hidden">{ legend }</legend>
+			<legend
+				className={
+					legendVisible
+						? 'eui-radio-cards__legend'
+						: 'eui-visually-hidden'
+				}
+			>
+				{ legend }
+			</legend>
 			<RadioContext.Provider value={ { name, value, onChange } }>
 				{ children }
 			</RadioContext.Provider>

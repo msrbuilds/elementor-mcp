@@ -187,3 +187,12 @@
 		grid-template-columns: repeat(min(var(--eui-cols, 2), 2), minmax(0, 1fr));
 	}
 }
+
+.eui-radio-cards__legend {
+	grid-column: 1 / -1;
+	margin-block-end: 8px;
+	padding: 0;
+	color: var(--emcp-ink);
+	font-size: 13px;
+	font-weight: 600;
+}

@@ -65,12 +65,15 @@
 	flex-wrap: wrap;
 }
 
-.eui-page-header__title {
+/* Doubled class: core's .wrap h1 (0,1,1) sets 23px, weight 400 and padding. */
+.eui-page-header__title.eui-page-header__title {
 	display: flex;
 	align-items: center;
 	gap: 10px;
 	margin: 0;
+	padding: 0;
 	font-size: 26px;
+	line-height: 1.25;
 	font-weight: 700;
 	letter-spacing: -0.01em;
 	color: var(--emcp-ink);
