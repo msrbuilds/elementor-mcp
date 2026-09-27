@@ -373,6 +373,7 @@
 /* Our notices keep core's `notice` class so core moves them here; undo
  * core's notice box so the eui-notice look applies. */
 .eui-frame__content > .notice.eui-notice {
+	align-items: flex-start;
 	margin: 0;
 	padding-block: 12px;
 	padding-inline: 16px;
@@ -387,9 +388,15 @@
 	color: var(--emcp-warning-fg);
 }
 
+/* Icon and button line up with the FIRST line of text, however it wraps:
+ * the icon box is one line tall, and the 34px button is pulled into the
+ * padding so it centres on that 20px line without growing the row. */
 .eui-frame__content > .notice.eui-notice .eui-notice__body {
-	align-self: center;
-	line-height: 1.5;
+	line-height: 20px;
+}
+
+.eui-frame__content > .notice.eui-notice .eui-notice__actions {
+	margin-block: -7px;
 }
 
 .eui-frame__content > .notice.eui-notice .eui-btn {
@@ -399,7 +406,9 @@
 
 .eui-frame__content > .notice.eui-notice .eui-notice__icon {
 	display: inline-flex;
-	margin-block-start: 2px;
+	align-items: center;
+	block-size: 20px;
+	margin-block-start: 0;
 }
 
 .eui-frame-fallback .eui-skeleton {
