@@ -1,5 +1,13 @@
-import { __ } from '@wordpress/i18n';
-import { Badge, Button, Card, Checkbox, Notice, useConfirm } from '@emcp/ui';
+import { __, sprintf } from '@wordpress/i18n';
+import {
+	Badge,
+	Button,
+	Card,
+	Icon,
+	Notice,
+	Toggle,
+	useConfirm,
+} from '@emcp/ui';
 import { useState } from '@wordpress/element';
 
 function PostForm( {
@@ -45,9 +53,81 @@ function PostForm( {
 	);
 }
 
-export function CloudSection( { data } ) {
+const defaultNavigate = ( url ) => window.location.assign( url );
+
+/**
+ * A site-local date ('2026-09-20') in the viewer's locale.
+ *
+ * @param {string} ymd Date from the server.
+ * @return {string} Formatted date.
+ */
+function formatDay( ymd ) {
+	return new Date( `${ ymd }T00:00:00Z` ).toLocaleDateString( undefined, {
+		dateStyle: 'medium',
+		timeZone: 'UTC',
+	} );
+}
+
+/**
+ * Who the site is linked to: the account email (redacted by the server),
+ * the Cloud host and when it connected.
+ *
+ * @param {Object} props
+ * @param {Object} props.c            data.cloud.
+ * @param {string} props.adminPostUrl admin-post.php.
+ */
+function Account( { c, adminPostUrl } ) {
+	const when = c.connectedAt
+		? sprintf(
+				/* translators: %s: date. */
+				__( 'Connected %s', 'emcp-tools' ),
+				formatDay( c.connectedAt )
+			)
+		: '';
+	return (
+		<div className="eui-conn__account">
+			<span className="eui-conn__account-icon" aria-hidden="true">
+				<Icon name="cloud" size={ 18 } />
+			</span>
+			<span className="eui-conn__account-text">
+				<strong className="eui-conn__account-name">
+					{ c.account || __( 'EMCP Cloud account', 'emcp-tools' ) }
+				</strong>
+				<span className="eui-conn__muted">
+					{ [ c.host || c.baseUrl, when ]
+						.filter( Boolean )
+						.join( ' · ' ) }
+				</span>
+				{ ! c.account && (
+					// Connections made before the email scope never got an
+					// email; connecting again keeps gateway access as it is.
+					<PostForm
+						url={ adminPostUrl }
+						action={ c.connectAction }
+						nonce={ c.connectNonce }
+						fields={ c.gateway ? { emcp_gateway_optin: '1' } : {} }
+					>
+						<button
+							type="submit"
+							className="eui-conn__setting-link"
+						>
+							{ __(
+								'Reconnect to show the account email',
+								'emcp-tools'
+							) }
+						</button>
+					</PostForm>
+				) }
+			</span>
+		</div>
+	);
+}
+
+export function CloudSection( { data, navigate = defaultNavigate } ) {
 	const confirm = useConfirm();
 	const [ gateway, setGateway ] = useState( true );
+	// Set while a gateway change is on its way to admin-post.
+	const [ pending, setPending ] = useState( null );
 	const c = data.cloud;
 	if ( ! c ) {
 		return (
@@ -66,7 +146,7 @@ export function CloudSection( { data } ) {
 			nonce={ c.connectNonce }
 			fields={ gateway ? { emcp_gateway_optin: '1' } : {} }
 		>
-			<Checkbox
+			<Toggle
 				checked={ gateway }
 				onChange={ setGateway }
 				label={ __(
@@ -93,8 +173,27 @@ export function CloudSection( { data } ) {
 				tone: 'danger',
 			} )
 		) {
-			window.location.assign( c.disconnectUrl );
+			navigate( c.disconnectUrl );
 		}
+	};
+	const gatewayOn = null === pending ? !! c.gateway : pending;
+	const toggleGateway = async ( on ) => {
+		if ( ! on ) {
+			const ok = await confirm( {
+				title: __( 'Turn off gateway access?', 'emcp-tools' ),
+				message: __(
+					'AI clients connected through the EMCP Cloud gateway lose access to this site until you turn it back on.',
+					'emcp-tools'
+				),
+				confirmLabel: __( 'Turn off', 'emcp-tools' ),
+				tone: 'danger',
+			} );
+			if ( ! ok ) {
+				return;
+			}
+		}
+		setPending( on );
+		navigate( on ? c.reissueUrl : c.gatewayOffUrl );
 	};
 	return (
 		<div className="eui-conn__cloud">
@@ -121,25 +220,46 @@ export function CloudSection( { data } ) {
 						) }
 					</p>
 				) }
-				{ ( ! c.connected || ! c.healthy ) && connect }
 				{ c.connected && (
-					<div className="eui-conn__actions">
-						<Button onClick={ disconnect }>
+					<div className="eui-conn__account-row">
+						<Account c={ c } adminPostUrl={ data.adminPostUrl } />
+						<Button size="sm" onClick={ disconnect }>
 							{ __( 'Disconnect', 'emcp-tools' ) }
 						</Button>
-						{ c.healthy && (
-							<a className="eui-btn" href={ c.reissueUrl }>
-								{ c.gateway
-									? __(
-											'Re-issue gateway credential',
-											'emcp-tools'
-										)
-									: __(
-											'Enable gateway access',
-											'emcp-tools'
-										) }
-							</a>
-						) }
+					</div>
+				) }
+				{ ( ! c.connected || ! c.healthy ) && connect }
+				{ c.connected && c.healthy && (
+					<div className="eui-conn__setting">
+						<div className="eui-conn__setting-text">
+							<span className="eui-conn__setting-title">
+								{ __( 'Gateway access', 'emcp-tools' ) }
+							</span>
+							<span className="eui-conn__muted">
+								{ __(
+									'Let AI clients reach this site through the EMCP Cloud gateway, with no site password to paste.',
+									'emcp-tools'
+								) }
+							</span>
+							{ gatewayOn && null === pending && (
+								<a
+									className="eui-conn__setting-link"
+									href={ c.reissueUrl }
+								>
+									{ __(
+										'Re-issue credential',
+										'emcp-tools'
+									) }
+								</a>
+							) }
+						</div>
+						<Toggle
+							checked={ gatewayOn }
+							onChange={ toggleGateway }
+							disabled={ null !== pending }
+							label={ __( 'Gateway access', 'emcp-tools' ) }
+							hideLabel
+						/>
 					</div>
 				) }
 			</Card>

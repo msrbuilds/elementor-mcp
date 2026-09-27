@@ -256,3 +256,81 @@
 		grid-template-columns: minmax(0, 1fr);
 	}
 }
+
+/* Cloud account card */
+.eui-conn__account-row {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 16px;
+	padding-block-end: 16px;
+	border-block-end: 1px solid var(--emcp-divider);
+}
+
+.eui-conn__account {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	min-inline-size: 0;
+}
+
+.eui-conn__account-icon {
+	display: inline-flex;
+	flex: none;
+	align-items: center;
+	justify-content: center;
+	inline-size: 40px;
+	block-size: 40px;
+	border-radius: 50%;
+	background: var(--emcp-primary-tint);
+	color: var(--emcp-primary-strong);
+}
+
+.eui-conn__account-text {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+	min-inline-size: 0;
+}
+
+.eui-conn__account-name {
+	overflow: hidden;
+	color: var(--emcp-ink);
+	font-size: 15px;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.eui-conn__setting {
+	display: flex;
+	align-items: flex-start;
+	justify-content: space-between;
+	gap: 16px;
+	padding-block-start: 16px;
+}
+
+.eui-conn__setting-text {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+}
+
+.eui-conn__setting-title {
+	color: var(--emcp-ink);
+	font-weight: 600;
+}
+
+.eui-conn__setting-link {
+	display: inline-flex;
+	align-items: center;
+	align-self: flex-start;
+	min-block-size: 32px;
+	padding: 0;
+	border: 0;
+	background: none;
+	cursor: pointer;
+	text-decoration: underline;
+	color: var(--emcp-primary-strong);
+	font-size: 13px;
+	font-weight: 500;
+}

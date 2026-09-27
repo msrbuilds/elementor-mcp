@@ -18,7 +18,8 @@ class EMCP_Tools_Cloud {
 	const OPTION_BASE_URL   = 'emcp_tools_cloud_base_url';
 	const OPTION_SITE_UUID  = 'emcp_tools_site_uuid';
 	const DEFAULT_BASE_URL  = 'https://emcptools.com';
-	const SCOPES            = 'openid cloud offline_access';
+	// email: the Connection screen shows which account the site is linked to.
+	const SCOPES            = 'openid email cloud offline_access';
 
 	/**
 	 * The EMCP Cloud base URL. Constant overrides option overrides default;
@@ -87,6 +88,34 @@ class EMCP_Tools_Cloud {
 	public static function is_connected(): bool {
 		$c = self::get_connection();
 		return ! empty( $c['access_token'] ) || ! empty( $c['refresh_token'] );
+	}
+
+	/**
+	 * The linked account's email, stored at connect time ('' when the
+	 * connection predates the email scope or the Cloud did not send one).
+	 *
+	 * @return string
+	 */
+	public static function account_email(): string {
+		$c = self::get_connection();
+		return (string) ( $c['account_email'] ?? '' );
+	}
+
+	/**
+	 * An email with most of its local part hidden (mi•••@gmail.com), for
+	 * screens that only need to say which account this is.
+	 *
+	 * @param string $email Email address.
+	 * @return string '' when it is not an email.
+	 */
+	public static function redact_email( string $email ): string {
+		$at = strrpos( $email, '@' );
+		if ( false === $at || 0 === $at || ! is_email( $email ) ) {
+			return '';
+		}
+		$local = substr( $email, 0, $at );
+		$keep  = strlen( $local ) > 2 ? 2 : 1;
+		return substr( $local, 0, $keep ) . '•••' . substr( $email, $at );
 	}
 
 	/**

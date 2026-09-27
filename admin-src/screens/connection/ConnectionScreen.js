@@ -37,6 +37,12 @@ function flagNotice() {
 			),
 		];
 	}
+	if ( 'disabled' === q.get( 'cloud_gateway' ) ) {
+		return [
+			'success',
+			__( 'Gateway access is off for this site.', 'emcp-tools' ),
+		];
+	}
 	if ( 'reissued' === q.get( 'cloud_gateway' ) ) {
 		return [
 			'success',
@@ -47,7 +53,7 @@ function flagNotice() {
 		return [
 			'error',
 			__(
-				'The gateway credential could not be re-issued. Reconnect with the gateway option ticked, then try again.',
+				'The gateway credential could not be issued. Reconnect with gateway access switched on, then try again.',
 				'emcp-tools'
 			),
 		];

@@ -14,6 +14,7 @@ class EMCP_Tools_Cloud_Connect {
 	const ACTION_CALLBACK   = 'emcp_tools_cloud_callback';
 	const ACTION_DISCONNECT = 'emcp_tools_cloud_disconnect';
 	const ACTION_REISSUE    = 'emcp_tools_cloud_gateway_reissue';
+	const ACTION_GATEWAY_OFF = 'emcp_tools_cloud_gateway_off';
 	const PENDING_TRANSIENT = 'emcp_tools_cloud_pending';
 	// Treat the access token as expired this many seconds early (matches the
 	// client's own leeway) when deciding whether a concurrent request already
@@ -33,6 +34,7 @@ class EMCP_Tools_Cloud_Connect {
 		add_action( 'admin_post_' . self::ACTION_CALLBACK, array( __CLASS__, 'handle_callback' ) );
 		add_action( 'admin_post_' . self::ACTION_DISCONNECT, array( __CLASS__, 'handle_disconnect' ) );
 		add_action( 'admin_post_' . self::ACTION_REISSUE, array( __CLASS__, 'handle_gateway_reissue' ) );
+		add_action( 'admin_post_' . self::ACTION_GATEWAY_OFF, array( __CLASS__, 'handle_gateway_off' ) );
 	}
 
 	/**
@@ -150,8 +152,32 @@ class EMCP_Tools_Cloud_Connect {
 			'client_id'         => $client_id,
 			'connected_at'      => time(),
 		);
+		$email = self::fetch_account_email( $bundle['access_token'] );
+		if ( '' !== $email ) {
+			$bundle['account_email'] = $email;
+		}
 		EMCP_Tools_Cloud::save_connection( $bundle );
 		return $bundle;
+	}
+
+	/**
+	 * The account email from the Cloud's userinfo endpoint. Best effort: a
+	 * failure never blocks connecting, and the screen then shows no email.
+	 *
+	 * @param string $access_token A fresh access token.
+	 * @return string Sanitized email, or ''.
+	 */
+	public static function fetch_account_email( string $access_token ): string {
+		$res = EMCP_Tools_Cloud_Http::request(
+			'GET',
+			EMCP_Tools_Cloud::base_url() . '/api/auth/oauth2/userinfo',
+			array( 'headers' => array( 'Authorization' => 'Bearer ' . $access_token ) )
+		);
+		if ( is_wp_error( $res ) || 200 !== (int) $res['code'] ) {
+			return '';
+		}
+		$email = (string) ( $res['json']['email'] ?? '' );
+		return is_email( $email ) ? (string) sanitize_email( $email ) : '';
 	}
 
 	/**
@@ -489,6 +515,20 @@ class EMCP_Tools_Cloud_Connect {
 	}
 
 	/**
+	 * Admin-post handler for switching gateway access off. Nonce-protected.
+	 *
+	 * @return void
+	 */
+	public static function handle_gateway_off(): void {
+		self::guard_cap();
+		check_admin_referer( self::ACTION_GATEWAY_OFF );
+		if ( class_exists( 'EMCP_Tools_Gateway_Credential' ) ) {
+			EMCP_Tools_Gateway_Credential::deprovision();
+		}
+		self::back( 'cloud_gateway=disabled' );
+	}
+
+	/**
 	 * Disconnect: revoke remotely + clear local. Nonce-protected.
 	 *
 	 * @return void
@@ -516,6 +556,13 @@ class EMCP_Tools_Cloud_Connect {
 	 */
 	public static function reissue_url(): string {
 		return wp_nonce_url( admin_url( 'admin-post.php?action=' . self::ACTION_REISSUE ), self::ACTION_REISSUE );
+	}
+
+	/**
+	 * @return string Nonce'd switch-gateway-off URL.
+	 */
+	public static function disable_gateway_url(): string {
+		return wp_nonce_url( admin_url( 'admin-post.php?action=' . self::ACTION_GATEWAY_OFF ), self::ACTION_GATEWAY_OFF );
 	}
 
 	/**

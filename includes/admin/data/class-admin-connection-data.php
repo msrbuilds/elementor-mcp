@@ -308,16 +308,37 @@ final class EMCP_Tools_Admin_Connection_Data {
 				'billingUrl' => trailingslashit( EMCP_Tools_Cloud::base_url() ) . 'account/billing',
 			);
 		}
+		return array_merge(
+			self::cloud_account( EMCP_Tools_Cloud::get_connection(), (string) $status['base_url'] ),
+			array(
+				'connected'     => (bool) $status['connected'],
+				'healthy'       => (bool) $status['healthy'],
+				'baseUrl'       => (string) $status['base_url'],
+				'gateway'       => class_exists( 'EMCP_Tools_Gateway_Credential' ) && (bool) get_option( EMCP_Tools_Gateway_Credential::OPTION_FLAG, 0 ),
+				'connectAction' => EMCP_Tools_Cloud_Connect::ACTION_CONNECT,
+				'connectNonce'  => wp_create_nonce( EMCP_Tools_Cloud_Connect::ACTION_CONNECT ),
+				'disconnectUrl' => EMCP_Tools_Cloud_Connect::disconnect_url(),
+				'reissueUrl'    => EMCP_Tools_Cloud_Connect::reissue_url(),
+				'gatewayOffUrl' => EMCP_Tools_Cloud_Connect::disable_gateway_url(),
+				'sync'          => $sync,
+			)
+		);
+	}
+
+	/**
+	 * Who the site is linked to, for the Cloud account card. The email is
+	 * redacted here, so the full address never reaches the page.
+	 *
+	 * @param array  $connection EMCP_Tools_Cloud::get_connection().
+	 * @param string $base_url   Cloud base URL.
+	 * @return array{account:string,host:string,connectedAt:string}
+	 */
+	public static function cloud_account( array $connection, string $base_url ): array {
+		$at = (int) ( $connection['connected_at'] ?? 0 );
 		return array(
-			'connected'     => (bool) $status['connected'],
-			'healthy'       => (bool) $status['healthy'],
-			'baseUrl'       => (string) $status['base_url'],
-			'gateway'       => class_exists( 'EMCP_Tools_Gateway_Credential' ) && (bool) get_option( EMCP_Tools_Gateway_Credential::OPTION_FLAG, 0 ),
-			'connectAction' => EMCP_Tools_Cloud_Connect::ACTION_CONNECT,
-			'connectNonce'  => wp_create_nonce( EMCP_Tools_Cloud_Connect::ACTION_CONNECT ),
-			'disconnectUrl' => EMCP_Tools_Cloud_Connect::disconnect_url(),
-			'reissueUrl'    => EMCP_Tools_Cloud_Connect::reissue_url(),
-			'sync'          => $sync,
+			'account'     => EMCP_Tools_Cloud::redact_email( (string) ( $connection['account_email'] ?? '' ) ),
+			'host'        => (string) wp_parse_url( $base_url, PHP_URL_HOST ),
+			'connectedAt' => $at > 0 ? gmdate( 'Y-m-d', $at ) : '',
 		);
 	}
 }
