@@ -37,10 +37,19 @@ test( 'MCP Log: stats, filter, export link, row details, axe', async ( {
 	await expect( page.getByText( 'Requests', { exact: true } ) ).toBeVisible();
 	await page.getByRole( 'radio', { name: 'Errors' } ).click();
 	await expect( page ).toHaveURL( /status=error/ );
-	await expect(
-		page.getByRole( 'link', { name: 'Export CSV' } )
-	).toHaveAttribute( 'href', /status=error/ );
-	const more = page.getByRole( 'button', { name: /^Show (more|less):/ } ).first();
+	const [ download ] = await Promise.all( [
+		page.waitForEvent( 'download' ),
+		page.getByRole( 'button', { name: 'Export CSV' } ).click(),
+	] );
+	expect( download.suggestedFilename() ).toMatch(
+		/^emcp-mcp-log-\d{8}-\d{6}\.csv$/
+	);
+	const csv = fs.readFileSync( await download.path(), 'utf8' );
+	expect( csv.split( '\n' )[ 0 ] ).toContain( 'time_utc,method,tool,status' );
+	expect( csv ).not.toContain( ',success,' );
+	const more = page
+		.getByRole( 'button', { name: /^Show (more|less):/ } )
+		.first();
 	if ( await more.count() ) {
 		await more.click();
 		await expect( more ).toHaveAttribute( 'aria-expanded', 'true' );

@@ -53,6 +53,11 @@ export function LogScreen( { data } ) {
 	const confirm = useConfirm();
 	// Bumped on every load: an older response is dropped.
 	const generation = useRef( 0 );
+	// The latest filters, read by callbacks that fire later (the debounced
+	// search) so they never load with a status the user already changed.
+	const latest = useRef( { status, search } );
+	latest.current = { status, search };
+	const [ exporting, setExporting ] = useState( false );
 
 	const load = async ( next ) => {
 		const mine = ++generation.current;
@@ -119,17 +124,46 @@ export function LogScreen( { data } ) {
 		} catch {}
 	};
 
-	const exportHref = ( () => {
+	const filterQuery = ( f ) => {
 		const params = new URLSearchParams();
-		if ( 'all' !== status ) {
-			params.set( 'status', status );
+		if ( 'all' !== f.status ) {
+			params.set( 'status', f.status );
 		}
-		if ( search ) {
-			params.set( 'search', search );
+		if ( f.search ) {
+			params.set( 'search', f.search );
 		}
-		const qs = params.toString();
-		return qs ? `${ state.exportUrl }&${ qs }` : state.exportUrl;
-	} )();
+		return params.toString();
+	};
+
+	// A header-authenticated fetch saved as a file: a link would have to carry
+	// the wp_rest nonce in its URL, where access logs keep it.
+	const exportCsv = async () => {
+		setExporting( true );
+		try {
+			const qs = filterQuery( latest.current );
+			const res = await request(
+				qs ? `${ state.exportPath }?${ qs }` : state.exportPath,
+				{ parse: false }
+			);
+			const blob = await res.blob();
+			const disposition =
+				( res.headers && res.headers.get( 'Content-Disposition' ) ) ||
+				'';
+			const named = /filename="([^"]+)"/.exec( disposition );
+			const url = window.URL.createObjectURL( blob );
+			const a = document.createElement( 'a' );
+			a.href = url;
+			a.download = named ? named[ 1 ] : 'emcp-mcp-log.csv';
+			document.body.appendChild( a );
+			a.click();
+			a.remove();
+			window.setTimeout( () => window.URL.revokeObjectURL( url ), 1000 );
+		} catch ( e ) {
+			toast.error( errorMessage( e ) );
+		} finally {
+			setExporting( false );
+		}
+	};
 
 	const max = state.rows.reduce( ( m, r ) => Math.max( m, r.ms ), 0 );
 	const filtered = 'all' !== status || !! search;
@@ -145,7 +179,7 @@ export function LogScreen( { data } ) {
 				) }
 				actions={
 					<>
-						<Button href={ exportHref }>
+						<Button onClick={ exportCsv } loading={ exporting }>
 							{ __( 'Export CSV', 'emcp-tools' ) }
 						</Button>
 						<Button
@@ -192,7 +226,11 @@ export function LogScreen( { data } ) {
 					onChange={ ( v ) => {
 						setSearch( v );
 						setPage( '1' );
-						load( { status, search: v, page: 1 } );
+						load( {
+							status: latest.current.status,
+							search: v,
+							page: 1,
+						} );
 					} }
 				/>
 				<Segmented
@@ -209,7 +247,11 @@ export function LogScreen( { data } ) {
 					onChange={ ( v ) => {
 						setStatus( v );
 						setPage( '1' );
-						load( { status: v, search, page: 1 } );
+						load( {
+							status: v,
+							search: latest.current.search,
+							page: 1,
+						} );
 					} }
 				/>
 				<Select

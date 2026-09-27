@@ -81,7 +81,8 @@ final class EMCP_Tools_Admin_Log_Data {
 			),
 			'debug'     => $debug,
 			'timezone'  => function_exists( 'wp_timezone_string' ) ? wp_timezone_string() : 'UTC',
-			'exportUrl' => add_query_arg( array( '_wpnonce' => wp_create_nonce( 'wp_rest' ) ), rest_url( 'emcp-tools/v1/admin/log/export.csv' ) ),
+			// Fetched with the X-WP-Nonce header: the wp_rest nonce in a URL would land in access logs.
+			'exportPath' => '/emcp-tools/v1/admin/log/export.csv',
 		);
 	}
 }

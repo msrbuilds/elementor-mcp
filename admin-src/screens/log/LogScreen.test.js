@@ -1,4 +1,4 @@
-import { render, screen, waitFor, within } from '@testing-library/react';
+import { act, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import apiFetch from '@wordpress/api-fetch';
 import { AppProviders } from '@emcp/ui';
@@ -51,7 +51,7 @@ const data = ( over = {} ) => ( {
 	},
 	debug: false,
 	timezone: 'Asia/Karachi',
-	exportUrl: '/wp-json/emcp-tools/v1/admin/log/export.csv?_wpnonce=n',
+	exportPath: '/emcp-tools/v1/admin/log/export.csv',
 	...over,
 } );
 
@@ -109,17 +109,54 @@ describe( 'LogScreen', () => {
 		expect( window.location.search ).toContain( 'status=error' );
 	} );
 
-	it( 'exports with the filters in view', async () => {
-		apiFetch.mockResolvedValue( data( { status: 'error' } ) );
+	it( 'exports with the filters in view through a header-authenticated fetch', async () => {
+		const blob = { size: 3 };
+		window.URL.createObjectURL = jest.fn( () => 'blob:csv' );
+		window.URL.revokeObjectURL = jest.fn();
+		const click = jest
+			.spyOn( window.HTMLAnchorElement.prototype, 'click' )
+			.mockImplementation( () => {} );
+		apiFetch
+			.mockResolvedValueOnce( data( { status: 'error' } ) )
+			.mockResolvedValueOnce( {
+				blob: () => Promise.resolve( blob ),
+				headers: {
+					get: () => 'attachment; filename="emcp-mcp-log-1.csv"',
+				},
+			} );
 		mount();
 		await userEvent.click(
 			screen.getByRole( 'radio', { name: 'Errors' } )
 		);
 		expect(
-			screen.getByRole( 'link', { name: 'Export CSV' } )
-		).toHaveAttribute(
-			'href',
-			'/wp-json/emcp-tools/v1/admin/log/export.csv?_wpnonce=n&status=error'
+			screen.queryByRole( 'link', { name: 'Export CSV' } )
+		).toBeNull();
+		await userEvent.click(
+			screen.getByRole( 'button', { name: 'Export CSV' } )
+		);
+		await waitFor( () => expect( click ).toHaveBeenCalled() );
+		expect( apiFetch.mock.calls[ 1 ][ 0 ] ).toMatchObject( {
+			path: '/emcp-tools/v1/admin/log/export.csv?status=error',
+			parse: false,
+		} );
+		expect( window.URL.createObjectURL ).toHaveBeenCalledWith( blob );
+		click.mockRestore();
+	} );
+
+	it( 'a pending search never overrides a newer status choice', async () => {
+		apiFetch.mockResolvedValue( data() );
+		mount();
+		await userEvent.type(
+			screen.getByRole( 'searchbox', { name: 'Search requests' } ),
+			'abc'
+		);
+		await userEvent.click(
+			screen.getByRole( 'radio', { name: 'Errors' } )
+		);
+		await act( () => new Promise( ( r ) => setTimeout( r, 350 ) ) );
+		const paths = apiFetch.mock.calls.map( ( c ) => c[ 0 ].path );
+		expect( paths[ paths.length - 1 ] ).toBe(
+			'/emcp-tools/v1/admin/log?status=error&search=abc'
 		);
 	} );
 

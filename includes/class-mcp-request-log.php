@@ -109,14 +109,17 @@ class EMCP_Tools_MCP_Request_Log {
 	public static function filter( array $rows, array $args ): array {
 		$status = in_array( $args['status'] ?? '', array( 'success', 'error' ), true ) ? $args['status'] : 'all';
 		$needle = strtolower( trim( (string) ( $args['search'] ?? '' ) ) );
-		$out    = array();
+		// The full error is searchable only when it may be shown: a match on
+		// hidden text would reveal it one guess at a time.
+		$debug = self::debug_enabled();
+		$out   = array();
 		for ( $i = count( $rows ) - 1; $i >= 0; $i-- ) {
 			$r = $rows[ $i ];
 			if ( ! is_array( $r ) || ( 'all' !== $status && ( $r['status'] ?? '' ) !== $status ) ) {
 				continue;
 			}
 			if ( '' !== $needle ) {
-				$hay = strtolower( implode( ' ', array( $r['method'] ?? '', $r['tool'] ?? '', $r['client'] ?? '', $r['req_id'] ?? '', $r['failure_reason'] ?? '', $r['error'] ?? '' ) ) );
+				$hay = strtolower( implode( ' ', array( $r['method'] ?? '', $r['tool'] ?? '', $r['client'] ?? '', $r['req_id'] ?? '', $r['failure_reason'] ?? '', $debug ? ( $r['error'] ?? '' ) : '' ) ) );
 				if ( false === strpos( $hay, $needle ) ) {
 					continue;
 				}
@@ -211,7 +214,10 @@ class EMCP_Tools_MCP_Request_Log {
 	 * @return string
 	 */
 	private static function csv_cell( $v ): string {
-		$s = (string) $v;
+		// Locales whose list separator is `;` split an unquoted cell there, so a
+		// formula after a `;` inside the text (the method is caller-controlled)
+		// is neutralised too.
+		$s = (string) preg_replace( '/;(\s*)([=+\-@\t\r])/', ";$1'$2", (string) $v );
 		return ( '' !== $s && false !== strpos( "=+-@\t\r", $s[0] ) ) ? "'" . $s : $s;
 	}
 
