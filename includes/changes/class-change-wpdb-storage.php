@@ -300,6 +300,9 @@ final class EMCP_Tools_Change_WPDB_Storage implements EMCP_Tools_Change_Storage 
 				$vals    = array_merge( $vals, $list );
 			}
 		}
+		if ( ! empty( $a['no_audit'] ) ) {
+			$where[] = "NOT ( action = 'rollback' AND ( rollback IS NULL OR rollback = '' ) )";
+		}
 		if ( isset( $a['rolled_back'] ) ) {
 			$where[] = 'rolled_back = %d';
 			$vals[]  = $a['rolled_back'] ? 1 : 0;
@@ -334,6 +337,33 @@ final class EMCP_Tools_Change_WPDB_Storage implements EMCP_Tools_Change_Storage 
 		$sql                  = 'SELECT * FROM ' . $this->table() . " WHERE {$where} ORDER BY seq {$order} LIMIT {$limit}";
 		$rows                 = $db->get_results( $vals ? $db->prepare( $sql, $vals ) : $sql, ARRAY_A );
 		return array_map( array( 'EMCP_Tools_Change_Codec', 'row_from_db' ), is_array( $rows ) ? $rows : array() );
+	}
+
+	public function table_buckets( array $bounds, array $args ): array {
+		if ( ! $bounds ) {
+			return array();
+		}
+		$db                   = $this->db();
+		list( $where, $vals ) = $this->where( $args );
+		$cols                 = array();
+		$cvals                = array();
+		foreach ( array_values( $bounds ) as $i => $b ) {
+			$cols[]  = "SUM( CASE WHEN ts BETWEEN %d AND %d THEN 1 ELSE 0 END ) AS a{$i}";
+			$cols[]  = "SUM( CASE WHEN ts BETWEEN %d AND %d AND rolled_back = 1 THEN 1 ELSE 0 END ) AS r{$i}";
+			$cvals[] = (int) $b[0];
+			$cvals[] = (int) $b[1];
+			$cvals[] = (int) $b[0];
+			$cvals[] = (int) $b[1];
+		}
+		$first = reset( $bounds );
+		$last  = end( $bounds );
+		$sql   = 'SELECT ' . implode( ', ', $cols ) . ' FROM ' . $this->table() . " WHERE {$where} AND ts BETWEEN %d AND %d";
+		$row   = $db->get_row( $db->prepare( $sql, array_merge( $cvals, $vals, array( (int) $first[0], (int) $last[1] ) ) ), ARRAY_A );
+		$out   = array();
+		foreach ( array_keys( array_values( $bounds ) ) as $i ) {
+			$out[] = array( (int) ( $row[ 'a' . $i ] ?? 0 ), (int) ( $row[ 'r' . $i ] ?? 0 ) );
+		}
+		return $out;
 	}
 
 	public function table_count( array $args = array() ): int {

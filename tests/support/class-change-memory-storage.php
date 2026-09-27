@@ -255,6 +255,14 @@ final class EMCP_Tools_Change_Memory_Storage implements EMCP_Tools_Change_Storag
 		return ( new EMCP_Tools_Change_Memory_Filter( $this->rows ) )->select( $args );
 	}
 
+	/** @var int table_buckets() calls. */
+	public $bucket_calls = 0;
+
+	public function table_buckets( array $bounds, array $args ): array {
+		++$this->bucket_calls;
+		return EMCP_Tools_Change_Store::bucket_rows( $this->rows, $bounds, $args );
+	}
+
 	public function table_count( array $args = array() ): int {
 		return ( new EMCP_Tools_Change_Memory_Filter( $this->rows ) )->count( $args );
 	}

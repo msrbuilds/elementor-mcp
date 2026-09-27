@@ -496,6 +496,7 @@ class EMCP_Tools_Bootstrap {
 	}
 
 	private static function wire_hooks(): void {
+		EMCP_Tools_Attention::init();
 		// structuredContent must be a JSON object; the adapter assigns a tool's
 		// return value to it verbatim, so a list result makes strict clients
 		// reject the response. Our own abilities are normalized at registration,

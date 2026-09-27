@@ -39,6 +39,7 @@ final class EMCP_Tools_Changelog_Parser {
 	public static function parse( string $markdown ): array {
 		$releases = array();
 		$current  = null;
+		$section  = '';
 		foreach ( explode( "\n", str_replace( "\r\n", "\n", $markdown ) ) as $line ) {
 			$line = rtrim( $line );
 			if ( preg_match( '/^##\s+\[([^\]]+)\](.*)$/', $line, $m ) ) {
@@ -51,9 +52,14 @@ final class EMCP_Tools_Changelog_Parser {
 					'notes'      => array(),
 					'raw'        => array(),
 				);
+				$section = '';
 				continue;
 			}
 			if ( null === $current ) {
+				continue;
+			}
+			if ( preg_match( '/^###\s+(\w+)/', $line, $m ) ) {
+				$section = self::tag_of( $m[1] );
 				continue;
 			}
 			if ( preg_match( '/^>\s?(.*)/', $line, $m ) ) {
@@ -73,6 +79,7 @@ final class EMCP_Tools_Changelog_Parser {
 				$current['raw'][] = array(
 					'text'     => $m[1],
 					'children' => array(),
+					'section'  => $section,
 				);
 			}
 		}
@@ -111,9 +118,9 @@ final class EMCP_Tools_Changelog_Parser {
 	 */
 	private static function item( array $raw ): array {
 		$text = $raw['text'];
-		$tag  = '';
-		if ( preg_match( '/^(Fixed|New|Improved|Changed|Removed|Security|Deprecated|Maintenance|Note):\s*/i', $text, $m ) ) {
-			$tag  = strtoupper( $m[1] );
+		$tag  = (string) ( $raw['section'] ?? '' );
+		if ( preg_match( '/^(Fixed|New|Added|Improved|Changed|Removed|Security|Deprecated|Maintenance|Note):\s*/i', $text, $m ) ) {
+			$tag  = self::tag_of( $m[1] );
 			$text = substr( $text, strlen( $m[0] ) );
 		}
 		$title = '';
@@ -182,6 +189,16 @@ final class EMCP_Tools_Changelog_Parser {
 			'html'   => self::clean( $html ),
 			'issues' => array_values( $issues ),
 		);
+	}
+
+	/**
+	 * An item or section keyword as its badge: Added reads as NEW.
+	 *
+	 * @param string $word Keyword.
+	 */
+	private static function tag_of( string $word ): string {
+		$tag = strtoupper( $word );
+		return 'ADDED' === $tag ? 'NEW' : $tag;
 	}
 
 	/**

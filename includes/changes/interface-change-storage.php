@@ -89,6 +89,15 @@ interface EMCP_Tools_Change_Storage {
 	/** Count of rows matching the arguments. */
 	public function table_count( array $args = array() ): int;
 
+	/**
+	 * Row counts per ts range in one read, ranges ascending.
+	 *
+	 * @param array $bounds [ [ since, until ], ... ] inclusive.
+	 * @param array $args   Filter arguments.
+	 * @return array<int, array{0: int, 1: int}> [ all, rolled back ] per range.
+	 */
+	public function table_buckets( array $bounds, array $args ): array;
+
 	/** Distinct non-empty clients, sorted, at most 50. */
 	public function table_clients(): array;
 

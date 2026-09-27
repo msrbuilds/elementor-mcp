@@ -169,7 +169,9 @@ class EMCP_Tools_Change_Log {
 
 	/**
 	 * Changes kept and rolled back per site-local day, oldest first (spec 9.3).
-	 * Two indexed counts per day; the Dashboard range is at most 30 days.
+	 * One read for the whole range. Each day runs midnight to midnight, so a
+	 * DST change at midnight never overlaps two days, and the rows a rollback
+	 * records about itself are not changes.
 	 *
 	 * @param int      $days Days ending today (1..90).
 	 * @param int|null $now  Timestamp (tests).
@@ -180,17 +182,20 @@ class EMCP_Tools_Change_Log {
 		$days  = max( 1, min( 90, $days ) );
 		$tz    = function_exists( 'wp_timezone' ) ? wp_timezone() : new DateTimeZone( 'UTC' );
 		$today = ( new DateTimeImmutable( '@' . $now ) )->setTimezone( $tz )->setTime( 0, 0 );
-		$out   = array();
+		$dates  = array();
+		$bounds = array();
 		for ( $i = $days - 1; $i >= 0; $i-- ) {
-			$start  = $today->modify( '-' . $i . ' days' );
-			$range  = array(
-				'since' => $start->getTimestamp(),
-				'until' => $start->modify( '+1 day' )->getTimestamp() - 1,
-			);
-			$all    = self::count( $range );
-			$rolled = $all ? self::count( $range + array( 'rolled_back' => true ) ) : 0;
-			$out[]  = array(
-				'date'   => $start->format( 'Y-m-d' ),
+			$start    = $today->modify( '-' . $i . ' days' )->setTime( 0, 0 );
+			$next     = $start->modify( '+1 day' )->setTime( 0, 0 );
+			$dates[]  = $start->format( 'Y-m-d' );
+			$bounds[] = array( $start->getTimestamp(), $next->getTimestamp() - 1 );
+		}
+		$counts = self::store()->buckets( $bounds, array( 'no_audit' => true ) );
+		$out    = array();
+		foreach ( $dates as $i => $date ) {
+			list( $all, $rolled ) = $counts[ $i ] ?? array( 0, 0 );
+			$out[]                = array(
+				'date'   => $date,
 				'kept'   => $all - $rolled,
 				'rolled' => $rolled,
 			);
@@ -251,7 +256,7 @@ class EMCP_Tools_Change_Log {
 	 */
 	public static function query( array $args ): array {
 		$limit = max( 1, min( 200, (int) ( $args['limit'] ?? 50 ) ) );
-		$sel   = array_intersect_key( $args, array_flip( array( 'domain', 'client', 'session', 'user_id', 'rolled_back', 'search', 'since', 'until' ) ) );
+		$sel   = array_intersect_key( $args, array_flip( array( 'domain', 'client', 'session', 'user_id', 'rolled_back', 'search', 'since', 'until', 'no_audit' ) ) );
 		if ( ! empty( $args['cursor'] ) ) {
 			$sel['before_seq'] = (int) $args['cursor'];
 		}

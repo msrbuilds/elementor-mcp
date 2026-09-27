@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from '@wordpress/element';
 import { __, sprintf } from '@wordpress/i18n';
 import {
+	Button,
 	Card,
 	EmptyState,
 	PageHeader,
@@ -77,7 +78,7 @@ function Pill( { release } ) {
  */
 export function ChangelogScreen( { data } ) {
 	const first = data.index[ 0 ]?.version || '';
-	const [ version, setVersion ] = useQueryState( 'version', first );
+	const [ asked, setVersion ] = useQueryState( 'version', first );
 	const [ cache, setCache ] = useState(
 		data.latest ? { [ data.latest.version ]: data.latest } : {}
 	);
@@ -85,30 +86,41 @@ export function ChangelogScreen( { data } ) {
 	const [ expanded, setExpanded ] = useState( false );
 	const [ search, setSearch ] = useState( '' );
 	const [ results, setResults ] = useState( null );
+	const [ failed, setFailed ] = useState( false );
+	const [ attempt, setAttempt ] = useState( 0 );
 	const gen = useRef( 0 );
 	const toast = useToast();
 
+	// A stale or mistyped ?version= shows the newest release.
+	const known = data.index.some( ( r ) => r.version === asked );
+	const version = known ? asked : first;
 	const pos = data.index.findIndex( ( r ) => r.version === version );
 	const current = cache[ version ];
 	const showAll = expanded || pos >= SHOWN;
 	const rail = showAll ? data.index : data.index.slice( 0, SHOWN );
 
 	useEffect( () => {
-		if ( ! version || cache[ version ] || pos < 0 ) {
+		if ( ! version || cache[ version ] ) {
 			return;
 		}
 		let live = true;
+		setFailed( false );
 		request( `${ API }/${ encodeURIComponent( version ) }` )
 			.then(
 				( r ) =>
 					live && setCache( ( c ) => ( { ...c, [ r.version ]: r } ) )
 			)
-			.catch( ( e ) => live && toast.error( errorMessage( e ) ) );
+			.catch( ( e ) => {
+				if ( live ) {
+					setFailed( true );
+					toast.error( errorMessage( e ) );
+				}
+			} );
 		return () => {
 			live = false;
 		};
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [ version ] );
+	}, [ version, attempt ] );
 
 	const onSearch = async ( q ) => {
 		setSearch( q );
@@ -252,7 +264,27 @@ export function ChangelogScreen( { data } ) {
 							) }
 						</Card>
 					) }
-					{ null === results && ! current && (
+					{ null === results && ! current && failed && (
+						<Card>
+							<EmptyState
+								icon="circle-alert"
+								title={ __(
+									'This release didn’t load',
+									'emcp-tools'
+								) }
+								actions={
+									<Button
+										onClick={ () =>
+											setAttempt( ( n ) => n + 1 )
+										}
+									>
+										{ __( 'Retry', 'emcp-tools' ) }
+									</Button>
+								}
+							/>
+						</Card>
+					) }
+					{ null === results && ! current && ! failed && (
 						<Card>
 							<Skeleton
 								lines={ 6 }

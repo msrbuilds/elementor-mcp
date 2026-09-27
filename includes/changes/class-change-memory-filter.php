@@ -6,7 +6,8 @@
  * Arguments: domain, client, session ('' = unstamped only), user_id,
  * rolled_back (bool|null), search (summary or target), since, until (ts),
  * domains (only these), domains_not (none of these),
- * seq_min, seq_max, before_seq, order ('desc' default | 'asc'), limit (50).
+ * seq_min, seq_max, before_seq, no_audit (skip the rows a rollback records
+ * about itself), order ('desc' default | 'asc'), limit (50).
  *
  * @package EMCP_Tools
  */
@@ -53,6 +54,9 @@ final class EMCP_Tools_Change_Memory_Filter {
 			return false;
 		}
 		if ( ! empty( $a['search'] ) && false === stripos( $r['summary'] . ' ' . $r['target'], (string) $a['search'] ) ) {
+			return false;
+		}
+		if ( ! empty( $a['no_audit'] ) && 'rollback' === (string) $r['action'] && empty( $r['rollback'] ) ) {
 			return false;
 		}
 		if ( isset( $a['since'] ) && $r['ts'] < (int) $a['since'] ) {

@@ -83,8 +83,19 @@ final class EMCP_Tools_Attention {
 		return $out;
 	}
 
+	/** Recompute when the conditions of the constant-state checks change. */
+	public static function init(): void {
+		foreach ( array( 'emcp_tools_server_enabled', 'emcp_tools_cloud_connection' ) as $option ) {
+			add_action( 'update_option_' . $option, array( __CLASS__, 'flush' ) );
+			add_action( 'add_option_' . $option, array( __CLASS__, 'flush' ) );
+			add_action( 'delete_option_' . $option, array( __CLASS__, 'flush' ) );
+		}
+	}
+
 	/**
-	 * Items this user has not dismissed at their current state.
+	 * Items this user has not dismissed at their current state. A dismissal
+	 * ends once its item stops showing, so a condition that comes back later
+	 * shows again even when its state string is the same ("off").
 	 *
 	 * @param int $user_id User.
 	 */
@@ -92,12 +103,18 @@ final class EMCP_Tools_Attention {
 		$dismissed = get_user_meta( $user_id, self::META, true );
 		$dismissed = is_array( $dismissed ) ? $dismissed : array();
 		$items     = array();
+		$showing   = array();
 		foreach ( self::current() as $row ) {
-			$id = (string) $row['item']['id'];
+			$id             = (string) $row['item']['id'];
+			$showing[ $id ] = true;
 			if ( isset( $dismissed[ $id ] ) && (string) $dismissed[ $id ] === (string) $row['state'] ) {
 				continue;
 			}
 			$items[] = $row['item'];
+		}
+		$kept = array_intersect_key( $dismissed, $showing );
+		if ( count( $kept ) !== count( $dismissed ) ) {
+			update_user_meta( $user_id, self::META, $kept );
 		}
 		return $items;
 	}

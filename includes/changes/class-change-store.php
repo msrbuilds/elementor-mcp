@@ -379,6 +379,47 @@ final class EMCP_Tools_Change_Store {
 	}
 
 	/**
+	 * Row counts per ts range in one read (spec 9.3: the Dashboard chart).
+	 *
+	 * @param array $bounds [ [ since, until ], ... ] inclusive, ascending.
+	 * @param array $args   Filter arguments.
+	 * @return array<int, array{0: int, 1: int}> [ all, rolled back ] per range.
+	 */
+	public function buckets( array $bounds, array $args = array() ): array {
+		if ( $this->is_table() ) {
+			return $this->s->table_buckets( $bounds, $args );
+		}
+		return self::bucket_rows( $this->option_list(), $bounds, $args );
+	}
+
+	/**
+	 * Bucket rows held in PHP (the option store and the test double).
+	 *
+	 * @param array $rows   Ledger rows.
+	 * @param array $bounds Ranges.
+	 * @param array $args   Filter arguments.
+	 */
+	public static function bucket_rows( array $rows, array $bounds, array $args ): array {
+		$bounds = array_values( $bounds );
+		$out    = array_fill( 0, count( $bounds ), array( 0, 0 ) );
+		foreach ( $rows as $r ) {
+			if ( ! EMCP_Tools_Change_Memory_Filter::matches( $r, $args ) ) {
+				continue;
+			}
+			foreach ( $bounds as $i => $b ) {
+				if ( $r['ts'] >= $b[0] && $r['ts'] <= $b[1] ) {
+					++$out[ $i ][0];
+					if ( ! empty( $r['rolled_back'] ) ) {
+						++$out[ $i ][1];
+					}
+					break;
+				}
+			}
+		}
+		return $out;
+	}
+
+	/**
 	 * @param array $args Arguments.
 	 */
 	public function count( array $args = array() ): int {

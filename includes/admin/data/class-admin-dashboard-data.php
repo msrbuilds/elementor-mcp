@@ -158,8 +158,9 @@ final class EMCP_Tools_Admin_Dashboard_Data {
 		$rolled  = 0;
 		$calls   = 0;
 		$errors  = 0;
-		foreach ( $ledger as $i => $d ) {
-			$s        = $stats['days'][ $i ] ?? array(
+		$by_date = array_column( $stats['days'], null, 'date' );
+		foreach ( $ledger as $d ) {
+			$s        = $by_date[ $d['date'] ] ?? array(
 				'calls'  => 0,
 				'errors' => 0,
 			);
@@ -266,7 +267,12 @@ final class EMCP_Tools_Admin_Dashboard_Data {
 	/** The five newest ledger rows, in History's row shape plus the client. */
 	public function recent(): array {
 		$out = array();
-		foreach ( EMCP_Tools_Change_Log::query( array( 'limit' => 5 ) )['items'] as $r ) {
+		foreach ( EMCP_Tools_Change_Log::query(
+			array(
+				'limit'    => 5,
+				'no_audit' => true,
+			)
+		)['items'] as $r ) {
 			$out[] = EMCP_Tools_Admin_History_Data::row( $r ) + array( 'client' => (string) ( $r['client'] ?? '' ) );
 		}
 		return $out;

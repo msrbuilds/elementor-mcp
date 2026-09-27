@@ -74,8 +74,12 @@ final class EMCP_Tools_Activity_Stats {
 		$stats = self::load();
 		$out   = array();
 		$tools = array();
+		// Calendar days, not 86400-second steps: around a DST change those
+		// skip a date or repeat one.
+		$tz    = function_exists( 'wp_timezone' ) ? wp_timezone() : new DateTimeZone( 'UTC' );
+		$today = ( new DateTimeImmutable( '@' . $now ) )->setTimezone( $tz )->setTime( 12, 0 );
 		for ( $i = $days - 1; $i >= 0; $i-- ) {
-			$key   = self::day_key( $now - $i * self::DAY );
+			$key   = $today->modify( '-' . $i . ' days' )->format( 'Y-m-d' );
 			$day   = $stats[ $key ] ?? array();
 			$out[] = array(
 				'date'   => $key,

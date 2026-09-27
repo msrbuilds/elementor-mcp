@@ -128,6 +128,27 @@ describe( 'ChangelogScreen', () => {
 		expect( await screen.findByText( 'Found it' ) ).toBeInTheDocument();
 	} );
 
+	it( 'falls back to the latest release for an unknown version', () => {
+		mount( '&version=9.9.9' );
+		expect(
+			screen.getByRole( 'heading', { name: /Version 3\.17\.1/ } )
+		).toBeInTheDocument();
+		expect( apiFetch ).not.toHaveBeenCalled();
+	} );
+
+	it( 'offers a retry when a release fails to load', async () => {
+		apiFetch
+			.mockRejectedValueOnce( { code: 'x', message: 'Down' } )
+			.mockResolvedValueOnce(
+				release( '3.17.0', [ item( { title: 'Back again' } ) ] )
+			);
+		mount( '&version=3.17.0' );
+		await userEvent.click(
+			await screen.findByRole( 'button', { name: 'Retry' } )
+		);
+		expect( await screen.findByText( 'Back again' ) ).toBeInTheDocument();
+	} );
+
 	it( 'shows the empty state when nothing matches', async () => {
 		apiFetch.mockResolvedValueOnce( { results: [] } );
 		mount();
