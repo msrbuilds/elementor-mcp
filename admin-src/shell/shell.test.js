@@ -52,7 +52,6 @@ const data = {
 
 function frame() {
 	document.body.innerHTML =
-		'<div data-emcp-promo><button data-emcp-promo-dismiss="cloud">x</button></div>' +
 		'<button data-emcp-palette-open>Search</button>' +
 		'<button data-emcp-notifications-open>Bell<span data-emcp-unread></span></button>' +
 		'<a data-emcp-nav href="/wp-admin/admin.php?page=emcp-tools-modules">Modules</a>' +
@@ -245,21 +244,6 @@ describe( 'ShellApp', () => {
 		expect( navigate ).not.toHaveBeenCalled();
 	} );
 
-	it( 'dismisses the promo bar', async () => {
-		mount();
-		await userEvent.click(
-			document.querySelector( '[data-emcp-promo-dismiss]' )
-		);
-		await waitFor( () =>
-			expect( document.querySelector( '[data-emcp-promo]' ) ).toBeNull()
-		);
-		expect( apiFetch ).toHaveBeenCalledWith(
-			expect.objectContaining( {
-				path: '/emcp-tools/v1/admin/promo/dismiss',
-				data: { id: 'cloud' },
-			} )
-		);
-	} );
 	it( 'keeps Ctrl+K from reaching the WordPress core command palette', async () => {
 		const coreListener = jest.fn();
 		document.addEventListener( 'keydown', coreListener );

@@ -18,13 +18,12 @@ $emcp_screen    = EMCP_Tools_Admin_Screens::screen_for_tab( $active_tab, null, $
 $emcp_user      = wp_get_current_user();
 $emcp_premium   = function_exists( 'emcp_tools_fs' ) && emcp_tools_fs()->can_use_premium_code();
 $emcp_unread    = class_exists( 'EMCP_Tools_Notifications' ) ? EMCP_Tools_Notifications::unread_count( (int) $emcp_user->ID ) : 0;
-$emcp_dismissed = array_values( array_filter( (array) get_user_meta( (int) $emcp_user->ID, EMCP_Tools_Admin_Frame::PROMO_META, true ) ) );
 $emcp_status    = ( new EMCP_Tools_Admin_Bar() )->status();
 ?>
 <div class="wrap emcp-app eui-frame">
 	<?php
 	// Every Frame method returns markup assembled from escaped parts.
-	echo EMCP_Tools_Admin_Frame::promo( EMCP_Tools_Admin_Frame::announcements( ! $emcp_premium ), $emcp_dismissed ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+	echo EMCP_Tools_Admin_Frame::promo( EMCP_Tools_Admin_Frame::announcements( ! $emcp_premium ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 	?>
 	<div class="eui-frame__layout">
 		<?php echo EMCP_Tools_Admin_Frame::sidebar( $emcp_nav, $active_tab, EMCP_TOOLS_VERSION, $emcp_premium ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>

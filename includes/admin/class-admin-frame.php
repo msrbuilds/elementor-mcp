@@ -17,7 +17,6 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 final class EMCP_Tools_Admin_Frame {
 
-	const PROMO_META = 'emcp_tools_promo_dismissed';
 
 	/**
 	 * Announcements for the promo bar, in display order.
@@ -48,29 +47,64 @@ final class EMCP_Tools_Admin_Frame {
 				'url'   => function_exists( 'emcp_tools_upgrade_url' ) ? emcp_tools_upgrade_url() : 'https://emcptools.com/pricing',
 			);
 		}
+		$list[] = array(
+			'key'   => 'whatsnew',
+			'badge' => EMCP_TOOLS_VERSION,
+			'icon'  => 'gift',
+			/* translators: %s: plugin version. */
+			'title' => sprintf( __( 'What\'s new in %s.', 'emcp-tools' ), EMCP_TOOLS_VERSION ),
+			'text'  => __( 'A redesigned admin with a Dashboard, History sessions and undo, an MCP Log and scheduled backups.', 'emcp-tools' ),
+			'cta'   => __( 'See what\'s new', 'emcp-tools' ),
+			'url'   => admin_url( 'admin.php?page=' . EMCP_Tools_Admin::PAGE_SLUG . '-changelog' ),
+		);
 		return $list;
 	}
 
 	/**
-	 * The first announcement the user has not dismissed, or ''.
+	 * The announcement bar: every announcement as a slide, rotated by the shell
+	 * (promo.js), with previous/next arrows and dots beside the CTA. It cannot
+	 * be dismissed. Slides after the first are hidden until the shell shows them.
 	 *
-	 * @param array[]  $announcements From announcements().
-	 * @param string[] $dismissed     Dismissed keys (user meta PROMO_META).
+	 * @param array[] $announcements From announcements().
 	 */
-	public static function promo( array $announcements, array $dismissed ): string {
-		foreach ( $announcements as $a ) {
-			if ( in_array( $a['key'], $dismissed, true ) ) {
-				continue;
-			}
-			return '<div class="eui-frame-promo" data-emcp-promo>'
+	public static function promo( array $announcements ): string {
+		$announcements = array_values( $announcements );
+		$count         = count( $announcements );
+		if ( 0 === $count ) {
+			return '';
+		}
+		$slides = '';
+		$dots   = '';
+		foreach ( $announcements as $i => $a ) {
+			$external = 0 === strpos( (string) $a['url'], 'http' ) && 0 !== strpos( (string) $a['url'], admin_url() );
+			$slides  .= '<div class="eui-frame-promo__slide' . ( 0 === $i ? ' is-active"' : '" hidden' )
+				. ' role="group" aria-roledescription="slide" aria-label="' . esc_attr(
+					/* translators: 1: slide number, 2: slide count. */
+					sprintf( __( '%1$d of %2$d', 'emcp-tools' ), $i + 1, $count )
+				) . '">'
 				. '<span class="eui-frame-promo__badge">' . esc_html( $a['badge'] ) . '</span>'
 				. EMCP_Tools_Admin_Icons::svg( $a['icon'] ?? 'cloud', 16 )
 				. '<p class="eui-frame-promo__text"><strong>' . esc_html( $a['title'] ) . '</strong> ' . esc_html( $a['text'] ) . '</p>'
-				. '<a class="eui-frame-promo__cta" href="' . esc_url( $a['url'] ) . '" target="_blank" rel="noopener noreferrer">' . esc_html( $a['cta'] ) . EMCP_Tools_Admin_Icons::svg( 'arrow-right', 14 ) . '</a>'
-				. '<button type="button" class="eui-frame-promo__dismiss" data-emcp-promo-dismiss="' . esc_attr( $a['key'] ) . '" aria-label="' . esc_attr__( 'Dismiss announcement', 'emcp-tools' ) . '">' . EMCP_Tools_Admin_Icons::svg( 'x', 16 ) . '</button>'
+				. '<a class="eui-frame-promo__cta" href="' . esc_url( $a['url'] ) . '"' . ( $external ? ' target="_blank" rel="noopener noreferrer"' : '' ) . '>' . esc_html( $a['cta'] ) . EMCP_Tools_Admin_Icons::svg( 'arrow-right', 14 ) . '</a>'
+				. '</div>';
+			$dots .= '<button type="button" class="eui-frame-promo__dot" data-emcp-promo-dot="' . (int) $i . '"' . ( 0 === $i ? ' aria-current="true"' : '' )
+				. ' aria-label="' . esc_attr(
+					/* translators: %d: announcement number. */
+					sprintf( __( 'Show announcement %d', 'emcp-tools' ), $i + 1 )
+				) . '"></button>';
+		}
+		$nav = '';
+		if ( $count > 1 ) {
+			$nav = '<div class="eui-frame-promo__nav">'
+				. '<button type="button" class="eui-frame-promo__arrow" data-emcp-promo-prev aria-label="' . esc_attr__( 'Previous announcement', 'emcp-tools' ) . '">' . EMCP_Tools_Admin_Icons::svg( 'chevron-left', 16 ) . '</button>'
+				. '<span class="eui-frame-promo__dots">' . $dots . '</span>'
+				. '<button type="button" class="eui-frame-promo__arrow" data-emcp-promo-next aria-label="' . esc_attr__( 'Next announcement', 'emcp-tools' ) . '">' . EMCP_Tools_Admin_Icons::svg( 'chevron-right', 16 ) . '</button>'
 				. '</div>';
 		}
-		return '';
+		return '<div class="eui-frame-promo" data-emcp-promo role="region" aria-roledescription="carousel" aria-label="' . esc_attr__( 'Announcements', 'emcp-tools' ) . '">'
+			. '<div class="eui-frame-promo__slides">' . $slides . '</div>'
+			. $nav
+			. '</div>';
 	}
 
 	/**

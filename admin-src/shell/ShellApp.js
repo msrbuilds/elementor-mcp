@@ -1,6 +1,6 @@
 import { useEffect, useState } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
-import { request, useConfirm } from '@emcp/ui';
+import { useConfirm } from '@emcp/ui';
 import { Palette } from './Palette';
 import { Notifications } from './Notifications';
 
@@ -9,7 +9,7 @@ const defaultNavigate = ( url ) => window.location.assign( url );
 /**
  * Behaviour on top of the server-rendered frame: palette (Ctrl/Cmd+K and the
  * sidebar search), notifications drawer, unsaved-changes guard on sidebar
- * links, and promo dismissal.
+ * links.
  *
  * @param {Object}                props          Props.
  * @param {Object}                props.data     window.emcpShell.
@@ -53,17 +53,6 @@ export function ShellApp( {
 			}
 			if ( target.closest( '[data-emcp-notifications-open]' ) ) {
 				setDrawerOpen( true );
-				return;
-			}
-			const dismiss = target.closest( '[data-emcp-promo-dismiss]' );
-			if ( dismiss ) {
-				doc.querySelector( '[data-emcp-promo]' )?.remove();
-				request( '/emcp-tools/v1/admin/promo/dismiss', {
-					method: 'POST',
-					data: {
-						id: dismiss.getAttribute( 'data-emcp-promo-dismiss' ),
-					},
-				} ).catch( () => {} );
 				return;
 			}
 			const link = target.closest( 'a[data-emcp-nav]' );

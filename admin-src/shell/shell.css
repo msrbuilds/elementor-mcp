@@ -51,17 +51,89 @@
 	color: var(--emcp-surface);
 }
 
-.eui-frame-promo__dismiss {
+.eui-frame-promo__slides {
+	display: flex;
+	flex: 1;
+	min-inline-size: 0;
+}
+
+.eui-frame-promo__slide {
+	display: flex;
+	flex: 1;
+	align-items: center;
+	gap: 12px;
+	min-inline-size: 0;
+}
+
+.eui-frame-promo__slide[hidden] {
+	display: none;
+}
+
+.eui-frame-promo__nav {
+	display: inline-flex;
+	flex: none;
+	align-items: center;
+	gap: 4px;
+}
+
+.eui-frame-promo__arrow {
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
 	inline-size: 32px;
 	block-size: 32px;
+	padding: 0;
 	border: 0;
 	border-radius: var(--emcp-r-sm);
 	background: transparent;
 	color: var(--emcp-surface);
 	cursor: pointer;
+}
+
+.eui-frame-promo__arrow:hover {
+	background: var(--emcp-primary-strong);
+}
+
+.eui-frame-promo__dots {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+}
+
+/* A 24x32 button whose ::before widens the hit area to 32px; the visible dot
+ * is the ::after. Inactive dots are white rings, the current one is filled. */
+.eui-frame-promo__dot {
+	position: relative;
+	inline-size: 24px;
+	block-size: 32px;
+	padding: 0;
+	border: 0;
+	background: transparent;
+	cursor: pointer;
+}
+
+.eui-frame-promo__dot::before {
+	position: absolute;
+	inset-block: 0;
+	inset-inline: -4px;
+	content: "";
+}
+
+.eui-frame-promo__dot::after {
+	position: absolute;
+	inset-block-start: 50%;
+	inset-inline-start: 50%;
+	inline-size: 8px;
+	block-size: 8px;
+	border: 1.5px solid var(--emcp-surface);
+	border-radius: 50%;
+	content: "";
+	transform: translate(-50%, -50%);
+	box-sizing: border-box;
+}
+
+.eui-frame-promo__dot[aria-current="true"]::after {
+	background: var(--emcp-surface);
 }
 
 .eui-frame__layout {
