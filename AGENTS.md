@@ -271,6 +271,22 @@ Traps found building it:
 
 - **axe runs on every React screen** (`tests-e2e/setup-screens.spec.js`, `tests-e2e/connection.spec.js`). What it caught: `PageHeader` rendered a `<header>` inside core's role=main; scrollable `code`/`pre` need `tabIndex=0`; step headings need an h2 between the page h1 and the steps' h3; faded states done with `opacity` fail colour contrast, so off/disabled states use `--emcp-surface-2` backgrounds with full-strength text; core styles `code` with a grey background that drops muted text below 4.5:1.
 
+### Dashboard and Changelog (3.18.0, Part 6a, spec 8.1, 8.23, 9.7)
+
+Both are free React screens.
+- **Dashboard** (`admin-src/screens/dashboard/`, tab `dashboard`) boots `EMCP_Tools_Admin_Dashboard_Data::payload()`. `GET admin/dashboard?range=7|14|30` refetches activity, recent changes and attention, with a latest-request guard. Undo reuses `POST admin/history/{id}/undo` (with `limit: 1`) and History's conflict flow.
+  - The chart's kept and rolled-back bars come from `EMCP_Tools_Change_Log::daily()`: two indexed counts per site-local day.
+  - Calls, errors and most used tools come from `EMCP_Tools_Activity_Stats::range()`. Clients are the distinct successful clients in the MCP log over the last 24 hours.
+  - Without `EMCP_Tools_Pro_Usage`, the Templates and Prompts KPIs become Tool calls and Errors. **Trap:** the Pro loader loads that class in wp-admin only, so the data class requires it through `EMCP_Tools_Pro_Loader::path()`, or the REST refetch would switch the KPIs.
+- **Needs your attention** is `EMCP_Tools_Attention` (`includes/attention/`).
+  - Checks implement `EMCP_Tools_Attention_Check` (`id`, `applies`, `state`, `item`) and are extended through `emcp_tools_attention_checks`. Pro adds `EMCP_Tools_Backup_Attention` (no backup in 14 days, last scheduled backup failed) while the Migrate module is on.
+  - The tools item counts visible tools minus enabled ones, like the health strip: the disabled option also lists other builders' tools (live: 209 against 75).
+  - Results are cached 10 minutes in the `emcp_tools_attention` transient, flushed wherever `emcp_tools_nav_counts` is. A throwing check is skipped.
+  - A dismissal stores the check's `state()` per user in `emcp_tools_attention_dismissed`, so the item returns when the state changes. `POST admin/dashboard/attention/{id}/dismiss` returns 404 for an item that no longer shows.
+- **Changelog** (`admin-src/screens/changelog/`, tab `changelog`) parses the bundled `CHANGELOG.md` with `EMCP_Tools_Changelog_Parser`.
+  - Parsing: text is escaped first, links keep only http(s) URLs, and the output goes through `wp_kses` (inline allowlist), then `wp_kses_post`. It is rendered only through `SafeHtml`. A parenthetical holding only issue links (or "reported in" them) moves to the item's issue list.
+  - The whole file is over the 150 KB boot budget, so the boot carries the release index plus the newest release (about 15 KB). `GET admin/changelog/{version}` and `GET admin/changelog?search=` (`#145` matches an issue number) serve the rest; `?version=` persists the selection.
+
 ### MCP request log (3.18.0)
 
 Every routed JSON-RPC request, on HTTP and WP-CLI stdio, becomes one row in `EMCP_Tools_MCP_Request_Log` (option, 500 rows) through `EMCP_Tools_MCP_Observability`, the adapter observability handler passed to `create_server()`; the adapter's `RequestRouter` emits `mcp.request` on every exit path. `EMCP_Tools_MCP_Log_Recorder` (REST `rest_pre_dispatch` / `rest_post_dispatch`) writes a row only for HTTP requests the router never saw: invalid sessions, unsupported `MCP-Protocol-Version`, malformed bodies, notifications (HTTP never routes them) and adapters without the observability interface (filter `emcp_tools_mcp_observability` off). `EMCP_Tools_Request_Context` supplies client (OAuth client name, application password name, "HTTP", "WP-CLI"), session (`Mcp-Session-Id`, or a pid-plus-start-time hash for stdio) and credential (`app:`, `oauth:`, `cli:`); stdio processes carrying `EMCP_SETUP` are tagged to the Connection setup record (`EMCP_Tools_Connection_Setup`) on any `initialize`. `EMCP_Tools_Activity_Stats` counts calls, errors and tools per day. Live check: `bash pro/tests/smoke/mcp-log-acceptance.sh` (creates and removes a temporary application password and mu-plugin).
