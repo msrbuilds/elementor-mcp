@@ -5,6 +5,7 @@
  *
  * Arguments: domain, client, session ('' = unstamped only), user_id,
  * rolled_back (bool|null), search (summary or target), since, until (ts),
+ * domains (only these), domains_not (none of these),
  * seq_min, seq_max, before_seq, order ('desc' default | 'asc'), limit (50).
  *
  * @package EMCP_Tools
@@ -40,6 +41,12 @@ final class EMCP_Tools_Change_Memory_Filter {
 			}
 		}
 		if ( isset( $a['user_id'] ) && (int) $r['user_id'] !== (int) $a['user_id'] ) {
+			return false;
+		}
+		if ( isset( $a['domains'] ) && ! in_array( (string) $r['domain'], (array) $a['domains'], true ) ) {
+			return false;
+		}
+		if ( isset( $a['domains_not'] ) && in_array( (string) $r['domain'], (array) $a['domains_not'], true ) ) {
 			return false;
 		}
 		if ( isset( $a['rolled_back'] ) && (bool) $r['rolled_back'] !== (bool) $a['rolled_back'] ) {

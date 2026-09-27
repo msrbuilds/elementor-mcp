@@ -193,33 +193,34 @@ final class EMCP_Tools_Change_Sessions {
 	 * @param string $key   Session key.
 	 * @param string $order asc | desc.
 	 * @param int    $limit Max rows.
+	 * @param array  $extra Extra EMCP_Tools_Change_Memory_Filter arguments (search, since,
+	 *                      until, domains, domains_not, before_seq); time bounds intersect the key's.
 	 */
-	public function rows_for( string $key, string $order = 'desc', int $limit = 1000 ): ?array {
+	public function rows_for( string $key, string $order = 'desc', int $limit = 1000, array $extra = array() ): ?array {
+		$base = array(
+			'order' => $order,
+			'limit' => $limit,
+		);
 		if ( 0 === strpos( $key, 's:' ) && strlen( $key ) > 2 ) {
-			return $this->store->select(
-				array(
-					'session' => substr( $key, 2 ),
-					'order'   => $order,
-					'limit'   => $limit,
-				)
-			);
+			return $this->store->select( array( 'session' => substr( $key, 2 ) ) + $extra + $base );
 		}
 		if ( preg_match( '/^w:(\d+)-(\d+):(\d+):(.*)$/', $key, $m ) ) {
-			return $this->store->select(
-				array(
-					'session' => '',
-					'client'  => rawurldecode( $m[4] ),
-					'user_id' => (int) $m[3],
-					'since'   => (int) $m[1],
-					'until'   => (int) $m[2],
-					'order'   => $order,
-					'limit'   => $limit,
-				)
-			);
+			$args          = array(
+				'session' => '',
+				'client'  => rawurldecode( $m[4] ),
+				'user_id' => (int) $m[3],
+			) + $extra + $base;
+			$args['since'] = max( (int) $m[1], (int) ( $extra['since'] ?? 0 ) );
+			$args['until'] = isset( $extra['until'] ) ? min( (int) $m[2], (int) $extra['until'] ) : (int) $m[2];
+			return $this->store->select( $args );
 		}
 		if ( 0 === strpos( $key, 'c:' ) && strlen( $key ) > 2 ) {
 			$row = $this->store->find( substr( $key, 2 ) );
-			return $row ? array( $row ) : null;
+			if ( ! $row ) {
+				return null;
+			}
+			$ok = ( new EMCP_Tools_Change_Memory_Filter( array( $row ) ) )->count( $extra );
+			return $ok ? array( $row ) : array();
 		}
 		return null;
 	}

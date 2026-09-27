@@ -21,6 +21,7 @@ final class EMCP_Tools_Admin_REST_History extends EMCP_Tools_Admin_REST_Controll
 	public function register_routes(): void {
 		// Literal routes first: the first matching route wins.
 		$this->route( 'history/sessions/undo', array( 'methods' => 'POST', 'callback' => array( $this, 'undo_session' ) ) );
+		$this->route( 'history/sessions/rows', array( 'methods' => 'GET', 'callback' => array( $this, 'session_rows' ) ) );
 		$this->route( 'history/retention', array( 'methods' => 'POST', 'callback' => array( $this, 'retention' ) ) );
 		$this->route( 'history/banners/(?P<banner>unrecorded|stray)/dismiss', array( 'methods' => 'POST', 'callback' => array( $this, 'dismiss_banner' ) ) );
 		$this->route(
@@ -120,12 +121,41 @@ final class EMCP_Tools_Admin_REST_History extends EMCP_Tools_Admin_REST_Controll
 		return is_wp_error( $result ) ? self::status( $result ) : self::done( $request, $result );
 	}
 
+	/**
+	 * A session key as sessions() made it, or null. Validated by shape, not
+	 * sanitized: sanitize_text_field() strips the %xx octets a window key's
+	 * encoded client name carries.
+	 *
+	 * @param WP_REST_Request $request Request.
+	 */
+	private static function session_key( $request ): ?string {
+		$key = wp_unslash( (string) $request->get_param( 'session' ) );
+		$ok  = preg_match( '/^(s:[^\x00-\x1f<>"]{1,100}|w:\d+-\d+:\d+:[A-Za-z0-9%._~!*\'()-]{0,300}|c:[a-f0-9]{6,32})$/', $key );
+		return 1 === $ok ? $key : null;
+	}
+
+	private static function invalid_session(): WP_Error {
+		return new WP_Error( 'invalid_session', __( 'That session key is not valid.', 'emcp-tools' ), array( 'status' => 400 ) );
+	}
+
+	public function session_rows( $request ) {
+		$key = self::session_key( $request );
+		if ( null === $key ) {
+			return self::invalid_session();
+		}
+		return new WP_REST_Response( ( new EMCP_Tools_Admin_History_Data() )->rows( $key, (int) $request->get_param( 'before' ), self::view( $request ) ) );
+	}
+
 	public function undo_session( $request ) {
 		$confirm = self::confirmed( $request );
 		if ( $confirm ) {
 			return $confirm;
 		}
-		$result = EMCP_Tools_Change_Log::rollback_session( sanitize_text_field( (string) $request->get_param( 'session' ) ), true === rest_sanitize_boolean( $request->get_param( 'force' ) ) );
+		$key = self::session_key( $request );
+		if ( null === $key ) {
+			return self::invalid_session();
+		}
+		$result = EMCP_Tools_Change_Log::rollback_session( $key, true === rest_sanitize_boolean( $request->get_param( 'force' ) ) );
 		if ( is_wp_error( $result ) ) {
 			return self::status( $result );
 		}

@@ -134,6 +134,11 @@ final class EMCP_Tools_Change_Diff {
 			$b .= self::section( 'meta: ' . $key, '__DELETE__' === $value ? self::NOT_SET : $value );
 			$a .= self::section( 'meta: ' . $key, self::meta_now( 'post', $post_id, (string) $key ) );
 		}
+		foreach ( (array) ( $before['meta_rows'] ?? array() ) as $key => $values ) {
+			$now_rows = get_post_meta( $post_id, (string) $key, false );
+			$b       .= self::section( 'meta: ' . $key, self::rows_text( (array) $values ) );
+			$a       .= self::section( 'meta: ' . $key, self::rows_text( is_array( $now_rows ) ? $now_rows : array() ) );
+		}
 		foreach ( (array) ( $before['terms'] ?? array() ) as $tax => $ids ) {
 			$now_ids = function_exists( 'wp_get_object_terms' ) ? wp_get_object_terms( $post_id, (string) $tax, array( 'fields' => 'ids' ) ) : array();
 			$now_ids = is_array( $now_ids ) ? array_map( 'intval', $now_ids ) : array();
@@ -144,6 +149,14 @@ final class EMCP_Tools_Change_Diff {
 			$a .= self::section( 'terms: ' . $tax, implode( ', ', $now_ids ) );
 		}
 		return self::result( 'text', rtrim( $b ) . "\n", rtrim( $a ) . "\n" );
+	}
+
+	/** A meta key's stored rows: one value as itself, several as a list, none as not set. */
+	private static function rows_text( array $rows ) {
+		if ( ! $rows ) {
+			return self::NOT_SET;
+		}
+		return 1 === count( $rows ) ? reset( $rows ) : array_values( $rows );
 	}
 
 	private static function meta_now( string $object, int $id, string $key ) {
@@ -199,6 +212,9 @@ final class EMCP_Tools_Change_Diff {
 	}
 
 	private static function files( string $before_path, string $after_path ): array {
+		if ( '' !== $before_path && ! file_exists( $before_path ) ) {
+			return self::none( 'missing' ); // The backup is gone; showing the file as new would mislead.
+		}
 		list( $before, $why_b ) = self::read( $before_path );
 		list( $after, $why_a )  = self::read( $after_path );
 		$why                    = '' !== $why_b ? $why_b : $why_a;

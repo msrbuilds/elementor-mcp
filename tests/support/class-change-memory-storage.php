@@ -281,6 +281,7 @@ final class EMCP_Tools_Change_Memory_Storage implements EMCP_Tools_Change_Storag
 	}
 
 	public function table_stamped_sessions( array $args ): array {
+		$this->event( 'stamped_sessions' );
 		ksort( $this->rows );
 		$groups = array();
 		foreach ( $this->rows as $r ) {

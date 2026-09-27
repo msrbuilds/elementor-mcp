@@ -289,6 +289,17 @@ final class EMCP_Tools_Change_WPDB_Storage implements EMCP_Tools_Change_Storage 
 			$where[] = 'user_id = %d';
 			$vals[]  = (int) $a['user_id'];
 		}
+		foreach ( array( 'domains' => 'IN', 'domains_not' => 'NOT IN' ) as $k => $op ) {
+			if ( isset( $a[ $k ] ) ) {
+				$list = array_values( array_map( 'strval', (array) $a[ $k ] ) );
+				if ( ! $list ) {
+					$where[] = 'IN' === $op ? '1=0' : '1=1';
+					continue;
+				}
+				$where[] = "domain {$op} (" . implode( ',', array_fill( 0, count( $list ), '%s' ) ) . ')';
+				$vals    = array_merge( $vals, $list );
+			}
+		}
 		if ( isset( $a['rolled_back'] ) ) {
 			$where[] = 'rolled_back = %d';
 			$vals[]  = $a['rolled_back'] ? 1 : 0;

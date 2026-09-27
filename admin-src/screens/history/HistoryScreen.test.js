@@ -1,4 +1,4 @@
-import { render, screen, waitFor, within } from '@testing-library/react';
+import { act, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import apiFetch from '@wordpress/api-fetch';
 import { AppProviders } from '@emcp/ui';
@@ -209,6 +209,86 @@ describe( 'HistoryScreen', () => {
 		expect(
 			screen.getByRole( 'button', { name: /Undo whole session/ } )
 		).toBeDisabled();
+	} );
+
+	it( 'disables Undo whole session when only audit rows are open', () => {
+		mount( data( { sessions: [ session( { open: 1, undoable: 0 } ) ] } ) );
+		expect(
+			screen.getByRole( 'button', { name: /Undo whole session/ } )
+		).toBeDisabled();
+	} );
+
+	it( 'ignores an older page that lands after the filters changed', async () => {
+		let finishOlder;
+		apiFetch
+			.mockImplementationOnce(
+				() =>
+					new Promise( ( resolve ) => {
+						finishOlder = resolve;
+					} )
+			)
+			.mockResolvedValueOnce(
+				data( {
+					sessions: [
+						session( { key: 's:design', title: 'Design only' } ),
+					],
+				} )
+			);
+		mount( data( { nextCursor: 17 } ) );
+		await userEvent.click(
+			screen.getByRole( 'button', { name: 'Load older sessions' } )
+		);
+		await userEvent.click(
+			screen.getByRole( 'radio', { name: 'Design' } )
+		);
+		expect(
+			await screen.findByRole( 'group', { name: /Design only/ } )
+		).toBeInTheDocument();
+		await act( async () => {
+			finishOlder(
+				data( {
+					sessions: [
+						session( { key: 's:older', title: 'Older work' } ),
+					],
+					nextCursor: 3,
+				} )
+			);
+		} );
+		expect(
+			screen.queryByRole( 'group', { name: /Older work/ } )
+		).toBeNull();
+		expect(
+			screen.queryByRole( 'button', { name: 'Load older sessions' } )
+		).toBeNull();
+	} );
+
+	it( 'shows more rows of a long session', async () => {
+		apiFetch.mockResolvedValue( {
+			rows: [ row( { id: 'bbbb09', seq: 3, title: 'Much older edit' } ) ],
+			more: false,
+		} );
+		mount(
+			data( {
+				sessions: [
+					session( {
+						more: true,
+						rows: [ row( { seq: 40 } ) ],
+					} ),
+				],
+			} )
+		);
+		await userEvent.click(
+			screen.getByRole( 'button', { name: 'Show more changes' } )
+		);
+		expect( apiFetch.mock.calls[ 0 ][ 0 ].path ).toBe(
+			'/emcp-tools/v1/admin/history/sessions/rows?session=s%3Achat-1-abcd&before=40'
+		);
+		expect(
+			await screen.findByText( 'Much older edit' )
+		).toBeInTheDocument();
+		expect(
+			screen.queryByRole( 'button', { name: 'Show more changes' } )
+		).toBeNull();
 	} );
 
 	it( 'opens the diff in a drawer', async () => {

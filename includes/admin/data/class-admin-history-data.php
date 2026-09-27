@@ -19,7 +19,8 @@ final class EMCP_Tools_Admin_History_Data {
 	const PAGE       = 20;
 	const MAX        = 100;
 	const ROWS       = 200;
-	const SCAN_PAGES = 25;
+	const SCAN       = 100; // Sessions read per scan page.
+	const SCAN_PAGES = 5;
 	const KINDS      = array( 'content', 'design', 'settings' );
 	const RANGES     = array(
 		'24h' => 86400,
@@ -85,8 +86,9 @@ final class EMCP_Tools_Admin_History_Data {
 		$out    = array();
 		$cursor = $f['cursor'] ? $f['cursor'] : null;
 		$pages  = 0;
+		$extra  = self::row_filters( $f );
 		do {
-			$args = array( 'limit' => self::PAGE );
+			$args = array( 'limit' => self::SCAN );
 			if ( null !== $cursor ) {
 				$args['cursor'] = $cursor;
 			}
@@ -101,14 +103,8 @@ final class EMCP_Tools_Admin_History_Data {
 				if ( $f['to'] && $s['first_ts'] > $f['to'] ) {
 					continue;
 				}
-				$rows = array_values(
-					array_filter(
-						(array) $helper->rows_for( $s['key'], 'desc', self::ROWS ),
-						static function ( $r ) use ( $f ) {
-							return self::matches( $r, $f );
-						}
-					)
-				);
+				// Filters run in the row query, before the row cap.
+				$rows = (array) $helper->rows_for( $s['key'], 'desc', self::ROWS + 1, $extra );
 				if ( $rows ) {
 					$out[] = self::session( $s, $rows );
 				}
@@ -123,23 +119,52 @@ final class EMCP_Tools_Admin_History_Data {
 	}
 
 	/**
-	 * @param array $r Ledger row.
+	 * The row query arguments for the filters (EMCP_Tools_Change_Memory_Filter).
+	 *
 	 * @param array $f Filters.
 	 */
-	private static function matches( array $r, array $f ): bool {
-		if ( '' !== $f['kind'] && EMCP_Tools_Change_Log::kind_of( $r['domain'] ) !== $f['kind'] ) {
-			return false;
+	private static function row_filters( array $f ): array {
+		$out = array();
+		if ( '' !== $f['search'] ) {
+			$out['search'] = $f['search'];
 		}
-		if ( '' !== $f['search'] && false === stripos( $r['summary'] . ' ' . $r['target'], $f['search'] ) ) {
-			return false;
+		if ( $f['from'] ) {
+			$out['since'] = $f['from'];
 		}
-		if ( $f['from'] && $r['ts'] < $f['from'] ) {
-			return false;
+		if ( $f['to'] ) {
+			$out['until'] = $f['to'];
 		}
-		return ! ( $f['to'] && $r['ts'] > $f['to'] );
+		if ( 'settings' === $f['kind'] ) {
+			$out['domains_not'] = array_merge( ...array_values( EMCP_Tools_Change_Log::KINDS ) );
+		} elseif ( '' !== $f['kind'] ) {
+			$out['domains'] = EMCP_Tools_Change_Log::KINDS[ $f['kind'] ];
+		}
+		return $out;
+	}
+
+	/**
+	 * More rows of one session, older than $before_seq (the per-session "Show more").
+	 *
+	 * @param string $key        Session key.
+	 * @param int    $before_seq Seq of the oldest row shown.
+	 * @param array  $args       Raw filters.
+	 * @return array{rows: array, more: bool}
+	 */
+	public function rows( string $key, int $before_seq, array $args ): array {
+		$extra = self::row_filters( self::filters( $args ) );
+		if ( $before_seq > 0 ) {
+			$extra['before_seq'] = $before_seq;
+		}
+		$rows = (array) ( new EMCP_Tools_Change_Sessions( EMCP_Tools_Change_Log::store() ) )->rows_for( $key, 'desc', self::ROWS + 1, $extra );
+		return array(
+			'rows' => array_map( array( __CLASS__, 'row' ), array_slice( $rows, 0, self::ROWS ) ),
+			'more' => count( $rows ) > self::ROWS,
+		);
 	}
 
 	private static function session( array $s, array $rows ): array {
+		$more = count( $rows ) > self::ROWS;
+		$rows = array_map( array( __CLASS__, 'row' ), array_slice( $rows, 0, self::ROWS ) );
 		return array(
 			'key'       => $s['key'],
 			'title'     => (string) $s['title'],
@@ -150,7 +175,9 @@ final class EMCP_Tools_Admin_History_Data {
 			'count'     => (int) $s['count'],
 			'shown'     => count( $rows ),
 			'open'      => (int) $s['open'],
-			'rows'      => array_map( array( __CLASS__, 'row' ), $rows ),
+			'undoable'  => count( array_filter( $rows, static fn( $r ) => $r['reversible'] ) ),
+			'more'      => $more,
+			'rows'      => $rows,
 		);
 	}
 
@@ -161,6 +188,7 @@ final class EMCP_Tools_Admin_History_Data {
 		$blocker = EMCP_Tools_Change_Log::rollback_blocker( $r );
 		return array(
 			'id'          => $r['id'],
+			'seq'         => (int) $r['seq'],
 			'type'        => EMCP_Tools_Change_Log::type_of( $r ),
 			'kind'        => EMCP_Tools_Change_Log::kind_of( $r['domain'] ),
 			'title'       => '' !== $r['summary'] ? $r['summary'] : $r['action'],

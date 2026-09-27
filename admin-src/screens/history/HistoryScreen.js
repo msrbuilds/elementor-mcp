@@ -40,6 +40,10 @@ export function HistoryScreen( { data } ) {
 	const toast = useToast();
 	const confirm = useConfirm();
 	const first = useRef( true );
+	// Bumped on every filter change: a response started under older filters is dropped.
+	const generation = useRef( 0 );
+	const latest = useRef( filters );
+	latest.current = filters;
 
 	useEffect( () => {
 		if ( first.current ) {
@@ -47,6 +51,7 @@ export function HistoryScreen( { data } ) {
 			return;
 		}
 		let stale = false;
+		generation.current++;
 		setLoading( true );
 		const qs = toQuery( { search, kind, client, range } );
 		request( qs ? `${ API }?${ qs }` : API )
@@ -68,6 +73,7 @@ export function HistoryScreen( { data } ) {
 
 	const write = async ( id, path, method, extra, success ) => {
 		setBusy( id );
+		const mine = generation.current;
 		try {
 			const r = await request( path, {
 				method,
@@ -76,7 +82,13 @@ export function HistoryScreen( { data } ) {
 					...extra,
 				},
 			} );
-			setState( r.history );
+			if ( mine === generation.current ) {
+				setState( r.history );
+			} else {
+				// The filters changed meanwhile: reload for the current ones.
+				const qs = toQuery( latest.current );
+				setState( await request( qs ? `${ API }?${ qs }` : API ) );
+			}
 			if ( success ) {
 				success( r.result );
 			}
@@ -234,12 +246,52 @@ export function HistoryScreen( { data } ) {
 		}
 	};
 
+	const loadMore = async ( session ) => {
+		const last = session.rows[ session.rows.length - 1 ];
+		setBusy( `more:${ session.key }` );
+		const mine = generation.current;
+		try {
+			const params = new URLSearchParams( {
+				session: session.key,
+				before: String( last ? last.seq : 0 ),
+			} );
+			const qs = toQuery( filters );
+			const d = await request(
+				`${ API }/sessions/rows?${ params }${ qs ? '&' + qs : '' }`
+			);
+			if ( mine !== generation.current ) {
+				return;
+			}
+			setState( ( cur ) => ( {
+				...cur,
+				sessions: cur.sessions.map( ( s ) =>
+					s.key === session.key
+						? {
+								...s,
+								rows: [ ...s.rows, ...d.rows ],
+								shown: s.shown + d.rows.length,
+								more: d.more,
+							}
+						: s
+				),
+			} ) );
+		} catch ( e ) {
+			toast.error( errorMessage( e ) );
+		} finally {
+			setBusy( '' );
+		}
+	};
+
 	const loadOlder = async () => {
 		setBusy( 'older' );
+		const mine = generation.current;
 		try {
 			const d = await request(
 				`${ API }?${ toQuery( filters, { before: state.nextCursor } ) }`
 			);
+			if ( mine !== generation.current ) {
+				return;
+			}
 			setState( ( cur ) => ( {
 				...d,
 				sessions: [ ...cur.sessions, ...d.sessions ],
@@ -348,6 +400,7 @@ export function HistoryScreen( { data } ) {
 						session={ s }
 						busy={ busy }
 						onUndoSession={ undoSession }
+						onMore={ loadMore }
 						rowActions={ {
 							onUndo: ( r ) => undo( r ),
 							onDiff: openDiff,

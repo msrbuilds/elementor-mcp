@@ -11,13 +11,21 @@ import { formatTime } from './lib';
  * @param {Object}     props.session       Session from the payload.
  * @param {string}     props.busy          Id or key of the running request.
  * @param {() => void} props.onUndoSession ( session ).
+ * @param {() => void} props.onMore        ( session ): load older rows.
  * @param {Object}     props.rowActions    { onUndo, onDiff, onDelete }.
  */
-export function SessionGroup( { session, busy, onUndoSession, rowActions } ) {
+export function SessionGroup( {
+	session,
+	busy,
+	onUndoSession,
+	onMore,
+	rowActions,
+} ) {
 	const [ open, setOpen ] = useState( true );
 	const listId = useId();
 	const titleId = useId();
-	const hidden = session.count - session.shown;
+	// Audit rows a rollback records are open but have nothing to undo.
+	const undoable = session.undoable ?? session.open;
 	return (
 		<div
 			className="emcp-history__session"
@@ -61,7 +69,7 @@ export function SessionGroup( { session, busy, onUndoSession, rowActions } ) {
 				<Button
 					size="sm"
 					icon="rotate-ccw"
-					disabled={ ! session.open || busy === session.key }
+					disabled={ ! undoable || busy === session.key }
 					loading={ busy === session.key }
 					aria-label={ sprintf(
 						/* translators: %s: session title. */
@@ -83,18 +91,15 @@ export function SessionGroup( { session, busy, onUndoSession, rowActions } ) {
 							{ ...rowActions }
 						/>
 					) ) }
-					{ hidden > 0 && (
+					{ session.more && (
 						<li className="emcp-history__more">
-							{ sprintf(
-								/* translators: %d: changes not shown. */
-								_n(
-									'%d more change is not shown.',
-									'%d more changes are not shown.',
-									hidden,
-									'emcp-tools'
-								),
-								hidden
-							) }
+							<Button
+								size="sm"
+								onClick={ () => onMore( session ) }
+								loading={ busy === `more:${ session.key }` }
+							>
+								{ __( 'Show more changes', 'emcp-tools' ) }
+							</Button>
 						</li>
 					) }
 				</ul>

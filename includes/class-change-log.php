@@ -249,6 +249,15 @@ class EMCP_Tools_Change_Log {
 	}
 
 	/**
+	 * The entry a rollback records about itself: an audit row with nothing to undo.
+	 *
+	 * @param array $entry Ledger entry.
+	 */
+	public static function is_audit( array $entry ): bool {
+		return 'rollback' === ( $entry['action'] ?? '' ) && empty( $entry['rollback'] );
+	}
+
+	/**
 	 * Undo a whole session, newest first. Each undo is a normal rollback();
 	 * the run stops at the first blocker or failure. Not transactional across
 	 * rows: the report says what was undone and where it stopped.
@@ -270,7 +279,7 @@ class EMCP_Tools_Change_Log {
 			array_filter(
 				$rows,
 				static function ( $r ) {
-					return empty( $r['rolled_back'] );
+					return empty( $r['rolled_back'] ) && ! self::is_audit( $r );
 				}
 			)
 		);
