@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 import { Button, Checkbox, Field, Select } from '@emcp/ui';
-import { TargetPicker } from './TargetPicker';
+import { TargetPicker, looksLikeUrl } from './TargetPicker';
 
 const CODES = [
 	{ value: '301', label: __( '301 Permanent', 'emcp-tools' ) },
@@ -67,6 +67,12 @@ export function RedirectForm( {
 		if ( ! target.postId && ! target.value.trim() ) {
 			next.target = __(
 				'Choose a page or enter a URL to redirect to.',
+				'emcp-tools'
+			);
+		} else if ( ! target.postId && ! looksLikeUrl( target.value.trim() ) ) {
+			// Typed text that was never picked from the list is not a URL.
+			next.target = __(
+				'Choose a page from the list, or enter a path such as /new-page or a full URL.',
 				'emcp-tools'
 			);
 		}

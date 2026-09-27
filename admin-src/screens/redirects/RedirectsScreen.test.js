@@ -144,6 +144,28 @@ describe( 'RedirectsScreen', () => {
 		expect( apiFetch ).not.toHaveBeenCalled();
 	} );
 
+	it( 'refuses a typed page title that was never picked', async () => {
+		apiFetch.mockResolvedValue( { items: [] } );
+		mount();
+		const form = addForm();
+		await userEvent.type( within( form ).getByLabelText( 'From' ), '/old' );
+		await userEvent.type(
+			within( form ).getByLabelText( 'To' ),
+			'About us'
+		);
+		await userEvent.click(
+			within( form ).getByRole( 'button', { name: 'Add redirect' } )
+		);
+		expect(
+			screen.getByText(
+				'Choose a page from the list, or enter a path such as /new-page or a full URL.'
+			)
+		).toBeInTheDocument();
+		expect(
+			apiFetch.mock.calls.filter( ( c ) => 'POST' === c[ 0 ].method )
+		).toHaveLength( 0 );
+	} );
+
 	it( 'searches pages for the target and sends the post id', async () => {
 		apiFetch
 			.mockResolvedValueOnce( {

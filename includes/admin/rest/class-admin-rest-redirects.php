@@ -115,7 +115,8 @@ final class EMCP_Tools_Admin_REST_Redirects extends EMCP_Tools_Admin_REST_Contro
 	 * @return WP_Error
 	 */
 	private static function error( WP_Error $e ): WP_Error {
-		$status = 'not_found' === $e->get_error_code() ? 404 : 400;
+		$data   = $e->get_error_data();
+		$status = is_array( $data ) && isset( $data['status'] ) ? (int) $data['status'] : ( 'not_found' === $e->get_error_code() ? 404 : 400 );
 		return new WP_Error( $e->get_error_code(), $e->get_error_message(), array( 'status' => $status ) );
 	}
 
@@ -155,9 +156,6 @@ final class EMCP_Tools_Admin_REST_Redirects extends EMCP_Tools_Admin_REST_Contro
 		$row = EMCP_Tools_Redirect_Store::create( $data );
 		if ( is_wp_error( $row ) ) {
 			return self::error( $row );
-		}
-		if ( ! $row ) {
-			return new WP_Error( 'save_failed', __( 'The redirect could not be saved.', 'emcp-tools' ), array( 'status' => 500 ) );
 		}
 		EMCP_Tools_Change_Recorder::record_redirect( 'create', array( 'id' => (int) $row['id'] ), sprintf( 'Created redirect %s', $row['source_path'] ), (string) $row['source_path'] );
 		return $row;

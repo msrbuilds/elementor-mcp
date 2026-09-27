@@ -2,7 +2,14 @@ import { useEffect, useId, useRef, useState } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 import { Field, request } from '@emcp/ui';
 
-const looksLikeUrl = ( v ) => /^(\/|https?:)/i.test( v );
+/**
+ * Whether text is a redirect target as typed: a root-relative path or an
+ * http(s) URL (the server applies the same rule).
+ *
+ * @param {string} v Text.
+ * @return {boolean} Whether it is a URL.
+ */
+export const looksLikeUrl = ( v ) => /^(\/(?!\/)|https?:\/\/)/i.test( v );
 
 /**
  * The "To" field: a URL, or a published page found by title (a combobox:

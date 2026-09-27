@@ -28,6 +28,8 @@ class EMCP_Tools_Redirect_Store {
 	const DB_VERSION         = 2;
 	const DB_VERSION_OPTION  = 'emcp_tools_redirects_db_version';
 	const UPGRADE_LOG_OPTION = 'emcp_tools_redirects_upgrade_log';
+	const UPGRADE_FAILED     = 'emcp_tools_redirects_upgrade_failed';
+	const UPGRADE_BACKOFF    = 3600;
 	const MAX_SOURCE_LEN     = 191;
 
 	/**
@@ -61,10 +63,56 @@ class EMCP_Tools_Redirect_Store {
 			if ( ! self::create_table() ) {
 				return;
 			}
-		} elseif ( ! self::upgrade() ) {
-			return; // Stay on version 1; the handler keeps path-only matching.
+		} else {
+			if ( ! self::should_try_upgrade( (int) get_option( self::UPGRADE_FAILED, 0 ), time() ) ) {
+				return;
+			}
+			if ( ! self::upgrade() ) {
+				// Stay on version 1 (path-only matching, writes refused) and retry later.
+				update_option( self::UPGRADE_FAILED, time(), false );
+				return;
+			}
+			delete_option( self::UPGRADE_FAILED );
 		}
 		update_option( self::DB_VERSION_OPTION, self::DB_VERSION, false );
+	}
+
+	/**
+	 * Whether a failed schema upgrade may be retried yet (pure).
+	 *
+	 * @param int $failed_at When the last attempt failed (0: never).
+	 * @param int $now       Now.
+	 * @return bool
+	 */
+	public static function should_try_upgrade( int $failed_at, int $now ): bool {
+		return 0 === $failed_at || $now - $failed_at >= self::UPGRADE_BACKOFF;
+	}
+
+	/**
+	 * Re-key rows whose source_key does not match their path and query. A
+	 * WP-CLI MCP server started before the upgrade runs the old create() and
+	 * update(), which leave source_key empty or stale. IGNORE skips a row whose
+	 * key another rule already holds.
+	 */
+	public static function repair_keys(): void {
+		if ( (int) get_option( self::DB_VERSION_OPTION, 0 ) < self::DB_VERSION ) {
+			return;
+		}
+		global $wpdb;
+		$t = self::table();
+		$wpdb->query( "UPDATE IGNORE {$t} SET source_key = SHA1( CONCAT( source_path, '?', source_query ) ) WHERE source_key <> SHA1( CONCAT( source_path, '?', source_query ) )" ); // phpcs:ignore WordPress.DB
+	}
+
+	/**
+	 * The error for a write while the schema upgrade is pending.
+	 *
+	 * @return WP_Error|null
+	 */
+	private static function upgrading(): ?\WP_Error {
+		if ( (int) get_option( self::DB_VERSION_OPTION, 0 ) >= self::DB_VERSION ) {
+			return null;
+		}
+		return new \WP_Error( 'redirects_upgrading', __( 'Redirects are being upgraded. Try again in a minute.', 'emcp-tools' ), array( 'status' => 503 ) );
 	}
 
 	/**
@@ -333,6 +381,21 @@ class EMCP_Tools_Redirect_Store {
 	}
 
 	/**
+	 * Whether a target URL can be redirected to: a root-relative path, or an
+	 * absolute http(s) URL with a plain host. A page title typed without
+	 * picking a page (esc_url_raw turns it into http://Title) is refused.
+	 *
+	 * @param string $target Target URL.
+	 * @return bool
+	 */
+	public static function is_valid_target( string $target ): bool {
+		if ( 1 === preg_match( '#^/(?!/)#', $target ) || '/' === $target ) {
+			return true;
+		}
+		return 1 === preg_match( '#^https?://[a-z0-9.-]+(?::\d+)?(?:[/?\#]|$)#i', $target ) && 1 === preg_match( '#^https?://[^/?\#]*\.[^/?\#]*|^https?://localhost#i', $target );
+	}
+
+	/**
 	 * The rule that answers a request (spec 9.8): an enabled query rule for the
 	 * exact path and query first, then an enabled path rule.
 	 *
@@ -441,15 +504,22 @@ class EMCP_Tools_Redirect_Store {
 		if ( ! $post_id && '' === $target ) {
 			return new \WP_Error( 'missing_target', __( 'A target URL or target_post_id is required.', 'emcp-tools' ) );
 		}
+		if ( '' !== $target && ! self::is_valid_target( $target ) ) {
+			return self::invalid_target();
+		}
 		if ( '' !== $target && self::rule_loops( $source, $query, $target ) ) {
 			return new \WP_Error( 'redirect_loop', __( 'A redirect cannot point to itself.', 'emcp-tools' ) );
+		}
+		$pending = self::upgrading();
+		if ( $pending ) {
+			return $pending;
 		}
 		if ( self::find_by_key( $source, $query ) ) {
 			return new \WP_Error( 'duplicate_source', __( 'A redirect for this source already exists.', 'emcp-tools' ) );
 		}
 		$now = function_exists( 'current_time' ) ? current_time( 'mysql' ) : gmdate( 'Y-m-d H:i:s' );
 		global $wpdb;
-		$wpdb->insert(
+		$inserted = $wpdb->insert(
 			self::table(),
 			array(
 				'source_path'    => $source,
@@ -468,7 +538,8 @@ class EMCP_Tools_Redirect_Store {
 			),
 			array( '%s', '%s', '%s', '%s', '%d', '%d', '%s', '%d', '%d', '%d', '%s', '%s', '%s' )
 		);
-		return self::get( (int) $wpdb->insert_id );
+		$row = $inserted ? self::get( (int) $wpdb->insert_id ) : null;
+		return $row ? $row : new \WP_Error( 'save_failed', __( 'The redirect could not be saved.', 'emcp-tools' ), array( 'status' => 500 ) );
 	}
 
 	/**
@@ -480,6 +551,10 @@ class EMCP_Tools_Redirect_Store {
 	 * @return array|WP_Error
 	 */
 	public static function update( int $id, array $data ) {
+		$pending = self::upgrading();
+		if ( $pending ) {
+			return $pending;
+		}
 		$row = self::get( $id );
 		if ( ! $row ) {
 			return new \WP_Error( 'not_found', __( 'Redirect not found.', 'emcp-tools' ) );
@@ -513,7 +588,14 @@ class EMCP_Tools_Redirect_Store {
 			array_push( $formats, '%s', '%s', '%s', '%d' );
 		}
 		if ( array_key_exists( 'target', $data ) ) {
-			$set['target']         = trim( (string) $data['target'] );
+			$new_target = trim( (string) $data['target'] );
+			if ( '' === $new_target ) {
+				return new \WP_Error( 'missing_target', __( 'A target URL or target_post_id is required.', 'emcp-tools' ) );
+			}
+			if ( ! self::is_valid_target( $new_target ) ) {
+				return self::invalid_target();
+			}
+			$set['target']         = $new_target;
 			$set['target_post_id'] = null;
 			$formats[]             = '%s';
 			$formats[]             = '%d';
@@ -547,7 +629,9 @@ class EMCP_Tools_Redirect_Store {
 		$set['updated_at'] = function_exists( 'current_time' ) ? current_time( 'mysql' ) : gmdate( 'Y-m-d H:i:s' );
 		$formats[]         = '%s';
 		global $wpdb;
-		$wpdb->update( self::table(), $set, array( 'id' => $id ), $formats, array( '%d' ) );
+		if ( false === $wpdb->update( self::table(), $set, array( 'id' => $id ), $formats, array( '%d' ) ) ) {
+			return new \WP_Error( 'save_failed', __( 'The redirect could not be saved.', 'emcp-tools' ), array( 'status' => 500 ) );
+		}
 		return self::get( $id );
 	}
 
@@ -716,7 +800,8 @@ class EMCP_Tools_Redirect_Store {
 		if ( 'update' === $action ) {
 			$write = self::row_for_write( $row );
 			unset( $write['id'] );
-			return (bool) $wpdb->update( self::table(), $write, array( 'id' => (int) $row['id'] ), self::write_formats_no_id(), array( '%d' ) );
+			// 0 changed rows (the row already matches) is still a restore.
+			return false !== $wpdb->update( self::table(), $write, array( 'id' => (int) $row['id'] ), self::write_formats_no_id(), array( '%d' ) );
 		}
 		return false;
 	}
@@ -724,6 +809,15 @@ class EMCP_Tools_Redirect_Store {
 	// ---------------------------------------------------------------------
 	// Internals
 	// ---------------------------------------------------------------------
+
+	/**
+	 * The error for a target that is neither a path nor an http(s) URL.
+	 *
+	 * @return WP_Error
+	 */
+	private static function invalid_target(): \WP_Error {
+		return new \WP_Error( 'invalid_target', __( 'Choose a page from the list, or enter a path such as /new-page or a full URL.', 'emcp-tools' ) );
+	}
 
 	/**
 	 * The error for a query rule whose source has no query.
@@ -777,7 +871,8 @@ class EMCP_Tools_Redirect_Store {
 			'target_post_id' => ! empty( $row['target_post_id'] ) ? (int) $row['target_post_id'] : null,
 			'status_code'    => self::clamp_code( $row['status_code'] ?? 301 ),
 			'match_type'     => (string) ( $row['match_type'] ?? 'exact' ),
-			'ignore_query'   => (int) ( $row['ignore_query'] ?? 1 ),
+			// A row without a query can only be a path rule (a before-image taken on schema 1 may say 0, which then did nothing).
+			'ignore_query'   => '' === (string) ( $row['source_query'] ?? '' ) ? 1 : (int) ( $row['ignore_query'] ?? 1 ),
 			'enabled'        => (int) ( $row['enabled'] ?? 1 ),
 			'hits'           => (int) ( $row['hits'] ?? 0 ),
 			'last_hit'       => isset( $row['last_hit'] ) ? $row['last_hit'] : null,

@@ -177,6 +177,9 @@ class EMCP_Tools_Redirect_Abilities {
 		if ( is_wp_error( $row ) ) {
 			return $row;
 		}
+		if ( ! is_array( $row ) ) {
+			return new \WP_Error( 'save_failed', __( 'The redirect could not be saved.', 'emcp-tools' ) );
+		}
 		if ( class_exists( 'EMCP_Tools_Change_Recorder' ) ) {
 			EMCP_Tools_Change_Recorder::record_redirect(
 				'create',

@@ -151,6 +151,7 @@ final class EMCP_Tools_Admin_Redirects_Data {
 	 * @return array
 	 */
 	public function payload( array $args = array() ): array {
+		EMCP_Tools_Redirect_Store::repair_keys();
 		$search = sanitize_text_field( (string) ( $args['search'] ?? '' ) );
 		$total  = EMCP_Tools_Redirect_Store::count( array( 'search' => $search ) );
 		$pages  = max( 1, (int) ceil( $total / self::PER_PAGE ) );
