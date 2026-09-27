@@ -34,10 +34,12 @@ export function LogRow( { row, max, tz, siteZone, open, onToggle } ) {
 				<td className="emcp-log__when">
 					{ formatWhen( row.ts, tz, siteZone ) }
 				</td>
-				<td>
+				<td className="emcp-log__request">
+					{ row.tool && (
+						<span className="emcp-log__tool">{ row.tool }</span>
+					) }
 					<code className="emcp-log__mono">{ row.method }</code>
 				</td>
-				<td className="emcp-log__tool">{ row.tool }</td>
 				<td>
 					<Badge
 						kind="status"
@@ -114,7 +116,7 @@ export function LogRow( { row, max, tz, siteZone, open, onToggle } ) {
 				className="emcp-log__details"
 				hidden={ ! open }
 			>
-				<td colSpan={ 7 }>
+				<td colSpan={ 6 }>
 					{ open &&
 						( details.length ? (
 							<dl>

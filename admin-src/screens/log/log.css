@@ -57,8 +57,27 @@
 	font-size: 12px;
 }
 
+.emcp-log__request {
+	min-inline-size: 10rem;
+}
+
+.emcp-log__table th,
+.emcp-log__table td {
+	padding-inline: 10px;
+}
+
 .emcp-log__tool {
-	word-break: break-all;
+	display: block;
+	color: var(--emcp-ink);
+	overflow-wrap: anywhere;
+}
+
+.emcp-log__table td {
+	vertical-align: middle;
+}
+
+.emcp-log__table .emcp-log__mono {
+	overflow-wrap: anywhere;
 }
 
 .emcp-log__when {
@@ -75,7 +94,7 @@
 
 .emcp-log__track {
 	display: inline-block;
-	inline-size: 64px;
+	inline-size: 48px;
 	block-size: 6px;
 	border-radius: 3px;
 	background: var(--emcp-surface-2);
@@ -146,4 +165,33 @@
 	.emcp-log__details dl {
 		grid-template-columns: minmax(0, 1fr);
 	}
+}
+
+/* CopyButton is styled for dark code blocks; this one sits on a light table
+   and shows its icon only (the label stays the accessible name). */
+.emcp-log__req .eui-copy {
+	min-block-size: 32px;
+	min-inline-size: 32px;
+	justify-content: center;
+	padding-inline: 0;
+	background: none;
+	color: var(--emcp-primary-strong);
+	font-size: 12px;
+}
+
+.emcp-log__req .eui-copy.is-copied {
+	color: var(--emcp-success-fg);
+}
+
+.emcp-log__req .eui-copy.is-failed {
+	color: var(--emcp-warning-fg);
+}
+
+.emcp-log__req .eui-copy > span {
+	position: absolute;
+	inline-size: 1px;
+	block-size: 1px;
+	overflow: hidden;
+	clip-path: inset(50%);
+	white-space: nowrap;
 }

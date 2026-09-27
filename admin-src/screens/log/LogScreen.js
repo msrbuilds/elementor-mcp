@@ -253,9 +253,8 @@ export function LogScreen( { data } ) {
 						<tr>
 							<th scope="col">{ __( 'Time', 'emcp-tools' ) }</th>
 							<th scope="col">
-								{ __( 'Method', 'emcp-tools' ) }
+								{ __( 'Request', 'emcp-tools' ) }
 							</th>
-							<th scope="col">{ __( 'Tool', 'emcp-tools' ) }</th>
 							<th scope="col">
 								{ __( 'Status', 'emcp-tools' ) }
 							</th>
@@ -292,7 +291,7 @@ export function LogScreen( { data } ) {
 							) )
 						) : (
 							<tr>
-								<td colSpan={ 7 } className="eui-table__empty">
+								<td colSpan={ 6 } className="eui-table__empty">
 									<EmptyState
 										icon="scroll-text"
 										title={

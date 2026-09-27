@@ -314,6 +314,19 @@ A free React screen (`admin-src/screens/redirects/`, `screen-redirects`) on `EMC
 - **Traps:** `sanitize_text_field()` strips `%xx` octets, so redirect sources are cleaned with `wp_strip_all_tags()` plus a control-character strip instead. Core wp-admin caps `select` at 25rem, so a full-width `@emcp/ui` Select needs `max-inline-size: none` at two-class specificity. The legacy `page-redirects.php` view and its admin_post handlers stay until Part 6.
 - **Review fixes:** while the version is below 2, `create()` and `update()` refuse with 503 `redirects_upgrading`, and a failed upgrade is retried at most hourly (`emcp_tools_redirects_upgrade_failed`). `row_for_write()` forces `ignore_query = 1` for a row without a query, so undoing a ledger entry recorded before the upgrade restores a working path rule. `is_valid_target()` accepts only a root-relative path or an http(s) URL with a real host, because `esc_url_raw()` turns a typed page title into `http://About%20us`. A WP-CLI MCP server started before the upgrade keeps the old `create()` and writes an empty `source_key`; `repair_keys()` (an `UPDATE IGNORE`, run on every Redirects list payload) re-keys such rows, but tell the user to reconnect.
 
+### MCP Log screen (3.18.0, Part 5d, spec 8.22)
+
+A free React screen (`admin-src/screens/log/`, `screen-log`, tab `mcp-log`) on `EMCP_Tools_Admin_REST_Log` and `EMCP_Tools_Admin_Log_Data`. It reads the request log that Part 1b records (`EMCP_Tools_MCP_Request_Log`, 500 rows), which gained the pure `filter()` (newest first, `_pos` = stored index), `stats()` and `export_csv()` helpers.
+- **Screen:** the stats (requests, errors, median, slowest with its tool) cover the whole stored window. Rows are filtered server-side by status and search and paged 50 at a time. The Request cell shows the tool with the method in mono beneath, saving a column that 1024 px could not afford. "Show more" reveals client, session, credential, stage, failure reason, the full error (only under WP_DEBUG) and the History entry. The time zone choice (Site, UTC, Browser) is display only and stored in `localStorage` (`emcp.log.tz`).
+- **REST:** `GET admin/log/export.csv` returns a `WP_REST_Response` holding the CSV string. `EMCP_Tools_Admin_REST_Log::serve_csv()` on `rest_pre_serve_request` prints it raw for that route only; error responses stay JSON. The download is a plain link carrying `_wpnonce`, which core cookie auth reads from the query. Cells starting with `= + - @`, a tab or a CR are prefixed with `'`, and the error column exists only under WP_DEBUG. `DELETE admin/log` needs `confirm: true`.
+- **Tests:** `pro/tests/unit/mcplog/{McpLogHelpersTest,RestLogTest}.php`; Jest in `admin-src/screens/log/`; `tests-e2e/log.spec.js` (never clears the log); live `wp eval-file pro/tests/smoke/mcp-log-screen-smoke.php --user=1` (restores the stored log; includes a real HTTP download with a logged-in cookie).
+- **Traps:**
+  - `fputcsv()` needs an explicit empty escape argument on PHP 8.4.
+  - In a smoke, `wp_create_nonce( 'wp_rest' )` binds to the session token in `$_COOKIE[ LOGGED_IN_COOKIE ]`, so set that cookie before creating the nonce you send over HTTP.
+  - `@emcp/ui` `CopyButton` is styled for dark code blocks; on a light surface it needs a colour override (axe caught 1.1:1).
+  - A Playwright locator by accessible name re-resolves after the name changes ("Show more" to "Show less").
+  - The legacy `page-mcp-log.php` stays until Part 6.
+
 ### MCP Server Registration
 
 The plugin registers a dedicated MCP server `emcp-tools-server` at `/wp-json/mcp/emcp-tools-server`. All abilities use the `emcp-tools/` namespace.
