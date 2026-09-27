@@ -35,7 +35,7 @@ All notable changes to MCP Tools for Elementor are documented in this file.
 
 - Changed: **Reconnect your AI clients after updating.** An AI client that stays connected through the update keeps running the previous version, so its changes are not recorded in History until it reconnects. A notice says so while that happens.
 
-- New: **MCP Log screen.** Every MCP request with its client, session, sign-in, status and timing, filterable, with CSV export (spreadsheet formulas are neutralised) and a per-day activity count.
+- New: **MCP Log screen.** Every MCP request with its client, session, sign-in, status and timing, filterable, with request, error and timing totals and a CSV export (spreadsheet formulas are neutralised).
 
 - New: **Scheduled backups (Pro).** Daily or weekly backups at a set time run through WP-Cron in short steps, keep the newest copies you choose, and can be continued from the Backup & Migrate screen if WP-Cron stalls. Two tabs or a tab and WP-Cron never drive the same backup at once.
 
