@@ -196,7 +196,7 @@ describe( 'ToolsScreen', () => {
 			screen.getByRole( 'switch', { name: 'Delete Post' } )
 		);
 		await userEvent.click(
-			screen.getByRole( 'button', { name: 'Bulk actions' } )
+			screen.getByRole( 'button', { name: 'Bulk Actions' } )
 		);
 		await userEvent.click(
 			screen.getByRole( 'menuitem', { name: 'Reset to defaults' } )

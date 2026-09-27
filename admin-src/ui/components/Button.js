@@ -11,6 +11,7 @@ export const Button = forwardRef( function ButtonComponent(
 		variant = 'secondary',
 		size = 'md',
 		icon,
+		iconEnd,
 		loading = false,
 		href,
 		disabled = false,
@@ -38,6 +39,7 @@ export const Button = forwardRef( function ButtonComponent(
 			{ children !== undefined && children !== null && (
 				<span className="eui-btn__label">{ children }</span>
 			) }
+			{ iconEnd && <Icon name={ iconEnd } /> }
 		</>
 	);
 	if ( href && ! disabled ) {

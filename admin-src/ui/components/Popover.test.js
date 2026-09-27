@@ -27,6 +27,29 @@ describe( 'Menu', () => {
 		expect( await axe( container ) ).toHaveNoViolations();
 	} );
 
+	it( 'can show its label as a text button with the icon after it', async () => {
+		const { container } = render(
+			<Menu
+				label="Bulk Actions"
+				icon="chevron-down"
+				showLabel
+				items={ items }
+			/>
+		);
+		const trigger = screen.getByRole( 'button', { name: 'Bulk Actions' } );
+		expect( trigger ).toHaveClass( 'eui-btn', 'eui-menu__trigger' );
+		expect( trigger.textContent ).toBe( 'Bulk Actions' );
+		expect(
+			trigger.querySelector( '.eui-btn__label + .eui-icon' )
+		).not.toBeNull();
+		await userEvent.click( trigger );
+		expect( trigger ).toHaveAttribute( 'aria-expanded', 'true' );
+		expect(
+			screen.getByRole( 'menuitem', { name: 'Export' } )
+		).toHaveFocus();
+		expect( await axe( container ) ).toHaveNoViolations();
+	} );
+
 	it( 'closes on Escape and returns focus to the trigger', async () => {
 		render( <Menu label="More actions" items={ items } /> );
 		const trigger = screen.getByRole( 'button', { name: 'More actions' } );

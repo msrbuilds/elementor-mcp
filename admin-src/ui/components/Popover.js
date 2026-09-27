@@ -3,10 +3,27 @@ import { usePopover } from '../utils/usePopover';
 import { rovingKeyDown } from '../utils/roving';
 import { cx } from '../utils/cx';
 import { Icon } from './Icon';
-import { IconButton } from './Button';
+import { Button, IconButton } from './Button';
 import './Popover.css';
 
-export function Menu( { label, items, icon = 'ellipsis', align = 'end' } ) {
+/**
+ * An actions menu. The trigger is an icon button named by `label`, or with
+ * `showLabel` a text button carrying the label with the icon after it.
+ *
+ * @param {Object}  props
+ * @param {string}  props.label       Accessible name (and text with showLabel).
+ * @param {Array}   props.items       [ { label, onSelect, icon?, danger?, href? } ].
+ * @param {string}  [props.icon]      Trigger icon.
+ * @param {string}  [props.align]     'start' or 'end'.
+ * @param {boolean} [props.showLabel] Show the label on the trigger.
+ */
+export function Menu( {
+	label,
+	items,
+	icon = 'ellipsis',
+	align = 'end',
+	showLabel = false,
+} ) {
 	const pop = usePopover( { align } );
 	const itemRefs = useRef( [] );
 	const menuId = useId();
@@ -27,15 +44,29 @@ export function Menu( { label, items, icon = 'ellipsis', align = 'end' } ) {
 
 	return (
 		<div className="eui-menu">
-			<IconButton
-				ref={ pop.triggerRef }
-				icon={ icon }
-				label={ label }
-				aria-haspopup="menu"
-				aria-expanded={ pop.open ? 'true' : 'false' }
-				aria-controls={ pop.open ? menuId : undefined }
-				onClick={ pop.toggle }
-			/>
+			{ showLabel ? (
+				<Button
+					ref={ pop.triggerRef }
+					className="eui-menu__trigger"
+					iconEnd={ icon }
+					aria-haspopup="menu"
+					aria-expanded={ pop.open ? 'true' : 'false' }
+					aria-controls={ pop.open ? menuId : undefined }
+					onClick={ pop.toggle }
+				>
+					{ label }
+				</Button>
+			) : (
+				<IconButton
+					ref={ pop.triggerRef }
+					icon={ icon }
+					label={ label }
+					aria-haspopup="menu"
+					aria-expanded={ pop.open ? 'true' : 'false' }
+					aria-controls={ pop.open ? menuId : undefined }
+					onClick={ pop.toggle }
+				/>
+			) }
 			{ pop.open && (
 				<ul
 					id={ menuId }

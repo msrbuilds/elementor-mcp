@@ -173,8 +173,9 @@ export function ToolsScreen( { data: initialData } ) {
 							/>
 						</div>
 						<Menu
-							label={ __( 'Bulk actions', 'emcp-tools' ) }
+							label={ __( 'Bulk Actions', 'emcp-tools' ) }
 							icon="chevron-down"
+							showLabel
 							items={ [
 								{
 									label: __(
