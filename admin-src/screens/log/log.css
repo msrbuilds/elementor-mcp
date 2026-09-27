@@ -1,0 +1,149 @@
+.emcp-log__stats {
+	display: grid;
+	grid-template-columns: repeat(4, minmax(0, 1fr));
+	gap: 12px;
+	margin: 0 0 16px;
+}
+
+.emcp-log__stats > div {
+	padding: 14px 16px;
+	border: 1px solid var(--emcp-border);
+	border-radius: var(--emcp-r-card);
+	background: var(--emcp-surface);
+}
+
+.emcp-log__stats dt {
+	color: var(--emcp-muted);
+	font-size: 12px;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
+}
+
+.emcp-log__stats dd {
+	margin: 4px 0 0;
+	color: var(--emcp-ink);
+	font-size: 22px;
+	font-weight: 600;
+}
+
+.emcp-log__slow-tool {
+	display: block;
+	color: var(--emcp-text-2);
+	font-family: var(--emcp-mono);
+	font-size: 12px;
+	font-weight: 400;
+	word-break: break-all;
+}
+
+.emcp-log__toolbar {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 12px;
+	align-items: center;
+	margin-bottom: 8px;
+}
+
+.emcp-log__hint {
+	margin: 0 0 12px;
+	color: var(--emcp-muted);
+}
+
+.emcp-log__mono {
+	font-family: var(--emcp-mono);
+	color: var(--emcp-text-2);
+	background: none;
+	padding: 0;
+	font-size: 12px;
+}
+
+.emcp-log__tool {
+	word-break: break-all;
+}
+
+.emcp-log__when {
+	white-space: nowrap;
+	color: var(--emcp-text-2);
+}
+
+.emcp-log__duration {
+	display: flex;
+	gap: 8px;
+	align-items: center;
+	white-space: nowrap;
+}
+
+.emcp-log__track {
+	display: inline-block;
+	inline-size: 64px;
+	block-size: 6px;
+	border-radius: 3px;
+	background: var(--emcp-surface-2);
+	overflow: hidden;
+}
+
+.emcp-log__bar {
+	display: block;
+	block-size: 100%;
+	border-radius: 3px;
+	background: var(--emcp-primary);
+}
+
+.emcp-log__bar.is-slow {
+	background: var(--emcp-warning-dot);
+}
+
+.emcp-log__req {
+	display: inline-flex;
+	gap: 6px;
+	align-items: center;
+}
+
+.emcp-log__toggle {
+	min-block-size: 32px;
+	padding: 0 8px;
+	border: 0;
+	background: none;
+	color: var(--emcp-primary-strong);
+	font: inherit;
+	font-weight: 600;
+	cursor: pointer;
+	white-space: nowrap;
+}
+
+.emcp-log__details td {
+	background: var(--emcp-surface-2);
+}
+
+.emcp-log__details dl {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 8px 24px;
+	margin: 0;
+}
+
+.emcp-log__details dt {
+	color: var(--emcp-muted);
+	font-size: 12px;
+}
+
+.emcp-log__details dd {
+	margin: 2px 0 0;
+	color: var(--emcp-ink);
+	overflow-wrap: anywhere;
+}
+
+.emcp-log .eui-pagination {
+	margin-top: 12px;
+}
+
+@media (max-width: 1100px) {
+
+	.emcp-log__stats {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+
+	.emcp-log__details dl {
+		grid-template-columns: minmax(0, 1fr);
+	}
+}

@@ -28,6 +28,7 @@ module.exports = {
 		'screen-snippets': './admin-src/screens/snippets/index.js',
 		'screen-history': './admin-src/screens/history/index.js',
 		'screen-redirects': './admin-src/screens/redirects/index.js',
+		'screen-log': './admin-src/screens/log/index.js',
 	},
 	output: {
 		...defaultConfig.output,
