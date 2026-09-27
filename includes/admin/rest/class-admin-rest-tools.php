@@ -84,6 +84,9 @@ final class EMCP_Tools_Admin_REST_Tools extends EMCP_Tools_Admin_REST_Controller
 			update_option( 'emcp_tools_themer_php_enabled', rest_sanitize_boolean( $request->get_param( 'themer_php' ) ) ? '1' : '0' );
 		}
 		delete_transient( 'emcp_tools_nav_counts' );
+		if ( class_exists( 'EMCP_Tools_Attention' ) ) {
+			EMCP_Tools_Attention::flush();
+		}
 
 		return new WP_REST_Response( array_merge( $data->payload(), array( 'ignored' => $result['ignored'] ) ) );
 	}

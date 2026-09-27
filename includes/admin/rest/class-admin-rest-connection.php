@@ -104,6 +104,9 @@ final class EMCP_Tools_Admin_REST_Connection extends EMCP_Tools_Admin_REST_Contr
 		}
 		$result = $data->apply_advanced( $in );
 		delete_transient( 'emcp_tools_nav_counts' );
+		if ( class_exists( 'EMCP_Tools_Attention' ) ) {
+			EMCP_Tools_Attention::flush();
+		}
 		return new WP_REST_Response(
 			array(
 				'advanced' => $data->advanced(),

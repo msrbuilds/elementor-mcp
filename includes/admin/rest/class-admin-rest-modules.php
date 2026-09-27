@@ -99,6 +99,9 @@ final class EMCP_Tools_Admin_REST_Modules extends EMCP_Tools_Admin_REST_Controll
 		);
 		update_option( EMCP_Tools_Module::OPTION_ACTIVE, $result['active'] );
 		delete_transient( 'emcp_tools_nav_counts' );
+		if ( class_exists( 'EMCP_Tools_Attention' ) ) {
+			EMCP_Tools_Attention::flush();
+		}
 		return new WP_REST_Response( array_merge( ( new EMCP_Tools_Admin_Modules_Data() )->payload(), array( 'ignored' => $result['ignored'] ) ) );
 	}
 

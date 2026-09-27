@@ -175,7 +175,7 @@ final class EMCP_Tools_Admin_Dashboard_Data {
 				'errors' => (int) $s['errors'],
 			);
 		}
-		$usage = class_exists( 'EMCP_Tools_Pro_Usage' ) ? EMCP_Tools_Pro_Usage::local_summary() : null;
+		$usage = self::usage();
 		$most  = array();
 		foreach ( array_slice( $stats['tools'], 0, 5, true ) as $tool => $count ) {
 			$most[] = array(
@@ -189,6 +189,21 @@ final class EMCP_Tools_Admin_Dashboard_Data {
 			'kpis'     => self::kpis( $range, $changes, $rolled, $calls, $errors, $usage ),
 			'mostUsed' => $most,
 		);
+	}
+
+	/**
+	 * EMCP_Tools_Pro_Usage::local_summary(), or null on a free build. The Pro
+	 * loader loads that class in wp-admin only, so REST and CLI require it
+	 * here (the range refetch must not switch KPIs).
+	 */
+	private static function usage(): ?array {
+		if ( ! class_exists( 'EMCP_Tools_Pro_Usage' ) && class_exists( 'EMCP_Tools_Pro_Loader' ) ) {
+			$file = EMCP_Tools_Pro_Loader::path( 'includes/admin/class-pro-usage.php' );
+			if ( '' !== $file && file_exists( $file ) ) {
+				require_once $file;
+			}
+		}
+		return class_exists( 'EMCP_Tools_Pro_Usage' ) ? EMCP_Tools_Pro_Usage::local_summary() : null;
 	}
 
 	/**

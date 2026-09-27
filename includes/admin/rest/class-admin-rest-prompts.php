@@ -63,6 +63,9 @@ final class EMCP_Tools_Admin_REST_Prompts extends EMCP_Tools_Admin_REST_Controll
 			return new WP_Error( 'emcp_sync_failed', $bundle->get_error_message(), array( 'status' => 400 ) );
 		}
 		delete_transient( 'emcp_tools_nav_counts' );
+		if ( class_exists( 'EMCP_Tools_Attention' ) ) {
+			EMCP_Tools_Attention::flush();
+		}
 		$payload = ( new EMCP_Tools_Admin_Prompts_Data() )->payload();
 		/* translators: 1: prompt count, 2: category count. */
 		$payload['message'] = sprintf( __( 'Synced %1$d prompts across %2$d categories.', 'emcp-tools' ), $payload['total'], count( $payload['categories'] ) );

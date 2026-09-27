@@ -82,6 +82,9 @@ final class EMCP_Tools_Admin_REST_Brand_Kits extends EMCP_Tools_Admin_REST_Contr
 			return new WP_Error( 'emcp_sync_failed', $bundle->get_error_message(), array( 'status' => 400 ) );
 		}
 		delete_transient( 'emcp_tools_nav_counts' );
+		if ( class_exists( 'EMCP_Tools_Attention' ) ) {
+			EMCP_Tools_Attention::flush();
+		}
 		$payload = ( new EMCP_Tools_Admin_Brand_Kits_Data() )->payload();
 		/* translators: %d: kit count. */
 		$payload['message'] = sprintf( __( 'Synced %d brand kits.', 'emcp-tools' ), $payload['total'] );

@@ -343,6 +343,9 @@ final class EMCP_Tools_Admin_Sandbox_Data {
 	/** Drop the cached sidebar counts after a Sandbox change. */
 	public static function flush_nav(): void {
 		delete_transient( 'emcp_tools_nav_counts' );
+		if ( class_exists( 'EMCP_Tools_Attention' ) ) {
+			EMCP_Tools_Attention::flush();
+		}
 	}
 
 	/**

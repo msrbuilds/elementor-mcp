@@ -175,6 +175,9 @@ class EMCP_Tools_Bootstrap {
 		require_once EMCP_TOOLS_DIR . 'includes/class-lease.php';
 		require_once EMCP_TOOLS_DIR . 'includes/class-mcp-request-log.php';
 		require_once EMCP_TOOLS_DIR . 'includes/class-activity-stats.php';
+		require_once EMCP_TOOLS_DIR . 'includes/attention/interface-attention-check.php';
+		require_once EMCP_TOOLS_DIR . 'includes/attention/class-attention.php';
+		require_once EMCP_TOOLS_DIR . 'includes/attention/class-attention-checks.php';
 		require_once EMCP_TOOLS_DIR . 'includes/class-connection-setup.php';
 		require_once EMCP_TOOLS_DIR . 'includes/class-connection-first-call.php';
 		require_once EMCP_TOOLS_DIR . 'includes/class-request-context.php';

@@ -75,6 +75,9 @@ final class EMCP_Tools_Admin_REST_Builders extends EMCP_Tools_Admin_REST_Control
 		$packs     = EMCP_Tools_Admin_Builders_Data::apply_packs( $current, $ids( $request->get_param( 'packs_enable' ) ), $ids( $request->get_param( 'packs_disable' ) ), $known, $available );
 		update_option( EMCP_Tools_Page_Builders::BLOCK_PACK_OPTION, $packs );
 		delete_transient( 'emcp_tools_nav_counts' );
+		if ( class_exists( 'EMCP_Tools_Attention' ) ) {
+			EMCP_Tools_Attention::flush();
+		}
 
 		return new WP_REST_Response( ( new EMCP_Tools_Admin_Builders_Data() )->payload() );
 	}
