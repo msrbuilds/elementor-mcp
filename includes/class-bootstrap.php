@@ -209,6 +209,9 @@ class EMCP_Tools_Bootstrap {
 		require_once EMCP_TOOLS_DIR . 'includes/admin/data/class-admin-log-data.php';
 		require_once EMCP_TOOLS_DIR . 'includes/admin/rest/class-admin-rest-log.php';
 		require_once EMCP_TOOLS_DIR . 'includes/admin/rest/class-admin-rest-dashboard.php';
+		require_once EMCP_TOOLS_DIR . 'includes/admin/class-changelog-parser.php';
+		require_once EMCP_TOOLS_DIR . 'includes/admin/data/class-admin-changelog-data.php';
+		require_once EMCP_TOOLS_DIR . 'includes/admin/rest/class-admin-rest-changelog.php';
 		require_once EMCP_TOOLS_DIR . 'includes/admin/data/class-admin-sandbox-list.php';
 		require_once EMCP_TOOLS_DIR . 'includes/admin/data/class-admin-sandbox-data.php';
 		require_once EMCP_TOOLS_DIR . 'includes/admin/data/class-admin-sandbox-cloud-data.php';
@@ -582,6 +585,7 @@ class EMCP_Tools_Bootstrap {
 		( new EMCP_Tools_Admin_REST_History() )->register();
 		( new EMCP_Tools_Admin_REST_Log() )->register();
 		( new EMCP_Tools_Admin_REST_Dashboard() )->register();
+		( new EMCP_Tools_Admin_REST_Changelog() )->register();
 		if ( class_exists( 'EMCP_Tools_Redirect_Module' ) && EMCP_Tools_Redirect_Module::is_enabled() ) {
 			( new EMCP_Tools_Admin_REST_Redirects() )->register(); // The table exists only while the module is on.
 		}
