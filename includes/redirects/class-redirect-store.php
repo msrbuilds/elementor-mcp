@@ -333,6 +333,63 @@ class EMCP_Tools_Redirect_Store {
 	}
 
 	/**
+	 * The rule that answers a request (spec 9.8): an enabled query rule for the
+	 * exact path and query first, then an enabled path rule.
+	 *
+	 * @param array|null $query_row Row keyed on path and query.
+	 * @param array|null $path_row  Row keyed on the path alone.
+	 * @return array|null
+	 */
+	public static function pick( ?array $query_row, ?array $path_row ): ?array {
+		if ( $query_row && ! empty( $query_row['enabled'] ) && 0 === (int) $query_row['ignore_query'] ) {
+			return $query_row;
+		}
+		if ( $path_row && ! empty( $path_row['enabled'] ) && 1 === (int) $path_row['ignore_query'] ) {
+			return $path_row;
+		}
+		return null;
+	}
+
+	/**
+	 * Where a matched rule sends the visitor: a path rule forwards the
+	 * request's query to a query-less target; a query rule forwards nothing.
+	 * A target with its own query is used as written.
+	 *
+	 * @param array  $row           Matched rule.
+	 * @param string $target        Resolved target URL.
+	 * @param string $request_query Raw request query string.
+	 * @return string
+	 */
+	public static function target_for( array $row, string $target, string $request_query ): string {
+		if ( 1 === (int) $row['ignore_query'] && '' !== $request_query && false === strpos( $target, '?' ) ) {
+			return $target . '?' . $request_query;
+		}
+		return $target;
+	}
+
+	/**
+	 * Warn when a source path resolves to an existing published post (so the
+	 * redirect would take over a live page).
+	 *
+	 * @param string $source_path Normalized source path.
+	 * @return string Warning text ('' when no shadow).
+	 */
+	public static function shadow_warning( string $source_path ): string {
+		if ( ! function_exists( 'url_to_postid' ) || ! function_exists( 'home_url' ) ) {
+			return '';
+		}
+		$post_id = url_to_postid( home_url( $source_path ) );
+		if ( $post_id && 'publish' === get_post_status( $post_id ) ) {
+			return sprintf(
+				/* translators: %d: post ID. */
+				__( 'Heads up: this source path currently resolves to live published post #%d. The redirect will now take over that URL.', 'emcp-tools' ),
+				(int) $post_id
+			);
+		}
+		return '';
+	}
+
+	/**
 	 * Resolve a row's effective target URL. A target_post_id resolves to the
 	 * current permalink (so it survives the target's own slug changes); an empty
 	 * result (post gone) means the redirect is inactive.
@@ -540,6 +597,23 @@ class EMCP_Tools_Redirect_Store {
 		global $wpdb;
 		$row = $wpdb->get_row( $wpdb->prepare( 'SELECT * FROM ' . self::table() . ' WHERE source_key = %s LIMIT 1', self::key_for( $path, $query ) ), ARRAY_A ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 		return $row ? self::cast( $row ) : null;
+	}
+
+	/**
+	 * The rule that answers a request for a normalized path and query. On a
+	 * table still on schema 1 (an upgrade that failed) only path rules exist.
+	 *
+	 * @param string $path  Normalized request path.
+	 * @param string $query Normalized request query.
+	 * @return array|null
+	 */
+	public static function find_for_request( string $path, string $query ): ?array {
+		if ( (int) get_option( self::DB_VERSION_OPTION, 0 ) < 2 ) {
+			$row = self::find_by_source( $path );
+			return $row && ! empty( $row['enabled'] ) ? $row : null;
+		}
+		$query_row = '' !== $query ? self::find_by_key( $path, $query ) : null;
+		return self::pick( $query_row, self::find_by_key( $path, '' ) );
 	}
 
 	/**

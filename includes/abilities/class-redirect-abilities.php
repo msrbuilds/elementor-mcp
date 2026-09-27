@@ -144,7 +144,7 @@ class EMCP_Tools_Redirect_Abilities {
 						'target'         => array( 'type' => 'string', 'description' => __( 'Destination URL (absolute or site-relative). Provide this OR target_post_id.', 'emcp-tools' ) ),
 						'target_post_id' => array( 'type' => 'integer', 'description' => __( 'Destination post ID (its permalink is resolved live). Provide this OR target.', 'emcp-tools' ) ),
 						'status_code'    => array( 'type' => 'integer', 'enum' => array( 301, 302 ), 'description' => __( 'Default 301 (permanent).', 'emcp-tools' ) ),
-						'ignore_query'   => array( 'type' => 'boolean', 'description' => __( 'Match regardless of query string. Default true.', 'emcp-tools' ) ),
+						'ignore_query'   => array( 'type' => 'boolean', 'description' => __( 'Match regardless of query string. Default true. False matches only the query string given in source (for example /page?ref=ad).', 'emcp-tools' ) ),
 					),
 					'required'   => array( 'source' ),
 				),
@@ -186,33 +186,11 @@ class EMCP_Tools_Redirect_Abilities {
 			);
 		}
 		$result = array( 'redirect' => $row );
-		$warn   = $this->shadow_warning( (string) $row['source_path'] );
+		$warn   = EMCP_Tools_Redirect_Store::shadow_warning( (string) $row['source_path'] );
 		if ( '' !== $warn ) {
 			$result['warning'] = $warn;
 		}
 		return $result;
-	}
-
-	/**
-	 * Warn when a source path resolves to an existing published post (so the
-	 * redirect would shadow a live page).
-	 *
-	 * @param string $source_path Normalized source path.
-	 * @return string Warning text ('' when no shadow).
-	 */
-	private function shadow_warning( string $source_path ): string {
-		if ( ! function_exists( 'url_to_postid' ) || ! function_exists( 'home_url' ) ) {
-			return '';
-		}
-		$post_id = url_to_postid( home_url( $source_path ) );
-		if ( $post_id && 'publish' === get_post_status( $post_id ) ) {
-			return sprintf(
-				/* translators: %d: post ID. */
-				__( 'Heads up: this source path currently resolves to live published post #%d — the redirect will now take over that URL.', 'emcp-tools' ),
-				(int) $post_id
-			);
-		}
-		return '';
 	}
 
 	// ---------------------------------------------------------------------
