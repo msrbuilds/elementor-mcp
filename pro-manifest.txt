@@ -31,12 +31,10 @@ includes/memory/class-memory-enforcer.php
 includes/memory/class-memory-summarizer.php
 includes/abilities/class-memory-abilities.php
 includes/modules/class-memory-module.php
-includes/admin/views/page-memory.php
 includes/gsap/class-gsap-assets.php
 includes/modules/class-gsap-module.php
 includes/modules/class-plugin-export-module.php
 includes/export
-includes/admin/views/sandbox/export.php
 includes/abilities/class-gsap-abilities.php
 assets/vendor/gsap
 skills
@@ -63,10 +61,7 @@ includes/admin/rest/class-admin-rest-memory.php
 includes/admin/data/class-admin-ai-chat-data.php
 includes/admin/data/class-admin-sandbox-export-data.php
 includes/admin/rest/class-admin-rest-sandbox-export.php
-includes/admin/views/page-ai-chat.php
-includes/admin/views/ai-chat-panel.php
 includes/admin/views/ai-chat-panel-editor.php
-includes/admin/views/page-skills.php
 assets/js/editor-window.js
 assets/js/editor-elementor.js
 assets/js/editor-gutenberg.js
@@ -107,12 +102,8 @@ includes/abilities/class-breakdance-integration.php
 
 # Backup & Migrate module (Pro) — Phase 1 + Phase 2 (connector + migration)
 includes/modules/class-migrate-module.php
-includes/admin/views/page-migrate.php
-includes/admin/views/migrate
 includes/migrate
 includes/abilities/class-migrate-abilities.php
-assets/js/migrate.js
-assets/css/migrate.css
 connector
 
 includes/avada/class-avada-tree.php

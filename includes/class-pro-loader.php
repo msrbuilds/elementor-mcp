@@ -169,6 +169,8 @@ final class EMCP_Tools_Pro_Loader {
 		'includes/kirki/class-kirki-document.php',
 		'includes/abilities/class-kirki-integration.php',
 		'includes/abilities/class-skill-abilities.php',
+		// Runtime, not admin-only: the Brand Kits REST route calls its page helper.
+		'includes/admin/class-pro-ajax.php',
 	);
 
 	/** Pro admin class files, in load order. Relative to the Pro root. */
@@ -179,7 +181,6 @@ final class EMCP_Tools_Pro_Loader {
 		'includes/admin/class-pro-prompts.php',
 		'includes/admin/class-pro-templates.php',
 		'includes/admin/class-pro-usage.php',
-		'includes/admin/class-pro-ajax.php',
 		'includes/admin/class-pro-skills.php',
 	);
 
@@ -334,9 +335,6 @@ final class EMCP_Tools_Pro_Loader {
 		// AI Chat admin page + Elementor editor are wired by the AI Chat module.
 		if ( ! function_exists( 'emcp_tools_fs' ) ) {
 			return;
-		}
-		if ( class_exists( 'EMCP_Tools_Pro_Ajax' ) ) {
-			EMCP_Tools_Pro_Ajax::register();
 		}
 		if ( class_exists( 'EMCP_Tools_Pro_Prompts' ) && method_exists( 'EMCP_Tools_Pro_Prompts', 'register_download' ) ) {
 			EMCP_Tools_Pro_Prompts::register_download();
