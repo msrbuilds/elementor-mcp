@@ -1,3 +1,8 @@
+/* Stacks in normal flow: the page header carries the full space itself. */
+.emcp-cl {
+	--eui-header-space: 28px;
+}
+
 .emcp-cl__layout {
 	display: grid;
 	margin-top: 16px;

@@ -1,3 +1,8 @@
+/* Stacks in normal flow: the page header carries the full space itself. */
+.emcp-redirects {
+	--eui-header-space: 28px;
+}
+
 .emcp-redirects .eui-card {
 	margin-bottom: 16px;
 }

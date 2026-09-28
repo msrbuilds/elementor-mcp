@@ -63,11 +63,16 @@
 	padding-inline: 22px;
 }
 
+/* Space under the header. Most screens stack their sections with a 16-20px
+   flex gap, which this adds to (26-30px). A screen that stacks in normal
+   flow, where this margin collapses with the next section's, sets
+   --eui-header-space to the full 28px. */
 .eui-page-header {
 	animation: eui-fade 0.3s ease-out backwards;
 	display: flex;
 	flex-direction: column;
 	gap: 8px;
+	margin-block-end: var(--eui-header-space, 10px);
 }
 
 .eui-page-header__back {

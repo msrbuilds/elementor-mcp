@@ -88,6 +88,56 @@ test( 'every sidebar screen renders in the frame without console errors', async 
 	expect( errors.filter( ( e ) => ! ignorable( e ) ) ).toEqual( [] );
 } );
 
+test( 'every screen leaves the same space under its page header', async ( {
+	page,
+}, info ) => {
+	test.skip(
+		'1440' !== info.project.name,
+		'Spacing does not depend on width.'
+	);
+	test.setTimeout( 300000 );
+	await page.goto( '/wp-admin/admin.php?page=emcp-tools' );
+	const links = await page.$$eval(
+		'.eui-frame-nav a[data-emcp-nav]',
+		( as ) =>
+			as
+				.map( ( a ) => a.getAttribute( 'href' ) )
+				.filter( ( h ) => h.includes( 'page=emcp-tools' ) )
+	);
+	const gaps = {};
+	for ( const href of links ) {
+		await page.goto( href );
+		await page.locator( '[data-emcp-root] > *' ).first().waitFor();
+		const gap = await page.evaluate( () => {
+			const h = document.querySelector( '.eui-page-header' );
+			if ( ! h ) {
+				return null; // AI Chat has no page header.
+			}
+			let n = h.nextElementSibling;
+			while (
+				n &&
+				( 0 === n.offsetHeight ||
+					'absolute' === window.getComputedStyle( n ).position )
+			) {
+				n = n.nextElementSibling;
+			}
+			return n
+				? Math.round(
+						n.getBoundingClientRect().top -
+							h.getBoundingClientRect().bottom
+					)
+				: null;
+		} );
+		if ( null !== gap ) {
+			gaps[ href.split( 'page=' )[ 1 ] ] = gap;
+		}
+	}
+	const off = Object.entries( gaps ).filter(
+		( [ , g ] ) => g < 24 || g > 32
+	);
+	expect( off, JSON.stringify( gaps ) ).toEqual( [] );
+} );
+
 test( 'frame chrome passes axe', async ( { page } ) => {
 	await page.goto( '/wp-admin/admin.php?page=emcp-tools-tools' );
 	const results = await new AxeBuilder( { page } )
