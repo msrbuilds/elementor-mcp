@@ -59,7 +59,8 @@ test( 'Prompts: Use in AI Chat opens a new tab and fills the composer', async ( 
 	] );
 	// The AI Chat screen (Part 4c) waits for the tool list before it shows the composer.
 	await expect( tab.getByRole( 'textbox', { name: 'Message' } ) ).toHaveValue(
-		text,
+		// The composer trims a prompt's trailing blank lines.
+		text.trimEnd(),
 		{ timeout: 60000 }
 	);
 	await expect( tab ).not.toHaveURL( /handoff=/ );
@@ -97,7 +98,8 @@ test( 'Prompts: Customize rewrites the prompt and hands it to AI Chat', async ( 
 		chat.click(),
 	] );
 	await expect( tab.getByRole( 'textbox', { name: 'Message' } ) ).toHaveValue(
-		text,
+		// The composer trims a prompt's trailing blank lines.
+		text.trimEnd(),
 		{ timeout: 60000 }
 	);
 	await tab.close();
