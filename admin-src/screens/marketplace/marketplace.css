@@ -35,8 +35,36 @@
 
 .eui-mk__grid {
 	display: grid;
-	grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+	grid-template-columns: repeat(5, minmax(0, 1fr));
 	gap: 16px;
+}
+
+@media (max-width: 1440px) {
+
+	.eui-mk__grid {
+		grid-template-columns: repeat(4, minmax(0, 1fr));
+	}
+}
+
+@media (max-width: 1280px) {
+
+	.eui-mk__grid {
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+	}
+}
+
+@media (max-width: 960px) {
+
+	.eui-mk__grid {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+
+@media (max-width: 600px) {
+
+	.eui-mk__grid {
+		grid-template-columns: minmax(0, 1fr);
+	}
 }
 
 .eui-mk-card {
@@ -50,7 +78,9 @@
 
 .eui-mk-card__media {
 	position: relative;
-	block-size: 140px;
+
+	/* Marketplace thumbnails are 1200 x 630 social cards: show them whole. */
+	aspect-ratio: 1200 / 630;
 	background: var(--emcp-surface-2);
 }
 
