@@ -100,7 +100,7 @@
 .eui-mk-card__pro {
 	position: absolute;
 	inset-block-start: 10px;
-	inset-inline-end: 10px;
+	inset-inline-start: 10px;
 }
 
 .eui-mk-card__body {

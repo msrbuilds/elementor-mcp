@@ -14,7 +14,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 final class EMCP_Tools_Admin_Marketplace_Data {
 
-	const PER_PAGE  = 24;
+	const PER_PAGE  = 20;
 	const CACHE_TTL = 300;
 	const ERROR_TTL = 60;
 	/** Set for ERROR_TTL after any Cloud failure, whatever the query, so typing through an outage makes no requests. */
