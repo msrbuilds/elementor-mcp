@@ -59,18 +59,14 @@ function mount( over = {} ) {
 describe( 'BuildersScreen', () => {
 	beforeEach( () => apiFetch.mockReset() );
 
-	it( 'shows Gutenberg as detected while the block editor is there', () => {
+	it( 'never lists Gutenberg as a builder to pick: it is always on', () => {
 		mount( { selected: 'elementor' } );
 		expect(
 			screen.getByText( 'Gutenberg is always on' )
 		).toBeInTheDocument();
-		const card = screen
-			.getByRole( 'radio', { name: /Gutenberg only/ } )
-			.closest( 'label' );
-		expect( card ).toHaveTextContent( 'Detected' );
 		expect(
-			screen.getByRole( 'radio', { name: /Gutenberg only/ } )
-		).toBeEnabled();
+			screen.queryByRole( 'radio', { name: /Gutenberg/ } )
+		).toBeNull();
 	} );
 
 	it( 'marks Gutenberg unavailable while the Classic Editor is active', () => {
@@ -86,18 +82,46 @@ describe( 'BuildersScreen', () => {
 		).toBeInTheDocument();
 		expect( screen.queryByText( 'Gutenberg is always on' ) ).toBeNull();
 		expect(
-			screen.getAllByText( 'The Classic Editor plugin is active.' )
-		).toHaveLength( 2 );
-		const radio = screen.getByRole( 'radio', { name: /Gutenberg only/ } );
-		expect( radio ).toBeDisabled();
-		expect( radio.closest( 'label' ) ).toHaveTextContent( 'Unavailable' );
+			screen.getByText( 'The Classic Editor plugin is active.' )
+		).toBeInTheDocument();
+		expect(
+			screen.queryByRole( 'radio', { name: /Gutenberg/ } )
+		).toBeNull();
 	} );
 
-	it( 'shows Gutenberg only as the active choice and statuses on each card', () => {
-		mount();
+	it( 'Use Gutenberg only clears the standalone builder', async () => {
+		apiFetch.mockResolvedValue( { ...data, selected: '' } );
+		mount( { selected: 'elementor' } );
 		expect(
-			screen.getByRole( 'radio', { name: /Gutenberg only/ } )
+			screen.getByRole( 'radio', { name: /Elementor/ } )
 		).toBeChecked();
+		await userEvent.click(
+			screen.getByRole( 'button', { name: 'Use Gutenberg only' } )
+		);
+		expect(
+			screen.getByRole( 'radio', { name: /Elementor/ } )
+		).not.toBeChecked();
+		expect(
+			screen.queryByRole( 'button', { name: 'Use Gutenberg only' } )
+		).toBeNull();
+		await userEvent.click(
+			screen.getByRole( 'button', { name: 'Save changes' } )
+		);
+		expect( apiFetch ).toHaveBeenCalledWith(
+			expect.objectContaining( {
+				data: expect.objectContaining( { builder: '' } ),
+			} )
+		);
+	} );
+
+	it( 'with no builder picked, nothing is checked and each card shows its status', () => {
+		mount();
+		screen
+			.getAllByRole( 'radio' )
+			.forEach( ( r ) => expect( r ).not.toBeChecked() );
+		expect(
+			screen.getByText( 'No standalone builder: only Gutenberg is used.' )
+		).toBeInTheDocument();
 		expect( screen.getByText( 'Detected' ) ).toBeInTheDocument();
 		expect( screen.getByText( 'Not detected' ) ).toBeInTheDocument();
 		expect(

@@ -2,6 +2,7 @@ import { useState } from '@wordpress/element';
 import { __, sprintf } from '@wordpress/i18n';
 import {
 	Badge,
+	Button,
 	Card,
 	Icon,
 	Notice,
@@ -88,22 +89,6 @@ export function BuildersScreen( { data: initialData } ) {
 		);
 	};
 	const gutenberg = data.gutenberg || { available: true, reason: '' };
-	const gutenbergTag = () => {
-		if ( ! gutenberg.available ) {
-			return (
-				<Badge kind="status" value="warning">
-					{ __( 'Unavailable', 'emcp-tools' ) }
-				</Badge>
-			);
-		}
-		return (
-			<Badge kind="status" value="success">
-				{ '' === data.selected
-					? __( 'Active', 'emcp-tools' )
-					: __( 'Detected', 'emcp-tools' ) }
-			</Badge>
-		);
-	};
 	const saved = data.builders.find( ( b ) => b.id === data.selected );
 	const stale = saved && ! saved.available;
 	const builders = data.builders.filter(
@@ -171,15 +156,34 @@ export function BuildersScreen( { data: initialData } ) {
 				</div>
 			</Card>
 
-			<h2 className="eui-builders__section-title">
-				{ __( '1. Standalone builder', 'emcp-tools' ) }
-				<span className="eui-builders__section-hint">
-					{ __(
-						'Pick one. Its tools tab appears in Tools.',
-						'emcp-tools'
-					) }
-				</span>
-			</h2>
+			<div className="eui-builders__section-row">
+				<h2 className="eui-builders__section-title">
+					{ __( '1. Standalone builder', 'emcp-tools' ) }
+					<span className="eui-builders__section-hint">
+						{ __(
+							'Pick one. Its tools tab appears in Tools.',
+							'emcp-tools'
+						) }
+					</span>
+				</h2>
+				{ /* Gutenberg is always on, so it is not a card: picking none is. */ }
+				{ '' === values.builder ? (
+					<span className="eui-builders__section-hint">
+						{ __(
+							'No standalone builder: only Gutenberg is used.',
+							'emcp-tools'
+						) }
+					</span>
+				) : (
+					<Button
+						size="sm"
+						icon="blocks"
+						onClick={ () => setValue( 'builder', '' ) }
+					>
+						{ __( 'Use Gutenberg only', 'emcp-tools' ) }
+					</Button>
+				) }
+			</div>
 			<RadioCardGroup
 				legend={ __( '1. Standalone builder', 'emcp-tools' ) }
 				name="emcp-builder"
@@ -187,19 +191,6 @@ export function BuildersScreen( { data: initialData } ) {
 				onChange={ ( v ) => setValue( 'builder', v ) }
 				columns={ 3 }
 			>
-				<RadioCard
-					value=""
-					title={ __( 'Gutenberg only', 'emcp-tools' ) }
-					description={ __(
-						'Use the block editor and the block plugins below. No standalone builder.',
-						'emcp-tools'
-					) }
-					tag={ gutenbergTag() }
-					disabled={ ! gutenberg.available }
-					requirement={
-						gutenberg.available ? undefined : gutenberg.reason
-					}
-				/>
 				{ builders.map( ( b ) => (
 					<RadioCard
 						key={ b.id }

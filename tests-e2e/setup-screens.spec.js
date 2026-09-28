@@ -58,8 +58,11 @@ test( 'Tools: toggling a tool persists across a reload, then is reverted', async
 test( 'Page Builders: the screen renders its sections', async ( { page } ) => {
 	await page.goto( '/wp-admin/admin.php?page=emcp-tools-page-builders' );
 	await expect(
-		page.getByRole( 'radio', { name: /Gutenberg only/ } )
+		page.getByText( /Gutenberg is (always on|unavailable)/ )
 	).toBeVisible();
+	await expect(
+		page.getByRole( 'radio', { name: /Gutenberg/ } )
+	).toHaveCount( 0 );
 	await expect(
 		page.getByText( '2. Gutenberg block plugins' )
 	).toBeVisible();
