@@ -43,7 +43,7 @@ test( 'Templates: cards, industry filter and preview drawer', async ( {
 	await page
 		.locator( '.eui-tpl' )
 		.first()
-		.getByRole( 'button', { name: /^Preview / } )
+		.getByRole( 'button', { name: /^Details for / } )
 		.click();
 	await expect(
 		page
