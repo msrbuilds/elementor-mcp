@@ -1,4 +1,4 @@
-import { act, render, screen } from '@testing-library/react';
+import { act, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import apiFetch from '@wordpress/api-fetch';
 import { AppProviders } from '@emcp/ui';
@@ -52,6 +52,34 @@ describe( 'McpSetup', () => {
 		);
 		expect( window.location.search ).toContain( 'client=claude-desktop' );
 		expect( window.location.search ).toContain( 'method=oauth' );
+	} );
+
+	it( 'shows each client with its logo, or an icon when it has none', async () => {
+		const clients = [
+			{ ...data.clients[ 0 ], image: '/img/claude.png' },
+			...data.clients.slice( 1 ).map( ( c ) => ( { ...c, image: '' } ) ),
+		];
+		window.history.replaceState(
+			{},
+			'',
+			'/wp-admin/admin.php?page=emcp-tools-connection'
+		);
+		render(
+			<AppProviders>
+				<McpSetup data={ { ...data, clients } } />
+			</AppProviders>
+		);
+		const chips = await screen.findByRole( 'group', {
+			name: 'AI clients',
+		} );
+		const logo = within( chips )
+			.getByRole( 'button', { name: 'Claude Desktop' } )
+			.querySelector( 'img.eui-chip__media' );
+		expect( logo ).toHaveAttribute( 'src', '/img/claude.png' );
+		const plain = within( chips ).getByRole( 'button', {
+			name: 'Claude.ai',
+		} );
+		expect( plain.querySelector( 'svg.eui-chip__media' ) ).not.toBeNull();
 	} );
 
 	it( 'gives the steps a section heading so headings do not skip a level', () => {

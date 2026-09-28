@@ -141,8 +141,24 @@ export function Tabs( {
 	);
 }
 
+/**
+ * A toggleable filter pill. `image` (a logo URL) or `icon` (an icon name) is
+ * shown before the label; both are decorative, the label names the chip.
+ *
+ * @param {Object}     props
+ * @param {string}     props.label         Chip text and accessible name.
+ * @param {string}     [props.image]       Logo URL.
+ * @param {string}     [props.icon]        Icon name, used when there is no image.
+ * @param {boolean}    [props.active]      Pressed state.
+ * @param {number}     [props.count]       Count after the label.
+ * @param {() => void} [props.onClick]     Toggle.
+ * @param {() => void} [props.onRemove]    Shows a remove button when set.
+ * @param {string}     [props.removeLabel] The remove button's name.
+ */
 export function FilterChip( {
 	label,
+	image,
+	icon,
 	active = false,
 	count,
 	onClick,
@@ -157,6 +173,22 @@ export function FilterChip( {
 				aria-pressed={ active ? 'true' : 'false' }
 				onClick={ onClick }
 			>
+				{ image && (
+					<img
+						className="eui-chip__media"
+						src={ image }
+						alt=""
+						width="18"
+						height="18"
+					/>
+				) }
+				{ ! image && icon && (
+					<Icon
+						name={ icon }
+						size={ 16 }
+						className="eui-chip__media"
+					/>
+				) }
 				<span>{ label }</span>
 				{ undefined !== count && (
 					<span className="eui-chip__count">{ count }</span>

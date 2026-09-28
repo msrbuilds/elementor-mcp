@@ -398,6 +398,8 @@ export function McpSetup( { data } ) {
 							<FilterChip
 								key={ c.id }
 								label={ c.label }
+								image={ c.image || undefined }
+								icon={ 'mcp-remote' === c.id ? 'code' : 'plug' }
 								active={ c.id === clientId }
 								onClick={ () => {
 									setClientId( c.id );

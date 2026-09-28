@@ -146,6 +146,20 @@
 	cursor: pointer;
 }
 
+/* A client logo or icon before the label. Logos keep their own colours; an
+   icon follows the text colour. */
+.eui-chip__media {
+	flex: none;
+	inline-size: 18px;
+	block-size: 18px;
+	border-radius: 4px;
+	object-fit: contain;
+}
+
+.eui-chip.is-active img.eui-chip__media {
+	background: var(--emcp-surface);
+}
+
 .eui-chip.is-active .eui-chip__main {
 	color: var(--emcp-surface);
 }

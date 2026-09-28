@@ -75,4 +75,23 @@ describe( 'FilterChip', () => {
 		expect( onClick ).not.toHaveBeenCalled();
 		expect( await axe( container ) ).toHaveNoViolations();
 	} );
+
+	it( 'shows a logo image or an icon before the label, both decorative', () => {
+		const { container } = render(
+			<>
+				<FilterChip label="Cursor" image="/img/cursor.png" />
+				<FilterChip label="Hermes" icon="plug" />
+			</>
+		);
+		const [ withImage, withIcon ] =
+			container.querySelectorAll( '.eui-chip__main' );
+		const img = withImage.querySelector( 'img.eui-chip__media' );
+		expect( img ).toHaveAttribute( 'src', '/img/cursor.png' );
+		expect( img ).toHaveAttribute( 'alt', '' );
+		expect( withImage.firstElementChild ).toBe( img );
+		expect( withIcon.firstElementChild ).toHaveClass( 'eui-chip__media' );
+		expect(
+			screen.getByRole( 'button', { name: 'Cursor' } )
+		).toBeInTheDocument();
+	} );
 } );
