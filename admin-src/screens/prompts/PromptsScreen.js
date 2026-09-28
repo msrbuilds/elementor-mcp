@@ -16,7 +16,7 @@ import {
 	useToast,
 } from '@emcp/ui';
 import { PromptCard } from './PromptCard';
-import { useWheelScroll } from './useWheelScroll';
+import { ChipCarousel } from './ChipCarousel';
 import { CustomizeDrawer } from './CustomizeDrawer';
 
 const API = '/emcp-tools/v1/admin/prompts';
@@ -53,8 +53,6 @@ export function PromptsScreen( { data: initial } ) {
 	const [ preview, setPreview ] = useState( null );
 	const [ customizing, setCustomizing ] = useState( null );
 	const first = useRef( true );
-	const chips = useRef();
-	useWheelScroll( chips );
 
 	useEffect( () => {
 		if ( first.current ) {
@@ -206,12 +204,7 @@ export function PromptsScreen( { data: initial } ) {
 					} }
 					placeholder={ __( 'Search prompts…', 'emcp-tools' ) }
 				/>
-				<div
-					ref={ chips }
-					className="eui-prompts__chips"
-					role="group"
-					aria-label={ __( 'Categories', 'emcp-tools' ) }
-				>
+				<ChipCarousel label={ __( 'Categories', 'emcp-tools' ) }>
 					<FilterChip
 						label={ __( 'All', 'emcp-tools' ) }
 						count={ all }
@@ -227,7 +220,7 @@ export function PromptsScreen( { data: initial } ) {
 							onClick={ () => pick( c.slug ) }
 						/>
 					) ) }
-				</div>
+				</ChipCarousel>
 			</div>
 			{ data.items.length ? (
 				<div className="eui-prompts__grid">
