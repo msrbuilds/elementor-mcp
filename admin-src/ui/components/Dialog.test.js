@@ -22,6 +22,17 @@ function DialogHarness( { Cmp = Dialog } ) {
 }
 
 describe( 'Dialog and Drawer', () => {
+	// The panel portals to <body>, where a <footer> is a second contentinfo
+	// landmark beside core's #wpfooter (axe landmark-no-duplicate-contentinfo).
+	it( 'renders its footer without a landmark element', async () => {
+		render( <DialogHarness Cmp={ Drawer } /> );
+		await userEvent.click( screen.getByRole( 'button', { name: 'Open' } ) );
+		expect( document.querySelector( '.eui-panel__foot' ).tagName ).toBe(
+			'DIV'
+		);
+		expect( screen.queryByRole( 'contentinfo' ) ).toBeNull();
+	} );
+
 	it.each( [
 		[ 'Dialog', Dialog ],
 		[ 'Drawer', Drawer ],

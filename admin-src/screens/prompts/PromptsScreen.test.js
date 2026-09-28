@@ -141,30 +141,65 @@ describe( 'PromptsScreen', () => {
 		);
 	} );
 
-	it( 'hands the prompt to AI Chat through sessionStorage', async () => {
+	it( 'opens AI Chat in a new tab and hands the prompt over by id', async () => {
 		mount();
 		const card = screen
 			.getByRole( 'heading', { name: 'Pizza' } )
 			.closest( '.eui-prompt' );
 		const link = within( card ).getByRole( 'link', {
-			name: 'Use in AI Chat',
+			name: 'Use in AI Chat (opens in a new tab)',
 		} );
-		expect( link ).toHaveAttribute( 'href', data.aiChatUrl );
+		expect( link ).toHaveAttribute( 'target', '_blank' );
+		expect( link.getAttribute( 'rel' ) ).toContain( 'noopener' );
+		const url = new URL( link.href );
+		expect( url.searchParams.get( 'page' ) ).toBe( 'emcp-tools-ai-chat' );
+		const id = url.searchParams.get( 'handoff' );
+		expect( id ).toMatch( /^[a-z0-9]{6,40}$/ );
 		link.addEventListener( 'click', ( e ) => e.preventDefault() );
 		await userEvent.click( link );
+		// localStorage, because a new tab does not share sessionStorage.
 		const handed = JSON.parse(
-			window.sessionStorage.getItem( 'emcp.aiChat.prompt' )
+			window.localStorage.getItem( 'emcp.aiChat.handoff.' + id )
 		);
 		expect( handed.text ).toBe( data.items[ 1 ].content );
 		// Stamped, so AI Chat ignores a hand-off left over from long ago.
 		expect( Math.abs( Date.now() - handed.at ) ).toBeLessThan( 5000 );
+		window.localStorage.clear();
+	} );
+
+	it( 'a middle click hands the prompt over too', () => {
+		mount();
+		const link = screen.getAllByRole( 'link', {
+			name: /^Use in AI Chat/,
+		} )[ 0 ];
+		const id = new URL( link.href ).searchParams.get( 'handoff' );
+		link.dispatchEvent(
+			new window.MouseEvent( 'auxclick', { bubbles: true, button: 1 } )
+		);
+		expect(
+			window.localStorage.getItem( 'emcp.aiChat.handoff.' + id )
+		).not.toBeNull();
+		window.localStorage.clear();
 	} );
 
 	it( 'hides Use in AI Chat when AI Chat is off', () => {
 		mount( { ...data, aiChatUrl: '' } );
 		expect(
-			screen.queryByRole( 'link', { name: 'Use in AI Chat' } )
+			screen.queryByRole( 'link', { name: /^Use in AI Chat/ } )
 		).not.toBeInTheDocument();
+	} );
+
+	it( 'Customize opens the customizer for that prompt', async () => {
+		mount();
+		const card = screen
+			.getByRole( 'heading', { name: 'Bakery' } )
+			.closest( '.eui-prompt' );
+		await userEvent.click(
+			within( card ).getByRole( 'button', { name: 'Customize' } )
+		);
+		expect(
+			await screen.findByRole( 'dialog', { name: 'Customize Bakery' } )
+		).toBeInTheDocument();
 	} );
 
 	it( 'previews the whole prompt in a drawer', async () => {

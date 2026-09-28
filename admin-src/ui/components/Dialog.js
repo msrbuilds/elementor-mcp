@@ -70,9 +70,7 @@ function Panel( {
 					/>
 				</header>
 				<div className="eui-panel__body">{ children }</div>
-				{ footer && (
-					<footer className="eui-panel__foot">{ footer }</footer>
-				) }
+				{ footer && <div className="eui-panel__foot">{ footer }</div> }
 			</div>
 		</div>,
 		document.body

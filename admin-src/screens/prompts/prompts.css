@@ -6,20 +6,31 @@
 
 .eui-prompts__filters {
 	display: flex;
-	flex-wrap: wrap;
-	align-items: flex-start;
+	align-items: center;
 	gap: 14px;
 }
 
 .eui-prompts__filters .eui-search {
-	flex: 0 1 280px;
+	flex: 0 0 280px;
 }
 
+/* One row that scrolls sideways (swipe, trackpad, or the mouse wheel through
+   useWheelScroll) instead of stacking into several rows. */
 .eui-prompts__chips {
 	display: flex;
 	flex: 1;
-	flex-wrap: wrap;
+	flex-wrap: nowrap;
 	gap: 8px;
+	min-inline-size: 0;
+	overflow-x: auto;
+	overscroll-behavior-x: contain;
+	padding-block: 2px 6px;
+	scroll-padding-inline: 4px;
+	-webkit-overflow-scrolling: touch;
+}
+
+.eui-prompts__chips > * {
+	flex: none;
 }
 
 .eui-prompts__grid {
@@ -67,11 +78,17 @@
 	-webkit-box-orient: vertical;
 }
 
+/* Wraps instead of squeezing: four actions do not fit a two-column card. */
 .eui-prompt__actions {
 	display: flex;
+	flex-wrap: wrap;
 	align-items: center;
-	gap: 12px;
+	gap: 8px 12px;
 	margin-block-start: auto;
+}
+
+.eui-prompt__actions > * {
+	flex: none;
 }
 
 .eui-prompt__copied {
@@ -82,14 +99,147 @@
 
 .eui-prompt__chat {
 	min-block-size: 32px;
+	white-space: nowrap;
 	color: var(--emcp-primary-strong);
 	font-weight: 600;
 	line-height: 32px;
 	text-decoration: none;
 }
 
-.eui-prompt__actions .eui-iconbtn {
-	margin-inline-start: auto;
+/* Copy and Preview sit beside the title, so the actions row keeps to one
+   line on a narrow card; the category is the title's eyebrow. */
+.eui-prompt__heading {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 6px;
+	min-inline-size: 0;
+}
+
+.eui-prompt__icons {
+	display: inline-flex;
+	flex: none;
+	gap: 4px;
+}
+
+/* Customize panel */
+.eui-customize {
+	display: flex;
+	flex-direction: column;
+	gap: 22px;
+}
+
+.eui-customize__section {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+}
+
+.eui-customize__title {
+	margin: 0;
+	color: var(--emcp-ink);
+	font-size: 13px;
+	font-weight: 700;
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+}
+
+.eui-customize .eui-select {
+	display: flex;
+}
+
+.eui-customize .eui-select select {
+	flex: 1;
+	min-inline-size: 0;
+	max-inline-size: none; /* core wp-admin caps select at 25rem */
+}
+
+.eui-customize__empty {
+	margin: 0;
+	color: var(--emcp-text-2);
+}
+
+.eui-customize__colors {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.eui-customize__color {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	padding: 8px 10px;
+	border: 1px solid var(--emcp-divider);
+	border-radius: var(--emcp-r-md);
+}
+
+.eui-customize__swatch {
+	flex: none;
+	inline-size: 36px;
+	block-size: 36px;
+	padding: 0;
+	border: 1px solid var(--emcp-border-input);
+	border-radius: var(--emcp-r-sm);
+	background: none;
+	cursor: pointer;
+}
+
+.eui-customize__swatch::-webkit-color-swatch-wrapper {
+	padding: 3px;
+}
+
+.eui-customize__swatch::-webkit-color-swatch {
+	border: 0;
+	border-radius: 5px;
+}
+
+.eui-customize__role {
+	display: flex;
+	flex: 1;
+	flex-direction: column;
+	min-inline-size: 0;
+	color: var(--emcp-ink);
+	font-size: 13px;
+}
+
+.eui-customize__note {
+	color: var(--emcp-text-2);
+	font-size: 12px;
+}
+
+.eui-customize__hex.eui-input.eui-input {
+	flex: none;
+	inline-size: 104px;
+	text-transform: uppercase;
+}
+
+.eui-customize__pair {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 12px;
+}
+
+.eui-customize__preview summary {
+	color: var(--emcp-primary-strong);
+	font-weight: 600;
+	cursor: pointer;
+}
+
+.eui-customize__text {
+	max-block-size: 360px;
+	overflow: auto;
+	margin-block: 10px 0;
+	padding: 12px;
+	border: 1px solid var(--emcp-divider);
+	border-radius: var(--emcp-r-md);
+	background: var(--emcp-surface-2);
+	color: var(--emcp-text-2);
+	font: 400 12px/1.55 var(--emcp-mono);
+	white-space: pre-wrap;
 }
 
 @media (max-width: 1200px) {
@@ -103,5 +253,14 @@
 
 	.eui-prompts__grid {
 		grid-template-columns: minmax(0, 1fr);
+	}
+
+	.eui-prompts__filters {
+		flex-direction: column;
+		align-items: stretch;
+	}
+
+	.eui-prompts__filters .eui-search {
+		flex: none;
 	}
 }

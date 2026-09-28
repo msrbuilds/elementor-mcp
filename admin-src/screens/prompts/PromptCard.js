@@ -1,20 +1,22 @@
 import { useEffect, useRef, useState } from '@wordpress/element';
 import { __, sprintf } from '@wordpress/i18n';
 import { Badge, Button, IconButton, copyText, request } from '@emcp/ui';
-
-export const HANDOFF_KEY = 'emcp.aiChat.prompt';
+import { handoffUrl, newHandoffId, stashHandoff } from './handoff';
 
 /**
- * One prompt: title, category, 4-line preview, Copy, Use in AI Chat, Preview.
+ * One prompt: title, category, 4-line preview, Copy, Customize, Use in AI
+ * Chat, Preview.
  *
- * @param {Object}              props           Props.
- * @param {Object}              props.prompt    Prompt item.
- * @param {string}              props.aiChatUrl AI Chat page, or ''.
- * @param {(p: Object) => void} props.onPreview Open the preview drawer.
+ * @param {Object}              props             Props.
+ * @param {Object}              props.prompt      Prompt item.
+ * @param {string}              props.aiChatUrl   AI Chat page, or ''.
+ * @param {(p: Object) => void} props.onPreview   Open the preview drawer.
+ * @param {(p: Object) => void} props.onCustomize Open the customizer.
  */
-export function PromptCard( { prompt, aiChatUrl, onPreview } ) {
+export function PromptCard( { prompt, aiChatUrl, onPreview, onCustomize } ) {
 	const [ copied, setCopied ] = useState( false );
 	const timer = useRef();
+	const handoffId = useRef( newHandoffId() );
 	useEffect( () => () => clearTimeout( timer.current ), [] );
 
 	const copy = async () => {
@@ -31,55 +33,68 @@ export function PromptCard( { prompt, aiChatUrl, onPreview } ) {
 		).catch( () => {} );
 	};
 
-	const handOff = () => {
-		try {
-			window.sessionStorage.setItem(
-				HANDOFF_KEY,
-				JSON.stringify( { text: prompt.content, at: Date.now() } )
-			);
-		} catch {}
-	};
+	// Click and middle click both open the tab, so both stash the prompt.
+	const handOff = () => stashHandoff( handoffId.current, prompt.content );
 
 	return (
 		<article className="eui-prompt">
 			<div className="eui-prompt__head">
-				<h3 className="eui-prompt__title">{ prompt.title }</h3>
-				<Badge kind="status" value="info">
-					{ prompt.categoryLabel }
-				</Badge>
+				<div className="eui-prompt__heading">
+					<Badge kind="status" value="info">
+						{ prompt.categoryLabel }
+					</Badge>
+					<h3 className="eui-prompt__title">{ prompt.title }</h3>
+				</div>
+				<span className="eui-prompt__icons">
+					<IconButton
+						icon={ copied ? 'check' : 'copy' }
+						className={ copied ? 'eui-prompt__copied' : undefined }
+						label={
+							copied
+								? __( 'Copied', 'emcp-tools' )
+								: __( 'Copy prompt', 'emcp-tools' )
+						}
+						onClick={ copy }
+					/>
+					<IconButton
+						icon="eye"
+						label={ sprintf(
+							/* translators: %s: prompt title. */
+							__( 'Preview %s', 'emcp-tools' ),
+							prompt.title
+						) }
+						onClick={ () => onPreview( prompt ) }
+					/>
+				</span>
 			</div>
 			<pre className="eui-prompt__preview" tabIndex={ 0 }>
 				{ prompt.content }
 			</pre>
 			<div className="eui-prompt__actions">
-				<Button
-					size="sm"
-					className={ copied ? 'eui-prompt__copied' : undefined }
-					icon={ copied ? 'check' : 'copy' }
-					onClick={ copy }
-				>
-					{ copied
-						? __( 'Copied', 'emcp-tools' )
-						: __( 'Copy prompt', 'emcp-tools' ) }
-				</Button>
+				{ onCustomize && (
+					<Button
+						size="sm"
+						icon="sliders-horizontal"
+						onClick={ () => onCustomize( prompt ) }
+					>
+						{ __( 'Customize', 'emcp-tools' ) }
+					</Button>
+				) }
 				{ aiChatUrl && (
 					<a
 						className="eui-prompt__chat"
-						href={ aiChatUrl }
+						href={ handoffUrl( aiChatUrl, handoffId.current ) }
+						target="_blank"
+						rel="noopener noreferrer"
 						onClick={ handOff }
+						onAuxClick={ handOff }
 					>
-						{ __( 'Use in AI Chat', 'emcp-tools' ) }
+						{ __( 'Use in AI Chat', 'emcp-tools' ) }{ ' ' }
+						<span className="eui-visually-hidden">
+							{ __( '(opens in a new tab)', 'emcp-tools' ) }
+						</span>
 					</a>
 				) }
-				<IconButton
-					icon="eye"
-					label={ sprintf(
-						/* translators: %s: prompt title. */
-						__( 'Preview %s', 'emcp-tools' ),
-						prompt.title
-					) }
-					onClick={ () => onPreview( prompt ) }
-				/>
 			</div>
 		</article>
 	);

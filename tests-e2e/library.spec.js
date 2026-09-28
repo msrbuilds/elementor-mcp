@@ -42,19 +42,65 @@ test( 'Prompts: filter by category keeps the URL, preview opens', async ( {
 	await expect( page.getByRole( 'dialog' ) ).toBeVisible();
 } );
 
-test( 'Prompts: Use in AI Chat fills the composer', async ( { page } ) => {
+test( 'Prompts: Use in AI Chat opens a new tab and fills the composer', async ( {
+	page,
+	context,
+} ) => {
 	await page.goto( '/wp-admin/admin.php?page=emcp-tools-prompts' );
-	const link = page.getByRole( 'link', { name: 'Use in AI Chat' } ).first();
+	const link = page.getByRole( 'link', { name: /^Use in AI Chat/ } ).first();
 	test.skip( 0 === ( await link.count() ), 'AI Chat is off on this site' );
 	const text = await page
 		.locator( '.eui-prompt__preview' )
 		.first()
 		.textContent();
-	await link.click();
+	const [ tab ] = await Promise.all( [
+		context.waitForEvent( 'page' ),
+		link.click(),
+	] );
 	// The AI Chat screen (Part 4c) waits for the tool list before it shows the composer.
-	await expect(
-		page.getByRole( 'textbox', { name: 'Message' } )
-	).toHaveValue( text, { timeout: 60000 } );
+	await expect( tab.getByRole( 'textbox', { name: 'Message' } ) ).toHaveValue(
+		text,
+		{ timeout: 60000 }
+	);
+	await expect( tab ).not.toHaveURL( /handoff=/ );
+	await tab.close();
+} );
+
+test( 'Prompts: Customize rewrites the prompt and hands it to AI Chat', async ( {
+	page,
+	context,
+} ) => {
+	await page.goto( '/wp-admin/admin.php?page=emcp-tools-prompts' );
+	const card = page.locator( '.eui-prompt' ).first();
+	await card.getByRole( 'button', { name: 'Customize' } ).click();
+	const drawer = page.getByRole( 'dialog', { name: /^Customize / } );
+	await expect( drawer ).toBeVisible();
+	const name = drawer.getByLabel( 'Business name' );
+	test.skip(
+		0 === ( await name.count() ),
+		'Free samples have no business name'
+	);
+	await name.fill( 'E2E Test Co' );
+	await drawer.getByLabel( 'Page builder' ).selectOption( 'Gutenberg' );
+	await drawer.getByText( /Preview the customized prompt/ ).click();
+	const text = await drawer.getByLabel( 'Customized prompt' ).textContent();
+	expect( text ).toContain( '**Page builder:** Gutenberg' );
+	expect( text ).toContain( '# E2E Test Co — ' );
+	const results = await new AxeBuilder( { page } )
+		.include( '.eui-drawer' )
+		.analyze();
+	expect( results.violations ).toEqual( [] );
+	const chat = drawer.getByRole( 'link', { name: /^Use in AI Chat/ } );
+	test.skip( 0 === ( await chat.count() ), 'AI Chat is off on this site' );
+	const [ tab ] = await Promise.all( [
+		context.waitForEvent( 'page' ),
+		chat.click(),
+	] );
+	await expect( tab.getByRole( 'textbox', { name: 'Message' } ) ).toHaveValue(
+		text,
+		{ timeout: 60000 }
+	);
+	await tab.close();
 } );
 
 test( 'Brand Kits: the grid and the current kit strip render', async ( {

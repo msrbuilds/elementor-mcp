@@ -16,6 +16,8 @@ import {
 	useToast,
 } from '@emcp/ui';
 import { PromptCard } from './PromptCard';
+import { useWheelScroll } from './useWheelScroll';
+import { CustomizeDrawer } from './CustomizeDrawer';
 
 const API = '/emcp-tools/v1/admin/prompts';
 
@@ -49,7 +51,10 @@ export function PromptsScreen( { data: initial } ) {
 	const [ notice, setNotice ] = useState( ! initial.noticeDismissed );
 	const [ syncing, setSyncing ] = useState( false );
 	const [ preview, setPreview ] = useState( null );
+	const [ customizing, setCustomizing ] = useState( null );
 	const first = useRef( true );
+	const chips = useRef();
+	useWheelScroll( chips );
 
 	useEffect( () => {
 		if ( first.current ) {
@@ -202,6 +207,7 @@ export function PromptsScreen( { data: initial } ) {
 					placeholder={ __( 'Search prompts…', 'emcp-tools' ) }
 				/>
 				<div
+					ref={ chips }
 					className="eui-prompts__chips"
 					role="group"
 					aria-label={ __( 'Categories', 'emcp-tools' ) }
@@ -231,6 +237,7 @@ export function PromptsScreen( { data: initial } ) {
 							prompt={ p }
 							aiChatUrl={ data.aiChatUrl }
 							onPreview={ setPreview }
+							onCustomize={ setCustomizing }
 						/>
 					) ) }
 				</div>
@@ -248,6 +255,13 @@ export function PromptsScreen( { data: initial } ) {
 					totalPages={ data.pages }
 					onChange={ ( n ) => setPage( String( n ) ) }
 					label={ __( 'Prompt pages', 'emcp-tools' ) }
+				/>
+			) }
+			{ customizing && (
+				<CustomizeDrawer
+					prompt={ customizing }
+					aiChatUrl={ data.aiChatUrl }
+					onClose={ () => setCustomizing( null ) }
 				/>
 			) }
 			{ preview && (
