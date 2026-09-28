@@ -51,7 +51,7 @@ final class EMCP_Tools_Admin_Marketplace_Data {
 	/**
 	 * The full filtered set from the Cloud, cached per filter combination.
 	 *
-	 * @param array $remote Cloud query (q, category, access, sort).
+	 * @param array $remote Cloud query (q, category, access, sort, view).
 	 * @return array{rows: array, categories: array, error: string}
 	 */
 	private function fetch( array $remote ): array {
@@ -126,6 +126,8 @@ final class EMCP_Tools_Admin_Marketplace_Data {
 				'category' => (string) ( $query['category'] ?? '' ),
 				'access'   => in_array( $query['access'] ?? '', array( 'community', 'pro' ), true ) ? $query['access'] : '',
 				'sort'     => 'popular' === ( $query['sort'] ?? '' ) ? 'popular' : 'newest',
+				// The slim card shape: no listing details, first screenshot only.
+				'view'     => 'card',
 			),
 			'strlen'
 		);

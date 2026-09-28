@@ -251,7 +251,7 @@ class EMCP_Tools_Cloud_Sync {
 			$args = ( '' !== $args ) ? array( 'category' => $args ) : array();
 		}
 		$query = array();
-		foreach ( array( 'q', 'kind', 'category', 'access', 'sort', 'page', 'per_page' ) as $key ) {
+		foreach ( array( 'q', 'kind', 'category', 'access', 'sort', 'page', 'per_page', 'view' ) as $key ) {
 			if ( isset( $args[ $key ] ) && '' !== (string) $args[ $key ] ) {
 				$query[ $key ] = $args[ $key ];
 			}
