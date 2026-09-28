@@ -52,6 +52,7 @@ final class EMCP_Tools_Pro_Loader {
 		// GeneratePress + GenerateBlocks theme integration (Pro).
 		// Blocksy theme integration (Pro): blocks + Companion extensions.
 		'includes/class-skill-catalog.php',
+		'includes/skills/class-custom-skills.php',
 		'includes/class-page-snapshot-pro.php',
 		'includes/admin/class-pro-brand-kits.php',
 		'includes/ai-chat/class-key-crypto.php',
@@ -82,6 +83,7 @@ final class EMCP_Tools_Pro_Loader {
 		'includes/admin/data/class-admin-backup-data.php',
 		'includes/admin/rest/class-admin-rest-backup.php',
 		'includes/admin/data/class-admin-skills-data.php',
+		'includes/admin/data/class-admin-custom-skills-data.php',
 		'includes/admin/rest/class-admin-rest-skills.php',
 		'includes/admin/data/class-admin-memory-data.php',
 		'includes/admin/rest/class-admin-rest-memory.php',
@@ -292,6 +294,10 @@ final class EMCP_Tools_Pro_Loader {
 		// Agent-facing skills (read-side): hook the discovery-context catalog.
 		if ( class_exists( 'EMCP_Tools_Skill_Catalog' ) ) {
 			EMCP_Tools_Skill_Catalog::init();
+		}
+		// Custom skills written on Skills > Custom skills join that catalog.
+		if ( class_exists( 'EMCP_Tools_Custom_Skills' ) ) {
+			EMCP_Tools_Custom_Skills::init();
 		}
 
 		// Page-snapshot Pro sections (a11y + deep seo) attach to the free seam.

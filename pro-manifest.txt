@@ -4,6 +4,7 @@ includes/abilities/class-seo-abilities.php
 includes/abilities/class-a11y-abilities.php
 includes/abilities/class-skill-abilities.php
 includes/class-skill-catalog.php
+includes/skills/class-custom-skills.php
 includes/abilities/class-widget-builder-abilities.php
 includes/abilities/class-system-kit-abilities.php
 includes/class-color-contrast.php
@@ -55,6 +56,7 @@ includes/admin/rest/class-admin-rest-templates.php
 includes/admin/data/class-admin-backup-data.php
 includes/admin/rest/class-admin-rest-backup.php
 includes/admin/data/class-admin-skills-data.php
+includes/admin/data/class-admin-custom-skills-data.php
 includes/admin/rest/class-admin-rest-skills.php
 includes/admin/data/class-admin-memory-data.php
 includes/admin/rest/class-admin-rest-memory.php

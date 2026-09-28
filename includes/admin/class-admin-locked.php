@@ -111,7 +111,8 @@ final class EMCP_Tools_Admin_Locked {
 				),
 			),
 		);
-		$card  = $cards[ $tab ] ?? array(
+		// A child view (tab:view) without its own card shows its tab's.
+		$card  = $cards[ $tab ] ?? $cards[ strtok( $tab, ':' ) ] ?? array(
 			'title'       => __( 'EMCP Pro', 'emcp-tools' ),
 			'description' => __( 'This feature is part of EMCP Pro.', 'emcp-tools' ),
 			'bullets'     => array(

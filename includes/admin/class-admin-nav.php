@@ -162,6 +162,9 @@ final class EMCP_Tools_Admin_Nav {
 	 */
 	private static function subviews(): array {
 		return array(
+			'skills'  => array(
+				'custom' => __( 'Custom skills', 'emcp-tools' ),
+			),
 			'widgets' => array(
 				'widgets'  => __( 'Widgets', 'emcp-tools' ),
 				'blocks'   => __( 'Blocks', 'emcp-tools' ),
