@@ -130,6 +130,31 @@ final class EMCP_Tools_Admin_Sandbox_Data {
 	}
 
 	/**
+	 * Last-modified Unix time of an artifact post. Drafts can carry a zero GMT
+	 * date (0000-00-00 00:00:00), which strtotime() turns into year 2; fall back
+	 * to the local date in the site's time zone, or 0.
+	 *
+	 * @param object|null $post Post.
+	 */
+	public static function modified_ts( $post ): int {
+		if ( ! $post ) {
+			return 0;
+		}
+		$zero = '0000-00-00 00:00:00';
+		$gmt  = (string) ( $post->post_modified_gmt ?? '' );
+		if ( '' !== $gmt && $zero !== $gmt ) {
+			return (int) strtotime( $gmt . ' UTC' );
+		}
+		$local = (string) ( $post->post_modified ?? '' );
+		if ( '' === $local || $zero === $local ) {
+			return 0;
+		}
+		$tz = function_exists( 'wp_timezone_string' ) ? wp_timezone_string() : 'UTC';
+		$ts = strtotime( $local . ' ' . $tz );
+		return false === $ts ? 0 : (int) $ts;
+	}
+
+	/**
 	 * One list row, no source. Null when the id is not an artifact of this kind.
 	 *
 	 * @param string $kind  Kind.
@@ -142,7 +167,6 @@ final class EMCP_Tools_Admin_Sandbox_Data {
 			return null;
 		}
 		$post = get_post( $id );
-		$date = $post ? (string) ( $post->post_modified_gmt ?? $post->post_modified ?? '' ) : '';
 		if ( 'widget' === $kind ) {
 			$ident = (string) $s['widget_name'];
 		} elseif ( 'block' === $kind ) {
@@ -157,7 +181,7 @@ final class EMCP_Tools_Admin_Sandbox_Data {
 			'ident'       => $ident,
 			'active'      => 'active' === $s['status'],
 			'lastError'   => (string) ( $s['last_error'] ?? '' ),
-			'updatedTs'   => '' !== $date ? (int) strtotime( $date . ' UTC' ) : 0,
+			'updatedTs'   => self::modified_ts( $post ),
 			'review'      => self::review( $kind, $id, $s ),
 			'cloud'       => $cloud ? EMCP_Tools_Sandbox_Cloud_State::column( $kind, $id ) : 'none',
 			'marketplace' => $cloud ? EMCP_Tools_Sandbox_Cloud_State::marketplace( $kind, $id ) : null,
