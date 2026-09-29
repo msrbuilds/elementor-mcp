@@ -49,9 +49,14 @@ trait EMCP_Tools_Admin_Settings_Trait {
 
 		// v1 — every Pro-badged tool. Only seeded on a truly fresh install
 		// (applied < 1); re-running on an upgrade would clobber user re-enables.
+		// add-pro-widget stays on (see v5): it registers only with Elementor Pro
+		// active and only adds widgets.
 		if ( $applied < 1 ) {
 			foreach ( $this->get_all_tools() as $category ) {
 				foreach ( $category['tools'] as $slug => $tool ) {
+					if ( 'emcp-tools/add-pro-widget' === $slug ) {
+						continue;
+					}
 					if ( in_array( 'pro', $tool['badges'], true ) || in_array( 'elementor-pro', $tool['badges'], true ) ) {
 						$add[] = $slug;
 					}
