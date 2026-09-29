@@ -302,8 +302,8 @@ class EMCP_Tools_Upgrade_Notice {
 					<li>
 						<span class="emcp-upgrade-banner__check" aria-hidden="true">&#10003;</span>
 						<div class="emcp-upgrade-banner__feature-text">
-							<strong><?php esc_html_e( '50+ Premium Prompts', 'emcp-tools' ); ?></strong>
-							<span><?php esc_html_e( 'proven blueprints across 10 industries', 'emcp-tools' ); ?></span>
+							<strong><?php esc_html_e( '100 Premium Prompts', 'emcp-tools' ); ?></strong>
+							<span><?php esc_html_e( 'landing pages and complete websites across 20 categories', 'emcp-tools' ); ?></span>
 						</div>
 					</li>
 					<li>

@@ -139,7 +139,7 @@ export function PromptsScreen( { data: initial } ) {
 					onDismiss={ dismiss }
 				>
 					{ __(
-						'Each prompt now gives the AI a style guide, design direction, exact content and hard standards, then lets it design the page. They work with any builder: change the first line from Elementor to Gutenberg, Bricks or plain HTML/CSS.',
+						'Each prompt gives the AI a style guide, design direction, content and build standards for a landing page or complete website. Use Customize to choose your builder, business details, colours and fonts.',
 						'emcp-tools'
 					) }
 					{ data.v1Url && (
@@ -178,7 +178,7 @@ export function PromptsScreen( { data: initial } ) {
 					title={ __( 'These are the free samples', 'emcp-tools' ) }
 				>
 					{ __(
-						'EMCP Pro adds a library of 50+ prompts across 10 industries, kept in sync.',
+						'EMCP Pro adds the full library of landing-page and complete website prompts, kept in sync.',
 						'emcp-tools'
 					) }{ ' ' }
 					<a

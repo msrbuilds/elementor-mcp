@@ -56,7 +56,7 @@ Free installs update in place from **Dashboard → Updates**.
 
 ## Connect your AI client
 
-The **Connection** tab in the admin generates a ready-to-paste config for your client, including a one-click `.mcpb` bundle for Claude Desktop. That is the fastest route, and it fills in your site URL and credentials for you.
+The **Connection** screen in the admin walks you through four steps and generates a ready-to-paste config for your client, including a one-click `.mcpb` bundle for Claude Desktop. That is the fastest route, and it fills in your site URL and credentials for you.
 
 Step-by-step guides per client:
 
@@ -76,7 +76,7 @@ Anything that writes, deletes, or renders site-wide **ships disabled** and is op
 
 The [`prompts/`](prompts/) directory has five complete landing-page blueprints, design system, structure, images, and animations, that build an entire page from a single paste: [Local Business](prompts/LOCAL_BUSINESS.md), [Dental Clinic](prompts/DENTAL_CLINIC.md), [Developer Portfolio](prompts/WEB_DEVELOPER_PORTFOLIO.md), [Hair Salon](prompts/HAIR_SALON.md), [Car Wash](prompts/CAR_WASH.md).
 
-A library of 50+ industry-specific prompts is included with [Pro](https://emcptools.com/pricing).
+A library of 100 prompts across 20 categories, 50 landing pages and 50 complete websites, is included with [Pro](https://emcptools.com/pricing).
 
 ## Contributing
 

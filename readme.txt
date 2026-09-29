@@ -48,9 +48,9 @@ As of v3.0.0 the 62 per-widget tools were folded into a catalog-backed model, so
 * **Custom Code**: Add custom CSS (element/page level), inject JavaScript, create site-wide code snippets for head/body injection.
 * **AI Widget Builder (Pro)**: Let an AI agent design custom Elementor widgets from a structured spec (no hand-written PHP). The plugin compiles the spec into a sandboxed widget that appears in the Elementor panel: 35 control types, optional CSS/JS, with a runtime safety net so a bad widget can never break the editor.
 * **Brand Kits**: One-click color + typography kits that re-skin your whole site. 10 kits are free to apply (with backup + restore); 50+ with Pro.
-* **Low-tools Mode**: One-click toggle that trims the active tool list to a curated essentials set for MCP clients with strict tool caps (Antigravity, Gemini API, etc.). After the v3.0.0 widget consolidation the active count already fits most caps, so this is rarely needed now.
-* **Sample Prompts**: Ready-to-use landing page blueprints with one-click copy from the admin dashboard.
-* **Admin Dashboard**: Dedicated top-level menu with Tools, Connection, Prompts, Templates, Brand Kits, Skills, Widget Builder, and Changelog tabs. Toggle individual tools on/off, view connection configs for all supported MCP clients, and get help via the built-in Get Support link.
+* **Compact tool mode**: For MCP clients with strict tool caps (Antigravity, Gemini API and others), expose three dispatcher tools (list-tools, get-tool-schema, call-tool) instead of every tool. Each tool keeps its own permission check and on/off switch.
+* **Prompts**: Five free landing-page prompts, with a Customize panel for your builder, business name, colours, fonts and content before you copy one. EMCP Pro adds a library of 100 prompts across 20 categories (50 landing pages and 50 complete websites) and sends any prompt straight to AI Chat.
+* **Admin**: One EMCP Tools menu with a grouped sidebar (Overview, Setup, Build, Library, Safety) and a Ctrl or Cmd + K search. A Dashboard of what your AI did, a guided Connection setup that confirms your client's first call, per-tool switches, Modules, Page Builders, Prompts, Skills, Templates, Brand Kits, History with undo, Redirects, Backup & Migrate and an MCP Log.
 
 **Requires:**
 
@@ -72,7 +72,7 @@ As of v3.0.0 the 62 per-widget tools were folded into a catalog-backed model, so
 
 1. Upload the `emcp-tools` folder to `/wp-content/plugins/`.
 2. Activate the plugin through the 'Plugins' menu in WordPress. The MCP Adapter is bundled. No separate install is required (WordPress 6.9+ already includes the Abilities API).
-3. Open the new **EMCP Tools** top-level menu, go to the **Connection** tab, and confirm **Activate Abilities API for EMCP** is enabled (on by default) to expose the MCP server.
+3. Open the new **EMCP Tools** top-level menu and go to **Connection**. The MCP server and the **Abilities API** switch (under **Advanced settings**) are on by default. Follow the four steps to connect your AI client; the last step confirms its first call.
 4. (Optional) Install and activate [Elementor](https://wordpress.org/plugins/elementor/) (version 3.20+) to enable the Elementor tool family (page design, widgets, layout, templates, brand kits, and more). All beyond-Elementor tools are fully functional without it.
 
 = WP-CLI Connection (Local) =
@@ -187,7 +187,7 @@ On shared LiteSpeed hosting (e.g. Hostinger) this is usually the host caching/bu
 
 = 3.18.0 =
 
-Adds a loop builder to EMCP Themer, so one post card can be repeated in grids and carousels in Elementor or Gutenberg, a Pro module that exports your active Sandbox widgets, blocks and snippets as a standalone plugin, and OpenCode Go and OpenCode Zen in AI Chat. The whole admin is redesigned, with a Dashboard, guided connection setup, History sessions and diffs, an MCP Log, and scheduled backups on Pro. It also fixes a crash with Themer image sources in Elementor, blank padding and margin sides, and curated widget settings that Elementor ignored.
+Adds a loop builder to EMCP Themer, so one post card can be repeated in grids and carousels in Elementor or Gutenberg, a Pro module that exports your active Sandbox widgets, blocks and snippets as a standalone plugin, OpenCode Go and OpenCode Zen in AI Chat, custom agent skills, and a Pro prompt library of 100 prompts you can customize before copying. The whole admin is redesigned, with a Dashboard, guided connection setup, History sessions and diffs, an MCP Log, and scheduled backups on Pro. It also fixes a crash with Themer image sources in Elementor, blank padding and margin sides, and curated widget settings that Elementor ignored.
 
 * New: Loop Items, Loop Grid and Loop Carousel in EMCP Themer (free). Design one post card and repeat it in a responsive grid or a carousel, in Elementor or Gutenberg, with queries over posts, the current archive, related posts, a manual selection or WooCommerce products, and pagination from page numbers to load more and infinite scroll. Free includes one Loop Item; Pro adds unlimited Loop Items and alternate templates for the Loop Grid widget.
 * New: OpenCode Go and OpenCode Zen in AI Chat (Pro, #150). Two new providers; their requests go through a server relay because OpenCode's API refuses browser requests, and your keys stay on the server. OpenCode describes Go as designed for coding agents, so review its terms before use. Zen bills a prepaid balance that reloads $20 below $5 by default. Gemini models are not offered on Zen (use the Gemini provider), and Zen's free models are hidden because OpenCode limits them to its own client.
@@ -211,6 +211,11 @@ Adds a loop builder to EMCP Themer, so one post card can be repeated in grids an
 * New: Redirects can match a query string; existing redirects behave as before.
 * New: Context sections and a site profile for what connected agents are told, with a preview.
 * Changed: Sandbox items created over MCP are always drafts; activate them on the Sandbox screens.
+* New: Custom skills (Pro). Write your own agent playbooks in a full editor under Skills > Custom skills; switched-on skills join the skills catalog beside the bundled ones.
+* New: Customize a prompt (builder, business name, colours, fonts, content) before copying it; on Pro, Use in AI Chat opens AI Chat in a new tab with the prompt filled in.
+* New: The Pro prompt library grows to 100 prompts across 20 categories, adding 50 complete-website prompts.
+* Changed: add-pro-widget is on by default on new installs (it registers only with Elementor Pro); existing sites keep their choice.
+* Changed: The Marketplace screen loads a slimmer listing, shows five cards per row and pages 20 at a time.
 
 = 3.17.1 =
 

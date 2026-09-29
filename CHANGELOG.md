@@ -2,7 +2,7 @@
 
 All notable changes to MCP Tools for Elementor are documented in this file.
 
-## [3.18.0] (in progress, unreleased)
+## [3.18.0]
 
 - New: **Works alongside Elementor's own MCP server.** Elementor 4.3 ships a built-in MCP server; both now run side by side on the same site. EMCP's Elementor tools follow the same safety rule as Elementor's: a write to a page that another user has open in the Elementor editor with unsaved changes is refused (nothing is written), and every successful write tells an open editor that the page changed. When Elementor's server is on, EMCP's server instructions tell a connected agent which server to use for which job. The admin bar item now reads EMCP instead of MCP, so it is not mistaken for Elementor's.
 
@@ -44,6 +44,16 @@ All notable changes to MCP Tools for Elementor are documented in this file.
 - New: **Context sections and a site profile.** Choose which parts of the site description connected agents receive (builder, plugins, theme, global styles, site structure, WooCommerce) and describe the site's name, industry, purpose and voice, with a preview of exactly what agents see.
 
 - Changed: **Sandbox items created over MCP are always drafts.** An agent can create and edit custom widgets, blocks and PHP snippets but can no longer activate them; activation happens on the Sandbox screens.
+
+- New: **Custom skills (Pro).** Skills > Custom skills lets you write your own playbooks (a name, a short description and Markdown instructions) in a full editor. Switched-on skills join the bundled ones in the skills catalog agents see, and agents load them with get-skill like any other. The editor shows how much each skill adds to the catalog and to the context budget.
+
+- New: **Customize a prompt before you copy it.** Every prompt card has a Customize panel for the page builder, business name, brand colours, fonts and content facts, with a live preview. On Pro, Use in AI Chat opens AI Chat in a new tab with the prompt already in the message box.
+
+- New: **100 premium prompts (Pro).** The Pro prompt library grows to 100 prompts across 20 categories: the 50 landing-page prompts plus 50 new complete-website prompts in 10 new categories.
+
+- Changed: **add-pro-widget is on by default on new installs.** It registers only when Elementor Pro is active and only adds widgets, so a site with Elementor Pro can place Pro widgets straight away. Existing sites keep their saved choice.
+
+- Changed: **Marketplace loads faster.** The Marketplace screen asks EMCP Cloud for a slimmer listing (about a third of the previous size), shows five cards per row on wide screens with whole thumbnails, and pages 20 listings at a time.
 
 ## [3.17.1]
 

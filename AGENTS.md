@@ -52,7 +52,7 @@ MCP Tools for Elementor Plugin — a WordPress plugin that extends the official 
 
 | Project | Path | What it is |
 |---|---|---|
-| **Master prompts library** | `E:\MSR Builds\Products\EMCP\prompts\` | Source-of-truth markdown files for the 50+ Premium Prompts. 10 categories (Automotive, Food & Dining, General, Health & Wellness, Home Services, Lifestyle & Entertainment, Pets, Professional Services, Retail, Weddings). Never bundled in the plugin zip. |
+| **Master prompts library** | `E:\MSR Builds\Products\EMCP\prompts\` | Source-of-truth Markdown for 100 Premium Prompts across 20 categories: 50 landing-page briefs and 50 complete website briefs (local expansion, 2026-09-30). New website filenames end in `_WEBSITE.md`; the existing builder publishes schema-v1 JSON through the website API. Never bundled in the plugin zip. |
 | **Website + docs + API** | `E:\MSR Builds\Products\EMCP\website\` | Astro 5 + Starlight + Tailwind + Postgres + Drizzle. Hosts the marketing site, comprehensive docs, and the `/api/emcp/prompts.json` license-gated endpoint the plugin's Pro Prompts page fetches from. See `website/PLAN.md` for the full implementation spec. Hosted via Dokploy at `emcptools.com` (planned). |
 
 When editing premium-prompts behavior, the plugin code (`includes/admin/class-pro-prompts.php`) and the website's API endpoint (`website/src/pages/api/emcp/prompts.json.ts` per the PLAN) must stay in sync via the contract in `docs/PREMIUM_PROMPTS_API.md`.
