@@ -263,13 +263,27 @@ describe( 'PromptsScreen', () => {
 			items: [ { ...item( 'car-wash' ), tier: 'free' } ],
 			total: 1,
 			pages: 1,
+			categories: [ { slug: 'lifestyle', label: 'Lifestyle', count: 1 } ],
 		} );
 		expect(
 			screen.queryByRole( 'button', { name: 'Sync library' } )
 		).not.toBeInTheDocument();
+		const banner = screen.getByRole( 'region', {
+			name: 'Get 100+ premium prompts with EMCP Pro',
+		} );
+		expect( banner ).toHaveTextContent( 'You are using 1 free sample' );
 		expect(
-			screen.getByRole( 'link', { name: /Get the full library/ } )
+			within( banner ).getByRole( 'link', { name: /Upgrade to Pro/ } )
 		).toHaveAttribute( 'href', data.upgradeUrl );
+	} );
+
+	it( 'licensed builds show no upgrade banner', () => {
+		mount( data );
+		expect(
+			screen.queryByRole( 'region', {
+				name: 'Get 100+ premium prompts with EMCP Pro',
+			} )
+		).not.toBeInTheDocument();
 	} );
 
 	it( 'a failed Pro sync shows the error with the samples', () => {

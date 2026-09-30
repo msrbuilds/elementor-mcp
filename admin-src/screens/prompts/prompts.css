@@ -283,3 +283,102 @@
 		flex: none;
 	}
 }
+
+/* Free builds: the Pro library call to action. Flat brand fill; the badge and
+   the button are solid colours, because translucent overlays on the brand
+   fill fail contrast. */
+.eui-prompts-pro {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	gap: 20px 32px;
+	padding-block: 24px;
+	padding-inline: 28px;
+	border-radius: var(--emcp-r-card);
+	background: var(--emcp-primary-strong);
+	color: var(--emcp-surface);
+}
+
+.eui-prompts-pro__body {
+	display: flex;
+	flex: 1 1 420px;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 8px;
+	min-inline-size: 0;
+}
+
+.eui-prompts-pro__badge {
+	padding-block: 3px;
+	padding-inline: 10px;
+	border-radius: var(--emcp-r-pill);
+	background: var(--emcp-dark);
+	color: var(--emcp-surface);
+	font-size: 11px;
+	font-weight: 700;
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+}
+
+.eui-prompts-pro .eui-prompts-pro__title {
+	margin: 0;
+	color: var(--emcp-surface);
+	font-size: 22px;
+	font-weight: 700;
+	line-height: 1.25;
+}
+
+.eui-prompts-pro__text {
+	max-inline-size: 64ch;
+	margin: 0;
+	color: var(--emcp-surface);
+	font-size: 14px;
+	line-height: 1.5;
+}
+
+.eui-prompts-pro__points {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px 20px;
+	margin-block: 4px 0;
+	margin-inline: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.eui-prompts-pro__points li {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	margin: 0;
+	font-size: 13px;
+	font-weight: 600;
+}
+
+.eui-prompts-pro .eui-prompts-pro__cta {
+	display: inline-flex;
+	flex: none;
+	align-items: center;
+	gap: 8px;
+	min-block-size: 44px;
+	padding-inline: 20px;
+	border-radius: var(--emcp-r-btn);
+	background: var(--emcp-surface);
+	color: var(--emcp-primary-strong);
+	font-size: 14px;
+	font-weight: 700;
+	text-decoration: none;
+	white-space: nowrap;
+}
+
+.eui-prompts-pro .eui-prompts-pro__cta:hover {
+	background: var(--emcp-primary-tint);
+	color: var(--emcp-primary-strong);
+}
+
+.eui-prompts-pro .eui-prompts-pro__cta:focus-visible {
+	outline: 2px solid var(--emcp-surface);
+	outline-offset: 3px;
+	box-shadow: none;
+}
