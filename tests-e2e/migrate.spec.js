@@ -72,7 +72,13 @@ test( 'Backup & Migrate: a database backup through the screen', async ( {
 	test.setTimeout( 240000 );
 	const name = `e2e backup ${ Date.now() }`;
 	await page.goto( '/wp-admin/admin.php?page=emcp-tools-migrate' );
-	await page.getByRole( 'radio', { name: /Database only/ } ).check();
+	// The radio input sits under its card label, which takes the click.
+	await page
+		.locator( 'label.eui-radio-card', { hasText: 'Database only' } )
+		.click();
+	await expect(
+		page.getByRole( 'radio', { name: /Database only/ } )
+	).toBeChecked();
 	await page.getByLabel( 'Backup name' ).fill( name );
 	await page.getByRole( 'button', { name: 'Start backup' } ).click();
 	await expect( page.getByText( 'Backup complete.' ) ).toBeVisible( {
