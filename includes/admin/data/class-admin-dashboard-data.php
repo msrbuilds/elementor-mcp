@@ -292,7 +292,7 @@ final class EMCP_Tools_Admin_Dashboard_Data {
 			array( 'layout-template', __( 'EMCP Themer', 'emcp-tools' ), __( 'Headers, footers, layouts', 'emcp-tools' ), admin_url( 'edit.php?post_type=emcp_theme_template' ), false, class_exists( 'EMCP_Tools_Themer_Module' ) && EMCP_Tools_Themer_Module::is_enabled() ),
 			array( 'lightbulb', __( 'Prompts', 'emcp-tools' ), __( 'Ready-to-use prompts', 'emcp-tools' ), $page . '-prompts', false, $admin ? $admin->module_tab_visible( 'prompts' ) : false ),
 			array( 'layout-grid', __( 'Templates', 'emcp-tools' ), __( 'Premium page templates', 'emcp-tools' ), $page . '-templates', true, $admin ? $admin->module_tab_visible( 'templates' ) : false ),
-			array( 'sparkles', __( 'Skills', 'emcp-tools' ), __( 'Claude Code skills', 'emcp-tools' ), $page . '-skills', true, true ),
+			array( 'sparkles', __( 'Skills', 'emcp-tools' ), __( 'Claude Code skills', 'emcp-tools' ), $page . '-skills', true, $admin ? $admin->skills_tab_visible() : false ),
 			array( 'code', __( 'PHP Sandbox', 'emcp-tools' ), __( 'Approve AI snippets', 'emcp-tools' ), $page . '-widgets', false, true ),
 		);
 		$out = array();

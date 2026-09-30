@@ -195,6 +195,8 @@ Adds a loop builder to EMCP Themer, so one post card can be repeated in grids an
 * Fixed: Themer dynamic images and links in Elementor. Binding the Featured Image, Site Logo or Author Avatar source to an Elementor image or background no longer crashes the page, and the Featured Image size setting now takes effect.
 * Fixed: A padding, margin, border radius or border width sent with some sides blank is no longer saved in a way that makes Elementor drop the whole rule; blank sides are filled from the saved value or the setting is left unchanged, and the warning says which (#151).
 * Fixed: The Brand Kits tab no longer disappears when Elementor is not the selected page builder; it follows its module switch, like Templates.
+* Fixed: The Skills tab now disappears from the sidebar and the Dashboard when the Agent Skills module is off.
+* Fixed: Restoring a full backup no longer brings back that backup's own "running" record, which showed in History as a stale 0-byte backup (Pro). Backups leave out EMCP's backup and job tables, and a restore keeps the site's own backup history.
 * Fixed: Bricks 2.4 compatibility. The Bricks integration can now be enabled on Bricks 2.4.x, verified natively on 2.4.1.
 * Fixed: 55 curated widget parameters used names Elementor does not recognise, so their values were ignored; all are corrected or removed, catalog defaults now use values Elementor accepts (progress bars show their percentage and code blocks their line numbers and copy button again), and the widget tools now warn about unrecognised settings. Re-send values set under the old names (#152).
 * Changed: EMCP Themer is off by default on new installs; turn it on from EMCP Tools > Modules. Sites that already use it keep it on.

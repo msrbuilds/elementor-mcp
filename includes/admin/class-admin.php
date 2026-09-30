@@ -149,6 +149,15 @@ class EMCP_Tools_Admin {
 	}
 
 	/**
+	 * Whether the Skills tab should show: it follows the Agent Skills module
+	 * switch. A switched-on module on a free or unlicensed build keeps the tab,
+	 * which opens the locked screen.
+	 */
+	public function skills_tab_visible(): bool {
+		return $this->module_switched_on( 'agent-skills' );
+	}
+
+	/**
 	 * Whether the Project Memory submenu tab should show (module active + Pro).
 	 *
 	 * @since 3.7.0
@@ -213,6 +222,9 @@ class EMCP_Tools_Admin {
 			// Backup & Migrate tab is gated by the Migrate (Pro) module.
 			if ( ! $this->module_tab_visible( 'migrate' ) ) {
 				unset( $this->submenus[ self::PAGE_SLUG . '-migrate' ] );
+			}
+			if ( ! $this->skills_tab_visible() ) {
+				unset( $this->submenus[ self::PAGE_SLUG . '-skills' ] );
 			}
 			// Module-backed tabs: drop each when its module is off/unavailable.
 			// Templates stays in the menu whenever its module is switched on, so
