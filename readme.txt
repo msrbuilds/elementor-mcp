@@ -178,6 +178,10 @@ The plugin enforces WordPress capability checks on every tool. Read operations r
 
 On shared LiteSpeed hosting (e.g. Hostinger) this is usually the host caching/buffering or timing out the request, not the plugin. The MCP route already sends no-store/no-cache headers; in addition: exclude `/wp-json/mcp/` from LiteSpeed Cache (Cache -> Excludes -> Do Not Cache URIs), raise PHP `max_execution_time` (>=60) and the concurrent PHP worker limit, and check the new **EMCP Tools -> MCP Log** tab (with `WP_DEBUG` on it records the underlying error) to tell a real error from a transport timeout. For large operations use `build-page` `dry_run`, `sideload-image` `convert_webp:false`, and `get-page-structure` `summary:true`.
 
+= Where is the source code for the admin screens? =
+
+The admin screens ship compiled in `assets/admin/build/`. Their full source and build setup are in the public repository at https://github.com/msrbuilds/elementor-mcp (the `admin-src` and `admin-build` folders), and the tag `v<version>` matches each release. The Pro plugin includes its own source in the download.
+
 == Screenshots ==
 
 1. Tools management page with category-grouped toggles.
