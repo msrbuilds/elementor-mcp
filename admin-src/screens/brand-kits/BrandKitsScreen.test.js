@@ -67,6 +67,26 @@ const searchPaths = () =>
 describe( 'BrandKitsScreen', () => {
 	beforeEach( () => apiFetch.mockReset() );
 
+	it( 'free builds show the Pro banner with the starter kit count', () => {
+		mount();
+		const banner = screen.getByRole( 'region', {
+			name: 'Get 50 premium brand kits with EMCP Pro',
+		} );
+		expect( banner ).toHaveTextContent( 'You are using 2 starter kits' );
+		expect(
+			within( banner ).getByRole( 'link', { name: /Upgrade to Pro/ } )
+		).toHaveAttribute( 'href', data.upgradeUrl );
+	} );
+
+	it( 'licensed builds show no Pro banner', () => {
+		mount( { ...data, source: 'pro', licensed: true } );
+		expect(
+			screen.queryByRole( 'region', {
+				name: 'Get 50 premium brand kits with EMCP Pro',
+			} )
+		).not.toBeInTheDocument();
+	} );
+
 	it( 'shows the current kit strip with restore and the applied card', () => {
 		mount();
 		expect(

@@ -66,3 +66,4 @@ export { useResource } from './hooks/useResource';
 export { ScreenBoundary } from './runtime/ScreenBoundary';
 export { AppProviders, mountScreen, markReady } from './runtime/mount';
 export { SearchInput } from './components/SearchInput';
+export { ProBanner } from './components/ProBanner';

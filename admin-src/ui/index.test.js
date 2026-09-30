@@ -31,6 +31,7 @@ it( 'exposes the full emcpUI API', () => {
 			'Notice',
 			'PageHeader',
 			'Pagination',
+			'ProBanner',
 			'RadioCard',
 			'RadioCardGroup',
 			'SafeHtml',

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from '@wordpress/element';
-import { __, sprintf } from '@wordpress/i18n';
+import { __, _n, sprintf } from '@wordpress/i18n';
 import {
 	Button,
 	Checkbox,
@@ -9,6 +9,7 @@ import {
 	Notice,
 	PageHeader,
 	Pagination,
+	ProBanner,
 	SearchInput,
 	errorMessage,
 	request,
@@ -260,22 +261,32 @@ export function BrandKitsScreen( { data: initial } ) {
 				) }
 			</div>
 			{ 'free' === data.source && ! data.licensed && (
-				<Notice
-					tone="info"
-					title={ __( 'These are the starter kits', 'emcp-tools' ) }
-				>
-					{ __(
-						'EMCP Pro adds the full library, kept in sync.',
+				<ProBanner
+					id="brand-kits"
+					title={ __(
+						'Get 50 premium brand kits with EMCP Pro',
 						'emcp-tools'
-					) }{ ' ' }
-					<a
-						href={ data.upgradeUrl }
-						target="_blank"
-						rel="noopener noreferrer"
-					>
-						{ __( 'Get the full library', 'emcp-tools' ) }
-					</a>
-				</Notice>
+					) }
+					text={ sprintf(
+						/* translators: %d: number of free starter kits. */
+						_n(
+							'You are using %d starter kit. Pro unlocks the full library of brand kits, each a colour palette and type system you apply to your site in one click.',
+							'You are using %d starter kits. Pro unlocks the full library of brand kits, each a colour palette and type system you apply to your site in one click.',
+							all,
+							'emcp-tools'
+						),
+						all
+					) }
+					points={ [
+						__( '50 brand kits', 'emcp-tools' ),
+						__(
+							'7 styles, from corporate to wellness',
+							'emcp-tools'
+						),
+						__( 'Kept in sync as new kits arrive', 'emcp-tools' ),
+					] }
+					url={ data.upgradeUrl }
+				/>
 			) }
 			<h2 className="eui-visually-hidden">
 				{ __( 'Brand kit library', 'emcp-tools' ) }

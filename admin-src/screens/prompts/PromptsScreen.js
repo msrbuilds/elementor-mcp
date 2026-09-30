@@ -6,10 +6,10 @@ import {
 	Drawer,
 	EmptyState,
 	FilterChip,
-	Icon,
 	Notice,
 	PageHeader,
 	Pagination,
+	ProBanner,
 	SearchInput,
 	errorMessage,
 	request,
@@ -21,68 +21,6 @@ import { ChipCarousel } from './ChipCarousel';
 import { CustomizeDrawer } from './CustomizeDrawer';
 
 const API = '/emcp-tools/v1/admin/prompts';
-
-/* Free builds: the upgrade call to action for the full Pro library. */
-function ProBanner( { count, url } ) {
-	const points = [
-		__( '50 landing pages', 'emcp-tools' ),
-		__( '50 complete websites', 'emcp-tools' ),
-		__( '20 categories, kept in sync', 'emcp-tools' ),
-	];
-	return (
-		<section
-			className="eui-prompts-pro"
-			aria-labelledby="eui-prompts-pro-title"
-		>
-			<div className="eui-prompts-pro__body">
-				<span className="eui-prompts-pro__badge">
-					{ __( 'Pro', 'emcp-tools' ) }
-				</span>
-				<h2
-					id="eui-prompts-pro-title"
-					className="eui-prompts-pro__title"
-				>
-					{ __(
-						'Get 100+ premium prompts with EMCP Pro',
-						'emcp-tools'
-					) }
-				</h2>
-				<p className="eui-prompts-pro__text">
-					{ sprintf(
-						/* translators: %d: number of free sample prompts. */
-						_n(
-							'You are using %d free sample. Pro unlocks the full library, each prompt a complete brief your AI builds from, ready to customize.',
-							'You are using %d free samples. Pro unlocks the full library, each prompt a complete brief your AI builds from, ready to customize.',
-							count,
-							'emcp-tools'
-						),
-						count
-					) }
-				</p>
-				<ul className="eui-prompts-pro__points">
-					{ points.map( ( p ) => (
-						<li key={ p }>
-							<Icon name="check" size={ 16 } />
-							{ p }
-						</li>
-					) ) }
-				</ul>
-			</div>
-			<a
-				className="eui-prompts-pro__cta"
-				href={ url }
-				target="_blank"
-				rel="noopener noreferrer"
-			>
-				{ __( 'Upgrade to Pro', 'emcp-tools' ) }
-				<Icon name="arrow-right" size={ 16 } />
-				<span className="eui-visually-hidden">
-					{ __( '(opens in a new tab)', 'emcp-tools' ) }
-				</span>
-			</a>
-		</section>
-	);
-}
 
 function ago( ts ) {
 	if ( ! ts ) {
@@ -236,7 +174,29 @@ export function PromptsScreen( { data: initial } ) {
 				</Notice>
 			) }
 			{ ! data.licensed && (
-				<ProBanner count={ all } url={ data.upgradeUrl } />
+				<ProBanner
+					id="prompts"
+					title={ __(
+						'Get 100+ premium prompts with EMCP Pro',
+						'emcp-tools'
+					) }
+					text={ sprintf(
+						/* translators: %d: number of free sample prompts. */
+						_n(
+							'You are using %d free sample. Pro unlocks the full library, each prompt a complete brief your AI builds from, ready to customize.',
+							'You are using %d free samples. Pro unlocks the full library, each prompt a complete brief your AI builds from, ready to customize.',
+							all,
+							'emcp-tools'
+						),
+						all
+					) }
+					points={ [
+						__( '50 landing pages', 'emcp-tools' ),
+						__( '50 complete websites', 'emcp-tools' ),
+						__( '20 categories, kept in sync', 'emcp-tools' ),
+					] }
+					url={ data.upgradeUrl }
+				/>
 			) }
 			<h2 className="eui-visually-hidden">
 				{ __( 'Prompt library', 'emcp-tools' ) }
