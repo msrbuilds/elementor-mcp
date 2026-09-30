@@ -214,28 +214,26 @@ html:has(.eui-frame) {
 	padding-inline: 0;
 }
 
-/* The toggle straddles the sidebar's edge as a round handle. It lives in the
-   sticky top bar (so it stays put on scroll) and sits over the sidebar's
-   scrollbar, half on each side. */
+/* The toggle opens the top bar as a plain icon button, divided from the
+   breadcrumb, so it lines up with the other top-bar controls whether the
+   sidebar is open or collapsed. */
 .eui-frame-collapse.eui-frame-iconlink {
-	position: absolute;
-	inset-block-start: 50%;
-	inset-inline-start: -16px;
-	z-index: 1;
-	inline-size: 32px;
-	block-size: 32px;
-	border: 1px solid var(--emcp-border);
-	border-radius: 50%;
-	background: var(--emcp-surface);
-	box-shadow: var(--emcp-shadow-seg);
-	transform: translateY(-50%);
+	flex: none;
+	margin-inline-start: -8px;
 }
 
 .eui-frame-collapse.eui-frame-iconlink:hover,
 .eui-frame-collapse.eui-frame-iconlink:focus-visible {
-	border-color: var(--emcp-hover-border);
 	background: var(--emcp-primary-tint);
 	color: var(--emcp-primary-strong);
+}
+
+.eui-frame-collapse + nav {
+	display: flex;
+	align-items: center;
+	min-block-size: 20px;
+	padding-inline-start: 16px;
+	border-inline-start: 1px solid var(--emcp-border);
 }
 
 .eui-frame-collapse__open,
@@ -404,8 +402,7 @@ html:has(.eui-frame) {
 	z-index: 20;
 	display: flex;
 	align-items: center;
-	justify-content: space-between;
-	gap: 16px;
+	gap: 12px;
 	padding-block: 12px;
 	padding-inline: 32px;
 	border-block-end: 1px solid var(--emcp-border);
@@ -442,6 +439,7 @@ html:has(.eui-frame) {
 	display: flex;
 	align-items: center;
 	gap: 8px;
+	margin-inline-start: auto;
 }
 
 .eui-frame-status {
@@ -646,6 +644,11 @@ a.eui-frame-user:focus-visible {
 	/* The rail is forced here, so the toggle has nothing to do. */
 	.eui-frame-collapse {
 		display: none;
+	}
+
+	.eui-frame-collapse + nav {
+		padding-inline-start: 0;
+		border-inline-start: 0;
 	}
 
 	.eui-frame__sidebar {

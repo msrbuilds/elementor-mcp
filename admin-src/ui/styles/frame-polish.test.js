@@ -72,9 +72,18 @@ describe( 'admin CSS', () => {
 		);
 	} );
 
-	it( 'puts the sidebar toggle on the sidebar edge as a round handle', () => {
-		expect( read( 'admin-src/shell/shell.css' ) ).toMatch(
-			/\.eui-frame-collapse\.eui-frame-iconlink\s*\{[^}]*position:\s*absolute[^}]*inset-inline-start:\s*-16px[^}]*border-radius:\s*50%/
+	it( 'puts the sidebar toggle in the top bar, divided from the breadcrumb', () => {
+		const shell = read( 'admin-src/shell/shell.css' );
+		// An in-flow top-bar icon button, not a handle floating over the rail.
+		expect( shell ).not.toMatch(
+			/\.eui-frame-collapse\.eui-frame-iconlink\s*\{[^}]*position:\s*absolute/
+		);
+		expect( shell ).toMatch(
+			/\.eui-frame-collapse \+ nav\s*\{[^}]*border-inline-start:\s*1px solid var\(--emcp-border\)/
+		);
+		// The actions still sit at the end once the bar is no longer space-between.
+		expect( shell ).toMatch(
+			/\.eui-frame__topbar-actions\s*\{[^}]*margin-inline-start:\s*auto/
 		);
 	} );
 
