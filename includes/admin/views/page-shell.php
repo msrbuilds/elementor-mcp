@@ -32,7 +32,7 @@ $emcp_collapsed = EMCP_Tools_Admin_Frame::sidebar_collapsed(
 	<div class="eui-frame__layout">
 		<?php echo EMCP_Tools_Admin_Frame::sidebar( $emcp_nav, $active_tab, EMCP_TOOLS_VERSION, $emcp_premium ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 		<div class="eui-frame__main">
-			<?php echo EMCP_Tools_Admin_Frame::topbar( $emcp_current['crumbs'], $emcp_status, (int) $emcp_unread, EMCP_Tools_Admin_Frame::user_summary( $emcp_user ), $emcp_nav->topbar_links(), $emcp_collapsed ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+			<?php echo EMCP_Tools_Admin_Frame::topbar( $emcp_current['crumbs'], $emcp_status, (int) $emcp_unread, EMCP_Tools_Admin_Frame::user_summary( $emcp_user ), $emcp_nav->topbar_links(), $emcp_collapsed, EMCP_Tools_Admin_Frame::cloud_status( class_exists( 'EMCP_Tools_Cloud_Module' ) && class_exists( 'EMCP_Tools_Cloud' ) && EMCP_Tools_Cloud_Module::is_enabled(), class_exists( 'EMCP_Tools_Cloud' ) ? EMCP_Tools_Cloud::status() : array() ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 			<div class="eui-frame__content" id="emcp-main">
 				<?php // Core moves admin notices to just after this marker. ?>
 				<hr class="wp-header-end">

@@ -471,6 +471,11 @@ html:has(.eui-frame) {
 	color: var(--emcp-text-3);
 }
 
+.eui-frame-status.is-amber {
+	background: var(--emcp-warning-bg);
+	color: var(--emcp-warning-fg);
+}
+
 .eui-frame-status.is-red {
 	background: var(--emcp-danger-bg);
 	color: var(--emcp-danger-fg);

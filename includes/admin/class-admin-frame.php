@@ -202,14 +202,34 @@ final class EMCP_Tools_Admin_Frame {
 	}
 
 	/**
+	 * The Cloud pill's state: null while the Cloud module is off, else whether
+	 * the site is connected and the connection is healthy.
+	 *
+	 * @param bool  $enabled Cloud module on.
+	 * @param array $status  EMCP_Tools_Cloud::status().
+	 */
+	public static function cloud_status( bool $enabled, array $status ): ?array {
+		if ( ! $enabled ) {
+			return null;
+		}
+		return array(
+			'connected' => ! empty( $status['connected'] ),
+			'healthy'   => ! array_key_exists( 'healthy', $status ) || ! empty( $status['healthy'] ),
+		);
+	}
+
+	/**
 	 * The top bar.
 	 *
-	 * @param string[] $crumbs Breadcrumb labels, current last.
-	 * @param array    $status EMCP_Tools_Admin_Bar::status().
-	 * @param int      $unread Unread notification count.
-	 * @param array    $user   user_summary().
+	 * @param string[]   $crumbs    Breadcrumb labels, current last.
+	 * @param array      $status    EMCP_Tools_Admin_Bar::status().
+	 * @param int        $unread    Unread notification count.
+	 * @param array      $user      user_summary().
+	 * @param array      $links     Top-bar links (help, affiliate, changelog, account).
+	 * @param bool       $collapsed Sidebar collapsed.
+	 * @param array|null $cloud     cloud_status(); null leaves the Cloud pill out.
 	 */
-	public static function topbar( array $crumbs, array $status, int $unread, array $user, array $links = array(), bool $collapsed = false ): string {
+	public static function topbar( array $crumbs, array $status, int $unread, array $user, array $links = array(), bool $collapsed = false, ?array $cloud = null ): string {
 		// A div, not <header>: a banner landmark cannot sit inside core's role="main".
 		$toggle = $collapsed ? __( 'Expand sidebar', 'emcp-tools' ) : __( 'Collapse sidebar', 'emcp-tools' );
 		$html   = '<div class="eui-frame__topbar"><button type="button" class="eui-frame-iconlink eui-frame-collapse" data-emcp-sidebar-toggle aria-controls="emcp-frame-sidebar" aria-expanded="' . ( $collapsed ? 'false' : 'true' ) . '" aria-label="' . esc_attr( $toggle ) . '" title="' . esc_attr( $toggle ) . '">'
@@ -232,6 +252,19 @@ final class EMCP_Tools_Admin_Frame {
 			$color = 'grey';
 		}
 		$html .= '<a class="eui-frame-status is-' . esc_attr( $color ) . '" href="' . esc_url( EMCP_Tools_Admin_Nav::url( 'connection' ) ) . '"><span class="eui-frame-status__dot" aria-hidden="true"></span>' . esc_html( $labels[ $color ] ) . '</a>';
+		if ( null !== $cloud ) {
+			if ( ! $cloud['connected'] ) {
+				$tone  = 'grey';
+				$label = __( 'Cloud not connected', 'emcp-tools' );
+			} elseif ( ! $cloud['healthy'] ) {
+				$tone  = 'amber';
+				$label = __( 'Cloud needs attention', 'emcp-tools' );
+			} else {
+				$tone  = 'green';
+				$label = __( 'Cloud connected', 'emcp-tools' );
+			}
+			$html .= '<a class="eui-frame-status is-' . $tone . '" href="' . esc_url( EMCP_Tools_Admin_Nav::url( 'connection' ) . '&section=cloud' ) . '"><span class="eui-frame-status__dot" aria-hidden="true"></span>' . esc_html( $label ) . '</a>';
+		}
 		if ( isset( $links['help'] ) ) {
 			$help  = __( 'Get help (opens in a new tab)', 'emcp-tools' );
 			$html .= '<a class="eui-frame-iconlink" href="' . esc_url( $links['help']['url'] ) . '" target="_blank" rel="noopener noreferrer" aria-label="' . esc_attr( $help ) . '" title="' . esc_attr__( 'Get help', 'emcp-tools' ) . '">' . EMCP_Tools_Admin_Icons::svg( 'life-buoy', 18 ) . '</a>';
