@@ -78,6 +78,44 @@
 	cursor: not-allowed;
 }
 
+/* A Button with an href is an <a>, and core wp-admin recolours links on
+   hover, focus and active (`a:focus`, 0,1,1) and adds a blue focus
+   box-shadow. The doubled class keeps each variant's text colour in every
+   state; the hover backgrounds above still apply. */
+.eui-btn.eui-btn--primary:is(:hover, :focus, :active, :visited) {
+	color: var(--emcp-surface);
+}
+
+.eui-btn.eui-btn--secondary:is(:hover, :focus, :active, :visited) {
+	color: var(--emcp-ink-2);
+}
+
+.eui-btn.eui-btn--outline:is(:hover, :focus, :active, :visited) {
+	color: var(--emcp-primary-strong);
+}
+
+.eui-btn.eui-btn--danger:is(:hover, :focus, :active, :visited) {
+	color: var(--emcp-danger-fg);
+}
+
+.eui-btn.eui-btn--ghost:is(:hover, :focus, :active, :visited) {
+	color: var(--emcp-primary-strong);
+}
+
+.eui-btn.eui-btn--ghost-inverse:is(:hover, :focus, :active, :visited) {
+	color: var(--emcp-surface);
+}
+
+.eui-btn.eui-btn:focus {
+	box-shadow: none;
+	outline: none;
+}
+
+.eui-btn.eui-btn:focus-visible {
+	outline: 2px solid var(--emcp-primary);
+	outline-offset: 2px;
+}
+
 .eui-iconbtn {
 	position: relative;
 	display: inline-flex;
