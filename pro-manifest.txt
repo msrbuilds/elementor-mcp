@@ -137,6 +137,13 @@ includes/abilities/class-blocksy-theme-integration.php
 includes/abilities/class-blocksy-content-integration.php
 includes/abilities/class-visual-composer-integration.php
 includes/abilities/class-otter-integration.php
+includes/abilities/funnelkit/class-funnelkit-rest.php
+includes/abilities/funnelkit/class-funnelkit-dispatcher.php
+includes/abilities/funnelkit/class-funnelkit-rows.php
+includes/abilities/funnelkit/class-funnelkit-graph.php
+includes/abilities/funnelkit/class-funnelkit-history.php
+includes/abilities/funnelkit/created-ids.php
+includes/abilities/funnelkit/ops
 includes/abilities/class-funnelkit-integration.php
 includes/abilities/class-woo-integration.php
 includes/admin/class-pro-usage.php

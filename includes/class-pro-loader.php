@@ -90,6 +90,11 @@ final class EMCP_Tools_Pro_Loader {
 		'includes/admin/data/class-admin-ai-chat-data.php',
 		'includes/admin/data/class-admin-sandbox-export-data.php',
 		'includes/admin/rest/class-admin-rest-sandbox-export.php',
+		// FunnelKit History (3.19.0): runtime, because an undo from the admin History screen
+		// and the import-job cron run outside the MCP surface.
+		'includes/abilities/funnelkit/class-funnelkit-rows.php',
+		'includes/abilities/funnelkit/class-funnelkit-graph.php',
+		'includes/abilities/funnelkit/class-funnelkit-history.php',
 	);
 
 	/**
@@ -115,6 +120,9 @@ final class EMCP_Tools_Pro_Loader {
 		'includes/abilities/class-seo-abilities.php',
 		'includes/abilities/class-a11y-abilities.php',
 		'includes/abilities/class-woo-integration.php',
+		// FunnelKit (3.19.0): the shared REST client and dispatcher load before the tools that extend them.
+		'includes/abilities/funnelkit/class-funnelkit-rest.php',
+		'includes/abilities/funnelkit/class-funnelkit-dispatcher.php',
 		'includes/abilities/class-funnelkit-integration.php',
 		'includes/abilities/forms/class-wpforms-integration.php',
 		'includes/abilities/forms/class-gravityforms-integration.php',
