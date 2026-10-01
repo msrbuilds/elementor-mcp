@@ -3,7 +3,7 @@ Contributors: mianshahzadraza
 Tags: elementor, mcp, ai, page-builder, automation
 Requires at least: 6.9
 Tested up to: 7.1
-Stable tag: 3.18.0
+Stable tag: 3.18.1
 Requires PHP: 8.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -188,6 +188,16 @@ The admin screens ship compiled in `assets/admin/build/`. Their full source and 
 2. Connection configuration page with copy-paste configs.
 
 == Changelog ==
+
+= 3.18.1 =
+
+Fixes a missing MCP endpoint on sites running Elementor 4.3.3 with Elementor's own MCP server switched off, keeps link buttons readable when clicked, and adds a Cloud connection status to the top bar.
+
+* Fixed: The MCP endpoint no longer goes missing with Elementor 4.3.3. With Elementor's own MCP feature off, Elementor turns off the MCP adapter's default server, which EMCP relied on to load its tools, so AI clients got a 404 while the Connection screen said the server was enabled. EMCP now loads its tools itself before registering the server.
+* Fixed: Buttons that are links no longer turn blue on blue when clicked; every button style keeps its colours on hover, click and focus.
+* New: A Cloud connection status beside Server online in the top bar (connected, needs attention, or not connected) while the Cloud module is on.
+* New: The free Prompts and Brand Kits screens show a banner with what the Pro library adds.
+* Changed: The free zip no longer includes the admin source files; they are in the public GitHub repository, tagged per release.
 
 = 3.18.0 =
 

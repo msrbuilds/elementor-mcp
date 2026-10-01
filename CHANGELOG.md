@@ -2,6 +2,16 @@
 
 All notable changes to MCP Tools for Elementor are documented in this file.
 
+## [3.18.1]
+
+> Patch release: fixes a missing MCP endpoint on sites running Elementor 4.3.3 with Elementor's own MCP server switched off, keeps link buttons readable when clicked, and adds a Cloud connection status to the top bar.
+
+- Fixed: **The MCP endpoint no longer goes missing with Elementor 4.3.3.** When Elementor's own MCP feature is off, Elementor 4.3.3 turns off the MCP adapter's default server. EMCP relied on that server to load the WordPress abilities, so it saw no tools and never registered `/wp-json/mcp/emcp-tools-server`: AI clients got a 404 `rest_no_route` while the Connection screen still reported the server as enabled and OAuth discovery looked healthy. EMCP now loads the abilities itself before registering its server. Verified on a live site with Elementor 4.3.3 over OAuth.
+- Fixed: **Link buttons keep their colours when clicked.** Buttons that are links (such as Export as plugin) turned blue on blue after a click, because WordPress's link styles overrode them. Every button style now keeps its text colour on hover, click and focus, and keyboard focus shows the admin's own focus ring.
+- New: **Cloud connection status in the top bar.** While the Cloud module is on, a pill beside Server online shows Cloud connected, Cloud needs attention or Cloud not connected, and links to the Cloud section of the Connection screen.
+- New: **The free Prompts and Brand Kits screens show what Pro adds.** A banner on each lists the Pro library (100+ prompts; 50 brand kits) with a link to upgrade. Pro sites do not see it.
+- Changed: **The free zip no longer includes the admin source files.** The free download now holds only the files the plugin runs; the admin screens' source and build setup are in the public GitHub repository, tagged per release. The Pro download still includes its source.
+
 ## [3.18.0]
 
 - New: **Works alongside Elementor's own MCP server.** Elementor 4.3 ships a built-in MCP server; both now run side by side on the same site. EMCP's Elementor tools follow the same safety rule as Elementor's: a write to a page that another user has open in the Elementor editor with unsaved changes is refused (nothing is written), and every successful write tells an open editor that the page changed. When Elementor's server is on, EMCP's server instructions tell a connected agent which server to use for which job. The admin bar item now reads EMCP instead of MCP, so it is not mistaken for Elementor's.
