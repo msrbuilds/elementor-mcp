@@ -210,7 +210,7 @@ class EMCP_Tools_Change_Log {
 
 	/** Domains per History kind (spec 8.19); anything else is settings. */
 	const KINDS = array(
-		'content' => array( 'content', 'post', 'posts', 'meta', 'acf', 'media', 'menu', 'menus', 'seo' ),
+		'content' => array( 'content', 'post', 'posts', 'meta', 'acf', 'media', 'menu', 'menus', 'seo', 'funnelkit', 'funnelkit-automations' ),
 		'design'  => array( 'elementor', 'globals', 'global-styles', 'gutenberg', 'blocks', 'block', 'atomic', 'themer' ),
 	);
 
@@ -489,7 +489,7 @@ class EMCP_Tools_Change_Log {
 		$was_suppressed = self::$suppress;
 		self::$suppress = true;
 		try {
-			$result = self::apply_rollback( $rb );
+			$result = self::apply_rollback( $rb, $force );
 		} catch ( \Throwable $e ) {
 			$result = new WP_Error( 'rollback_failed', $e->getMessage() );
 		} finally {
@@ -536,6 +536,11 @@ class EMCP_Tools_Change_Log {
 		$rb = $entry['rollback'] ?? null;
 		if ( ! is_array( $rb ) || empty( $rb['type'] ) ) {
 			return new WP_Error( 'not_reversible', __( 'This change is not reversible.', 'emcp-tools' ) );
+		}
+		// A change recorded for the audit trail only, with the reason it cannot be undone.
+		if ( 'irreversible' === $rb['type'] ) {
+			$reason = isset( $rb['reason'] ) && '' !== (string) $rb['reason'] ? (string) $rb['reason'] : __( 'This change cannot be undone.', 'emcp-tools' );
+			return new WP_Error( 'irreversible', $reason );
 		}
 		if ( 'db-before-image' === $rb['type'] ) {
 			return new WP_Error( 'legacy_unverified', __( 'This database snapshot does not contain verified row identities and after-state. Automatic rollback is unavailable; the snapshot is retained for inspection.', 'emcp-tools' ) );
@@ -613,17 +618,24 @@ class EMCP_Tools_Change_Log {
 			case 'acf-fields':
 				return EMCP_Tools_Change_Recorder::hash_acf_fields( $rb['acf_target'] ?? 0, (array) ( $rb['field_keys'] ?? array() ) );
 			default:
-				return '';
+				/**
+				 * Current state hash for a rollback type this class does not know.
+				 *
+				 * @param string $hash '' when unknown.
+				 * @param array  $rb   Rollback ref.
+				 */
+				return (string) apply_filters( 'emcp_tools_change_current_hash', '', $rb );
 		}
 	}
 
 	/**
 	 * Dispatch a rollback by type.
 	 *
-	 * @param array $rb Rollback ref.
+	 * @param array $rb    Rollback ref.
+	 * @param bool  $force The caller's force flag (passed on to add-on rollback types).
 	 * @return true|WP_Error
 	 */
-	private static function apply_rollback( array $rb ) {
+	private static function apply_rollback( array $rb, bool $force = false ) {
 		// Resolve an out-of-band before-image (large snapshots live in the blob
 		// store; the row carries only a blob_id pointer).
 		if ( ! empty( $rb['blob_id'] ) ) {
@@ -669,6 +681,17 @@ class EMCP_Tools_Change_Log {
 				}
 				return new WP_Error( 'rollback_failed', __( 'Could not reverse the redirect change.', 'emcp-tools' ) );
 			default:
+				/**
+				 * Apply a rollback type this class does not know.
+				 *
+				 * @param true|WP_Error|null $result null when unhandled.
+				 * @param array              $rb     Rollback ref.
+				 * @param bool               $force  The caller's force flag.
+				 */
+				$result = apply_filters( 'emcp_tools_change_apply_rollback', null, $rb, $force );
+				if ( true === $result || is_wp_error( $result ) ) {
+					return $result;
+				}
 				return new WP_Error( 'unknown_rollback', __( 'Unknown rollback type.', 'emcp-tools' ) );
 		}
 	}
