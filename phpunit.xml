@@ -117,6 +117,9 @@
         <testsuite name="Safety">
             <directory>pro/tests/unit/safety</directory>
         </testsuite>
+        <testsuite name="FunnelKit">
+            <directory>pro/tests/unit/funnelkit</directory>
+        </testsuite>
         <testsuite name="Search">
             <directory>pro/tests/unit/search</directory>
         </testsuite>
