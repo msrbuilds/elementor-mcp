@@ -115,10 +115,8 @@ class EMCP_Tools_Plugin {
 		add_action( 'wp_abilities_api_categories_init', array( $this, 'register_category' ) );
 		add_action( 'wp_abilities_api_init', array( $this, 'register_abilities' ) );
 
-		// The Abilities API is lazy-loaded: wp_abilities_api_init fires on first
-		// wp_get_ability() call. The default MCP server's tool registration triggers
-		// this during mcp_adapter_init at priority 10. We hook at priority 20 so
-		// the Abilities API is initialized and our abilities are registered by then.
+		// Register after the adapter's default server, when present. Our callback
+		// also initializes the lazy Abilities API when that server is disabled.
 		add_action( 'mcp_adapter_init', array( $this, 'register_mcp_server' ), 20 );
 
 		// Apply the disabled-tools option from the admin settings page on every
@@ -266,7 +264,10 @@ class EMCP_Tools_Plugin {
 			return;
 		}
 
-		if ( empty( $this->ability_names ) ) {
+		// The default adapter server is optional (Elementor 4.3.3 disables it
+		// while its own MCP is off). Initialize our abilities independently so
+		// the endpoint does not silently disappear on a fresh REST request.
+		if ( empty( $this->get_active_ability_names() ) ) {
 			return;
 		}
 
