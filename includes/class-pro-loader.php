@@ -124,6 +124,7 @@ final class EMCP_Tools_Pro_Loader {
 		'includes/abilities/funnelkit/class-funnelkit-rest.php',
 		'includes/abilities/funnelkit/class-funnelkit-dispatcher.php',
 		'includes/abilities/class-funnelkit-integration.php',
+		'includes/abilities/funnelkit/class-funnelkit-write.php',
 		'includes/abilities/forms/class-wpforms-integration.php',
 		'includes/abilities/forms/class-gravityforms-integration.php',
 		'includes/abilities/forms/class-fluentforms-integration.php',
