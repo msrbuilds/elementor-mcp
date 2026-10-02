@@ -404,6 +404,10 @@ class EMCP_Tools_Themer_Dynamic {
 		if ( ! $id ) {
 			return '';
 		}
+		// A password-protected post shows WordPress's password form until it is unlocked, as the_content() does.
+		if ( function_exists( 'post_password_required' ) && post_password_required( $id ) ) {
+			return '<div class="emcp-dyn emcp-dyn-post-content entry-content">' . get_the_password_form( $id ) . '</div>';
+		}
 		// Bricks stores the queried page in postmeta, leaving post_content empty.
 		// Render it natively when a Themer body contains the Post Content block.
 		if ( 'bricks' === get_template() && 'bricks' === get_post_meta( $id, '_bricks_editor_mode', true )

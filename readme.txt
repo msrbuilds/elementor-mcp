@@ -202,6 +202,7 @@ Builds FunnelKit funnels and email automations over MCP, and translates Elemento
 * New: Translate a page in a few calls: create-translation copies a page into another language and links it, get-page-text and apply-page-text move its text out and back in one call each, set-status publishes it. Writes are all or nothing.
 * New: Translations never change the original page: Polylang's copying between translations is held back while EMCP writes.
 * New: emcp-polylang agent skill (Pro).
+* Fixed: Themer Post Content now shows the password form for a password-protected post instead of its content.
 
 = 3.18.1 =
 
