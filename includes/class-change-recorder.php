@@ -206,8 +206,14 @@ class EMCP_Tools_Change_Recorder {
 			unset( $fields['post_date'] );
 		}
 		$meta = (array) get_post_meta( $post_id );
-		foreach ( array( '_edit_lock', '_edit_last', '_elementor_css', '_elementor_element_cache' ) as $key ) {
+		foreach ( array( '_edit_lock', '_edit_last', '_elementor_css', '_elementor_element_cache', '_elementor_page_assets' ) as $key ) {
 			unset( $meta[ $key ] );
+		}
+		// Elementor records its data migrations per page when the page renders; viewing a page is not a change.
+		foreach ( array_keys( $meta ) as $key ) {
+			if ( 0 === strpos( (string) $key, '_elementor_migrations_state' ) ) {
+				unset( $meta[ $key ] );
+			}
 		}
 		$terms = array();
 		foreach ( get_object_taxonomies( (string) ( $post->post_type ?? 'post' ) ) as $tax ) {
