@@ -2,6 +2,16 @@
 
 All notable changes to MCP Tools for Elementor are documented in this file.
 
+## [3.19.0]
+
+> Builds FunnelKit funnels and email automations over MCP (#143, #144): four new Pro tools drive FunnelKit through its own controllers, with confirm, dry run and History undo.
+
+- New: **FunnelKit Funnel Builder write tool (Pro, #143).** `funnelkit-write` creates and changes funnels and steps, checkout products (with discounts) and fields, order bumps, upsells and downsells, opt-in and thank-you pages, A/B tests and the store checkout, and imports FunnelKit templates and funnel exports. Deletes need `confirm: true`; creates and updates accept `dry_run: true`, which reports the exact request and, for checkout products, the price a buyer pays. Every write is recorded in History and most can be undone there, including deleting a step with its order bumps. The tool ships disabled; enable it under Tools > Plugins > FunnelKit.
+- New: **FunnelKit Automations read and write tools (Pro, #144).** `funnelkit-automations-read` lists automations and their stats, contacts (as compact rows: id, email, tags, lists), tags, lists, fields, audiences, broadcasts, templates, form feeds, link triggers, carts, email reports and allowlisted settings. `funnelkit-automations-write` builds automations step by step (event, delay, email, tag and other actions), manages contacts, tags, lists and fields, and drafts, schedules and sends broadcasts. Anything that sends or deletes needs `confirm: true`; a broadcast's dry run reports how many contacts would receive it. API keys, connectors, licences and plugin installs are never reachable, and settings outside a short allowlist are refused. The write tool ships disabled.
+- New: **History records actions it cannot undo, with the reason.** Sending a broadcast, putting contacts into an automation, deleting automations with their contact runs and similar actions are listed in History with why they cannot be rolled back, and the tools say so before you confirm.
+- Changed: **`funnelkit-read` covers the whole funnel.** Besides funnels, pages and checkout data it now reads order bumps, upsells and offers, A/B tests and their stats, funnel analytics, orders and leads, and exports funnels and the store checkout as JSON.
+- New: **`emcp-funnelkit` agent skill (Pro).** How to build a funnel end to end, set up an automation and send a broadcast safely, and what History can and cannot undo.
+
 ## [3.18.1]
 
 > Patch release: fixes a missing MCP endpoint on sites running Elementor 4.3.3 with Elementor's own MCP server switched off, keeps link buttons readable when clicked, and adds a Cloud connection status to the top bar.
