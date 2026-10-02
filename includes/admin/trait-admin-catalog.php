@@ -576,6 +576,31 @@ trait EMCP_Tools_Admin_Catalog_Trait {
 					),
 				),
 			),
+			'wp_polylang'      => array(
+				'platform' => 'plugins',
+				'group'    => 'multilingual',
+				'pro'      => true,
+				'label'    => __( 'Polylang', 'emcp-tools' ),
+				'note'     => __( 'Make a site multilingual with Polylang: languages and settings, menus per language, and translations of Elementor and Gutenberg pages. create-translation copies a page into another language and links it; get-page-text and apply-page-text move its text in and out in one call each. Writes ship disabled; deleting a language and URL changes need confirm, and every other write can be undone in History. Requires Polylang (free) active.', 'emcp-tools' ),
+				'tools'    => array(
+					'emcp-tools/polylang-read'  => array(
+						'label'       => __( 'Polylang Read', 'emcp-tools' ),
+						'description' => __( 'Languages and settings, translation groups, posts missing a translation, the translatable text of a page as segments, and string translations.', 'emcp-tools' ),
+						'badges'      => array( 'read-only' ),
+						'operations'  => array( 'get-setup', 'list-translations', 'find-missing', 'get-page-text', 'list-strings' ),
+						'available'   => self::polylang_available(),
+						'requires'    => array( 'name' => 'Polylang', 'kind' => 'plugin' ),
+					),
+					'emcp-tools/polylang-write' => array(
+						'label'       => __( 'Polylang Write', 'emcp-tools' ),
+						'description' => __( 'Copy a page into another language and link it, write its translated text back, publish it, and manage languages, links, term translations, strings, menus and settings. delete-language and URL changes need confirm:true.', 'emcp-tools' ),
+						'badges'      => array( 'destructive' ),
+						'operations'  => array( 'create-translation', 'apply-page-text', 'set-status', 'add-language', 'assign-language', 'link-translations', 'create-term-translation', 'update-strings', 'set-menu-location', 'update-settings', '…' ),
+						'available'   => self::polylang_available(),
+						'requires'    => array( 'name' => 'Polylang', 'kind' => 'plugin' ),
+					),
+				),
+			),
 			'wp_metabox'       => array(
 				'platform' => 'plugins',
 				'group'    => 'dynamic',

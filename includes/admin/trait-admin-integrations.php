@@ -103,6 +103,10 @@ trait EMCP_Tools_Admin_Integrations_Trait {
 				'label' => __( 'SEO', 'emcp-tools' ),
 				'desc'  => __( 'Read & write the SEO metadata your SEO plugin stores.', 'emcp-tools' ),
 			),
+			'multilingual' => array(
+				'label' => __( 'Multilingual', 'emcp-tools' ),
+				'desc'  => __( 'Languages, translated pages and string translations.', 'emcp-tools' ),
+			),
 			'addons'    => array(
 				'label' => __( 'Elementor Addons', 'emcp-tools' ),
 				'desc'  => __( 'Discover addon widget packs, and manage Ultimate Addons for Elementor templates.', 'emcp-tools' ),
@@ -263,6 +267,11 @@ trait EMCP_Tools_Admin_Integrations_Trait {
 	/** Same detector as EMCP_Tools_FunnelKit_Automations::automations_active(). @since 3.19.0 */
 	public static function funnelkit_automations_available(): bool {
 		return defined( 'BWFAN_VERSION' ) && class_exists( 'BWFAN_Core' );
+	}
+
+	/** Same detector as EMCP_Tools_Polylang_Integration::polylang_active(). @since 3.19.0 */
+	public static function polylang_available(): bool {
+		return function_exists( 'pll_languages_list' ) && function_exists( 'PLL' );
 	}
 
 	/**

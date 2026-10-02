@@ -95,6 +95,12 @@ final class EMCP_Tools_Pro_Loader {
 		'includes/abilities/funnelkit/class-funnelkit-rows.php',
 		'includes/abilities/funnelkit/class-funnelkit-graph.php',
 		'includes/abilities/funnelkit/class-funnelkit-history.php',
+		// Polylang and page text (3.19.0): the writer, the sync guard and both History owners are
+		// runtime, because an undo from the admin History screen runs outside the MCP surface.
+		'includes/page-text/class-page-text-writer.php',
+		'includes/page-text/class-page-text-history.php',
+		'includes/abilities/polylang/class-polylang-sync-guard.php',
+		'includes/abilities/polylang/class-polylang-history.php',
 	);
 
 	/**
@@ -126,6 +132,14 @@ final class EMCP_Tools_Pro_Loader {
 		'includes/abilities/class-funnelkit-integration.php',
 		'includes/abilities/funnelkit/class-funnelkit-write.php',
 		'includes/abilities/funnelkit/class-funnelkit-automations.php',
+		// Polylang (3.19.0): page text first (no Polylang dependency), then the adapter and the tools.
+		'includes/abilities/class-op-args.php',
+		'includes/page-text/class-page-text-elementor.php',
+		'includes/page-text/class-page-text-blocks.php',
+		'includes/page-text/class-page-text.php',
+		'includes/abilities/polylang/class-polylang-api.php',
+		'includes/abilities/polylang/class-polylang-copier.php',
+		'includes/abilities/polylang/class-polylang-integration.php',
 		'includes/abilities/forms/class-wpforms-integration.php',
 		'includes/abilities/forms/class-gravityforms-integration.php',
 		'includes/abilities/forms/class-fluentforms-integration.php',
@@ -322,6 +336,18 @@ final class EMCP_Tools_Pro_Loader {
 		if ( class_exists( 'EMCP_Tools_FunnelKit_History' ) ) {
 			EMCP_Tools_FunnelKit_History::boot();
 			add_filter( 'emcp_tools_funnelkit_job_status', array( __CLASS__, 'funnelkit_job_status' ), 10, 2 );
+		}
+
+		// Page text and Polylang History (3.19.0): undo handlers on every request; the sync guard
+		// wraps page-text writes and does nothing while Polylang is inactive.
+		if ( class_exists( 'EMCP_Tools_Page_Text_History' ) ) {
+			EMCP_Tools_Page_Text_History::boot();
+		}
+		if ( class_exists( 'EMCP_Tools_Polylang_History' ) ) {
+			EMCP_Tools_Polylang_History::boot();
+		}
+		if ( class_exists( 'EMCP_Tools_Polylang_Sync_Guard' ) ) {
+			EMCP_Tools_Polylang_Sync_Guard::boot();
 		}
 
 		// EMCP Themer Pro power-ups: attach granular matchers, priority ranking,

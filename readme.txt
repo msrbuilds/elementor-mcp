@@ -191,13 +191,17 @@ The admin screens ship compiled in `assets/admin/build/`. Their full source and 
 
 = 3.19.0 =
 
-Builds FunnelKit funnels and email automations over MCP: four new Pro tools drive FunnelKit through its own controllers, with confirm, dry run and History undo.
+Builds FunnelKit funnels and email automations over MCP, and translates Elementor and Gutenberg pages with Polylang: new Pro tools drive each plugin through its own controllers, with confirm, dry run and History undo.
 
 * New: FunnelKit Funnel Builder write tool (Pro, #143): funnels, steps, checkout products and fields, order bumps, upsells, opt-in and thank-you pages, A/B tests, the store checkout, and template and funnel imports. Deletes need confirm; creates and updates accept dry_run; History records and undoes the writes.
 * New: FunnelKit Automations read and write tools (Pro, #144): automations, contacts, tags, lists, fields, broadcasts, templates, form feeds, link triggers, audiences, bulk actions and allowlisted settings. Sends and deletes need confirm; credential routes are never reachable.
 * New: History records actions it cannot undo, with the reason.
 * Changed: funnelkit-read now covers order bumps, upsells, A/B tests, analytics and exports.
 * New: emcp-funnelkit agent skill (Pro).
+* New: Polylang read and write tools (Pro): languages, settings, menus per language, language assignment, links, term and string translations. Works with Polylang free; writes ship disabled.
+* New: Translate a page in a few calls: create-translation copies a page into another language and links it, get-page-text and apply-page-text move its text out and back in one call each, set-status publishes it. Writes are all or nothing.
+* New: Translations never change the original page: Polylang's copying between translations is held back while EMCP writes.
+* New: emcp-polylang agent skill (Pro).
 
 = 3.18.1 =
 

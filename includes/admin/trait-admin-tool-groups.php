@@ -298,6 +298,11 @@ trait EMCP_Tools_Admin_Tool_Groups_Trait {
 		return array( 'emcp-tools/funnelkit-automations-read', 'emcp-tools/funnelkit-automations-write' );
 	}
 
+	/** The Polylang integration's conditional dispatcher slugs (3.19.0). */
+	public static function polylang_tool_slugs(): array {
+		return array( 'emcp-tools/polylang-read', 'emcp-tools/polylang-write' );
+	}
+
 	/**
 	 * The Meta Box dispatcher tool slugs. The domain registers as two dispatcher
 	 * tools (metabox-read enabled by default, metabox-write disabled by default);

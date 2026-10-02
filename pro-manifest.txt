@@ -147,6 +147,21 @@ includes/abilities/funnelkit/ops
 includes/abilities/class-funnelkit-integration.php
 includes/abilities/funnelkit/class-funnelkit-write.php
 includes/abilities/funnelkit/class-funnelkit-automations.php
+includes/abilities/class-op-args.php
+includes/abilities/polylang
+includes/abilities/polylang/class-polylang-api.php
+includes/abilities/polylang/class-polylang-copier.php
+includes/abilities/polylang/class-polylang-history.php
+includes/abilities/polylang/class-polylang-integration.php
+includes/abilities/polylang/class-polylang-sync-guard.php
+includes/abilities/polylang/trait-polylang-setup-ops.php
+includes/abilities/polylang/ops
+includes/page-text
+includes/page-text/class-page-text.php
+includes/page-text/class-page-text-blocks.php
+includes/page-text/class-page-text-elementor.php
+includes/page-text/class-page-text-history.php
+includes/page-text/class-page-text-writer.php
 includes/abilities/class-woo-integration.php
 includes/admin/class-pro-usage.php
 # Pro admin screen bundles and sources (admin redesign)

@@ -342,6 +342,10 @@ trait EMCP_Tools_Admin_Settings_Trait {
 			$add[] = 'emcp-tools/funnelkit-write';
 			$add[] = 'emcp-tools/funnelkit-automations-write';
 		}
+		// v55: the Polylang write dispatcher (3.19.0) ships off; its read stays on.
+		if ( $applied < 55 ) {
+			$add[] = 'emcp-tools/polylang-write';
+		}
 		return array(
 			'add'   => array_values( array_unique( $add ) ),
 			'strip' => array_values( array_unique( $strip ) ),
