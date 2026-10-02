@@ -146,6 +146,7 @@ includes/abilities/funnelkit/created-ids.php
 includes/abilities/funnelkit/ops
 includes/abilities/class-funnelkit-integration.php
 includes/abilities/funnelkit/class-funnelkit-write.php
+includes/abilities/funnelkit/class-funnelkit-automations.php
 includes/abilities/class-woo-integration.php
 includes/admin/class-pro-usage.php
 # Pro admin screen bundles and sources (admin redesign)
