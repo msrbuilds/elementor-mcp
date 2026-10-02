@@ -291,9 +291,38 @@ final class EMCP_Tools_Pro_Loader {
 	}
 
 	/** Wire Pro runtime hooks, each guarded by class_exists. */
+	/**
+	 * emcp_tools_funnelkit_job_status: hand the job to the FunnelKit write tool when the MCP surface
+	 * has loaded it (admin, WP-CLI, cron and REST requests); otherwise leave the status unknown.
+	 *
+	 * @param mixed $status Status so far (null when unknown).
+	 * @param array $job    The stored job.
+	 * @return mixed
+	 */
+	public static function funnelkit_job_status( $status, $job ) {
+		if ( ! class_exists( 'EMCP_Tools_FunnelKit_Write' ) ) {
+			// Only the files the write tool needs, in dependency order (all in MCP_FILES).
+			foreach ( array( 'includes/abilities/funnelkit/class-funnelkit-rest.php', 'includes/abilities/funnelkit/class-funnelkit-dispatcher.php', 'includes/abilities/class-funnelkit-integration.php', 'includes/abilities/funnelkit/class-funnelkit-write.php' ) as $rel ) {
+				$path = self::path( $rel );
+				if ( '' !== $path ) {
+					require_once $path;
+				}
+			}
+		}
+		return class_exists( 'EMCP_Tools_FunnelKit_Write' ) ? EMCP_Tools_FunnelKit_Write::job_status( $status, (array) $job ) : $status;
+	}
+
 	public static function wire_runtime_hooks(): void {
 		// AI Chat runtime wiring now lives in EMCP_Tools_AI_Chat_Module::register(),
 		// booted by the modules registry only when the module is active.
+
+		// FunnelKit History (3.19.0): undo handlers and the import-job cron on every request, since an
+		// undo runs in a later admin or MCP request. History is runtime; the write tool is in the
+		// deferred MCP surface (loaded after this runs), so a proxy answers the job-status filter.
+		if ( class_exists( 'EMCP_Tools_FunnelKit_History' ) ) {
+			EMCP_Tools_FunnelKit_History::boot();
+			add_filter( 'emcp_tools_funnelkit_job_status', array( __CLASS__, 'funnelkit_job_status' ), 10, 2 );
+		}
 
 		// EMCP Themer Pro power-ups: attach granular matchers, priority ranking,
 		// unlimited quota, and granular selectors to the free seams (license-gated).

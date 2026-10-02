@@ -276,6 +276,19 @@ class EMCP_Tools_Ability_Registrar {
 			$funnelkit = new EMCP_Tools_FunnelKit_Integration();
 			$funnelkit->register();
 			$this->ability_names = array_merge( $this->ability_names, $funnelkit->get_ability_names() );
+			// funnelkit-write (3.19.0): ships disabled; the Tools grid enables it.
+			if ( class_exists( 'EMCP_Tools_FunnelKit_Write' ) ) {
+				$funnelkit_write = new EMCP_Tools_FunnelKit_Write();
+				$funnelkit_write->register();
+				$this->ability_names = array_merge( $this->ability_names, $funnelkit_write->get_ability_names() );
+			}
+		}
+
+		// FunnelKit Automations read and write abilities (Pro, 3.19.0) — only when Automations is active.
+		if ( class_exists( 'EMCP_Tools_FunnelKit_Automations' ) && EMCP_Tools_FunnelKit_Automations::automations_active() ) {
+			$funnelkit_automations = new EMCP_Tools_FunnelKit_Automations();
+			$funnelkit_automations->register();
+			$this->ability_names = array_merge( $this->ability_names, $funnelkit_automations->get_ability_names() );
 		}
 
 		// Meta Box abilities — only when Meta Box (free or extensions) is active.

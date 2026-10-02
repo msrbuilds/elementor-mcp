@@ -337,6 +337,11 @@ trait EMCP_Tools_Admin_Settings_Trait {
 		if ( $applied < 53 ) {
 			$add[] = 'emcp-tools/visibility-write';
 		}
+		// v54: the FunnelKit write dispatchers (3.19.0) ship off; their reads stay on.
+		if ( $applied < 54 ) {
+			$add[] = 'emcp-tools/funnelkit-write';
+			$add[] = 'emcp-tools/funnelkit-automations-write';
+		}
 		return array(
 			'add'   => array_values( array_unique( $add ) ),
 			'strip' => array_values( array_unique( $strip ) ),

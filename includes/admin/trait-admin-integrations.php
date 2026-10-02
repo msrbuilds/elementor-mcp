@@ -260,6 +260,11 @@ trait EMCP_Tools_Admin_Integrations_Trait {
 		return defined( 'WFFN_VERSION' ) && function_exists( 'WFFN_Core' );
 	}
 
+	/** Same detector as EMCP_Tools_FunnelKit_Automations::automations_active(). @since 3.19.0 */
+	public static function funnelkit_automations_available(): bool {
+		return defined( 'BWFAN_VERSION' ) && class_exists( 'BWFAN_Core' );
+	}
+
 	/**
 	 * Form-plugin availability — mirrors each adapter's is_active() so the admin
 	 * card greys out its toggles when the plugin is inactive. Detection is

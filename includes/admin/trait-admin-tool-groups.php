@@ -290,7 +290,12 @@ trait EMCP_Tools_Admin_Tool_Groups_Trait {
 
 	/** The FunnelKit integration's conditional dispatcher slug. */
 	public static function funnelkit_tool_slugs(): array {
-		return array( 'emcp-tools/funnelkit-read' );
+		return array( 'emcp-tools/funnelkit-read', 'emcp-tools/funnelkit-write' );
+	}
+
+	/** The FunnelKit Automations integration's conditional dispatcher slugs (3.19.0). */
+	public static function funnelkit_automations_tool_slugs(): array {
+		return array( 'emcp-tools/funnelkit-automations-read', 'emcp-tools/funnelkit-automations-write' );
 	}
 
 	/**
