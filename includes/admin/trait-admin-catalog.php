@@ -601,6 +601,31 @@ trait EMCP_Tools_Admin_Catalog_Trait {
 					),
 				),
 			),
+			'wp_translatepress' => array(
+				'platform' => 'plugins',
+				'group'    => 'multilingual',
+				'pro'      => true,
+				'label'    => __( 'TranslatePress', 'emcp-tools' ),
+				'note'     => __( 'Translate a site that uses TranslatePress without its visual editor: read every string of a page in the translation language with its sentence context, write the translations back in one all-or-nothing call, translate theme and plugin strings found by search, follow progress and set up the language. Translations are saved as machine translated until reviewed, a reviewed one is never overwritten without asking, and every write except removing a language can be undone in History. Writes ship disabled. Requires TranslatePress (free) active.', 'emcp-tools' ),
+				'tools'    => array(
+					'emcp-tools/translatepress-read'  => array(
+						'label'       => __( 'TranslatePress Read', 'emcp-tools' ),
+						'description' => __( 'The language setup, every string of a page with its context and version, string search, gettext strings and translation progress.', 'emcp-tools' ),
+						'badges'      => array( 'read-only' ),
+						'operations'  => array( 'get-setup', 'get-page-strings', 'search-strings', 'get-progress' ),
+						'available'   => self::translatepress_available(),
+						'requires'    => array( 'name' => 'TranslatePress', 'kind' => 'plugin' ),
+					),
+					'emcp-tools/translatepress-write' => array(
+						'label'       => __( 'TranslatePress Write', 'emcp-tools' ),
+						'description' => __( 'Write and review translations of page and gettext strings, and add, update, remove or make default the translation language. remove-language and set-default-language need confirm:true.', 'emcp-tools' ),
+						'badges'      => array( 'destructive' ),
+						'operations'  => array( 'translate-strings', 'review-strings', 'add-language', 'update-language', 'remove-language', 'set-default-language' ),
+						'available'   => self::translatepress_available(),
+						'requires'    => array( 'name' => 'TranslatePress', 'kind' => 'plugin' ),
+					),
+				),
+			),
 			'wp_metabox'       => array(
 				'platform' => 'plugins',
 				'group'    => 'dynamic',

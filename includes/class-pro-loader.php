@@ -101,6 +101,10 @@ final class EMCP_Tools_Pro_Loader {
 		'includes/page-text/class-page-text-history.php',
 		'includes/abilities/polylang/class-polylang-sync-guard.php',
 		'includes/abilities/polylang/class-polylang-history.php',
+		// TranslatePress (3.19.0): the render guard runs in the rendered front-end request, and
+		// History undoes from the admin History screen, both outside the MCP surface.
+		'includes/abilities/translatepress/class-translatepress-render-guard.php',
+		'includes/abilities/translatepress/class-translatepress-history.php',
 	);
 
 	/**
@@ -140,6 +144,10 @@ final class EMCP_Tools_Pro_Loader {
 		'includes/abilities/polylang/class-polylang-api.php',
 		'includes/abilities/polylang/class-polylang-copier.php',
 		'includes/abilities/polylang/class-polylang-integration.php',
+		// TranslatePress (3.19.0): the adapter, the preview renderer and the tools.
+		'includes/abilities/translatepress/class-translatepress-api.php',
+		'includes/abilities/translatepress/class-translatepress-renderer.php',
+		'includes/abilities/translatepress/class-translatepress-integration.php',
 		'includes/abilities/forms/class-wpforms-integration.php',
 		'includes/abilities/forms/class-gravityforms-integration.php',
 		'includes/abilities/forms/class-fluentforms-integration.php',
@@ -348,6 +356,15 @@ final class EMCP_Tools_Pro_Loader {
 		}
 		if ( class_exists( 'EMCP_Tools_Polylang_Sync_Guard' ) ) {
 			EMCP_Tools_Polylang_Sync_Guard::boot();
+		}
+
+		// TranslatePress (3.19.0): string and settings undo on every request, and the render guard
+		// for EMCP's own preview renders (it does nothing without the X-EMCP-Render header).
+		if ( class_exists( 'EMCP_Tools_TranslatePress_History' ) ) {
+			EMCP_Tools_TranslatePress_History::boot();
+		}
+		if ( class_exists( 'EMCP_Tools_TranslatePress_Render_Guard' ) ) {
+			EMCP_Tools_TranslatePress_Render_Guard::boot();
 		}
 
 		// EMCP Themer Pro power-ups: attach granular matchers, priority ranking,

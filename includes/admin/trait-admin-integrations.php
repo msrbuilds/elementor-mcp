@@ -269,6 +269,11 @@ trait EMCP_Tools_Admin_Integrations_Trait {
 		return defined( 'BWFAN_VERSION' ) && class_exists( 'BWFAN_Core' );
 	}
 
+	/** Same detector as EMCP_Tools_TranslatePress_Integration::translatepress_active(). @since 3.19.0 */
+	public static function translatepress_available(): bool {
+		return class_exists( 'TRP_Translate_Press' );
+	}
+
 	/** Same detector as EMCP_Tools_Polylang_Integration::polylang_active(). @since 3.19.0 */
 	public static function polylang_available(): bool {
 		return function_exists( 'pll_languages_list' ) && function_exists( 'PLL' );

@@ -191,7 +191,7 @@ The admin screens ship compiled in `assets/admin/build/`. Their full source and 
 
 = 3.19.0 =
 
-Builds FunnelKit funnels and email automations over MCP, and translates Elementor and Gutenberg pages with Polylang: new Pro tools drive each plugin through its own controllers, with confirm, dry run and History undo.
+Builds FunnelKit funnels and email automations over MCP, and translates sites with Polylang and TranslatePress: new Pro tools drive each plugin through its own controllers, with confirm, dry run and History undo.
 
 * New: FunnelKit Funnel Builder write tool (Pro, #143): funnels, steps, checkout products and fields, order bumps, upsells, opt-in and thank-you pages, A/B tests, the store checkout, and template and funnel imports. Deletes need confirm; creates and updates accept dry_run; History records and undoes the writes.
 * New: FunnelKit Automations read and write tools (Pro, #144): automations, contacts, tags, lists, fields, broadcasts, templates, form feeds, link triggers, audiences, bulk actions and allowlisted settings. Sends and deletes need confirm; credential routes are never reachable.
@@ -202,6 +202,10 @@ Builds FunnelKit funnels and email automations over MCP, and translates Elemento
 * New: Translate a page in a few calls: create-translation copies a page into another language and links it, get-page-text and apply-page-text move its text out and back in one call each, set-status publishes it. Writes are all or nothing.
 * New: Translations never change the original page: Polylang's copying between translations is held back while EMCP writes.
 * New: emcp-polylang agent skill (Pro).
+* New: TranslatePress read and write tools (Pro): every string of a page with its sentence context, string search, gettext strings, progress, and the translation language. Works with TranslatePress free; writes ship disabled.
+* New: TranslatePress writes are all or nothing, never overwrite a reviewed translation or a newer change, and commit together with their History entry.
+* New: emcp-translatepress agent skill (Pro).
+* Changed: History undoes multi-row changes in one database transaction.
 * Fixed: Themer Post Content now shows the password form for a password-protected post instead of its content.
 
 = 3.18.1 =

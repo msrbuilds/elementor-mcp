@@ -156,6 +156,13 @@ includes/abilities/polylang/class-polylang-integration.php
 includes/abilities/polylang/class-polylang-sync-guard.php
 includes/abilities/polylang/trait-polylang-setup-ops.php
 includes/abilities/polylang/ops
+includes/abilities/translatepress
+includes/abilities/translatepress/class-translatepress-api.php
+includes/abilities/translatepress/class-translatepress-history.php
+includes/abilities/translatepress/class-translatepress-integration.php
+includes/abilities/translatepress/class-translatepress-render-guard.php
+includes/abilities/translatepress/class-translatepress-renderer.php
+includes/abilities/translatepress/ops
 includes/page-text
 includes/page-text/class-page-text.php
 includes/page-text/class-page-text-blocks.php

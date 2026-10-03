@@ -298,6 +298,13 @@ class EMCP_Tools_Ability_Registrar {
 			$this->ability_names = array_merge( $this->ability_names, $polylang->get_ability_names() );
 		}
 
+		// TranslatePress (3.19.0): page and gettext strings and the translation language, while TranslatePress is active.
+		if ( class_exists( 'EMCP_Tools_TranslatePress_Integration' ) && EMCP_Tools_TranslatePress_Integration::translatepress_active() ) {
+			$translatepress = new EMCP_Tools_TranslatePress_Integration();
+			$translatepress->register();
+			$this->ability_names = array_merge( $this->ability_names, $translatepress->get_ability_names() );
+		}
+
 		// Meta Box abilities — only when Meta Box (free or extensions) is active.
 		if ( class_exists( 'EMCP_Tools_Meta_Box_Abilities' ) && EMCP_Tools_Meta_Box_Abilities::metabox_active() ) {
 			$metabox = new EMCP_Tools_Meta_Box_Abilities();
