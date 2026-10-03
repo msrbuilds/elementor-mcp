@@ -28,6 +28,7 @@ require_once __DIR__ . '/changes/class-change-notices.php';
 require_once __DIR__ . '/changes/class-change-sessions.php';
 require_once __DIR__ . '/changes/class-change-retention.php';
 require_once __DIR__ . '/changes/class-change-diff.php';
+require_once __DIR__ . '/changes/class-change-transaction.php';
 
 /**
  * The change ledger.
@@ -51,6 +52,15 @@ class EMCP_Tools_Change_Log {
 	/** @var EMCP_Tools_Change_Store|null */
 	private static $store = null;
 
+	/** @var object|null Transaction driver (supported, begin, commit, rollback); null is $wpdb. */
+	private static $tx = null;
+
+	/** @var bool Whether transaction() is running. */
+	private static $in_tx = false;
+
+	/** @var callable[] Work for after the running transaction commits. */
+	private static $after_commit = array();
+
 	/** @var WP_Error|null Why the last delete() or clear() did nothing. */
 	private static $last_error = null;
 
@@ -62,6 +72,104 @@ class EMCP_Tools_Change_Log {
 	 */
 	public static function use_storage( ?EMCP_Tools_Change_Storage $s, ?EMCP_Tools_Lease $lease = null ): void {
 		self::$store = $s ? new EMCP_Tools_Change_Store( $s, $lease ) : null;
+	}
+
+	/**
+	 * Use a transaction driver (tests); null returns to $wpdb.
+	 *
+	 * @since 3.19.0
+	 * @param object|null $driver supported(): bool, begin(): bool, commit(): bool, rollback(): void.
+	 */
+	public static function use_transaction( ?object $driver ): void {
+		self::$tx = $driver;
+	}
+
+	private static function tx(): object {
+		if ( null === self::$tx ) {
+			self::$tx = new EMCP_Tools_Change_WPDB_Transaction();
+		}
+		return self::$tx;
+	}
+
+	/**
+	 * Whether the caller runs inside transaction(): lock and write, never start, commit or roll back.
+	 *
+	 * @since 3.19.0
+	 */
+	public static function in_transaction(): bool {
+		return self::$in_tx;
+	}
+
+	/**
+	 * Queue work for after the running transaction commits; discarded when it rolls back.
+	 * Outside a transaction the work runs at once.
+	 *
+	 * @since 3.19.0
+	 * @param callable $fn Work.
+	 */
+	public static function after_commit( callable $fn ): void {
+		if ( ! self::$in_tx ) {
+			$fn();
+			return;
+		}
+		self::$after_commit[] = $fn;
+	}
+
+	/**
+	 * Run $fn inside one database transaction on the History connection, so the writes it makes
+	 * and the History entries it records commit together or not at all. A WP_Error from $fn, or a
+	 * throw, rolls back; so does $rollback_only (a dry run). After a commit the after_commit()
+	 * queue runs; a throwing callback is reported as hook_error on an array result and never
+	 * undoes the commit.
+	 *
+	 * @since 3.19.0
+	 * @param callable $fn            Work; returns its result or a WP_Error.
+	 * @param bool     $rollback_only Roll back even on success.
+	 * @return mixed|WP_Error not_transactional, transaction_active, commit_failed or $fn's error.
+	 */
+	public static function transaction( callable $fn, bool $rollback_only = false ) {
+		if ( self::$in_tx ) {
+			return new WP_Error( 'transaction_active', __( 'A History transaction is already running.', 'emcp-tools' ) );
+		}
+		$tx = self::tx();
+		if ( ! $tx->supported() || ! $tx->begin() ) {
+			return new WP_Error( 'not_transactional', __( 'History cannot run this change in a database transaction right now: its table is not ready or does not support transactions. Try again once the History upgrade has finished.', 'emcp-tools' ) );
+		}
+		self::$in_tx        = true;
+		self::$after_commit = array();
+		try {
+			$result = $fn();
+		} catch ( \Throwable $e ) {
+			$result = new WP_Error( 'transaction_failed', $e->getMessage() );
+		}
+		self::$in_tx        = false;
+		$queue              = self::$after_commit;
+		self::$after_commit = array();
+		if ( is_wp_error( $result ) || $rollback_only ) {
+			$tx->rollback();
+			return $result;
+		}
+		if ( ! $tx->commit() ) {
+			$tx->rollback();
+			return new WP_Error( 'commit_failed', __( 'The database did not confirm the commit, so nothing was saved.', 'emcp-tools' ) );
+		}
+		foreach ( $queue as $work ) {
+			try {
+				$work();
+			} catch ( \Throwable $e ) {
+				if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+					// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
+					error_log( 'EMCP Tools: a callback after a History commit failed: ' . get_class( $e ) . ': ' . $e->getMessage() );
+				}
+				if ( is_array( $result ) && ! isset( $result['hook_error'] ) ) {
+					$result['hook_error'] = array(
+						'class'   => get_class( $e ),
+						'message' => $e->getMessage(),
+					);
+				}
+			}
+		}
+		return $result;
 	}
 
 	/** The store (spec 9.1 writer protocol). */
@@ -113,7 +221,10 @@ class EMCP_Tools_Change_Log {
 		);
 		$dropped = array();
 		if ( '' === self::store()->add( $entry, $dropped ) ) {
-			self::not_recorded( $entry );
+			// Inside a transaction the caller rolls its change back, so nothing went unrecorded.
+			if ( ! self::$in_tx ) {
+				self::not_recorded( $entry );
+			}
 			return '';
 		}
 		self::forget_blobs( $dropped );
@@ -210,7 +321,7 @@ class EMCP_Tools_Change_Log {
 
 	/** Domains per History kind (spec 8.19); anything else is settings. */
 	const KINDS = array(
-		'content' => array( 'content', 'post', 'posts', 'meta', 'acf', 'media', 'menu', 'menus', 'seo', 'funnelkit', 'funnelkit-automations', 'polylang' ),
+		'content' => array( 'content', 'post', 'posts', 'meta', 'acf', 'media', 'menu', 'menus', 'seo', 'funnelkit', 'funnelkit-automations', 'polylang', 'translatepress' ),
 		'design'  => array( 'elementor', 'globals', 'global-styles', 'gutenberg', 'blocks', 'block', 'atomic', 'themer' ),
 	);
 
@@ -486,6 +597,28 @@ class EMCP_Tools_Change_Log {
 			}
 		}
 
+		if ( ! empty( $rb['transactional'] ) ) {
+			return self::transaction(
+				static function () use ( $entry, $id, $rb, $force ) {
+					return self::restore_and_mark( $entry, $id, $rb, $force, true );
+				}
+			);
+		}
+		return self::restore_and_mark( $entry, $id, $rb, $force, false );
+	}
+
+	/**
+	 * Restore the target, mark the entry rolled back and record the audit entry. Inside the
+	 * change log's transaction ($atomic) any failure is an error the transaction rolls back.
+	 *
+	 * @param array  $entry  Ledger entry.
+	 * @param string $id     Entry id.
+	 * @param array  $rb     Rollback ref.
+	 * @param bool   $force  Caller's force flag.
+	 * @param bool   $atomic Running inside transaction().
+	 * @return array|WP_Error
+	 */
+	private static function restore_and_mark( array $entry, string $id, array $rb, bool $force, bool $atomic ) {
 		$was_suppressed = self::$suppress;
 		self::$suppress = true;
 		try {
@@ -503,6 +636,9 @@ class EMCP_Tools_Change_Log {
 		}
 
 		if ( ! self::mark_rolled_back( $id ) ) {
+			if ( $atomic ) {
+				return new WP_Error( 'rollback_state_failed', __( 'History could not save that the change was undone, so the undo was cancelled and nothing changed. Try again.', 'emcp-tools' ) );
+			}
 			return new WP_Error( 'rollback_state_failed', __( 'The target was restored, but History could not save completion. Inspect the target before retrying.', 'emcp-tools' ) );
 		}
 		$comp = self::record( array(
@@ -513,6 +649,9 @@ class EMCP_Tools_Change_Log {
 			'rollback' => null,
 		) );
 		if ( '' === $comp && ! $was_suppressed ) {
+			if ( $atomic ) {
+				return new WP_Error( 'rollback_audit_failed', __( 'History could not record the undo, so it was cancelled and nothing changed. Try again.', 'emcp-tools' ) );
+			}
 			return new WP_Error( 'rollback_audit_failed', __( 'The target was restored and marked rolled back, but the rollback activity entry could not be saved.', 'emcp-tools' ) );
 		}
 		$out = array(

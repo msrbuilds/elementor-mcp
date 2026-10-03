@@ -74,6 +74,10 @@ final class EMCP_Tools_Change_Memory_Storage implements EMCP_Tools_Change_Storag
 	public $slept = array();
 	/** @var callable|null Called with ( $event, $storage ). */
 	public $on_event = null;
+	/** @var bool Refuse single-row inserts (a History write that fails). */
+	public $refuse_insert = false;
+	/** @var bool Refuse updates (marking an entry rolled back fails). */
+	public $refuse_update = false;
 
 	/**
 	 * A lease over an in-memory store, with an optional clock.
@@ -199,6 +203,9 @@ final class EMCP_Tools_Change_Memory_Storage implements EMCP_Tools_Change_Storag
 	}
 
 	public function table_insert( array $row ): ?int {
+		if ( $this->refuse_insert ) {
+			return null;
+		}
 		$db = EMCP_Tools_Change_Codec::row_to_db( $row );
 		foreach ( $this->rows as $r ) {
 			if ( $r['id'] === $db['id'] ) {
@@ -220,6 +227,9 @@ final class EMCP_Tools_Change_Memory_Storage implements EMCP_Tools_Change_Storag
 	}
 
 	public function table_update( string $id, array $fields ): bool {
+		if ( $this->refuse_update ) {
+			return false;
+		}
 		foreach ( $this->rows as $seq => $r ) {
 			if ( $r['id'] === $id ) {
 				$this->rows[ $seq ] = array_merge( $r, array_intersect_key( $fields, array_flip( array( 'rolled_back', 'rolled_back_at' ) ) ) );
