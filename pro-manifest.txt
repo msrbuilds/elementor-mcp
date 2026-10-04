@@ -178,6 +178,12 @@ includes/abilities/tutor/class-tutor-integration.php
 includes/abilities/tutor/class-tutor-lesson-guard.php
 includes/abilities/tutor/class-tutor-writer.php
 includes/abilities/tutor/ops
+includes/abilities/lifterlms
+includes/abilities/lifterlms/class-lifterlms-api.php
+includes/abilities/lifterlms/class-lifterlms-history.php
+includes/abilities/lifterlms/class-lifterlms-integration.php
+includes/abilities/lifterlms/class-lifterlms-writer.php
+includes/abilities/lifterlms/ops
 includes/page-text
 includes/page-text/class-page-text.php
 includes/page-text/class-page-text-blocks.php

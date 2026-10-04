@@ -676,6 +676,31 @@ trait EMCP_Tools_Admin_Catalog_Trait {
 					),
 				),
 			),
+			'wp_lifterlms'     => array(
+				'platform' => 'plugins',
+				'group'    => 'lms',
+				'pro'      => true,
+				'label'    => __( 'LifterLMS', 'emcp-tools' ),
+				'note'     => __( 'Build LifterLMS courses: create a course with its details, add sections, lessons and quizzes (with questions and choices), set the order of the curriculum, publish it or move it to the trash, give courses and memberships access plans, create memberships, enrol students and read their progress. A change names only the fields it sets; everything else stays as it is. Every change to an existing course or membership names the version it read, and every write can be undone in History; students\' work is never undone. Writes ship disabled. Requires LifterLMS 10.1 or later active.', 'emcp-tools' ),
+				'tools'    => array(
+					'emcp-tools/lifterlms-read'  => array(
+						'label'       => __( 'LifterLMS Read', 'emcp-tools' ),
+						'description' => __( 'The list of courses, a course\'s fields, curriculum and access plans with its version, lessons, quizzes, memberships, the students of a course or membership and one student\'s progress.', 'emcp-tools' ),
+						'badges'      => array( 'read-only' ),
+						'operations'  => array( 'get-setup', 'list-courses', 'get-course', 'get-lesson', 'get-quiz', 'list-memberships', 'get-membership', 'list-access-plans', 'list-enrolments', 'get-student-progress' ),
+						'available'   => self::lifterlms_available(),
+						'requires'    => array( 'name' => 'LifterLMS', 'kind' => 'plugin' ),
+					),
+					'emcp-tools/lifterlms-write' => array(
+						'label'       => __( 'LifterLMS Write', 'emcp-tools' ),
+						'description' => __( 'Create and change courses, sections, lessons and quizzes, set the curriculum order, publish or trash courses, manage access plans and memberships, and enrol or un-enrol students. Trashing, delete-section, delete-access-plan and cancel-enrolment need confirm:true.', 'emcp-tools' ),
+						'badges'      => array( 'destructive' ),
+						'operations'  => array( 'create-course', 'update-course', 'set-course-status', 'trash-course', 'create-section', 'update-section', 'delete-section', 'create-lesson', 'update-lesson', 'trash-lesson', 'reorder-curriculum', 'save-quiz', 'trash-quiz', 'save-access-plan', 'delete-access-plan', 'create-membership', 'update-membership', 'trash-membership', 'enrol-student', 'cancel-enrolment' ),
+						'available'   => self::lifterlms_available(),
+						'requires'    => array( 'name' => 'LifterLMS', 'kind' => 'plugin' ),
+					),
+				),
+			),
 			'wp_metabox'       => array(
 				'platform' => 'plugins',
 				'group'    => 'dynamic',

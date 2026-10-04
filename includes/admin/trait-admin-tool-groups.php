@@ -308,6 +308,11 @@ trait EMCP_Tools_Admin_Tool_Groups_Trait {
 		return array( 'emcp-tools/tutor-read', 'emcp-tools/tutor-write' );
 	}
 
+	/** The LifterLMS integration's conditional dispatcher slugs (3.19.0). */
+	public static function lifterlms_tool_slugs(): array {
+		return array( 'emcp-tools/lifterlms-read', 'emcp-tools/lifterlms-write' );
+	}
+
 	/** The TranslatePress integration's conditional dispatcher slugs (3.19.0). */
 	public static function translatepress_tool_slugs(): array {
 		return array( 'emcp-tools/translatepress-read', 'emcp-tools/translatepress-write' );

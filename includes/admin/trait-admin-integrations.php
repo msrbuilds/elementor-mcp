@@ -287,6 +287,11 @@ trait EMCP_Tools_Admin_Integrations_Trait {
 		return function_exists( 'tutor' ) && defined( 'TUTOR_VERSION' );
 	}
 
+	/** Same detector as EMCP_Tools_LifterLMS_Integration::lifterlms_active(). @since 3.19.0 */
+	public static function lifterlms_available(): bool {
+		return function_exists( 'llms' );
+	}
+
 	/** Same detector as EMCP_Tools_TranslatePress_Integration::translatepress_active(). @since 3.19.0 */
 	public static function translatepress_available(): bool {
 		return class_exists( 'TRP_Translate_Press' );

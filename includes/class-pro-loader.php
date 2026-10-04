@@ -111,6 +111,8 @@ final class EMCP_Tools_Pro_Loader {
 		'includes/abilities/class-captured-json.php',
 		'includes/abilities/tutor/class-tutor-history.php',
 		'includes/abilities/tutor/class-tutor-lesson-guard.php',
+		// LifterLMS (3.19.0): History undoes outside the MCP surface.
+		'includes/abilities/lifterlms/class-lifterlms-history.php',
 	);
 
 	/**
@@ -163,6 +165,10 @@ final class EMCP_Tools_Pro_Loader {
 		'includes/abilities/tutor/class-tutor-api.php',
 		'includes/abilities/tutor/class-tutor-writer.php',
 		'includes/abilities/tutor/class-tutor-integration.php',
+		// LifterLMS (3.19.0): the adapter, the writer and the tools.
+		'includes/abilities/lifterlms/class-lifterlms-api.php',
+		'includes/abilities/lifterlms/class-lifterlms-writer.php',
+		'includes/abilities/lifterlms/class-lifterlms-integration.php',
 		'includes/abilities/forms/class-wpforms-integration.php',
 		'includes/abilities/forms/class-gravityforms-integration.php',
 		'includes/abilities/forms/class-fluentforms-integration.php',
@@ -394,6 +400,11 @@ final class EMCP_Tools_Pro_Loader {
 		}
 		if ( class_exists( 'EMCP_Tools_Tutor_Lesson_Guard' ) ) {
 			EMCP_Tools_Tutor_Lesson_Guard::boot();
+		}
+
+		// LifterLMS (3.19.0): course, content, quiz, plan and enrolment undo on every request.
+		if ( class_exists( 'EMCP_Tools_LifterLMS_History' ) ) {
+			EMCP_Tools_LifterLMS_History::boot();
 		}
 
 		// EMCP Themer Pro power-ups: attach granular matchers, priority ranking,
