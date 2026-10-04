@@ -298,6 +298,11 @@ trait EMCP_Tools_Admin_Tool_Groups_Trait {
 		return array( 'emcp-tools/funnelkit-automations-read', 'emcp-tools/funnelkit-automations-write' );
 	}
 
+	/** The TablePress integration's conditional dispatcher slugs (3.19.0). */
+	public static function tablepress_tool_slugs(): array {
+		return array( 'emcp-tools/tablepress-read', 'emcp-tools/tablepress-write' );
+	}
+
 	/** The TranslatePress integration's conditional dispatcher slugs (3.19.0). */
 	public static function translatepress_tool_slugs(): array {
 		return array( 'emcp-tools/translatepress-read', 'emcp-tools/translatepress-write' );

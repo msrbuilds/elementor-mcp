@@ -107,6 +107,10 @@ trait EMCP_Tools_Admin_Integrations_Trait {
 				'label' => __( 'Multilingual', 'emcp-tools' ),
 				'desc'  => __( 'Languages, translated pages and string translations.', 'emcp-tools' ),
 			),
+			'tables'       => array(
+				'label' => __( 'Tables', 'emcp-tools' ),
+				'desc'  => __( 'Tables and their data.', 'emcp-tools' ),
+			),
 			'addons'    => array(
 				'label' => __( 'Elementor Addons', 'emcp-tools' ),
 				'desc'  => __( 'Discover addon widget packs, and manage Ultimate Addons for Elementor templates.', 'emcp-tools' ),
@@ -267,6 +271,11 @@ trait EMCP_Tools_Admin_Integrations_Trait {
 	/** Same detector as EMCP_Tools_FunnelKit_Automations::automations_active(). @since 3.19.0 */
 	public static function funnelkit_automations_available(): bool {
 		return defined( 'BWFAN_VERSION' ) && class_exists( 'BWFAN_Core' );
+	}
+
+	/** Same detector as EMCP_Tools_TablePress_Integration::tablepress_active(). @since 3.19.0 */
+	public static function tablepress_available(): bool {
+		return class_exists( 'TablePress' );
 	}
 
 	/** Same detector as EMCP_Tools_TranslatePress_Integration::translatepress_active(). @since 3.19.0 */

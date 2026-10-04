@@ -163,6 +163,13 @@ includes/abilities/translatepress/class-translatepress-integration.php
 includes/abilities/translatepress/class-translatepress-render-guard.php
 includes/abilities/translatepress/class-translatepress-renderer.php
 includes/abilities/translatepress/ops
+includes/abilities/tablepress
+includes/abilities/tablepress/class-tablepress-api.php
+includes/abilities/tablepress/class-tablepress-history.php
+includes/abilities/tablepress/class-tablepress-integration.php
+includes/abilities/tablepress/class-tablepress-placer.php
+includes/abilities/tablepress/class-tablepress-writer.php
+includes/abilities/tablepress/ops
 includes/page-text
 includes/page-text/class-page-text.php
 includes/page-text/class-page-text-blocks.php

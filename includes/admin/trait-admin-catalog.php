@@ -626,6 +626,31 @@ trait EMCP_Tools_Admin_Catalog_Trait {
 					),
 				),
 			),
+			'wp_tablepress'    => array(
+				'platform' => 'plugins',
+				'group'    => 'tables',
+				'pro'      => true,
+				'label'    => __( 'TablePress', 'emcp-tools' ),
+				'note'     => __( 'Build and edit TablePress tables: create a table from data, change it whole or cell by cell, add and remove rows and columns, import a CSV, HTML, JSON, XLSX or ODS file from pasted data or a URL, export it, style tables with TablePress custom CSS, and put a table on an Elementor or Gutenberg page. Every change to an existing table names the version it read, so a newer change is never overwritten by accident, and every write can be undone in History. Writes ship disabled. Requires TablePress (free) active.', 'emcp-tools' ),
+				'tools'    => array(
+					'emcp-tools/tablepress-read'  => array(
+						'label'       => __( 'TablePress Read', 'emcp-tools' ),
+						'description' => __( 'The list of tables, a table\'s cells, options and version, exports, the rendered HTML, the pages that show a table, and the custom CSS.', 'emcp-tools' ),
+						'badges'      => array( 'read-only' ),
+						'operations'  => array( 'get-setup', 'list-tables', 'get-table', 'export-table', 'render-table', 'find-usage', 'get-custom-css' ),
+						'available'   => self::tablepress_available(),
+						'requires'    => array( 'name' => 'TablePress', 'kind' => 'plugin' ),
+					),
+					'emcp-tools/tablepress-write' => array(
+						'label'       => __( 'TablePress Write', 'emcp-tools' ),
+						'description' => __( 'Create, edit, copy, rename, delete and import tables, set the custom CSS and place a table on a page. change-table-id and delete-table need confirm:true.', 'emcp-tools' ),
+						'badges'      => array( 'destructive' ),
+						'operations'  => array( 'create-table', 'update-table', 'edit-cells', 'insert-rows', 'delete-rows', 'insert-columns', 'delete-columns', 'copy-table', 'change-table-id', 'delete-table', 'import-table', 'update-custom-css', 'place-table' ),
+						'available'   => self::tablepress_available(),
+						'requires'    => array( 'name' => 'TablePress', 'kind' => 'plugin' ),
+					),
+				),
+			),
 			'wp_metabox'       => array(
 				'platform' => 'plugins',
 				'group'    => 'dynamic',

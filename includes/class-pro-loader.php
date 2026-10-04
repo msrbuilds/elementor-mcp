@@ -105,6 +105,8 @@ final class EMCP_Tools_Pro_Loader {
 		// History undoes from the admin History screen, both outside the MCP surface.
 		'includes/abilities/translatepress/class-translatepress-render-guard.php',
 		'includes/abilities/translatepress/class-translatepress-history.php',
+		// TablePress (3.19.0): History undoes from the admin History screen, outside the MCP surface.
+		'includes/abilities/tablepress/class-tablepress-history.php',
 	);
 
 	/**
@@ -148,6 +150,11 @@ final class EMCP_Tools_Pro_Loader {
 		'includes/abilities/translatepress/class-translatepress-api.php',
 		'includes/abilities/translatepress/class-translatepress-renderer.php',
 		'includes/abilities/translatepress/class-translatepress-integration.php',
+		// TablePress (3.19.0): the adapter, the writer, the placer and the tools.
+		'includes/abilities/tablepress/class-tablepress-api.php',
+		'includes/abilities/tablepress/class-tablepress-writer.php',
+		'includes/abilities/tablepress/class-tablepress-placer.php',
+		'includes/abilities/tablepress/class-tablepress-integration.php',
 		'includes/abilities/forms/class-wpforms-integration.php',
 		'includes/abilities/forms/class-gravityforms-integration.php',
 		'includes/abilities/forms/class-fluentforms-integration.php',
@@ -365,6 +372,11 @@ final class EMCP_Tools_Pro_Loader {
 		}
 		if ( class_exists( 'EMCP_Tools_TranslatePress_Render_Guard' ) ) {
 			EMCP_Tools_TranslatePress_Render_Guard::boot();
+		}
+
+		// TablePress (3.19.0): table, id and custom CSS undo on every request.
+		if ( class_exists( 'EMCP_Tools_TablePress_History' ) ) {
+			EMCP_Tools_TablePress_History::boot();
 		}
 
 		// EMCP Themer Pro power-ups: attach granular matchers, priority ranking,
