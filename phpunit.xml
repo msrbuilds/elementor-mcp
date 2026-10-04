@@ -132,6 +132,9 @@
         <testsuite name="LifterLMS">
             <directory>pro/tests/unit/lifterlms</directory>
         </testsuite>
+        <testsuite name="TEC">
+            <directory>pro/tests/unit/tec</directory>
+        </testsuite>
         <testsuite name="PageText">
             <directory>pro/tests/unit/page-text</directory>
         </testsuite>
