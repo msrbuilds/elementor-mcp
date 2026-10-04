@@ -170,6 +170,14 @@ includes/abilities/tablepress/class-tablepress-integration.php
 includes/abilities/tablepress/class-tablepress-placer.php
 includes/abilities/tablepress/class-tablepress-writer.php
 includes/abilities/tablepress/ops
+includes/abilities/class-captured-json.php
+includes/abilities/tutor
+includes/abilities/tutor/class-tutor-api.php
+includes/abilities/tutor/class-tutor-history.php
+includes/abilities/tutor/class-tutor-integration.php
+includes/abilities/tutor/class-tutor-lesson-guard.php
+includes/abilities/tutor/class-tutor-writer.php
+includes/abilities/tutor/ops
 includes/page-text
 includes/page-text/class-page-text.php
 includes/page-text/class-page-text-blocks.php

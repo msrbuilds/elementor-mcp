@@ -354,6 +354,10 @@ trait EMCP_Tools_Admin_Settings_Trait {
 		if ( $applied < 57 ) {
 			$add[] = 'emcp-tools/tablepress-write';
 		}
+		// v58: the Tutor LMS write dispatcher (3.19.0) ships off; its read stays on.
+		if ( $applied < 58 ) {
+			$add[] = 'emcp-tools/tutor-write';
+		}
 		return array(
 			'add'   => array_values( array_unique( $add ) ),
 			'strip' => array_values( array_unique( $strip ) ),

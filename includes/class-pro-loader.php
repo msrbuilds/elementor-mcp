@@ -107,6 +107,10 @@ final class EMCP_Tools_Pro_Loader {
 		'includes/abilities/translatepress/class-translatepress-history.php',
 		// TablePress (3.19.0): History undoes from the admin History screen, outside the MCP surface.
 		'includes/abilities/tablepress/class-tablepress-history.php',
+		// Tutor LMS (3.19.0): History undoes outside the MCP surface; the lesson guard runs on every save.
+		'includes/abilities/class-captured-json.php',
+		'includes/abilities/tutor/class-tutor-history.php',
+		'includes/abilities/tutor/class-tutor-lesson-guard.php',
 	);
 
 	/**
@@ -155,6 +159,10 @@ final class EMCP_Tools_Pro_Loader {
 		'includes/abilities/tablepress/class-tablepress-writer.php',
 		'includes/abilities/tablepress/class-tablepress-placer.php',
 		'includes/abilities/tablepress/class-tablepress-integration.php',
+		// Tutor LMS (3.19.0): the adapter, the writer and the tools.
+		'includes/abilities/tutor/class-tutor-api.php',
+		'includes/abilities/tutor/class-tutor-writer.php',
+		'includes/abilities/tutor/class-tutor-integration.php',
 		'includes/abilities/forms/class-wpforms-integration.php',
 		'includes/abilities/forms/class-gravityforms-integration.php',
 		'includes/abilities/forms/class-fluentforms-integration.php',
@@ -377,6 +385,15 @@ final class EMCP_Tools_Pro_Loader {
 		// TablePress (3.19.0): table, id and custom CSS undo on every request.
 		if ( class_exists( 'EMCP_Tools_TablePress_History' ) ) {
 			EMCP_Tools_TablePress_History::boot();
+		}
+
+		// Tutor LMS (3.19.0): course, content, quiz and enrolment undo, and the lesson guard (D10),
+		// on every request. The guard acts only while an EMCP tool runs.
+		if ( class_exists( 'EMCP_Tools_Tutor_History' ) ) {
+			EMCP_Tools_Tutor_History::boot();
+		}
+		if ( class_exists( 'EMCP_Tools_Tutor_Lesson_Guard' ) ) {
+			EMCP_Tools_Tutor_Lesson_Guard::boot();
 		}
 
 		// EMCP Themer Pro power-ups: attach granular matchers, priority ranking,

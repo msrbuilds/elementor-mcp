@@ -312,6 +312,13 @@ class EMCP_Tools_Ability_Registrar {
 			$this->ability_names = array_merge( $this->ability_names, $tablepress->get_ability_names() );
 		}
 
+		// Tutor LMS (3.19.0): build courses and manage enrolments, while Tutor LMS is active.
+		if ( class_exists( 'EMCP_Tools_Tutor_Integration' ) && EMCP_Tools_Tutor_Integration::tutor_active() ) {
+			$tutor = new EMCP_Tools_Tutor_Integration();
+			$tutor->register();
+			$this->ability_names = array_merge( $this->ability_names, $tutor->get_ability_names() );
+		}
+
 		// Meta Box abilities — only when Meta Box (free or extensions) is active.
 		if ( class_exists( 'EMCP_Tools_Meta_Box_Abilities' ) && EMCP_Tools_Meta_Box_Abilities::metabox_active() ) {
 			$metabox = new EMCP_Tools_Meta_Box_Abilities();

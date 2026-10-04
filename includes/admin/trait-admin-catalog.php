@@ -651,6 +651,31 @@ trait EMCP_Tools_Admin_Catalog_Trait {
 					),
 				),
 			),
+			'wp_tutor'         => array(
+				'platform' => 'plugins',
+				'group'    => 'lms',
+				'pro'      => true,
+				'label'    => __( 'Tutor LMS', 'emcp-tools' ),
+				'note'     => __( 'Build Tutor LMS courses: create a course with its details, add topics, lessons (with video and attachments) and quizzes (with questions and answers), set the order of the curriculum, publish it or move it to the trash, enrol students in free courses and read their progress. A change names only the fields it sets; everything else stays as it is. Every change to an existing course names the version it read, and every write can be undone in History; quiz work students have done is never undone. Writes ship disabled. Requires Tutor LMS (free) active.', 'emcp-tools' ),
+				'tools'    => array(
+					'emcp-tools/tutor-read'  => array(
+						'label'       => __( 'Tutor LMS Read', 'emcp-tools' ),
+						'description' => __( 'The list of courses, a course\'s fields and curriculum with its version, lessons, quizzes, the students of a course and one student\'s progress.', 'emcp-tools' ),
+						'badges'      => array( 'read-only' ),
+						'operations'  => array( 'get-setup', 'list-courses', 'get-course', 'get-lesson', 'get-quiz', 'list-enrolments', 'get-student-progress' ),
+						'available'   => self::tutor_available(),
+						'requires'    => array( 'name' => 'Tutor LMS', 'kind' => 'plugin' ),
+					),
+					'emcp-tools/tutor-write' => array(
+						'label'       => __( 'Tutor LMS Write', 'emcp-tools' ),
+						'description' => __( 'Create and change courses, topics, lessons and quizzes, set the curriculum order, publish or trash courses, and enrol or un-enrol students in free courses. trash-course, delete-topic, delete-lesson, delete-quiz and cancel-enrolment need confirm:true.', 'emcp-tools' ),
+						'badges'      => array( 'destructive' ),
+						'operations'  => array( 'create-course', 'update-course', 'set-course-status', 'trash-course', 'create-topic', 'update-topic', 'delete-topic', 'create-lesson', 'update-lesson', 'delete-lesson', 'save-quiz', 'delete-quiz', 'reorder-contents', 'enrol-student', 'cancel-enrolment' ),
+						'available'   => self::tutor_available(),
+						'requires'    => array( 'name' => 'Tutor LMS', 'kind' => 'plugin' ),
+					),
+				),
+			),
 			'wp_metabox'       => array(
 				'platform' => 'plugins',
 				'group'    => 'dynamic',
