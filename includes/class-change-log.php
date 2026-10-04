@@ -698,7 +698,17 @@ class EMCP_Tools_Change_Log {
 			// cannot prove that a newer edit is safe to overwrite.
 			return new WP_Error( 'legacy_unverified', __( 'This older post snapshot does not have a complete conflict guard. Automatic rollback is unavailable.', 'emcp-tools' ) );
 		}
-		return true;
+		/**
+		 * Lets an integration block an undo outright (force does not override it, and History shows
+		 * the entry as not undoable), for example when undoing would remove students' work.
+		 *
+		 * @since 3.19.0
+		 *
+		 * @param true|WP_Error $blocker true, or a WP_Error naming the reason.
+		 * @param array         $entry   Ledger entry.
+		 */
+		$blocker = function_exists( 'apply_filters' ) ? apply_filters( 'emcp_tools_change_rollback_blocker', true, $entry ) : true;
+		return is_wp_error( $blocker ) ? $blocker : true;
 	}
 
 	/**
