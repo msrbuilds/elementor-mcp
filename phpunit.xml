@@ -126,6 +126,9 @@
         <testsuite name="TablePress">
             <directory>pro/tests/unit/tablepress</directory>
         </testsuite>
+        <testsuite name="Tutor">
+            <directory>pro/tests/unit/tutor</directory>
+        </testsuite>
         <testsuite name="PageText">
             <directory>pro/tests/unit/page-text</directory>
         </testsuite>

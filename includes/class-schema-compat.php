@@ -122,8 +122,27 @@ class EMCP_Tools_Schema_Compat {
 					return $veto;
 				}
 			}
-			return self::normalize_result( $callback( ...$call_args ) );
+			++self::$depth;
+			try {
+				return self::normalize_result( $callback( ...$call_args ) );
+			} finally {
+				--self::$depth;
+			}
 		};
+	}
+
+	/** @var int How many EMCP tool callbacks are running (nested calls count). */
+	private static $depth = 0;
+
+	/**
+	 * Whether an EMCP tool callback is running. Kept here, released in a finally, because core's
+	 * WP_Ability::execute() skips wp_after_execute_ability on an error result, a failed output
+	 * check or an exception, so a before/after pair would stay raised in a long-lived process.
+	 *
+	 * @since 3.19.0
+	 */
+	public static function executing(): bool {
+		return self::$depth > 0;
 	}
 
 	/**
