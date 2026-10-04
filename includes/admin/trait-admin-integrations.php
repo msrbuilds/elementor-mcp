@@ -115,6 +115,10 @@ trait EMCP_Tools_Admin_Integrations_Trait {
 				'label' => __( 'LMS', 'emcp-tools' ),
 				'desc'  => __( 'Courses, lessons and students.', 'emcp-tools' ),
 			),
+			'events'       => array(
+				'label' => __( 'Events', 'emcp-tools' ),
+				'desc'  => __( 'Events, venues and organizers.', 'emcp-tools' ),
+			),
 			'addons'    => array(
 				'label' => __( 'Elementor Addons', 'emcp-tools' ),
 				'desc'  => __( 'Discover addon widget packs, and manage Ultimate Addons for Elementor templates.', 'emcp-tools' ),
@@ -285,6 +289,11 @@ trait EMCP_Tools_Admin_Integrations_Trait {
 	/** Same detector as EMCP_Tools_Tutor_Integration::tutor_active(). @since 3.19.0 */
 	public static function tutor_available(): bool {
 		return function_exists( 'tutor' ) && defined( 'TUTOR_VERSION' );
+	}
+
+	/** Same detector as EMCP_Tools_TEC_Integration::tec_active(). @since 3.19.0 */
+	public static function tec_available(): bool {
+		return class_exists( 'Tribe__Events__Main' );
 	}
 
 	/** Same detector as EMCP_Tools_LifterLMS_Integration::lifterlms_active(). @since 3.19.0 */

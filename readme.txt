@@ -191,7 +191,7 @@ The admin screens ship compiled in `assets/admin/build/`. Their full source and 
 
 = 3.19.0 =
 
-Builds FunnelKit funnels and email automations over MCP, translates sites with Polylang and TranslatePress, builds TablePress tables, Tutor LMS courses and LifterLMS courses: new Pro tools drive each plugin through its own controllers, with confirm, dry run and History undo.
+Builds FunnelKit funnels and email automations over MCP, translates sites with Polylang and TranslatePress, builds TablePress tables, Tutor LMS and LifterLMS courses, and The Events Calendar events: new Pro tools drive each plugin through its own controllers, with confirm, dry run and History undo.
 
 * New: FunnelKit Funnel Builder write tool (Pro, #143): funnels, steps, checkout products and fields, order bumps, upsells, opt-in and thank-you pages, A/B tests, the store checkout, and template and funnel imports. Deletes need confirm; creates and updates accept dry_run; History records and undoes the writes.
 * New: FunnelKit Automations read and write tools (Pro, #144): automations, contacts, tags, lists, fields, broadcasts, templates, form feeds, link triggers, audiences, bulk actions and allowlisted settings. Sends and deletes need confirm; credential routes are never reachable.
@@ -214,6 +214,9 @@ Builds FunnelKit funnels and email automations over MCP, translates sites with P
 * New: LifterLMS read and write tools (Pro): courses, sections, lessons, quizzes, the curriculum order, publishing, access plans, memberships and enrolments, through LifterLMS's own abilities. Works with LifterLMS 10.1 or later; writes ship disabled.
 * New: LifterLMS writes change only the fields they name, check the version they read, treat a membership enrolment and its courses as one change, never touch students' work and are undone from History.
 * New: emcp-lifterlms agent skill (Pro).
+* New: The Events Calendar read and write tools (Pro): events with their dates, time zones, venues, organizers, categories and tags, publishing, cancelled and postponed status, venues, organizers and event categories, through TEC's own PHP layer. Works with The Events Calendar 6.x; writes ship disabled.
+* New: The Events Calendar writes change only the fields they name, start events as drafts, check TEC's calendar tables after every write, keep drafts private, never trash a venue in use and are undone from History.
+* New: emcp-events-calendar agent skill (Pro).
 * Changed: History undoes multi-row changes in one database transaction.
 * Fixed: Themer Post Content now shows the password form for a password-protected post instead of its content.
 

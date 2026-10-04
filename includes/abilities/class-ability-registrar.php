@@ -326,6 +326,13 @@ class EMCP_Tools_Ability_Registrar {
 			$this->ability_names = array_merge( $this->ability_names, $lifterlms->get_ability_names() );
 		}
 
+		// The Events Calendar (3.19.0): events, venues, organizers and categories, while TEC is active.
+		if ( class_exists( 'EMCP_Tools_TEC_Integration' ) && EMCP_Tools_TEC_Integration::tec_active() ) {
+			$tec = new EMCP_Tools_TEC_Integration();
+			$tec->register();
+			$this->ability_names = array_merge( $this->ability_names, $tec->get_ability_names() );
+		}
+
 		// Meta Box abilities — only when Meta Box (free or extensions) is active.
 		if ( class_exists( 'EMCP_Tools_Meta_Box_Abilities' ) && EMCP_Tools_Meta_Box_Abilities::metabox_active() ) {
 			$metabox = new EMCP_Tools_Meta_Box_Abilities();

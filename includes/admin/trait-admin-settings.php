@@ -362,6 +362,10 @@ trait EMCP_Tools_Admin_Settings_Trait {
 		if ( $applied < 59 ) {
 			$add[] = 'emcp-tools/lifterlms-write';
 		}
+		// v60: The Events Calendar write dispatcher (3.19.0) ships off; its read stays on.
+		if ( $applied < 60 ) {
+			$add[] = 'emcp-tools/events-calendar-write';
+		}
 		return array(
 			'add'   => array_values( array_unique( $add ) ),
 			'strip' => array_values( array_unique( $strip ) ),

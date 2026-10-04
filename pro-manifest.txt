@@ -184,6 +184,12 @@ includes/abilities/lifterlms/class-lifterlms-history.php
 includes/abilities/lifterlms/class-lifterlms-integration.php
 includes/abilities/lifterlms/class-lifterlms-writer.php
 includes/abilities/lifterlms/ops
+includes/abilities/tec
+includes/abilities/tec/class-tec-api.php
+includes/abilities/tec/class-tec-history.php
+includes/abilities/tec/class-tec-integration.php
+includes/abilities/tec/class-tec-writer.php
+includes/abilities/tec/ops
 includes/page-text
 includes/page-text/class-page-text.php
 includes/page-text/class-page-text-blocks.php

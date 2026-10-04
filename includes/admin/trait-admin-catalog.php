@@ -701,6 +701,31 @@ trait EMCP_Tools_Admin_Catalog_Trait {
 					),
 				),
 			),
+			'wp_tec'           => array(
+				'platform' => 'plugins',
+				'group'    => 'events',
+				'pro'      => true,
+				'label'    => __( 'The Events Calendar', 'emcp-tools' ),
+				'note'     => __( 'Build The Events Calendar events: create events with their date, time zone, venue, organizers, categories and tags, publish them, mark them cancelled or postponed, move them to the trash, and create and change venues, organizers and event categories. A change names only the fields it sets; everything else stays as it is, and the calendar\'s own tables are checked after every write. Every change to an existing object names the version it read, and every write can be undone in History. Writes ship disabled. Requires The Events Calendar 6.x active.', 'emcp-tools' ),
+				'tools'    => array(
+					'emcp-tools/events-calendar-read'  => array(
+						'label'       => __( 'The Events Calendar Read', 'emcp-tools' ),
+						'description' => __( 'Events by date range, status, category, venue, organizer or search, one event with its venue, organizers, categories, tags, status and version, venues, organizers and event categories.', 'emcp-tools' ),
+						'badges'      => array( 'read-only' ),
+						'operations'  => array( 'get-setup', 'list-events', 'get-event', 'list-venues', 'get-venue', 'list-organizers', 'get-organizer', 'list-categories' ),
+						'available'   => self::tec_available(),
+						'requires'    => array( 'name' => 'The Events Calendar', 'kind' => 'plugin' ),
+					),
+					'emcp-tools/events-calendar-write' => array(
+						'label'       => __( 'The Events Calendar Write', 'emcp-tools' ),
+						'description' => __( 'Create and change events, venues, organizers and event categories, publish events, mark them cancelled or postponed, and move events, venues and organizers to the trash. Trashing needs confirm:true.', 'emcp-tools' ),
+						'badges'      => array( 'destructive' ),
+						'operations'  => array( 'create-event', 'update-event', 'set-event-status', 'trash-event', 'create-venue', 'update-venue', 'trash-venue', 'create-organizer', 'update-organizer', 'trash-organizer', 'create-category', 'update-category' ),
+						'available'   => self::tec_available(),
+						'requires'    => array( 'name' => 'The Events Calendar', 'kind' => 'plugin' ),
+					),
+				),
+			),
 			'wp_metabox'       => array(
 				'platform' => 'plugins',
 				'group'    => 'dynamic',
