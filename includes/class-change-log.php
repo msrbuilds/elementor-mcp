@@ -525,6 +525,74 @@ class EMCP_Tools_Change_Log {
 	}
 
 	/**
+	 * Remove a person's data from the History entries of one domain, in either store (3.19.0).
+	 *
+	 * Every entry of the domain is passed, oldest first and in pages, to
+	 * $rewrite( array $rollback, ?array $heavy ), where $heavy is the entry's blob (null when the
+	 * payload is inline). It answers:
+	 * - ['keep']: nothing changes;
+	 * - ['strip']: the payload and its blob go; the entry keeps its summary and answers
+	 *   `redacted` (with $reason) to an undo;
+	 * - ['rewrite', array $rollback, ?array $heavy]: the new rollback is stored; a non-null
+	 *   heavy part goes to a new blob and the old blob is deleted.
+	 * Entries already redacted and entries without a rollback are skipped.
+	 *
+	 * @param string   $domain  Domain.
+	 * @param callable $rewrite Decision per entry.
+	 * @param string   $reason  Shown when an undo of a stripped entry is attempted.
+	 * @return int Entries changed.
+	 */
+	public static function redact( string $domain, callable $rewrite, string $reason ): int {
+		$store   = self::store();
+		$changed = 0;
+		$store->each_in_domain(
+			$domain,
+			static function ( array $row ) use ( $store, $rewrite, $reason, &$changed ) {
+				$rb = isset( $row['rollback'] ) && is_array( $row['rollback'] ) ? $row['rollback'] : null;
+				if ( null === $rb || 'redacted' === ( $rb['type'] ?? '' ) ) {
+					return;
+				}
+				$old_blob = (string) ( $rb['blob_id'] ?? '' );
+				$heavy    = '' !== $old_blob && class_exists( 'EMCP_Tools_Change_Blobs' ) ? EMCP_Tools_Change_Blobs::get( $old_blob ) : null;
+				$answer   = (array) $rewrite( $rb, $heavy );
+				$new_blob = '';
+				switch ( (string) ( $answer[0] ?? 'keep' ) ) {
+					case 'strip':
+						$next = array(
+							'type'   => 'redacted',
+							'reason' => $reason,
+						);
+						break;
+					case 'rewrite':
+						$next = (array) ( $answer[1] ?? array() );
+						unset( $next['blob_id'] );
+						$part = $answer[2] ?? null;
+						if ( is_array( $part ) ) {
+							$new_blob = class_exists( 'EMCP_Tools_Change_Blobs' ) ? EMCP_Tools_Change_Blobs::put( $part ) : '';
+							$next     = '' !== $new_blob ? $next + array( 'blob_id' => $new_blob ) : array_merge( $next, $part );
+						} elseif ( '' !== $old_blob && null === $heavy ) {
+							$next['blob_id'] = $old_blob;
+						}
+						break;
+					default:
+						return;
+				}
+				if ( ! $store->replace_rollback( (string) $row['id'], $rb, $next ) ) {
+					if ( '' !== $new_blob ) {
+						EMCP_Tools_Change_Blobs::delete( $new_blob );
+					}
+					return;
+				}
+				if ( '' !== $old_blob && $old_blob !== (string) ( $next['blob_id'] ?? '' ) ) {
+					EMCP_Tools_Change_Blobs::delete( $old_blob );
+				}
+				++$changed;
+			}
+		);
+		return $changed;
+	}
+
+	/**
 	 * Delete the out-of-band before-image blobs for a set of dropped/removed
 	 * ledger rows, so evicted entries don't orphan their snapshots.
 	 *
@@ -675,6 +743,11 @@ class EMCP_Tools_Change_Log {
 		$rb = $entry['rollback'] ?? null;
 		if ( ! is_array( $rb ) || empty( $rb['type'] ) ) {
 			return new WP_Error( 'not_reversible', __( 'This change is not reversible.', 'emcp-tools' ) );
+		}
+		// An entry whose payload was removed because the data it held was erased (redact()).
+		if ( 'redacted' === $rb['type'] ) {
+			$reason = isset( $rb['reason'] ) && '' !== (string) $rb['reason'] ? (string) $rb['reason'] : __( 'The data this change held was erased, so it cannot be undone.', 'emcp-tools' );
+			return new WP_Error( 'redacted', $reason );
 		}
 		// A change recorded for the audit trail only, with the reason it cannot be undone.
 		if ( 'irreversible' === $rb['type'] ) {

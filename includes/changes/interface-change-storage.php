@@ -83,6 +83,9 @@ interface EMCP_Tools_Change_Storage {
 	/** Delete every row with seq <= $seq; the number deleted. */
 	public function table_delete_upto( int $seq ): int;
 
+	/** Replace the rollback of one row (redaction, 3.19.0). */
+	public function table_replace_rollback( string $id, ?array $rollback ): bool;
+
 	/** Rows matching EMCP_Tools_Change_Memory_Filter arguments. */
 	public function table_select( array $args ): array;
 

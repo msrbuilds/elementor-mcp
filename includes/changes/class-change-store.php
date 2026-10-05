@@ -362,6 +362,71 @@ final class EMCP_Tools_Change_Store {
 		return ( new EMCP_Tools_Change_Memory_Filter( $this->option_list() ) )->select( $args );
 	}
 
+	/** Rows per page of a domain walk. */
+	const DOMAIN_PAGE = 500;
+
+	/**
+	 * Call $fn( array $row ) for every row of a domain, oldest first, in pages.
+	 *
+	 * @param string   $domain Domain.
+	 * @param callable $fn     Receives each row.
+	 * @param int      $page   Rows per page.
+	 */
+	public function each_in_domain( string $domain, callable $fn, int $page = self::DOMAIN_PAGE ): void {
+		$cursor = 1;
+		do {
+			$rows = $this->select(
+				array(
+					'domain'  => $domain,
+					'seq_min' => $cursor,
+					'order'   => 'asc',
+					'limit'   => $page,
+				)
+			);
+			foreach ( $rows as $r ) {
+				$fn( $r );
+				$cursor = (int) $r['seq'] + 1;
+			}
+		} while ( count( $rows ) === $page );
+	}
+
+	/**
+	 * Replace one row's rollback, only while it still equals $expected (a
+	 * concurrent rollback mark or rewrite wins).
+	 *
+	 * @param string     $id       Row id.
+	 * @param array|null $expected The rollback the caller read.
+	 * @param array|null $rollback The new rollback.
+	 */
+	public function replace_rollback( string $id, ?array $expected, ?array $rollback ): bool {
+		$same   = static fn( $a, $b ) => wp_json_encode( $a ) === wp_json_encode( $b );
+		$result = $this->with_lock(
+			function ( bool $table, bool $cas ) use ( $id, $expected, $rollback, $same ) {
+				if ( $table ) {
+					$row = $this->s->table_find( $id );
+					return null !== $row && $same( $row['rollback'] ?? null, $expected ) && $this->s->table_replace_rollback( $id, $rollback );
+				}
+				return true === $this->mutate_option(
+					static function ( array $rows ) use ( $id, $expected, $rollback, $same ) {
+						foreach ( $rows as $i => $r ) {
+							if ( isset( $r['id'] ) && $r['id'] === $id ) {
+								$now = isset( $r['rollback'] ) && is_array( $r['rollback'] ) ? $r['rollback'] : null;
+								if ( ! $same( $now, $expected ) ) {
+									return null;
+								}
+								$rows[ $i ]['rollback'] = $rollback;
+								return $rows;
+							}
+						}
+						return null;
+					},
+					$cas
+				);
+			}
+		);
+		return true === $result;
+	}
+
 	/** Distinct non-empty clients, sorted, at most 50. */
 	public function clients(): array {
 		if ( $this->is_table() ) {

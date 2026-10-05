@@ -261,6 +261,19 @@ final class EMCP_Tools_Change_Memory_Storage implements EMCP_Tools_Change_Storag
 		return $n;
 	}
 
+	public function table_replace_rollback( string $id, ?array $rollback ): bool {
+		if ( $this->refuse_update ) {
+			return false;
+		}
+		foreach ( $this->rows as $seq => $r ) {
+			if ( $r['id'] === $id ) {
+				$this->rows[ $seq ]['rollback'] = $rollback;
+				return true;
+			}
+		}
+		return false;
+	}
+
 	public function table_select( array $args ): array {
 		return ( new EMCP_Tools_Change_Memory_Filter( $this->rows ) )->select( $args );
 	}

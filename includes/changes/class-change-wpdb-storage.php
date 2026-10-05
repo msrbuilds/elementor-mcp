@@ -269,6 +269,15 @@ final class EMCP_Tools_Change_WPDB_Storage implements EMCP_Tools_Change_Storage 
 		return (int) $db->query( $db->prepare( 'DELETE FROM ' . $this->table() . ' WHERE seq <= %d', $seq ) );
 	}
 
+	public function table_replace_rollback( string $id, ?array $rollback ): bool {
+		$db  = $this->db();
+		$enc = EMCP_Tools_Change_Codec::encode_rollback( $rollback );
+		if ( null === $enc ) {
+			return false !== $db->query( $db->prepare( 'UPDATE ' . $this->table() . ' SET rollback = NULL WHERE id = %s', $id ) );
+		}
+		return false !== $db->query( $db->prepare( 'UPDATE ' . $this->table() . ' SET rollback = %s WHERE id = %s', $enc, $id ) );
+	}
+
 	/**
 	 * WHERE clause and values, mirroring EMCP_Tools_Change_Memory_Filter.
 	 *
