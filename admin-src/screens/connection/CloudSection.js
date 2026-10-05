@@ -18,6 +18,7 @@ function PostForm( {
 	children,
 	fields = {},
 	confirmText = '',
+	confirmLabel = __( 'Pull', 'emcp-tools' ),
 } ) {
 	const confirm = useConfirm();
 	const onSubmit = async ( e ) => {
@@ -29,7 +30,7 @@ function PostForm( {
 		if (
 			await confirm( {
 				title: confirmText,
-				confirmLabel: __( 'Pull', 'emcp-tools' ),
+				confirmLabel,
 				tone: 'danger',
 			} )
 		) {
@@ -197,6 +198,14 @@ export function CloudSection( { data, navigate = defaultNavigate } ) {
 	};
 	return (
 		<div className="eui-conn__cloud">
+			{ c.identityConflict && (
+				<Notice tone="warning">
+					{ __(
+						'This installation has a copied Cloud identity or a changed address. Cloud requests are paused to protect the original connection. Connect it as a separate site below.',
+						'emcp-tools'
+					) }
+				</Notice>
+			) }
 			<Card
 				title={ __( 'Cloud account', 'emcp-tools' ) }
 				actions={
@@ -228,7 +237,9 @@ export function CloudSection( { data, navigate = defaultNavigate } ) {
 						</Button>
 					</div>
 				) }
-				{ ( ! c.connected || ! c.healthy ) && connect }
+				{ ! c.identityConflict &&
+					( ! c.connected || ! c.healthy ) &&
+					connect }
 				{ c.connected && c.healthy && (
 					<div className="eui-conn__setting">
 						<div className="eui-conn__setting-text">
@@ -263,6 +274,31 @@ export function CloudSection( { data, navigate = defaultNavigate } ) {
 					</div>
 				) }
 			</Card>
+			{ c.separateAction && (
+				<Card title={ __( 'Cloned or restored site?', 'emcp-tools' ) }>
+					<p>
+						{ __(
+							'Use a separate Cloud identity for a copy of another site. This clears only this installation’s saved Cloud connection. The original site and its Cloud data stay connected. You will connect this copy again and it will count toward your site allowance.',
+							'emcp-tools'
+						) }
+					</p>
+					<PostForm
+						url={ data.adminPostUrl }
+						action={ c.separateAction }
+						nonce={ c.separateNonce }
+						fields={ { confirm_separate: '1' } }
+						confirmText={ __(
+							'Give this installation a separate Cloud identity?',
+							'emcp-tools'
+						) }
+						confirmLabel={ __( 'Separate site', 'emcp-tools' ) }
+					>
+						<Button type="submit">
+							{ __( 'Connect as a separate site', 'emcp-tools' ) }
+						</Button>
+					</PostForm>
+				</Card>
+			) }
 			{ c.connected && c.sync && (
 				<Card title={ __( 'Settings sync', 'emcp-tools' ) }>
 					{ c.sync.entitled ? (

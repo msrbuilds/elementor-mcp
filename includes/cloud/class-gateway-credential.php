@@ -105,6 +105,11 @@ class EMCP_Tools_Gateway_Credential {
 		if ( class_exists( 'EMCP_Tools_Cloud_Client' ) ) {
 			EMCP_Tools_Cloud_Client::delete_gateway_credential(); // best-effort; needs a live Cloud token.
 		}
+		self::clear_local();
+	}
+
+	/** Remove credentials from this database only, preserving the source Cloud binding. */
+	public static function clear_local(): void {
 		$client_id = self::existing_client_id();
 		if ( '' !== $client_id ) {
 			EMCP_Tools_OAuth_Store::revoke_client( $client_id ); // local kill switch.

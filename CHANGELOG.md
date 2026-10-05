@@ -4,6 +4,8 @@ All notable changes to MCP Tools for Elementor are documented in this file.
 
 ## [3.19.0]
 
+- New: **Cloud protection for cloned sites.** Cloud connections record the WordPress home URL and block copied credentials when that URL changes. Connection > Cloud provides an explicit action to give the copy its own identity before reconnecting, preserving the source site's Cloud connection. Older connections without a recorded URL and copies using the same URL require manual separation. A legitimate URL move also requires reconnection.
+
 > Builds FunnelKit funnels and email automations over MCP (#143, #144), translates sites with Polylang and TranslatePress, builds TablePress tables, Tutor LMS and LifterLMS courses, The Events Calendar events, Amelia bookings, and FluentCRM contacts, campaigns and automations: new Pro tools drive each plugin through its own controllers, with confirm, dry run and History undo.
 
 - New: **FunnelKit Funnel Builder write tool (Pro, #143).** `funnelkit-write` creates and changes funnels and steps, checkout products (with discounts) and fields, order bumps, upsells and downsells, opt-in and thank-you pages, A/B tests and the store checkout, and imports FunnelKit templates and funnel exports. Deletes need `confirm: true`; creates and updates accept `dry_run: true`, which reports the exact request and, for checkout products, the price a buyer pays. Every write is recorded in History and most can be undone there, including deleting a step with its order bumps. The tool ships disabled; enable it under Tools > Plugins > FunnelKit.

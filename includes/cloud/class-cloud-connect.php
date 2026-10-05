@@ -15,6 +15,7 @@ class EMCP_Tools_Cloud_Connect {
 	const ACTION_DISCONNECT = 'emcp_tools_cloud_disconnect';
 	const ACTION_REISSUE    = 'emcp_tools_cloud_gateway_reissue';
 	const ACTION_GATEWAY_OFF = 'emcp_tools_cloud_gateway_off';
+	const ACTION_SEPARATE = 'emcp_tools_cloud_separate';
 	const PENDING_TRANSIENT = 'emcp_tools_cloud_pending';
 	// Treat the access token as expired this many seconds early (matches the
 	// client's own leeway) when deciding whether a concurrent request already
@@ -30,6 +31,7 @@ class EMCP_Tools_Cloud_Connect {
 	 * @return void
 	 */
 	public static function init(): void {
+		add_action( 'admin_post_' . self::ACTION_SEPARATE, array( __CLASS__, 'handle_separate' ) );
 		add_action( 'admin_post_' . self::ACTION_CONNECT, array( __CLASS__, 'handle_connect' ) );
 		add_action( 'admin_post_' . self::ACTION_CALLBACK, array( __CLASS__, 'handle_callback' ) );
 		add_action( 'admin_post_' . self::ACTION_DISCONNECT, array( __CLASS__, 'handle_disconnect' ) );
@@ -366,6 +368,9 @@ class EMCP_Tools_Cloud_Connect {
 	public static function handle_connect(): void {
 		self::guard_cap();
 		check_admin_referer( self::ACTION_CONNECT );
+		if ( EMCP_Tools_Cloud::identity_conflict() ) {
+			self::back( 'cloud_error=site_identity_conflict' );
+		}
 		$registration = self::register_client();
 		if ( is_wp_error( $registration ) ) {
 			self::back( 'cloud_error=dcr' );
@@ -405,6 +410,9 @@ class EMCP_Tools_Cloud_Connect {
 	 */
 	public static function handle_callback(): void {
 		self::guard_cap();
+		if ( EMCP_Tools_Cloud::identity_conflict() ) {
+			self::back( 'cloud_error=site_identity_conflict' );
+		}
 		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- provider redirect; validated by state below.
 		$code     = isset( $_GET['code'] ) ? sanitize_text_field( wp_unslash( $_GET['code'] ) ) : '';
 		$state_in = isset( $_GET['state'] ) ? sanitize_text_field( wp_unslash( $_GET['state'] ) ) : '';
@@ -413,6 +421,9 @@ class EMCP_Tools_Cloud_Connect {
 		delete_transient( self::PENDING_TRANSIENT );
 		if ( ! is_array( $pending ) || '' === $code ) {
 			self::back( 'cloud_error=state' );
+		}
+		if ( isset( $pending['installation_base'] ) && $pending['installation_base'] !== EMCP_Tools_Cloud::installation_base() ) {
+			self::back( 'cloud_error=site_identity_conflict' );
 		}
 		$decoded = json_decode( EMCP_Tools_OAuth_Util::base64url_decode( $state_in ), true );
 		$csrf    = is_array( $decoded ) ? (string) ( $decoded['csrf'] ?? '' ) : '';
@@ -451,6 +462,7 @@ class EMCP_Tools_Cloud_Connect {
 		$was_provisioned = class_exists( 'EMCP_Tools_Gateway_Credential' )
 			&& (bool) get_option( EMCP_Tools_Gateway_Credential::OPTION_FLAG, 0 );
 		return array(
+			'installation_base' => EMCP_Tools_Cloud::installation_base(),
 			'verifier'        => $verifier,
 			'csrf'            => $csrf,
 			'client_id'       => $client_id,
@@ -522,6 +534,9 @@ class EMCP_Tools_Cloud_Connect {
 	public static function handle_gateway_off(): void {
 		self::guard_cap();
 		check_admin_referer( self::ACTION_GATEWAY_OFF );
+		if ( EMCP_Tools_Cloud::identity_conflict() ) {
+			self::back( 'cloud_error=site_identity_conflict' );
+		}
 		if ( class_exists( 'EMCP_Tools_Gateway_Credential' ) ) {
 			EMCP_Tools_Gateway_Credential::deprovision();
 		}
@@ -536,6 +551,9 @@ class EMCP_Tools_Cloud_Connect {
 	public static function handle_disconnect(): void {
 		self::guard_cap();
 		check_admin_referer( self::ACTION_DISCONNECT );
+		if ( EMCP_Tools_Cloud::identity_conflict() ) {
+			self::back( 'cloud_error=site_identity_conflict' );
+		}
 		if ( class_exists( 'EMCP_Tools_Gateway_Credential' ) ) {
 			EMCP_Tools_Gateway_Credential::deprovision(); // Cloud delete needs the live connection → before clear_connection().
 		}
@@ -549,6 +567,16 @@ class EMCP_Tools_Cloud_Connect {
 	 */
 	public static function connect_url(): string {
 		return wp_nonce_url( admin_url( 'admin-post.php?action=' . self::ACTION_CONNECT ), self::ACTION_CONNECT );
+	}
+
+	public static function handle_separate(): void {
+		self::guard_cap();
+		check_admin_referer( self::ACTION_SEPARATE );
+		if ( 'POST' !== ( $_SERVER['REQUEST_METHOD'] ?? '' ) || '1' !== ( $_POST['confirm_separate'] ?? '' ) ) {
+			wp_die( esc_html__( 'Confirm that this is a separate site before continuing.', 'emcp-tools' ), '', array( 'response' => 400 ) );
+		}
+		EMCP_Tools_Cloud::separate_identity();
+		self::back( 'cloud_separated=1' );
 	}
 
 	/**

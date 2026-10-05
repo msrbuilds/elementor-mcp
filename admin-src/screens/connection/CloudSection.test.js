@@ -35,6 +35,35 @@ function mount( cloud = {}, navigate = jest.fn() ) {
 }
 
 describe( 'CloudSection account card', () => {
+	it( 'blocks copied credentials and confirms separate site identity', async () => {
+		mount( {
+			connected: false,
+			identityConflict: true,
+			separateAction: 'emcp_tools_cloud_separate',
+			separateNonce: 'separate-nonce',
+		} );
+		expect(
+			screen.queryByRole( 'button', { name: 'Connect to EMCP Cloud' } )
+		).toBeNull();
+		const button = screen.getByRole( 'button', {
+			name: 'Connect as a separate site',
+		} );
+		const form = button.closest( 'form' );
+		expect(
+			form.querySelector( 'input[name="confirm_separate"]' ).value
+		).toBe( '1' );
+		expect( form.querySelector( 'input[name="_wpnonce"]' ).value ).toBe(
+			'separate-nonce'
+		);
+		await userEvent.click( button );
+		const dialog = await screen.findByRole( 'dialog', {
+			name: 'Give this installation a separate Cloud identity?',
+		} );
+		await userEvent.click(
+			within( dialog ).getByRole( 'button', { name: 'Cancel' } )
+		);
+		expect( screen.queryByRole( 'dialog' ) ).toBeNull();
+	} );
 	it( 'names the linked account, redacted, with the host and date', () => {
 		mount();
 		expect( screen.getByText( 'mi•••@gmail.com' ) ).toBeInTheDocument();
