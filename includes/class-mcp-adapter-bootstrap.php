@@ -58,9 +58,10 @@ if ( ! defined( 'ABSPATH' ) ) {
 final class EMCP_Tools_Adapter_Bootstrap {
 
 	/**
-	 * Version of the bundled adapter (keep in sync with the copied source).
+	 * Version of the bundled adapter at the last update; bundled_version() reads the copied
+	 * source itself.
 	 */
-	const BUNDLED_VERSION = '0.5.0';
+	const BUNDLED_VERSION = '0.6.1';
 
 	/**
 	 * Root namespace of the MCP Adapter, with trailing separator.
@@ -255,5 +256,69 @@ final class EMCP_Tools_Adapter_Bootstrap {
 	 */
 	public static function source(): string {
 		return self::$source;
+	}
+
+	/**
+	 * The version of the bundled adapter, read from its McpAdapter::VERSION.
+	 *
+	 * @since 3.19.0
+	 */
+	public static function bundled_version(): string {
+		$src = @file_get_contents( self::bundled_dir() . 'Core/McpAdapter.php' ); // phpcs:ignore WordPress.PHP.NoSilencedErrors, WordPress.WP.AlternativeFunctions
+		return is_string( $src ) && preg_match( "/const\\s+VERSION\\s*=\\s*'([^']+)'/", $src, $m ) ? $m[1] : self::BUNDLED_VERSION;
+	}
+
+	/**
+	 * Which copy of McpAdapter a file is: the plugin folder it sits in and whether it is ours.
+	 *
+	 * @since 3.19.0
+	 *
+	 * @param string $file        The class file ('' when unknown).
+	 * @param string $plugins_dir WP_PLUGIN_DIR.
+	 * @param string $ours_dir    Our bundled adapter's class root.
+	 * @param string $version     The loaded McpAdapter::VERSION.
+	 * @return array{file: string, version: string, ours: bool, plugin: string}
+	 */
+	public static function source_from_file( string $file, string $plugins_dir, string $ours_dir, string $version ): array {
+		$norm    = static fn( string $p ) => str_replace( '\\', '/', $p );
+		$file    = $norm( $file );
+		$plugins = rtrim( $norm( $plugins_dir ), '/' ) . '/';
+		$ours    = $norm( $ours_dir );
+		$plugin  = '';
+		$rel     = $file;
+		if ( '' !== $file && 0 === stripos( $file, $plugins ) ) {
+			$rel    = substr( $file, strlen( $plugins ) );
+			$plugin = (string) strtok( $rel, '/' );
+		}
+		return array(
+			'file'    => $rel,
+			'version' => $version,
+			'ours'    => '' !== $file && '' !== $ours && 0 === stripos( $file, $ours ),
+			'plugin'  => $plugin,
+		);
+	}
+
+	/**
+	 * Where the loaded McpAdapter class came from (D3: Amelia loads its bundled 0.5.0 copy before
+	 * EMCP boots, so the core class can be another plugin's while the rest is ours).
+	 *
+	 * @since 3.19.0
+	 *
+	 * @return array{file: string, version: string, ours: bool, plugin: string}
+	 */
+	public static function core_source(): array {
+		$class = '\WP\MCP\Core\McpAdapter';
+		$file  = '';
+		$ver   = '';
+		if ( class_exists( $class, false ) ) {
+			try {
+				$file = (string) ( new \ReflectionClass( $class ) )->getFileName();
+			} catch ( \Throwable $e ) {
+				$file = '';
+			}
+			$ver = defined( $class . '::VERSION' ) ? (string) constant( $class . '::VERSION' ) : '';
+		}
+		$plugins = defined( 'WP_PLUGIN_DIR' ) ? WP_PLUGIN_DIR : dirname( EMCP_TOOLS_DIR );
+		return self::source_from_file( $file, $plugins, self::bundled_dir(), $ver );
 	}
 }

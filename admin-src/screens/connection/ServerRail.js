@@ -59,6 +59,12 @@ export function ServerRail( { data, apps, setApps, onSaved = () => {} } ) {
 		status.abilitiesApi &&
 		status.serverEnabled &&
 		'none' !== status.adapter;
+	const copy = status.adapterCopy;
+	const adapterLabel = {
+		bundled: __( 'Bundled', 'emcp-tools' ),
+		external: __( 'External', 'emcp-tools' ),
+		none: __( 'Missing', 'emcp-tools' ),
+	}[ status.adapter ];
 	const rows = [
 		[
 			__( 'MCP Tools for Elementor', 'emcp-tools' ),
@@ -67,11 +73,15 @@ export function ServerRail( { data, apps, setApps, onSaved = () => {} } ) {
 		],
 		[
 			__( 'MCP Adapter', 'emcp-tools' ),
-			{
-				bundled: __( 'Bundled', 'emcp-tools' ),
-				external: __( 'External', 'emcp-tools' ),
-				none: __( 'Missing', 'emcp-tools' ),
-			}[ status.adapter ],
+			copy && ! copy.ours && copy.plugin
+				? sprintf(
+						/* translators: 1: Bundled or External, 2: plugin folder, 3: its adapter version. */
+						__( '%1$s, with %2$s %3$s loaded first', 'emcp-tools' ),
+						adapterLabel,
+						copy.plugin,
+						copy.version || '?'
+					)
+				: adapterLabel,
 			'none' !== status.adapter,
 		],
 		[

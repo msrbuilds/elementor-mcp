@@ -201,6 +201,7 @@ final class EMCP_Tools_Admin_Connection_Data {
 	public function status(): array {
 		return array(
 			'adapter'       => class_exists( 'EMCP_Tools_Adapter_Bootstrap' ) ? EMCP_Tools_Adapter_Bootstrap::source() : 'none',
+			'adapterCopy'   => class_exists( 'EMCP_Tools_Adapter_Bootstrap' ) && method_exists( 'EMCP_Tools_Adapter_Bootstrap', 'core_source' ) ? array_intersect_key( EMCP_Tools_Adapter_Bootstrap::core_source(), array( 'plugin' => 1, 'version' => 1, 'ours' => 1 ) ) : null,
 			'abilitiesApi'  => function_exists( 'wp_register_ability' ),
 			'serverEnabled' => '1' === (string) get_option( 'emcp_tools_server_enabled', '1' ),
 			'toolsEnabled'  => $this->admin->get_enabled_tool_count(),

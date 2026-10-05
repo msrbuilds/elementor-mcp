@@ -191,3 +191,47 @@ final class EMCP_Tools_Attention_Cloud extends EMCP_Tools_Attention_Base {
 		return $this->make( 'warning', 'cloud', __( 'EMCP Cloud is disconnected', 'emcp-tools' ), __( 'Your Marketplace items can\'t get updates until you reconnect.', 'emcp-tools' ), __( 'Reconnect', 'emcp-tools' ), self::url( '-connection&section=cloud' ) );
 	}
 }
+
+/**
+ * Another plugin's copy of the MCP Adapter answers for the core class (Amelia loads its bundled
+ * 0.5.0 McpAdapter before EMCP boots). EMCP keeps working, but the mix depends on the two copies
+ * staying compatible, so the Dashboard names the plugin.
+ */
+final class EMCP_Tools_Adapter_Attention extends EMCP_Tools_Attention_Base {
+
+	/** @var array|null core_source() for tests. */
+	private $source;
+
+	public function __construct( ?array $source = null ) {
+		$this->source = $source;
+	}
+
+	private function source(): array {
+		if ( null === $this->source ) {
+			$this->source = EMCP_Tools_Adapter_Bootstrap::core_source();
+		}
+		return $this->source;
+	}
+
+	public function id(): string {
+		return 'mcp-adapter-foreign';
+	}
+
+	public function applies(): bool {
+		$s = $this->source();
+		return empty( $s['ours'] ) && '' !== (string) ( $s['plugin'] ?? '' );
+	}
+
+	public function state(): string {
+		$s = $this->source();
+		return (string) $s['plugin'] . '@' . (string) $s['version'];
+	}
+
+	public function item(): array {
+		$s   = $this->source();
+		$url = class_exists( 'EMCP_Tools_Admin' ) ? self::url( '-connection' ) : admin_url( 'admin.php?page=emcp-tools-connection' );
+		/* translators: 1: plugin folder, 2: its adapter version, 3: EMCP's bundled version. */
+		$body = sprintf( __( 'The plugin %1$s loads its own MCP Adapter %2$s before EMCP, so part of EMCP\'s server runs on that copy instead of the bundled %3$s. Connections work today; if they start failing after an update of either plugin, this is the first thing to check.', 'emcp-tools' ), (string) $s['plugin'], '' !== (string) $s['version'] ? (string) $s['version'] : '?', EMCP_Tools_Adapter_Bootstrap::bundled_version() );
+		return $this->make( 'warning', 'plug', __( 'Another plugin\'s MCP Adapter is loaded', 'emcp-tools' ), $body, __( 'Open Connection', 'emcp-tools' ), $url );
+	}
+}

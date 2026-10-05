@@ -100,6 +100,37 @@ describe( 'ConnectionScreen', () => {
 		expect( within( rail ).getByText( data.endpoint ) ).toBeInTheDocument();
 	} );
 
+	it( 'names another plugin whose MCP Adapter copy loads first', () => {
+		window.history.replaceState(
+			{},
+			'',
+			'/wp-admin/admin.php?page=emcp-tools-connection'
+		);
+		render(
+			<AppProviders>
+				<ConnectionScreen
+					data={ {
+						...data,
+						status: {
+							...data.status,
+							adapterCopy: {
+								plugin: 'ameliabooking',
+								version: '0.5.0',
+								ours: false,
+							},
+						},
+					} }
+				/>
+			</AppProviders>
+		);
+		const rail = screen.getByRole( 'region', { name: 'Server status' } );
+		expect(
+			within( rail ).getByText(
+				'Bundled, with ameliabooking 0.5.0 loaded first'
+			)
+		).toBeInTheDocument();
+	} );
+
 	it( 'explains an empty connected apps list', () => {
 		window.history.replaceState(
 			{},

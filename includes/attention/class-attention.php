@@ -31,6 +31,7 @@ final class EMCP_Tools_Attention {
 			new EMCP_Tools_Attention_Tools(),
 			new EMCP_Tools_Attention_Updates(),
 			new EMCP_Tools_Attention_Cloud(),
+			new EMCP_Tools_Adapter_Attention(),
 		);
 	}
 
