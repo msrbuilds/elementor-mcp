@@ -384,7 +384,7 @@ class EMCP_Tools_Admin {
 	 *
 	 * @since 1.8.0
 	 */
-	const DEFAULTS_VERSION = 60;
+	const DEFAULTS_VERSION = 61;
 
 	/**
 	 * Themer PHP-template tool slugs. The whole feature is gated behind a master
@@ -916,6 +916,7 @@ class EMCP_Tools_Admin {
 				self::tutor_tool_slugs(),
 				self::lifterlms_tool_slugs(),
 				self::tec_tool_slugs(),
+				self::amelia_tool_slugs(),
 				self::metabox_tool_slugs(),
 				self::form_tool_slugs(),
 				self::seo_tool_slugs(),

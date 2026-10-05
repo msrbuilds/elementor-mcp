@@ -366,6 +366,10 @@ trait EMCP_Tools_Admin_Settings_Trait {
 		if ( $applied < 60 ) {
 			$add[] = 'emcp-tools/events-calendar-write';
 		}
+		// v61: the Amelia write dispatcher (3.19.0) ships off; its read stays on.
+		if ( $applied < 61 ) {
+			$add[] = 'emcp-tools/amelia-write';
+		}
 		return array(
 			'add'   => array_values( array_unique( $add ) ),
 			'strip' => array_values( array_unique( $strip ) ),

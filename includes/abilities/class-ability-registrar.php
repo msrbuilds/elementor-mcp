@@ -333,6 +333,13 @@ class EMCP_Tools_Ability_Registrar {
 			$this->ability_names = array_merge( $this->ability_names, $tec->get_ability_names() );
 		}
 
+		// Amelia (3.19.0): services, employees, customers, appointments and events, while Amelia is active.
+		if ( class_exists( 'EMCP_Tools_Amelia_Integration' ) && EMCP_Tools_Amelia_Integration::amelia_active() ) {
+			$amelia = new EMCP_Tools_Amelia_Integration();
+			$amelia->register();
+			$this->ability_names = array_merge( $this->ability_names, $amelia->get_ability_names() );
+		}
+
 		// Meta Box abilities — only when Meta Box (free or extensions) is active.
 		if ( class_exists( 'EMCP_Tools_Meta_Box_Abilities' ) && EMCP_Tools_Meta_Box_Abilities::metabox_active() ) {
 			$metabox = new EMCP_Tools_Meta_Box_Abilities();

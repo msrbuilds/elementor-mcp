@@ -308,6 +308,11 @@ trait EMCP_Tools_Admin_Tool_Groups_Trait {
 		return array( 'emcp-tools/tutor-read', 'emcp-tools/tutor-write' );
 	}
 
+	/** The Amelia integration's conditional dispatcher slugs (3.19.0). */
+	public static function amelia_tool_slugs(): array {
+		return array( 'emcp-tools/amelia-read', 'emcp-tools/amelia-write' );
+	}
+
 	/** The Events Calendar integration's conditional dispatcher slugs (3.19.0). */
 	public static function tec_tool_slugs(): array {
 		return array( 'emcp-tools/events-calendar-read', 'emcp-tools/events-calendar-write' );

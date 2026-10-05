@@ -726,6 +726,31 @@ trait EMCP_Tools_Admin_Catalog_Trait {
 					),
 				),
 			),
+			'wp_amelia'        => array(
+				'platform' => 'plugins',
+				'group'    => 'events',
+				'pro'      => true,
+				'label'    => __( 'Amelia', 'emcp-tools' ),
+				'note'     => __( 'Run the Amelia booking system: service categories, services with their employees and prices, employees with their working week and days off, customers, appointments (book, reschedule, approve, cancel), events with their periods, and attendees. Every write goes through Amelia\'s own controllers, names only the fields it sets, and is read back; no customer is emailed unless the call asks for it, and every message Amelia sends is reported. Every change to an existing object names the version it read, and every write can be undone in History. Writes ship disabled. Requires Amelia 2.4 or later (Lite included) active.', 'emcp-tools' ),
+				'tools'    => array(
+					'emcp-tools/amelia-read'  => array(
+						'label'       => __( 'Amelia Read', 'emcp-tools' ),
+						'description' => __( 'The setup, categories, services, employees with their week, customers, appointments by date, free time slots, events and their attendees, each with its version.', 'emcp-tools' ),
+						'badges'      => array( 'read-only' ),
+						'operations'  => array( 'get-setup', 'list-categories', 'list-services', 'get-service', 'list-employees', 'get-employee', 'list-customers', 'get-customer', 'list-appointments', 'get-appointment', 'get-availability', 'list-events', 'get-event', 'list-event-bookings' ),
+						'available'   => self::amelia_available(),
+						'requires'    => array( 'name' => 'Amelia', 'kind' => 'plugin' ),
+					),
+					'emcp-tools/amelia-write' => array(
+						'label'       => __( 'Amelia Write', 'emcp-tools' ),
+						'description' => __( 'Create and change categories, services, employees, working hours, days off and customers, book, reschedule and change the status of appointments and bookings, create, open and cancel events and book attendees. Deletes need confirm:true.', 'emcp-tools' ),
+						'badges'      => array( 'destructive' ),
+						'operations'  => array( 'create-category', 'update-category', 'delete-category', 'create-service', 'update-service', 'set-service-status', 'delete-service', 'create-employee', 'update-employee', 'set-employee-status', 'set-working-hours', 'set-days-off', 'delete-employee', 'create-customer', 'update-customer', 'delete-customer', 'create-appointment', 'reschedule-appointment', 'set-appointment-status', 'update-appointment', 'set-booking-status', 'create-event', 'update-event', 'set-event-status', 'add-event-booking' ),
+						'available'   => self::amelia_available(),
+						'requires'    => array( 'name' => 'Amelia', 'kind' => 'plugin' ),
+					),
+				),
+			),
 			'wp_metabox'       => array(
 				'platform' => 'plugins',
 				'group'    => 'dynamic',

@@ -190,6 +190,12 @@ includes/abilities/tec/class-tec-history.php
 includes/abilities/tec/class-tec-integration.php
 includes/abilities/tec/class-tec-writer.php
 includes/abilities/tec/ops
+includes/abilities/amelia
+includes/abilities/amelia/class-amelia-api.php
+includes/abilities/amelia/class-amelia-history.php
+includes/abilities/amelia/class-amelia-integration.php
+includes/abilities/amelia/class-amelia-writer.php
+includes/abilities/amelia/ops
 includes/page-text
 includes/page-text/class-page-text.php
 includes/page-text/class-page-text-blocks.php

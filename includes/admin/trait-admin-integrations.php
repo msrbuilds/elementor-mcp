@@ -116,8 +116,8 @@ trait EMCP_Tools_Admin_Integrations_Trait {
 				'desc'  => __( 'Courses, lessons and students.', 'emcp-tools' ),
 			),
 			'events'       => array(
-				'label' => __( 'Events', 'emcp-tools' ),
-				'desc'  => __( 'Events, venues and organizers.', 'emcp-tools' ),
+				'label' => __( 'Events and bookings', 'emcp-tools' ),
+				'desc'  => __( 'Events, venues, organizers, services and appointments.', 'emcp-tools' ),
 			),
 			'addons'    => array(
 				'label' => __( 'Elementor Addons', 'emcp-tools' ),
@@ -289,6 +289,11 @@ trait EMCP_Tools_Admin_Integrations_Trait {
 	/** Same detector as EMCP_Tools_Tutor_Integration::tutor_active(). @since 3.19.0 */
 	public static function tutor_available(): bool {
 		return function_exists( 'tutor' ) && defined( 'TUTOR_VERSION' );
+	}
+
+	/** Same detector as EMCP_Tools_Amelia_Integration::amelia_active(). @since 3.19.0 */
+	public static function amelia_available(): bool {
+		return defined( 'AMELIA_VERSION' ) && class_exists( 'AmeliaBooking\Plugin' );
 	}
 
 	/** Same detector as EMCP_Tools_TEC_Integration::tec_active(). @since 3.19.0 */
