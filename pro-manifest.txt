@@ -196,6 +196,13 @@ includes/abilities/amelia/class-amelia-history.php
 includes/abilities/amelia/class-amelia-integration.php
 includes/abilities/amelia/class-amelia-writer.php
 includes/abilities/amelia/ops
+includes/abilities/class-query-capture.php
+includes/abilities/fluentcrm
+includes/abilities/fluentcrm/class-fluentcrm-api.php
+includes/abilities/fluentcrm/class-fluentcrm-history.php
+includes/abilities/fluentcrm/class-fluentcrm-integration.php
+includes/abilities/fluentcrm/class-fluentcrm-writer.php
+includes/abilities/fluentcrm/ops
 includes/page-text
 includes/page-text/class-page-text.php
 includes/page-text/class-page-text-blocks.php

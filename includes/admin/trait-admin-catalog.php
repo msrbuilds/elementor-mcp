@@ -751,6 +751,31 @@ trait EMCP_Tools_Admin_Catalog_Trait {
 					),
 				),
 			),
+			'wp_fluentcrm'     => array(
+				'platform' => 'plugins',
+				'group'    => 'marketing',
+				'pro'      => true,
+				'label'    => __( 'FluentCRM', 'emcp-tools' ),
+				'note'     => __( 'Run FluentCRM: contacts and their custom fields, tags, lists and notes, imports and bulk tagging, email templates and campaigns, test sends, schedules, and automations. Writes go through FluentCRM\'s own abilities and REST API, change only the fields they name and are read back; no automation runs unless the call asks for it, nothing is emailed without confirm, and a schedule must name the recipient count it expects. Erasing a contact removes it from History too. Every change to an existing object names the version it read, and most writes can be undone in History. Writes ship disabled. Requires FluentCRM 3.x active, with its AI access (FluentCRM > Settings > MCP) on.', 'emcp-tools' ),
+				'tools'    => array(
+					'emcp-tools/fluentcrm-read'  => array(
+						'label'       => __( 'FluentCRM Read', 'emcp-tools' ),
+						'description' => __( 'The setup, contacts with filters, tags, lists, custom fields, campaigns, templates, email previews and automations with their contacts, each with its version.', 'emcp-tools' ),
+						'badges'      => array( 'read-only' ),
+						'operations'  => array( 'get-setup', 'list-contacts', 'get-contact-filter-schema', 'get-contact', 'list-tags', 'list-lists', 'list-custom-fields', 'list-campaigns', 'get-campaign', 'list-templates', 'get-template', 'preview-email', 'list-automations', 'get-automation', 'list-automation-contacts' ),
+						'available'   => self::fluentcrm_available(),
+						'requires'    => array( 'name' => 'FluentCRM', 'kind' => 'plugin' ),
+					),
+					'emcp-tools/fluentcrm-write' => array(
+						'label'       => __( 'FluentCRM Write', 'emcp-tools' ),
+						'description' => __( 'Create, change and erase contacts, import and tag them in batches, manage tags, lists, custom fields and notes, write templates and campaigns, send tests, schedule, pause and resume campaigns, publish automations and move contacts in them. Erasing, merging, sending and publishing need confirm:true.', 'emcp-tools' ),
+						'badges'      => array( 'destructive' ),
+						'operations'  => array( 'create-contact', 'update-contact', 'delete-contact', 'import-contacts', 'tag-contacts', 'create-tag', 'update-tag', 'delete-tag', 'merge-tags', 'create-list', 'update-list', 'delete-list', 'merge-lists', 'add-custom-field', 'update-custom-field', 'add-note', 'update-note', 'delete-note', 'create-campaign', 'update-campaign', 'schedule-campaign', 'unschedule-campaign', 'pause-campaign', 'resume-campaign', 'duplicate-campaign', 'delete-campaign', 'send-test-email', 'send-email-to-contact', 'create-template', 'update-template', 'delete-template', 'set-automation-status', 'set-contact-automation' ),
+						'available'   => self::fluentcrm_available(),
+						'requires'    => array( 'name' => 'FluentCRM', 'kind' => 'plugin' ),
+					),
+				),
+			),
 			'wp_metabox'       => array(
 				'platform' => 'plugins',
 				'group'    => 'dynamic',

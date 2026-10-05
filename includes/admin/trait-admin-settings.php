@@ -370,6 +370,10 @@ trait EMCP_Tools_Admin_Settings_Trait {
 		if ( $applied < 61 ) {
 			$add[] = 'emcp-tools/amelia-write';
 		}
+		// v62: the FluentCRM write dispatcher (3.19.0) ships off; its read stays on.
+		if ( $applied < 62 ) {
+			$add[] = 'emcp-tools/fluentcrm-write';
+		}
 		return array(
 			'add'   => array_values( array_unique( $add ) ),
 			'strip' => array_values( array_unique( $strip ) ),

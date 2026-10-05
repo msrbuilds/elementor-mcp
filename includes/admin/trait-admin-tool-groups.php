@@ -308,6 +308,11 @@ trait EMCP_Tools_Admin_Tool_Groups_Trait {
 		return array( 'emcp-tools/tutor-read', 'emcp-tools/tutor-write' );
 	}
 
+	/** The FluentCRM integration's conditional dispatcher slugs (3.19.0). */
+	public static function fluentcrm_tool_slugs(): array {
+		return array( 'emcp-tools/fluentcrm-read', 'emcp-tools/fluentcrm-write' );
+	}
+
 	/** The Amelia integration's conditional dispatcher slugs (3.19.0). */
 	public static function amelia_tool_slugs(): array {
 		return array( 'emcp-tools/amelia-read', 'emcp-tools/amelia-write' );

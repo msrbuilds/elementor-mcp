@@ -119,6 +119,10 @@ trait EMCP_Tools_Admin_Integrations_Trait {
 				'label' => __( 'Events and bookings', 'emcp-tools' ),
 				'desc'  => __( 'Events, venues, organizers, services and appointments.', 'emcp-tools' ),
 			),
+			'marketing'    => array(
+				'label' => __( 'CRM and email marketing', 'emcp-tools' ),
+				'desc'  => __( 'Contacts, lists, campaigns and automations.', 'emcp-tools' ),
+			),
 			'addons'    => array(
 				'label' => __( 'Elementor Addons', 'emcp-tools' ),
 				'desc'  => __( 'Discover addon widget packs, and manage Ultimate Addons for Elementor templates.', 'emcp-tools' ),
@@ -289,6 +293,11 @@ trait EMCP_Tools_Admin_Integrations_Trait {
 	/** Same detector as EMCP_Tools_Tutor_Integration::tutor_active(). @since 3.19.0 */
 	public static function tutor_available(): bool {
 		return function_exists( 'tutor' ) && defined( 'TUTOR_VERSION' );
+	}
+
+	/** Same detector as EMCP_Tools_FluentCRM_Integration::fluentcrm_active(). @since 3.19.0 */
+	public static function fluentcrm_available(): bool {
+		return defined( 'FLUENTCRM_PLUGIN_VERSION' ) && function_exists( 'fluentCrmDb' );
 	}
 
 	/** Same detector as EMCP_Tools_Amelia_Integration::amelia_active(). @since 3.19.0 */

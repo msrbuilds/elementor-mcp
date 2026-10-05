@@ -170,6 +170,10 @@ Settings are WordPress options named `emcp_tools_*`. Since 3.18.0 History lives 
 
 Deleting the plugin removes the tool switches, the EMCP Cloud connection, the AI Chat keys and model list, the cached Pro libraries and the Sandbox widgets with their files. It keeps History, the MCP log, activity counts, redirects, the search index, context settings and backups, so a reinstall picks up where you left off; remove those tables and options yourself if you want them gone.
 
+= Does History keep personal data? =
+
+History keeps a before-image of every change it can undo, for its retention period (90 days by default, EMCP Tools > History). For the CRM, booking and course integrations that includes the personal data of the contacts, customers or students a change touched. Erasing a FluentCRM contact removes its data from History as well. Summaries name people by id only, and the MCP request log keeps no tool arguments.
+
 = Is this plugin safe to use on production sites? =
 
 The plugin enforces WordPress capability checks on every tool. Read operations require `edit_posts`, write operations check `edit_post` ownership, and global settings require `manage_options`. All input is sanitized and validated.
@@ -191,7 +195,7 @@ The admin screens ship compiled in `assets/admin/build/`. Their full source and 
 
 = 3.19.0 =
 
-Builds FunnelKit funnels and email automations over MCP, translates sites with Polylang and TranslatePress, builds TablePress tables, Tutor LMS and LifterLMS courses, The Events Calendar events, and Amelia bookings: new Pro tools drive each plugin through its own controllers, with confirm, dry run and History undo.
+Builds FunnelKit funnels and email automations over MCP, translates sites with Polylang and TranslatePress, builds TablePress tables, Tutor LMS and LifterLMS courses, The Events Calendar events, Amelia bookings, and FluentCRM contacts, campaigns and automations: new Pro tools drive each plugin through its own controllers, with confirm, dry run and History undo.
 
 * New: FunnelKit Funnel Builder write tool (Pro, #143): funnels, steps, checkout products and fields, order bumps, upsells, opt-in and thank-you pages, A/B tests, the store checkout, and template and funnel imports. Deletes need confirm; creates and updates accept dry_run; History records and undoes the writes.
 * New: FunnelKit Automations read and write tools (Pro, #144): automations, contacts, tags, lists, fields, broadcasts, templates, form feeds, link triggers, audiences, bulk actions and allowlisted settings. Sends and deletes need confirm; credential routes are never reachable.
@@ -218,6 +222,10 @@ Builds FunnelKit funnels and email automations over MCP, translates sites with P
 * New: The Events Calendar writes change only the fields they name, start events as drafts, check TEC's calendar tables after every write, keep drafts private, never trash a venue in use and are undone from History.
 * New: Amelia read and write tools (Pro): service categories, services, employees with their working hours and days off, customers, appointments, free time slots, events and attendees, through Amelia's own controllers. Works with Amelia 2.4 or later, Lite included; writes ship disabled.
 * New: Amelia writes keep every other field, email no customer unless asked, report every message Amelia sends, survive a throw inside Amelia without losing a write, refuse what Amelia Lite would drop, and are undone from History.
+* New: FluentCRM read and write tools (Pro): contacts, tags, lists, custom fields, notes, imports, email templates, campaigns and automations, through FluentCRM's own abilities and REST API. Works with FluentCRM 3.x; writes ship disabled.
+* New: FluentCRM writes run no automation unless asked, email nobody without confirm, protect linked WordPress users, never resubscribe an opted-out contact on undo, and are undone from History.
+* New: Erasing a FluentCRM contact also removes its data from History (a new free `redact()` seam).
+* Fixed: History offered some large integration entries as undoable when their blockers would refuse the undo.
 * New: The Connection screen and the Dashboard name another plugin's MCP Adapter copy when it is the one loaded (Amelia loads an older copy before EMCP).
 * New: emcp-events-calendar agent skill (Pro).
 * Changed: History undoes multi-row changes in one database transaction.

@@ -116,6 +116,9 @@ final class EMCP_Tools_Pro_Loader {
 		// The Events Calendar (3.19.0): History undoes outside the MCP surface.
 		'includes/abilities/tec/class-tec-history.php',
 		'includes/abilities/amelia/class-amelia-history.php',
+		// FluentCRM (3.19.0): History undoes and redacts outside the MCP surface; statement capture is shared.
+		'includes/abilities/class-query-capture.php',
+		'includes/abilities/fluentcrm/class-fluentcrm-history.php',
 	);
 
 	/**
@@ -179,6 +182,9 @@ final class EMCP_Tools_Pro_Loader {
 		'includes/abilities/amelia/class-amelia-api.php',
 		'includes/abilities/amelia/class-amelia-writer.php',
 		'includes/abilities/amelia/class-amelia-integration.php',
+		'includes/abilities/fluentcrm/class-fluentcrm-api.php',
+		'includes/abilities/fluentcrm/class-fluentcrm-writer.php',
+		'includes/abilities/fluentcrm/class-fluentcrm-integration.php',
 		'includes/abilities/forms/class-wpforms-integration.php',
 		'includes/abilities/forms/class-gravityforms-integration.php',
 		'includes/abilities/forms/class-fluentforms-integration.php',
@@ -425,6 +431,11 @@ final class EMCP_Tools_Pro_Loader {
 		// Amelia (3.19.0): catalog, people, appointment, event and attendee undo on every request.
 		if ( class_exists( 'EMCP_Tools_Amelia_History' ) ) {
 			EMCP_Tools_Amelia_History::boot();
+		}
+
+		// FluentCRM (3.19.0): undo on every request, and erasure in FluentCRM's admin redacts History.
+		if ( class_exists( 'EMCP_Tools_FluentCRM_History' ) ) {
+			EMCP_Tools_FluentCRM_History::boot();
 		}
 
 		// EMCP Themer Pro power-ups: attach granular matchers, priority ranking,

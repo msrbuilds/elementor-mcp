@@ -340,6 +340,13 @@ class EMCP_Tools_Ability_Registrar {
 			$this->ability_names = array_merge( $this->ability_names, $amelia->get_ability_names() );
 		}
 
+		// FluentCRM (3.19.0): contacts, tags, lists, fields, notes, campaigns, templates and automations, while FluentCRM is active.
+		if ( class_exists( 'EMCP_Tools_FluentCRM_Integration' ) && EMCP_Tools_FluentCRM_Integration::fluentcrm_active() ) {
+			$fluentcrm = new EMCP_Tools_FluentCRM_Integration();
+			$fluentcrm->register();
+			$this->ability_names = array_merge( $this->ability_names, $fluentcrm->get_ability_names() );
+		}
+
 		// Meta Box abilities — only when Meta Box (free or extensions) is active.
 		if ( class_exists( 'EMCP_Tools_Meta_Box_Abilities' ) && EMCP_Tools_Meta_Box_Abilities::metabox_active() ) {
 			$metabox = new EMCP_Tools_Meta_Box_Abilities();
