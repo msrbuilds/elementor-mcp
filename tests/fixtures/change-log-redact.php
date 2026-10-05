@@ -39,7 +39,8 @@ $GLOBALS['wpdb'] = new class() {
 	public function prepare( $q, ...$a ) { return array( $q, is_array( $a[0] ?? null ) ? $a[0] : $a ); }
 	public function insert( $t, $d, $f = null ) { $this->blobs[ $d['blob_id'] ] = $d['data']; return 1; }
 	public function delete( $t, $w, $f = null ) { unset( $this->blobs[ $w['blob_id'] ] ); return 1; }
-	public function get_var( $q ) { return $this->blobs[ $q[1][0] ] ?? null; }
+	public $reads = array();
+	public function get_var( $q ) { $this->reads[] = $q[1][0]; return $this->blobs[ $q[1][0] ] ?? null; }
 	public function query( $q ) { return 1; }
 	public function get_charset_collate() { return ''; }
 };
@@ -166,6 +167,25 @@ switch ( $case ) {
 		);
 		check( 0 === $res, 'stale write counted ' . $res );
 		check( 'y' === EMCP_Tools_Change_Log::get( $id )['rollback']['before'], 'stale write overwrote the newer rollback' );
+		break;
+
+	case 'match':
+		$one   = blob_entry( 'crm', array( 'type' => 'crm-thing', 'contacts' => array( 1 ) ), array( 'before' => 'one' ) );
+		$two   = blob_entry( 'crm', array( 'type' => 'crm-thing', 'contacts' => array( 2 ) ), array( 'before' => 'two' ) );
+		$GLOBALS['wpdb']->reads = array();
+		$seen  = array();
+		$res   = EMCP_Tools_Change_Log::redact(
+			'crm',
+			static function ( array $rb, ?array $heavy ) use ( &$seen ) {
+				$seen[] = $heavy['before'] ?? null;
+				return array( 'strip' );
+			},
+			'erased',
+			static fn( array $rb ) => in_array( 1, (array) ( $rb['contacts'] ?? array() ), true )
+		);
+		check( 1 === $res && array( 'one' ) === $seen, 'match: only the matching entry is rewritten', json_encode( $seen ) );
+		check( 1 === count( $GLOBALS['wpdb']->reads ), 'match: only one blob is read, the matching one', json_encode( $GLOBALS['wpdb']->reads ) );
+		check( 'crm-thing' === EMCP_Tools_Change_Log::get( $two )['rollback']['type'], 'match: the other entry is untouched' );
 		break;
 
 	default:

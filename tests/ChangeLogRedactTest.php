@@ -31,7 +31,7 @@ final class ChangeLogRedactTest extends TestCase {
 	public static function scenarios(): array {
 		$out = array();
 		foreach ( array( 'option', 'table' ) as $store ) {
-			foreach ( array( 'walk', 'strip', 'rewrite', 'keep', 'race' ) as $case ) {
+			foreach ( array( 'walk', 'strip', 'rewrite', 'keep', 'race', 'match' ) as $case ) {
 				$out[ "$store store: $case" ] = array( "$store:$case" );
 			}
 		}

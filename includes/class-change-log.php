@@ -535,21 +535,24 @@ class EMCP_Tools_Change_Log {
 	 *   `redacted` (with $reason) to an undo;
 	 * - ['rewrite', array $rollback, ?array $heavy]: the new rollback is stored; a non-null
 	 *   heavy part goes to a new blob and the old blob is deleted.
-	 * Entries already redacted and entries without a rollback are skipped.
+	 * Entries already redacted and entries without a rollback are skipped, and so is every entry
+	 * $match( array $rollback ) answers false for, before its blob is read (an integration that
+	 * names the affected people in the rollback can skip the rest cheaply).
 	 *
-	 * @param string   $domain  Domain.
-	 * @param callable $rewrite Decision per entry.
-	 * @param string   $reason  Shown when an undo of a stripped entry is attempted.
+	 * @param string        $domain  Domain.
+	 * @param callable      $rewrite Decision per entry.
+	 * @param string        $reason  Shown when an undo of a stripped entry is attempted.
+	 * @param callable|null $match   Optional cheap pre-filter on the rollback.
 	 * @return int Entries changed.
 	 */
-	public static function redact( string $domain, callable $rewrite, string $reason ): int {
+	public static function redact( string $domain, callable $rewrite, string $reason, ?callable $match = null ): int {
 		$store   = self::store();
 		$changed = 0;
 		$store->each_in_domain(
 			$domain,
-			static function ( array $row ) use ( $store, $rewrite, $reason, &$changed ) {
+			static function ( array $row ) use ( $store, $rewrite, $reason, $match, &$changed ) {
 				$rb = isset( $row['rollback'] ) && is_array( $row['rollback'] ) ? $row['rollback'] : null;
-				if ( null === $rb || 'redacted' === ( $rb['type'] ?? '' ) ) {
+				if ( null === $rb || 'redacted' === ( $rb['type'] ?? '' ) || ( null !== $match && ! $match( $rb ) ) ) {
 					return;
 				}
 				$old_blob = (string) ( $rb['blob_id'] ?? '' );
