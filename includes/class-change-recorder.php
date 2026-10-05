@@ -584,6 +584,21 @@ class EMCP_Tools_Change_Recorder {
 		return array_merge( $rb, $heavy );
 	}
 
+	/**
+	 * The rollback ref with its offloaded before-image merged back in (the inverse of
+	 * attach_before()). A ref without a blob, or whose blob is gone, is returned unchanged.
+	 *
+	 * @param array $rb Rollback ref.
+	 * @return array
+	 */
+	public static function resolve_before( array $rb ): array {
+		if ( empty( $rb['blob_id'] ) || ! class_exists( 'EMCP_Tools_Change_Blobs' ) ) {
+			return $rb;
+		}
+		$heavy = EMCP_Tools_Change_Blobs::get( (string) $rb['blob_id'] );
+		return is_array( $heavy ) ? array_merge( $rb, $heavy ) : $rb;
+	}
+
 	// ---------------------------------------------------------------------
 	// State hashes (conflict guard)
 	// ---------------------------------------------------------------------
