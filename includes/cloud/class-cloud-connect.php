@@ -92,7 +92,7 @@ class EMCP_Tools_Cloud_Connect {
 	 * @param string $registration_proof Optional server-issued DCR ownership proof.
 	 * @return string
 	 */
-	public static function authorize_url( string $client_id, string $verifier, string $csrf, string $registration_proof = '' ): string {
+	public static function authorize_url( string $client_id, string $verifier, string $csrf, string $registration_proof = '', string $expected_workspace = '' ): string {
 		$state_payload = array(
 			'site_uuid' => EMCP_Tools_Cloud::site_uuid(),
 			'name'      => (string) get_bloginfo( 'name' ),
@@ -105,6 +105,9 @@ class EMCP_Tools_Cloud_Connect {
 		);
 		if ( '' !== $registration_proof ) {
 			$state_payload['registration_proof'] = $registration_proof;
+		}
+		if ( '' !== $expected_workspace ) {
+			$state_payload['expected_workspace'] = $expected_workspace;
 		}
 		$state = EMCP_Tools_OAuth_Util::base64url_encode( (string) wp_json_encode( $state_payload ) );
 		$params = array(
@@ -128,7 +131,7 @@ class EMCP_Tools_Cloud_Connect {
 	 * @param string $client_id Client id.
 	 * @return array|\WP_Error
 	 */
-	public static function exchange_code( string $code, string $verifier, string $client_id ) {
+	public static function exchange_code( string $code, string $verifier, string $client_id, string $expected_workspace = '' ) {
 		$res = EMCP_Tools_Cloud_Http::post_form(
 			EMCP_Tools_Cloud::base_url() . '/api/auth/oauth2/token',
 			array(
@@ -137,6 +140,7 @@ class EMCP_Tools_Cloud_Connect {
 				'redirect_uri'  => self::redirect_uri(),
 				'client_id'     => $client_id,
 				'code_verifier' => $verifier,
+				'emcp_expected_workspace' => $expected_workspace,
 			),
 			array( 'Origin' => self::origin() )
 		);
@@ -236,6 +240,10 @@ class EMCP_Tools_Cloud_Connect {
 		}
 
 		$used_rt = (string) $c['refresh_token'];
+		if ( (int) ( $c['refresh_retry_at'] ?? 0 ) > time() ) {
+			self::db_unlock( $lock_key, $locked );
+			return false;
+		}
 		$res     = EMCP_Tools_Cloud_Http::post_form(
 			EMCP_Tools_Cloud::base_url() . '/api/auth/oauth2/token',
 			array(
@@ -249,7 +257,16 @@ class EMCP_Tools_Cloud_Connect {
 		// Transient failure (no response or a server-side 5xx): leave the
 		// connection untouched so the next request retries. Marking it unhealthy
 		// on a blip is a false "Reconnect needed".
-		if ( is_wp_error( $res ) || (int) $res['code'] >= 500 ) {
+		if ( is_wp_error( $res ) || in_array( (int) $res['code'], array( 408, 429 ), true ) || (int) $res['code'] >= 500 ) {
+			$fresh = EMCP_Tools_Cloud::get_connection();
+			// Do not overwrite a reconnect or a concurrent successful rotation.
+			if ( ( $fresh['refresh_token'] ?? '' ) === $used_rt && ( $fresh['client_id'] ?? '' ) === $c['client_id'] ) {
+				$retry = is_wp_error( $res ) ? '' : trim( (string) ( $res['retry_after'] ?? '' ) );
+				$is_date = preg_match( '/^[A-Za-z]{3}, \d{2} [A-Za-z]{3} \d{4} \d{2}:\d{2}:\d{2} GMT$/', $retry );
+				$delay = ctype_digit( $retry ) ? (float) $retry : ( $is_date ? ( ( strtotime( $retry ) ?: 0 ) - time() ) : 0 );
+				$fresh['refresh_retry_at'] = time() + ( $delay > 0 ? (int) min( 3600, max( 1, $delay ) ) : 30 );
+				EMCP_Tools_Cloud::save_connection( $fresh );
+			}
 			self::db_unlock( $lock_key, $locked );
 			return false;
 		}
@@ -278,7 +295,7 @@ class EMCP_Tools_Cloud_Connect {
 		$save['access_token']      = (string) $j['access_token'];
 		$save['refresh_token']     = (string) ( $j['refresh_token'] ?? ( $save['refresh_token'] ?? $used_rt ) );
 		$save['access_expires_at'] = time() + (int) ( $j['expires_in'] ?? 3600 );
-		unset( $save['unhealthy'] );
+		unset( $save['unhealthy'], $save['refresh_retry_at'] );
 		EMCP_Tools_Cloud::save_connection( $save );
 		self::db_unlock( $lock_key, $locked );
 		return true;
@@ -418,7 +435,14 @@ class EMCP_Tools_Cloud_Connect {
 		$state_in = isset( $_GET['state'] ) ? sanitize_text_field( wp_unslash( $_GET['state'] ) ) : '';
 		// phpcs:enable WordPress.Security.NonceVerification.Recommended
 		$pending = get_transient( self::PENDING_TRANSIENT );
-		delete_transient( self::PENDING_TRANSIENT );
+		// CLI approval belongs to the initiating administrator and installation.
+		// Keep a valid request intact when another admin follows the URL.
+		if ( is_array( $pending ) && isset( $pending['onboarding_user'] ) &&
+			( (int) $pending['onboarding_user'] !== get_current_user_id() ||
+			(string) $pending['onboarding_site_uuid'] !== (string) get_option( EMCP_Tools_Cloud::OPTION_SITE_UUID, '' ) ||
+			(int) $pending['onboarding_expires'] <= time() ) ) {
+			self::back( 'cloud_error=state' );
+		}
 		if ( ! is_array( $pending ) || '' === $code ) {
 			self::back( 'cloud_error=state' );
 		}
@@ -430,8 +454,12 @@ class EMCP_Tools_Cloud_Connect {
 		if ( ! EMCP_Tools_OAuth_Util::secure_equals( (string) $pending['csrf'], $csrf ) ) {
 			self::back( 'cloud_error=state' );
 		}
-		$bundle = self::exchange_code( $code, (string) $pending['verifier'], (string) $pending['client_id'] );
-		if ( ! is_wp_error( $bundle ) && class_exists( 'EMCP_Tools_Gateway_Credential' ) ) {
+		if ( isset( $pending['onboarding_workspace'] ) && ( $decoded['expected_workspace'] ?? '' ) !== $pending['onboarding_workspace'] ) {
+			self::back( 'cloud_error=state' );
+		}
+		delete_transient( self::PENDING_TRANSIENT );
+		$bundle = self::exchange_code( $code, (string) $pending['verifier'], (string) $pending['client_id'], (string) ( $pending['onboarding_workspace'] ?? '' ) );
+		if ( ! is_wp_error( $bundle ) && ! isset( $pending['onboarding_user'] ) && class_exists( 'EMCP_Tools_Gateway_Credential' ) ) {
 			// Best-effort: the Cloud connection has already succeeded above, so a
 			// gateway provisioning failure here must never turn into a user-facing
 			// error, it just leaves the gateway un-provisioned for this site.

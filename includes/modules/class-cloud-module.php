@@ -42,6 +42,10 @@ class EMCP_Tools_Cloud_Module extends EMCP_Tools_Module {
 
 	public function register(): void {
 		EMCP_Tools_Cloud_Connect::init();
+		if ( defined( 'WP_CLI' ) && WP_CLI ) {
+			require_once EMCP_TOOLS_DIR . 'includes/cloud/class-cloud-onboarding.php';
+			WP_CLI::add_command( 'emcp cloud onboard', array( 'EMCP_Tools_Cloud_Onboarding', 'command' ) );
+		}
 	}
 
 	public function render_settings(): void {

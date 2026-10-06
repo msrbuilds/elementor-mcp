@@ -4,6 +4,10 @@ All notable changes to MCP Tools for Elementor are documented in this file.
 
 ## [3.19.0]
 
+- Fixed: **Cloud refresh throttling no longer asks for reconnection.** Temporary HTTP 408, 429 and server errors retain the saved connection and defer refresh using Retry-After, with a bounded fallback. Successful refresh clears the cooldown; rejected credentials still require reconnection.
+
+- New: **Operator-run Cloud onboarding.** `wp emcp cloud onboard` provides local preflight, workspace-pinned Cloud approval and resumable Gateway setup with a health check. The included `bin/cloud-onboard.mjs` processes manifests one site at a time and reports partial results. Each new site still needs browser approval; licence activation and WordPress Multisite are outside this workflow. Requires the matching Cloud service update.
+
 - New: **Cloud protection for cloned sites.** Cloud connections record the WordPress home URL and block copied credentials when that URL changes. Connection > Cloud provides an explicit action to give the copy its own identity before reconnecting, preserving the source site's Cloud connection. Older connections without a recorded URL and copies using the same URL require manual separation. A legitimate URL move also requires reconnection.
 
 > Builds FunnelKit funnels and email automations over MCP (#143, #144), translates sites with Polylang and TranslatePress, builds TablePress tables, Tutor LMS and LifterLMS courses, The Events Calendar events, Amelia bookings, FluentCRM contacts, campaigns and automations, and MailPoet subscribers, newsletters and automations: new Pro tools drive each plugin through its own controllers, with confirm, dry run and History undo.

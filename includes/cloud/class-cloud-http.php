@@ -41,7 +41,11 @@ class EMCP_Tools_Cloud_Http {
 		}
 		$code = (int) wp_remote_retrieve_response_code( $res );
 		$json = json_decode( (string) wp_remote_retrieve_body( $res ), true );
-		return array( 'code' => $code, 'json' => is_array( $json ) ? $json : array() );
+		return array(
+			'code' => $code,
+			'json' => is_array( $json ) ? $json : array(),
+			'retry_after' => (string) wp_remote_retrieve_header( $res, 'retry-after' ),
+		);
 	}
 
 	/**
