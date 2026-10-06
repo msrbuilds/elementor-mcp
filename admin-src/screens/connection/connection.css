@@ -103,6 +103,59 @@
 	margin-block-end: 14px;
 }
 
+/* The select fills its field, so the chevron sits inside it. */
+.eui-conn__existing .eui-select {
+	display: flex;
+}
+
+.eui-conn__existing .eui-select select {
+	flex: 1;
+	min-inline-size: 0;
+	max-inline-size: none; /* core wp-admin caps select at 25rem */
+}
+
+/* The "Copy it now" notice above the lettered config steps. */
+.eui-conn__creds ~ .eui-notice {
+	margin-block-end: 16px;
+}
+
+/* A client's setup guide (server-rendered markup in client.guide, e.g. the
+   ChatGPT "Custom MCP" form). Its table lost its styles with the old admin
+   stylesheet; labels stay on one line and every row starts at the same edge. */
+.eui-conn__substep-body .description {
+	margin: 0 0 8px;
+	color: var(--emcp-muted);
+	font-size: 13px;
+}
+
+.eui-conn__substep-body .emcp-conn-guide {
+	inline-size: 100%;
+	margin-block: 4px 12px;
+	border-collapse: collapse;
+}
+
+.eui-conn__substep-body .emcp-conn-guide th,
+.eui-conn__substep-body .emcp-conn-guide td {
+	padding-block: 8px;
+	padding-inline: 0 16px;
+	border-block-end: 1px solid var(--emcp-border);
+	text-align: start;
+	vertical-align: top;
+	font-size: 13px;
+}
+
+.eui-conn__substep-body .emcp-conn-guide th {
+	inline-size: 1%;
+	white-space: nowrap;
+	color: var(--emcp-ink);
+	font-weight: 600;
+}
+
+.eui-conn__substep-body .emcp-conn-guide td {
+	color: var(--emcp-ink-2);
+	overflow-wrap: anywhere;
+}
+
 .eui-conn__existing summary {
 	min-block-size: 32px;
 	color: var(--emcp-primary-strong);

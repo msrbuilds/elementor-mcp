@@ -44,6 +44,10 @@ export function McpSetup( { data } ) {
 		created: false,
 	} );
 	const [ existing, setExisting ] = useState( [] );
+	// An existing password chosen in step 3: WordPress keeps only its hash, so
+	// the user pastes its text and the configs fill in from that.
+	const [ chosen, setChosen ] = useState( '' );
+	const pwRef = useRef( null );
 	const [ busy, setBusy ] = useState( false );
 	const expectRef = useRef( '' );
 
@@ -107,6 +111,12 @@ export function McpSetup( { data } ) {
 				.catch( () => setExisting( [] ) );
 		}
 	}, [ method, creds.userId ] );
+
+	useEffect( () => {
+		if ( chosen ) {
+			pwRef.current?.querySelector( 'input' )?.focus();
+		}
+	}, [ chosen ] );
 
 	const createPassword = async () => {
 		setBusy( true );
@@ -250,6 +260,7 @@ export function McpSetup( { data } ) {
 										const u = data.users.find(
 											( x ) => String( x.id ) === v
 										);
+										setChosen( '' );
 										setCreds( {
 											userId: u.id,
 											username: u.login,
@@ -305,13 +316,11 @@ export function McpSetup( { data } ) {
 								{ ( a11y ) => (
 									<Select
 										{ ...a11y }
-										value={ expectRef.current.replace(
-											/^app:/,
-											''
-										) }
-										onChange={ ( v ) =>
-											openSetup( v ? 'app:' + v : '' )
-										}
+										value={ chosen }
+										onChange={ ( v ) => {
+											setChosen( v );
+											openSetup( v ? 'app:' + v : '' );
+										} }
 										options={ [
 											{
 												value: '',
@@ -328,28 +337,30 @@ export function McpSetup( { data } ) {
 									/>
 								) }
 							</Field>
-							<Field
-								label={ __( 'Its password', 'emcp-tools' ) }
-								help={ __(
-									'Only used to fill the configs below; it is not sent to the server.',
-									'emcp-tools'
-								) }
-							>
-								{ ( a11y ) => (
-									<TextInput
-										{ ...a11y }
-										type="password"
-										autoComplete="off"
-										value={ creds.password }
-										onChange={ ( e ) =>
-											setCreds( ( c ) => ( {
-												...c,
-												password: e.target.value,
-											} ) )
-										}
-									/>
-								) }
-							</Field>
+							<div ref={ pwRef }>
+								<Field
+									label={ __( 'Its password', 'emcp-tools' ) }
+									help={ __(
+										'Only used to fill the configs below; it is not sent to the server.',
+										'emcp-tools'
+									) }
+								>
+									{ ( a11y ) => (
+										<TextInput
+											{ ...a11y }
+											type="password"
+											autoComplete="off"
+											value={ creds.password }
+											onChange={ ( e ) =>
+												setCreds( ( c ) => ( {
+													...c,
+													password: e.target.value,
+												} ) )
+											}
+										/>
+									) }
+								</Field>
+							</div>
 						</details>
 					) }
 					{ hasCreds ? (
@@ -364,10 +375,15 @@ export function McpSetup( { data } ) {
 						/>
 					) : (
 						<p className="eui-conn__muted">
-							{ __(
-								'Create a password to see the config for this client.',
-								'emcp-tools'
-							) }
+							{ chosen && ! creds.created
+								? __(
+										'WordPress keeps only a hash of an application password, so paste the password you saved when you created it into “Its password”; the configs then fill in.',
+										'emcp-tools'
+									)
+								: __(
+										'Create a password to see the config for this client.',
+										'emcp-tools'
+									) }
 						</p>
 					) }
 				</>

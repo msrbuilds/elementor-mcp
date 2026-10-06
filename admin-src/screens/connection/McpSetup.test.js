@@ -167,6 +167,90 @@ describe( 'McpSetup', () => {
 		).toBeInTheDocument();
 	} );
 
+	it( 'an existing password asks for its text, then fills the configs with it', async () => {
+		apiFetch.mockImplementation( ( { path } ) => {
+			if ( path.includes( '/setup' ) ) {
+				return Promise.resolve( {
+					setup_id: 'set_1',
+					token: 'tok1',
+					since: 1,
+					expires: 2,
+				} );
+			}
+			if ( path.includes( '/app-passwords' ) ) {
+				return Promise.resolve( {
+					passwords: [ { uuid: 'old1', name: 'Claude Code' } ],
+				} );
+			}
+			return Promise.resolve( {} );
+		} );
+		mount(
+			'/wp-admin/admin.php?page=emcp-tools-connection&client=claude-desktop&method=app'
+		);
+		await userEvent.click(
+			await screen.findByText( 'Use a password I already have' )
+		);
+		await userEvent.selectOptions(
+			screen.getByLabelText( 'Which password' ),
+			'old1'
+		);
+		const field = screen.getByLabelText( 'Its password' );
+		expect( field ).toHaveFocus();
+		expect(
+			screen.queryByText(
+				'Create a password to see the config for this client.'
+			)
+		).not.toBeInTheDocument();
+		expect(
+			screen.getByText(
+				'WordPress keeps only a hash of an application password, so paste the password you saved when you created it into “Its password”; the configs then fill in.'
+			)
+		).toBeInTheDocument();
+		await userEvent.type( field, 'wxyz 1234' );
+		expect(
+			screen.getByText( 'Manual config: direct HTTP' )
+		).toBeInTheDocument();
+		expect(
+			document.body.textContent.includes( btoa( 'admin:wxyz1234' ) )
+		).toBe( true );
+	} );
+
+	it( 'the chosen password stays selected while its setup is still opening', async () => {
+		let setups = 0;
+		apiFetch.mockImplementation( ( { path } ) => {
+			if ( path.includes( '/setup' ) ) {
+				setups++;
+				return 1 === setups
+					? Promise.resolve( {
+							setup_id: 'set_1',
+							token: 'tok1',
+							since: 1,
+							expires: 2,
+						} )
+					: new Promise( () => {} );
+			}
+			if ( path.includes( '/app-passwords' ) ) {
+				return Promise.resolve( {
+					passwords: [ { uuid: 'old1', name: 'Claude Code' } ],
+				} );
+			}
+			return Promise.resolve( {} );
+		} );
+		mount(
+			'/wp-admin/admin.php?page=emcp-tools-connection&client=claude-desktop&method=app'
+		);
+		await userEvent.click(
+			await screen.findByText( 'Use a password I already have' )
+		);
+		await userEvent.selectOptions(
+			screen.getByLabelText( 'Which password' ),
+			'old1'
+		);
+		expect( screen.getByLabelText( 'Which password' ) ).toHaveValue(
+			'old1'
+		);
+	} );
+
 	it( 'reopening the setup keeps waiting for the password already created', async () => {
 		apiFetch.mockImplementation( ( { path } ) => {
 			if ( path.includes( '/setup' ) ) {
