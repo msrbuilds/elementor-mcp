@@ -325,6 +325,16 @@ trait EMCP_Tools_Admin_Integrations_Trait {
 		return class_exists( 'TRP_Translate_Press' );
 	}
 
+	/** Same detector as EMCP_Tools_ACF_Abilities::acf_active(). @since 3.19.0 */
+	public static function acf_available(): bool {
+		return function_exists( 'acf_get_field_groups' );
+	}
+
+	/** Same detector as EMCP_Tools_Meta_Box_Abilities::metabox_active(). @since 3.19.0 */
+	public static function metabox_available(): bool {
+		return defined( 'RWMB_VER' ) && function_exists( 'rwmb_get_registry' );
+	}
+
 	/** Same detector as EMCP_Tools_Polylang_Integration::polylang_active(). @since 3.19.0 */
 	public static function polylang_available(): bool {
 		return function_exists( 'pll_languages_list' ) && function_exists( 'PLL' );

@@ -482,6 +482,8 @@ trait EMCP_Tools_Admin_Catalog_Trait {
 							'list-taxonomies',
 							'get-taxonomy',
 						),
+						'available'   => self::acf_available(),
+						'requires'    => array( 'name' => 'Advanced Custom Fields', 'kind' => 'plugin' ),
 					),
 					'emcp-tools/acf-write' => array(
 						'label'       => __( 'ACF Write', 'emcp-tools' ),
@@ -498,6 +500,8 @@ trait EMCP_Tools_Admin_Catalog_Trait {
 							'create-taxonomy',
 							'update-taxonomy',
 						),
+						'available'   => self::acf_available(),
+						'requires'    => array( 'name' => 'Advanced Custom Fields', 'kind' => 'plugin' ),
 					),
 				),
 			),
@@ -816,6 +820,8 @@ trait EMCP_Tools_Admin_Catalog_Trait {
 							'get-field-group',
 							'get-fields',
 						),
+						'available'   => self::metabox_available(),
+						'requires'    => array( 'name' => 'Meta Box', 'kind' => 'plugin' ),
 					),
 					'emcp-tools/metabox-write' => array(
 						'label'       => __( 'Meta Box Write', 'emcp-tools' ),
@@ -824,6 +830,8 @@ trait EMCP_Tools_Admin_Catalog_Trait {
 						'operations'  => array(
 							'update-fields',
 						),
+						'available'   => self::metabox_available(),
+						'requires'    => array( 'name' => 'Meta Box', 'kind' => 'plugin' ),
 					),
 				),
 			),
