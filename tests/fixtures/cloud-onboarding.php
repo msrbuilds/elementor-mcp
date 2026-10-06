@@ -20,6 +20,7 @@ function admin_url( $path ) { return 'https://site.test/sub/wp-admin/' . $path; 
 function __( $text, $domain ) { return $text; }
 function is_wp_error( $v ) { return $v instanceof WP_Error; }
 function sanitize_text_field( $v ) { return $v; }
+function is_email( $v ) { return false; }
 function wp_unslash( $v ) { return $v; }
 function wp_safe_redirect( $url ) { throw new RuntimeException( $url ); }
 class WP_Error { public function __construct( ...$args ) {} }
@@ -29,6 +30,7 @@ class EMCP_Tools_Cloud {
 	public static function base_url() { return 'https://cloud.test'; }
 	public static function identity_conflict() { return $GLOBALS['conflict']; }
 	public static function is_connected() { return $GLOBALS['connected']; }
+	public static function save_connection( $bundle ) { $GLOBALS['connected'] = true; }
 	public static function site_uuid() { if ( ! isset( $GLOBALS['options']['uuid'] ) ) { $GLOBALS['options']['uuid'] = 'site-1'; } return $GLOBALS['options']['uuid']; }
 }
 class EMCP_Tools_Gateway_Credential {
@@ -39,7 +41,14 @@ class EMCP_Tools_Cloud_Client {
 	public static function get( $path ) { $GLOBALS['calls'][] = $path; return $GLOBALS['status']; }
 }
 class EMCP_Tools_Cloud_Http {
-	public static function request( ...$args ) { $GLOBALS['calls'][] = 'capability'; return array( 'code' => 200, 'json' => array( 'version' => 1, 'expected_workspace' => true ) ); }
+	public static function request( ...$args ) {
+		if ( str_ends_with( $args[1], '/api/emcp/enroll' ) ) {
+			$GLOBALS['calls'][] = 'enroll'; $GLOBALS['enroll_args'] = $args[2];
+			return $GLOBALS['enroll_response'] ?? array( 'code' => 200, 'json' => array( 'code' => 'one-time-code', 'workspace_id' => 'workspace-1', 'gateway_allowed' => true ) );
+		}
+		$GLOBALS['calls'][] = 'capability'; return array( 'code' => 200, 'json' => array( 'version' => 1, 'expected_workspace' => true, 'enrollment_grants' => true ) );
+	}
+	public static function post_form( ...$args ) { $GLOBALS['calls'][] = 'exchange'; return $GLOBALS['exchange_response'] ?? array( 'code' => 200, 'json' => array( 'access_token' => 'private-access', 'refresh_token' => 'private-refresh' ) ); }
 	public static function post_json( ...$args ) { $GLOBALS['calls'][] = 'register'; return array( 'code' => 201, 'json' => array( 'client_id' => 'client-1', 'emcp_site_registration_proof' => 'proof' ) ); }
 }
 class FakeDb {
@@ -91,4 +100,28 @@ check( 'complete' === run_onboard( 'resume', true )['state'], 'Repeat is safe' )
 check( 1 === count( array_filter( $calls, fn( $v ) => 'provision' === $v ) ), 'No repeated Gateway credential issuance' );
 $status['health']['status'] = 'unavailable'; check( 'retry' === run_onboard( 'resume', true )['state'], 'Failed health is not completion' );
 $status = new WP_Error(); check( 'cloud_status_unavailable' === run_onboard( 'resume', true )['reason'], 'Network failure preserves state' );
+
+// Unattended enrollment uses the real Cloud Connect exchange/save path.
+$connected = false; $transients = array(); $calls = array();
+$grant = 'emcp_enroll_' . str_repeat( 'a', 43 );
+$status = array( 'version' => 1, 'workspace_id' => 'workspace-1', 'cloud_bound' => true, 'site_uuid' => 'site-1', 'origin_url' => 'https://site.test/sub', 'gateway_allowed' => true, 'gateway_uploaded' => false, 'health' => array( 'status' => 'available' ) );
+check( 'enrollment_grant_required' === run_onboard( 'enroll' )['reason'], 'No implicit unattended authorization' );
+check( empty( $calls ), 'Missing grant has no network effects' );
+$enroll_response = array( 'code' => 503, 'json' => array() );
+$r = EMCP_Tools_Cloud_Onboarding::run( 'enroll', 'workspace-1', true, $grant );
+check( 'retry' === $r['state'] && ! $connected, 'Transient enrollment failure preserves pending state' );
+check( 0 === $enroll_args['redirection'], 'Enrollment secret never follows redirects' );
+check( ! str_contains( json_encode( $transients ), $grant ), 'Grant is not persisted' );
+unset( $enroll_response );
+$exchange_response = array( 'code' => 503, 'json' => array() );
+$r = EMCP_Tools_Cloud_Onboarding::run( 'enroll', 'workspace-1', true, $grant );
+check( 'enrollment_exchange_failed' === $r['reason'] && empty( $transients ), 'Lost token response prepares fresh DCR on retry' );
+unset( $exchange_response );
+$r = EMCP_Tools_Cloud_Onboarding::run( 'enroll', 'workspace-1', false, $grant );
+check( 'connected' === $r['state'] && ! in_array( 'provision', $calls, true ), 'Cloud-only enrollment does not provision Gateway' );
+check( ! str_contains( json_encode( $r ), $grant ) && ! str_contains( json_encode( $r ), 'private-' ) && ! isset( $r['authorization_url'] ), 'CLI output excludes secrets' );
+$before = count( array_filter( $calls, fn( $v ) => 'enroll' === $v ) );
+$r = EMCP_Tools_Cloud_Onboarding::run( 'enroll', 'workspace-1', true, $grant );
+check( 'complete' === $r['state'], 'Connected enrollment resumes Gateway with explicit consent' );
+check( $before === count( array_filter( $calls, fn( $v ) => 'enroll' === $v ) ), 'Connected retry does not redeem grant again' );
 echo "PASS\n";

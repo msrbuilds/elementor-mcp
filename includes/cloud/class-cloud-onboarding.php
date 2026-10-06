@@ -9,7 +9,9 @@ class EMCP_Tools_Cloud_Onboarding {
 	 * ## OPTIONS
 	 *
 	 * [--phase=<phase>]
-	 * : preflight (default), prepare, or resume.
+	 * : preflight (default), prepare, enroll, or resume.
+	 * [--grant-env=<name>]
+	 * : Environment variable containing a short-lived Cloud enrollment grant. Never pass the secret as an argument.
 	 * [--workspace=<id>]
 	 * : Expected Cloud workspace ID from Account > Connected Sites.
 	 * [--gateway]
@@ -25,7 +27,9 @@ class EMCP_Tools_Cloud_Onboarding {
 	 */
 	public static function command( $args, $assoc_args ): void {
 		$phase = isset( $assoc_args['dry-run'] ) ? 'preflight' : (string) ( $assoc_args['phase'] ?? 'preflight' );
-		$result = self::run( $phase, (string) ( $assoc_args['workspace'] ?? '' ), isset( $assoc_args['gateway'] ) );
+		$grant_env = (string) ( $assoc_args['grant-env'] ?? 'EMCP_ENROLLMENT_GRANT' );
+		$grant = 'enroll' === $phase && preg_match( '/^[A-Z_][A-Z0-9_]*$/D', $grant_env ) ? (string) getenv( $grant_env ) : '';
+		$result = self::run( $phase, (string) ( $assoc_args['workspace'] ?? '' ), isset( $assoc_args['gateway'] ), $grant );
 		WP_CLI::line( wp_json_encode( $result ) );
 		if ( 'blocked' === $result['state'] || 'retry' === $result['state'] ) { WP_CLI::halt( 1 ); }
 	}
@@ -46,7 +50,7 @@ class EMCP_Tools_Cloud_Onboarding {
 		);
 	}
 
-	public static function run( string $phase, string $workspace, bool $gateway ): array {
+	public static function run( string $phase, string $workspace, bool $gateway, string $grant = '' ): array {
 		if ( ! current_user_can( 'manage_options' ) || ! get_current_user_id() ) {
 			return array( 'contract_version' => 1, 'state' => 'blocked', 'reason' => 'administrator_required' );
 		}
@@ -54,7 +58,7 @@ class EMCP_Tools_Cloud_Onboarding {
 		if ( is_multisite() ) { return self::stop( $result, 'multisite_not_supported' ); }
 		if ( $result['identity_conflict'] ) { return self::stop( $result, 'site_identity_conflict' ); }
 		if ( 'preflight' === $phase ) { return $result; }
-		if ( ! in_array( $phase, array( 'prepare', 'resume' ), true ) || ! preg_match( '/^[a-zA-Z0-9_-]{1,200}$/D', $workspace ) ) {
+		if ( ! in_array( $phase, array( 'prepare', 'resume', 'enroll' ), true ) || ! preg_match( '/^[a-zA-Z0-9_-]{1,200}$/D', $workspace ) ) {
 			return self::stop( $result, 'invalid_request' );
 		}
 		if ( 'https' !== wp_parse_url( EMCP_Tools_Cloud::base_url(), PHP_URL_SCHEME ) ||
@@ -68,10 +72,55 @@ class EMCP_Tools_Cloud_Onboarding {
 			return self::stop( $result, 'onboarding_busy', 'retry' );
 		}
 		try {
+			if ( 'enroll' === $phase ) { return self::enroll( $result, $workspace, $gateway, $grant ); }
 			return self::advance( $result, $phase, $workspace, $gateway );
+		} catch ( \Throwable $error ) {
+			// Never print a stack trace containing the enrollment grant argument.
+			return self::stop( $result, 'onboarding_unavailable', 'retry' );
 		} finally {
 			$wpdb->get_var( $wpdb->prepare( 'SELECT RELEASE_LOCK(%s)', $lock ) );
 		}
+	}
+
+	/** Enrollment credentials stay in memory and never enter CLI output or options. */
+	private static function enroll( array $result, string $workspace, bool $gateway, string $grant ): array {
+		if ( $result['cloud_connected'] ) {
+			return self::advance( $result, $gateway ? 'resume' : 'prepare', $workspace, $gateway );
+		}
+		if ( ! preg_match( '/^emcp_enroll_[A-Za-z0-9_-]{43}$/D', $grant ) ) { return self::stop( $result, 'enrollment_grant_required' ); }
+		$capability = EMCP_Tools_Cloud_Http::request( 'GET', EMCP_Tools_Cloud::base_url() . '/api/emcp/onboarding', array() );
+		if ( is_wp_error( $capability ) || 200 !== (int) $capability['code'] || true !== ( $capability['json']['enrollment_grants'] ?? false ) ) {
+			return self::stop( $result, 'cloud_enrollment_unavailable' );
+		}
+		$prepared = self::advance( $result, 'prepare', $workspace, false );
+		// Do not return an authorization URL containing the registration proof.
+		unset( $prepared['authorization_url'] );
+		if ( 'awaiting_approval' !== $prepared['state'] ) { return $prepared; }
+		$pending = get_transient( EMCP_Tools_Cloud_Connect::PENDING_TRANSIENT );
+		$response = EMCP_Tools_Cloud_Http::request( 'POST', EMCP_Tools_Cloud::base_url() . '/api/emcp/enroll', array(
+			'redirection' => 0,
+			'headers' => array( 'Content-Type' => 'application/json', 'Authorization' => 'Bearer ' . $grant ),
+			'body' => wp_json_encode( array(
+				'workspace' => $workspace, 'siteUuid' => $pending['onboarding_site_uuid'], 'clientId' => $pending['client_id'],
+				'redirectUri' => EMCP_Tools_Cloud_Connect::redirect_uri(), 'registrationProof' => $pending['registration_proof'],
+				'challenge' => EMCP_Tools_OAuth_Util::code_challenge_s256( $pending['verifier'] ),
+				'name' => substr( get_bloginfo( 'name' ), 0, 200 ), 'gateway' => $gateway,
+			) ),
+		) );
+		if ( is_wp_error( $response ) || 408 === (int) $response['code'] || 429 === (int) $response['code'] || (int) $response['code'] >= 500 ) {
+			return self::stop( $result, 'enrollment_unavailable', 'retry' );
+		}
+		$body = $response['json'];
+		if ( 200 !== (int) $response['code'] || empty( $body['code'] ) || ( $body['workspace_id'] ?? '' ) !== $workspace ||
+			( $gateway && true !== ( $body['gateway_allowed'] ?? false ) ) ) {
+			return self::stop( $result, 'enrollment_rejected' );
+		}
+		$bundle = EMCP_Tools_Cloud_Connect::exchange_code( (string) $body['code'], $pending['verifier'], $pending['client_id'], $workspace );
+		// A lost exchange response may already have consumed the code. A fresh DCR
+		// proof on the next attempt reconnects the same UUID without another slot.
+		delete_transient( EMCP_Tools_Cloud_Connect::PENDING_TRANSIENT );
+		if ( is_wp_error( $bundle ) ) { return self::stop( $result, 'enrollment_exchange_failed', 'retry' ); }
+		return self::advance( self::preflight(), $gateway ? 'resume' : 'prepare', $workspace, $gateway );
 	}
 
 	private static function stop( array $result, string $reason, string $state = 'blocked' ): array {

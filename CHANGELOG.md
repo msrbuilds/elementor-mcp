@@ -4,11 +4,13 @@ All notable changes to MCP Tools for Elementor are documented in this file.
 
 ## [3.19.0]
 
+- New: **Unattended Cloud enrollment.** Workspace owners can issue short-lived grants with a fixed site allowance. `wp emcp cloud onboard --phase=enroll` and the manifest runner consume grants from the environment, preserve workspace and clone checks, and resume after transient failures. Enabling Gateway requires explicit consent. Requires bulk enrollment enabled in the matching Cloud deployment.
+
 - Fixed: **Connection step 3 with an existing application password.** The chosen password stays selected while the setup opens, and the screen explains that WordPress keeps only a hash, so the saved password is pasted once and the configs fill in. The paste field is now a plain text field that appears only after a password is chosen, so browsers no longer fill it with the WordPress login password, and the configs fill only from text in WordPress's application password format (a login password filled in earlier ended up in the Basic header). The ChatGPT App form guide is laid out as an aligned table again, the "Copy it now" notice no longer runs into the steps below it, and the password list fills its field.
 
 - Fixed: **Cloud refresh throttling no longer asks for reconnection.** Temporary HTTP 408, 429 and server errors retain the saved connection and defer refresh using Retry-After, with a bounded fallback. Successful refresh clears the cooldown; rejected credentials still require reconnection.
 
-- New: **Operator-run Cloud onboarding.** `wp emcp cloud onboard` provides local preflight, workspace-pinned Cloud approval and resumable Gateway setup with a health check. The included `bin/cloud-onboard.mjs` processes manifests one site at a time and reports partial results. Each new site still needs browser approval; licence activation and WordPress Multisite are outside this workflow. Requires the matching Cloud service update.
+- New: **Operator-run Cloud onboarding.** `wp emcp cloud onboard` provides local preflight, workspace-pinned Cloud approval and resumable Gateway setup with a health check. The included `bin/cloud-onboard.mjs` processes manifests one site at a time and reports partial results. The prepare flow requests browser approval for each site; unattended enrollment requires an owner-issued grant. Licence activation and WordPress Multisite are outside this workflow. Requires the matching Cloud service update.
 
 - New: **Cloud protection for cloned sites.** Cloud connections record the WordPress home URL and block copied credentials when that URL changes. Connection > Cloud provides an explicit action to give the copy its own identity before reconnecting, preserving the source site's Cloud connection. Older connections without a recorded URL and copies using the same URL require manual separation. A legitimate URL move also requires reconnection.
 

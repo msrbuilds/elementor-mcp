@@ -62,7 +62,7 @@ export function execute(args) {
 
 export async function runBatch(manifest, phase, gateway, run = execute, emit = row => console.log(JSON.stringify(row))) {
   validateManifest(manifest);
-  if (!['preflight', 'prepare', 'resume'].includes(phase)) throw new Error('invalid_phase');
+  if (!['preflight', 'prepare', 'resume', 'enroll'].includes(phase)) throw new Error('invalid_phase');
   let failed = false;
   for (const site of manifest.sites) {
     const result = await run(siteArgs(site, manifest.workspace, phase, gateway));
@@ -80,5 +80,5 @@ async function main() {
   process.exitCode = await runBatch(JSON.parse(raw), phase, flag === '--gateway');
 }
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
-  main().catch(() => { console.error('Use: node cloud-onboard.mjs manifest.json [preflight|prepare|resume] [--gateway]. Check the manifest and WP-CLI installation.'); process.exitCode = 1; });
+  main().catch(() => { console.error('Use: node cloud-onboard.mjs manifest.json [preflight|prepare|resume|enroll] [--gateway]. Check the manifest and WP-CLI installation.'); process.exitCode = 1; });
 }

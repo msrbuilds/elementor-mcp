@@ -195,6 +195,8 @@ The admin screens ship compiled in `assets/admin/build/`. Their full source and 
 
 = 3.19.0 =
 
+* New: Unattended Cloud onboarding with short-lived, workspace-scoped enrollment grants. WP-CLI and the manifest runner read the grant from the environment; Gateway activation requires explicit consent. Requires the matching Cloud deployment.
+
 Builds FunnelKit funnels and email automations over MCP, translates sites with Polylang and TranslatePress, builds TablePress tables, Tutor LMS and LifterLMS courses, The Events Calendar events, Amelia bookings, FluentCRM contacts, campaigns and automations, and MailPoet subscribers, newsletters and automations: new Pro tools drive each plugin through its own controllers, with confirm, dry run and History undo.
 
 * New: FunnelKit Funnel Builder write tool (Pro, #143): funnels, steps, checkout products and fields, order bumps, upsells, opt-in and thank-you pages, A/B tests, the store checkout, and template and funnel imports. Deletes need confirm; creates and updates accept dry_run; History records and undoes the writes.

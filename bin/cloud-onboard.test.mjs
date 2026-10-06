@@ -27,3 +27,13 @@ test('does not treat pending approval as completed onboarding', async () => {
   assert.equal(await runBatch(manifest(), 'prepare', false, async () => ({ state: 'awaiting_approval' }), row => rows.push(row)), 0);
   assert.equal(rows[0].state, 'awaiting_approval');
 });
+
+test('enrollment phase passes no grant secret through process arguments', async () => {
+  const calls = [];
+  assert.equal(await runBatch(manifest(), 'enroll', true, async args => {
+    calls.push(args); return { state: 'complete' };
+  }, () => {}), 0);
+  assert.ok(calls[0].includes('--phase=enroll'));
+  assert.ok(calls[0].includes('--gateway'));
+  assert.ok(!calls[0].some(arg => arg.includes('emcp_enroll_')));
+});
