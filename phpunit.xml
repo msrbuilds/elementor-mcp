@@ -141,6 +141,9 @@
         <testsuite name="FluentCRM">
             <directory>pro/tests/unit/fluentcrm</directory>
         </testsuite>
+        <testsuite name="MailPoet">
+            <directory>pro/tests/unit/mailpoet</directory>
+        </testsuite>
         <testsuite name="PageText">
             <directory>pro/tests/unit/page-text</directory>
         </testsuite>
