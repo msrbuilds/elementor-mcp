@@ -300,6 +300,11 @@ trait EMCP_Tools_Admin_Integrations_Trait {
 		return defined( 'FLUENTCRM_PLUGIN_VERSION' ) && function_exists( 'fluentCrmDb' );
 	}
 
+	/** Same detector as EMCP_Tools_MailPoet_Integration::mailpoet_active(). @since 3.19.0 */
+	public static function mailpoet_available(): bool {
+		return defined( 'MAILPOET_VERSION' ) && class_exists( '\MailPoet\API\MP\v1\API' );
+	}
+
 	/** Same detector as EMCP_Tools_Amelia_Integration::amelia_active(). @since 3.19.0 */
 	public static function amelia_available(): bool {
 		return defined( 'AMELIA_VERSION' ) && class_exists( 'AmeliaBooking\Plugin' );

@@ -321,7 +321,7 @@ class EMCP_Tools_Change_Log {
 
 	/** Domains per History kind (spec 8.19); anything else is settings. */
 	const KINDS = array(
-		'content' => array( 'content', 'post', 'posts', 'meta', 'acf', 'media', 'menu', 'menus', 'seo', 'funnelkit', 'funnelkit-automations', 'polylang', 'translatepress', 'tablepress', 'tutor', 'lifterlms', 'tec', 'amelia', 'fluentcrm' ),
+		'content' => array( 'content', 'post', 'posts', 'meta', 'acf', 'media', 'menu', 'menus', 'seo', 'funnelkit', 'funnelkit-automations', 'polylang', 'translatepress', 'tablepress', 'tutor', 'lifterlms', 'tec', 'amelia', 'fluentcrm', 'mailpoet' ),
 		'design'  => array( 'elementor', 'globals', 'global-styles', 'gutenberg', 'blocks', 'block', 'atomic', 'themer' ),
 	);
 

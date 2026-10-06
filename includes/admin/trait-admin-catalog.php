@@ -776,6 +776,31 @@ trait EMCP_Tools_Admin_Catalog_Trait {
 					),
 				),
 			),
+			'wp_mailpoet'      => array(
+				'platform' => 'plugins',
+				'group'    => 'marketing',
+				'pro'      => true,
+				'label'    => __( 'MailPoet', 'emcp-tools' ),
+				'note'     => __( 'Run MailPoet: subscribers with their lists, tags and custom fields, imports and bulk tagging, the list, tag and custom field registries, newsletters in the block email editor, test sends to yourself, sending, schedules, pauses and automation status. Writes go through MailPoet\'s own code, change only the fields they name, never rewrite its consent record, and are read back; no automation or welcome email runs unless the call asks for it, nothing is emailed without confirm, and a send must name the recipient count it expects. Erasing a subscriber removes them from History too. Every change to an existing object names the version it read, and most writes can be undone in History. Writes ship disabled. Requires MailPoet 5.x active.', 'emcp-tools' ),
+				'tools'    => array(
+					'emcp-tools/mailpoet-read'  => array(
+						'label'       => __( 'MailPoet Read', 'emcp-tools' ),
+						'description' => __( 'The setup, subscribers with filters, lists, tags, custom fields, newsletters with content and statistics, the live recipient count of a send, automations and forms, each with its version.', 'emcp-tools' ),
+						'badges'      => array( 'read-only' ),
+						'operations'  => array( 'get-setup', 'list-subscribers', 'get-subscriber', 'list-lists', 'list-tags', 'list-custom-fields', 'list-newsletters', 'get-newsletter', 'get-recipient-count', 'list-automations', 'get-automation', 'list-forms' ),
+						'available'   => self::mailpoet_available(),
+						'requires'    => array( 'name' => 'MailPoet', 'kind' => 'plugin' ),
+					),
+					'emcp-tools/mailpoet-write' => array(
+						'label'       => __( 'MailPoet Write', 'emcp-tools' ),
+						'description' => __( 'Add, change, unsubscribe and erase subscribers, import and tag them in batches, manage lists, tags and custom fields, write newsletters, send tests to yourself, send, schedule, unschedule, pause and resume newsletters, and switch automations on or off. Erasing, deleting, sending and activating need confirm:true.', 'emcp-tools' ),
+						'badges'      => array( 'destructive' ),
+						'operations'  => array( 'create-subscriber', 'update-subscriber', 'set-subscriber-status', 'send-confirmation-email', 'delete-subscriber', 'import-subscribers', 'tag-subscribers', 'create-list', 'update-list', 'delete-list', 'create-tag', 'update-tag', 'delete-tag', 'add-custom-field', 'update-custom-field', 'create-newsletter', 'update-newsletter', 'duplicate-newsletter', 'delete-newsletter', 'send-test-email', 'send-newsletter', 'unschedule-newsletter', 'pause-newsletter', 'resume-newsletter', 'set-automation-status' ),
+						'available'   => self::mailpoet_available(),
+						'requires'    => array( 'name' => 'MailPoet', 'kind' => 'plugin' ),
+					),
+				),
+			),
 			'wp_metabox'       => array(
 				'platform' => 'plugins',
 				'group'    => 'dynamic',

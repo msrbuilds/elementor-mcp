@@ -203,6 +203,12 @@ includes/abilities/fluentcrm/class-fluentcrm-history.php
 includes/abilities/fluentcrm/class-fluentcrm-integration.php
 includes/abilities/fluentcrm/class-fluentcrm-writer.php
 includes/abilities/fluentcrm/ops
+includes/abilities/mailpoet
+includes/abilities/mailpoet/class-mailpoet-api.php
+includes/abilities/mailpoet/class-mailpoet-history.php
+includes/abilities/mailpoet/class-mailpoet-integration.php
+includes/abilities/mailpoet/class-mailpoet-writer.php
+includes/abilities/mailpoet/ops
 includes/page-text
 includes/page-text/class-page-text.php
 includes/page-text/class-page-text-blocks.php

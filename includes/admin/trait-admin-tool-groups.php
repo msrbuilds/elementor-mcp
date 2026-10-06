@@ -313,6 +313,11 @@ trait EMCP_Tools_Admin_Tool_Groups_Trait {
 		return array( 'emcp-tools/fluentcrm-read', 'emcp-tools/fluentcrm-write' );
 	}
 
+	/** The MailPoet integration's conditional dispatcher slugs (3.19.0). */
+	public static function mailpoet_tool_slugs(): array {
+		return array( 'emcp-tools/mailpoet-read', 'emcp-tools/mailpoet-write' );
+	}
+
 	/** The Amelia integration's conditional dispatcher slugs (3.19.0). */
 	public static function amelia_tool_slugs(): array {
 		return array( 'emcp-tools/amelia-read', 'emcp-tools/amelia-write' );

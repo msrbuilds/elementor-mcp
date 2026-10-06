@@ -119,6 +119,8 @@ final class EMCP_Tools_Pro_Loader {
 		// FluentCRM (3.19.0): History undoes and redacts outside the MCP surface; statement capture is shared.
 		'includes/abilities/class-query-capture.php',
 		'includes/abilities/fluentcrm/class-fluentcrm-history.php',
+		// MailPoet (3.19.0): History undoes, redacts on MailPoet's deletes and on privacy erasures, outside the MCP surface.
+		'includes/abilities/mailpoet/class-mailpoet-history.php',
 	);
 
 	/**
@@ -185,6 +187,9 @@ final class EMCP_Tools_Pro_Loader {
 		'includes/abilities/fluentcrm/class-fluentcrm-api.php',
 		'includes/abilities/fluentcrm/class-fluentcrm-writer.php',
 		'includes/abilities/fluentcrm/class-fluentcrm-integration.php',
+		'includes/abilities/mailpoet/class-mailpoet-api.php',
+		'includes/abilities/mailpoet/class-mailpoet-writer.php',
+		'includes/abilities/mailpoet/class-mailpoet-integration.php',
 		'includes/abilities/forms/class-wpforms-integration.php',
 		'includes/abilities/forms/class-gravityforms-integration.php',
 		'includes/abilities/forms/class-fluentforms-integration.php',
@@ -436,6 +441,11 @@ final class EMCP_Tools_Pro_Loader {
 		// FluentCRM (3.19.0): undo on every request, and erasure in FluentCRM's admin redacts History.
 		if ( class_exists( 'EMCP_Tools_FluentCRM_History' ) ) {
 			EMCP_Tools_FluentCRM_History::boot();
+		}
+
+		// MailPoet (3.19.0): undo on every request; MailPoet's deletes and WordPress privacy erasures redact History.
+		if ( class_exists( 'EMCP_Tools_MailPoet_History' ) ) {
+			EMCP_Tools_MailPoet_History::boot();
 		}
 
 		// EMCP Themer Pro power-ups: attach granular matchers, priority ranking,
