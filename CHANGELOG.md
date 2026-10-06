@@ -4,6 +4,8 @@ All notable changes to MCP Tools for Elementor are documented in this file.
 
 ## [3.19.0]
 
+- Changed: **Plugins and Themes tabs on the Tools screen are one compact row per integration.** Each row shows the integration's Read and Write switches side by side with their operation counts and any requirement ("Needs Polylang"); opening a row shows each tool's description, slug and operations and the integration's note. Integrations that share a group sit under one heading, and the per-group Enable and Disable buttons are gone from these two tabs (Bulk Actions still applies). Other tabs keep the card grid.
+
 - New: **Unattended Cloud enrollment.** Workspace owners can issue short-lived grants with a fixed site allowance. `wp emcp cloud onboard --phase=enroll` and the manifest runner consume grants from the environment, preserve workspace and clone checks, and resume after transient failures. Enabling Gateway requires explicit consent. Requires bulk enrollment enabled in the matching Cloud deployment.
 
 - Fixed: **Connection step 3 with an existing application password.** The chosen password stays selected while the setup opens, and the screen explains that WordPress keeps only a hash, so the saved password is pasted once and the configs fill in. The paste field is now a plain text field that appears only after a password is chosen, so browsers no longer fill it with the WordPress login password, and the configs fill only from text in WordPress's application password format (a login password filled in earlier ended up in the Basic header). The ChatGPT App form guide is laid out as an aligned table again, the "Copy it now" notice no longer runs into the steps below it, and the password list fills its field.

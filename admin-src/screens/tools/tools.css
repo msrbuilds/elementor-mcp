@@ -231,3 +231,138 @@
 		grid-template-columns: minmax(0, 1fr);
 	}
 }
+
+/* Plugin and theme integrations: one row each, Read and Write side by side. */
+.eui-tools__integrations {
+	margin-block-start: 8px;
+}
+
+.eui-tools__int-list {
+	border: 1px solid var(--emcp-border);
+	border-radius: var(--emcp-r-md);
+	background: var(--emcp-surface);
+}
+
+.eui-int + .eui-int {
+	border-block-start: 1px solid var(--emcp-divider);
+}
+
+.eui-int__row {
+	display: grid;
+	grid-template-columns: minmax(0, 1.15fr) minmax(0, 2fr);
+	align-items: center;
+	gap: 16px;
+	padding-block: 10px;
+	padding-inline: 16px;
+}
+
+.eui-int__lead {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 8px;
+	min-inline-size: 0;
+}
+
+.eui-int__toggle {
+	display: inline-flex;
+	align-items: center;
+	gap: 10px;
+	min-block-size: 32px;
+	padding: 0;
+	border: 0;
+	background: none;
+	color: var(--emcp-ink);
+	font: 600 15px/1.3 var(--emcp-font);
+	text-align: start;
+	cursor: pointer;
+}
+
+.eui-int__slots {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 16px;
+}
+
+.eui-int__slot {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 6px 16px;
+	min-inline-size: 0;
+}
+
+.eui-int__slot .eui-toggle__label {
+	color: var(--emcp-ink-2);
+	font-weight: 500;
+}
+
+.eui-int__slot.is-unavailable .eui-toggle__label {
+	color: var(--emcp-text-2);
+}
+
+.eui-int__ops {
+	min-block-size: 32px;
+	padding: 0;
+	border: 0;
+	background: none;
+	color: var(--emcp-primary-strong);
+	font-size: 13px;
+	font-weight: 600;
+	text-decoration: underline;
+	text-underline-offset: 3px;
+	cursor: pointer;
+}
+
+.eui-int__upgrade {
+	justify-self: start;
+}
+
+.eui-int__details {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+	padding-block: 0 14px;
+	padding-inline: 48px 16px;
+}
+
+.eui-int__cards {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 12px;
+}
+
+.eui-int__card {
+	padding: 14px;
+	border: 1px solid var(--emcp-border);
+	border-radius: var(--emcp-r-md);
+	background: var(--emcp-surface-2);
+}
+
+.eui-int__card .eui-tool__ops-list {
+	margin-block-start: 8px;
+}
+
+.eui-int__note {
+	margin: 0;
+	padding-block-start: 10px;
+	border-block-start: 1px solid var(--emcp-divider);
+	color: var(--emcp-muted);
+	font-size: 13px;
+}
+
+@media (max-width: 960px) {
+
+	.eui-int__row {
+		grid-template-columns: minmax(0, 1fr);
+		gap: 6px;
+	}
+
+	.eui-int__details {
+		padding-inline: 16px;
+	}
+
+	.eui-int__cards {
+		grid-template-columns: minmax(0, 1fr);
+	}
+}

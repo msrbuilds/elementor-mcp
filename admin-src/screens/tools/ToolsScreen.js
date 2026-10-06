@@ -22,7 +22,9 @@ import {
 	useToast,
 } from '@emcp/ui';
 import { ToolCard } from './ToolCard';
+import { IntegrationRow } from './IntegrationRow';
 import {
+	COMPACT_TABS,
 	countTurnedOff,
 	filterCategories,
 	groupCounts,
@@ -30,26 +32,65 @@ import {
 	payloadFromDiff,
 	resetToDefaults,
 	setMany,
+	slotsOf,
 	tabCounts,
 	valuesFromPayload,
 } from './model';
 
 const COLLAPSE_KEY = 'emcp-tools-collapsed';
+// Plugin and theme integration rows start closed; this remembers the open ones.
+const OPEN_KEY = 'emcp-tools-open-integrations';
 
-function readCollapsed() {
+function readList( name ) {
 	try {
-		return JSON.parse(
-			window.localStorage.getItem( COLLAPSE_KEY ) || '[]'
-		);
+		return JSON.parse( window.localStorage.getItem( name ) || '[]' );
 	} catch {
 		return [];
 	}
 }
 
-function writeCollapsed( ids ) {
+function writeList( name, ids ) {
 	try {
-		window.localStorage.setItem( COLLAPSE_KEY, JSON.stringify( ids ) );
+		window.localStorage.setItem( name, JSON.stringify( ids ) );
 	} catch {}
+}
+
+const readCollapsed = () => readList( COLLAPSE_KEY );
+const writeCollapsed = ( ids ) => writeList( COLLAPSE_KEY, ids );
+
+/**
+ * Splits a tab's categories into render blocks: on compact tabs, the
+ * integrations sharing a group label become one list of rows; anything
+ * else (and every category on other tabs) keeps its own card-grid section.
+ *
+ * @param {Object[]} categories Shown categories.
+ * @param {boolean}  compact    Whether this tab uses rows.
+ * @return {Object[]} Blocks: {key, label, rows} or {key, category, previous}.
+ */
+function blocksOf( categories, compact ) {
+	const out = [];
+	categories.forEach( ( category, index ) => {
+		const previous = categories[ index - 1 ];
+		if ( compact && slotsOf( category ) ) {
+			// A group's rows gather under its first heading, wherever the
+			// catalog lists them (Meta Box joins ACF under Dynamic Content).
+			const same = out.find(
+				( b ) => b.rows && b.label === category.groupLabel
+			);
+			if ( same ) {
+				same.rows.push( category );
+			} else {
+				out.push( {
+					key: 'rows-' + category.id,
+					label: category.groupLabel,
+					rows: [ category ],
+				} );
+			}
+			return;
+		}
+		out.push( { key: category.id, category, previous } );
+	} );
+	return out;
 }
 
 /**
@@ -68,6 +109,7 @@ export function ToolsScreen( { data: initialData } ) {
 	const [ risk, setRisk ] = useQueryState( 'risk', 'all' );
 	const [ status, setStatus ] = useQueryState( 'status', 'any' );
 	const [ collapsed, setCollapsed ] = useState( readCollapsed );
+	const [ openRows, setOpenRows ] = useState( () => readList( OPEN_KEY ) );
 
 	const form = useSettingsForm(
 		valuesFromPayload( initialData ),
@@ -117,6 +159,14 @@ export function ToolsScreen( { data: initialData } ) {
 	).length;
 	const shownTools = shown.flatMap( ( c ) => c.tools );
 
+	const setRowOpen = ( id, open ) => {
+		const next = open
+			? [ ...new Set( [ ...openRows, id ] ) ]
+			: openRows.filter( ( r ) => r !== id );
+		setOpenRows( next );
+		writeList( OPEN_KEY, next );
+	};
+
 	const toggleCollapsed = ( id ) => {
 		const next = collapsed.includes( id )
 			? collapsed.filter( ( c ) => c !== id )
@@ -145,6 +195,116 @@ export function ToolsScreen( { data: initialData } ) {
 		if ( ok ) {
 			setValues( next );
 		}
+	};
+
+	// The card grid every other tab uses (and any integration that does not fit a row).
+	const renderSection = ( category, previous ) => {
+		const isCollapsed = collapsed.includes( category.id );
+		const { on, total } = groupCounts( category, values );
+		const heading = `eui-tools-group-${ category.id }`;
+		const showGroupLabel =
+			category.groupLabel && category.groupLabel !== previous?.groupLabel;
+		return (
+			<section
+				key={ category.id }
+				className="eui-tools__group"
+				aria-labelledby={ heading }
+			>
+				{ showGroupLabel && (
+					<p className="eui-tools__group-label">
+						{ category.groupLabel }
+					</p>
+				) }
+				<div className="eui-tools__group-head">
+					<button
+						type="button"
+						className="eui-tools__group-toggle"
+						aria-expanded={ ! isCollapsed }
+						onClick={ () => toggleCollapsed( category.id ) }
+					>
+						<Icon
+							name={
+								isCollapsed ? 'chevron-right' : 'chevron-down'
+							}
+						/>
+						<span id={ heading } className="eui-tools__group-title">
+							{ category.label }
+						</span>
+						<span className="eui-tools__group-count">{ `${ on } / ${ total }` }</span>
+					</button>
+					{ category.proLocked ? (
+						<a
+							className="eui-tools__upgrade"
+							href={ data.upgradeUrl }
+							target="_blank"
+							rel="noopener noreferrer"
+						>
+							<Icon name="lock" />{ ' ' }
+							{ __( 'Requires EMCP Pro, Upgrade', 'emcp-tools' ) }
+						</a>
+					) : (
+						<div className="eui-tools__group-actions">
+							<Button
+								size="sm"
+								onClick={ () =>
+									setValues(
+										setMany( values, category.tools, true )
+									)
+								}
+								aria-label={ sprintf(
+									/* translators: %s: category. */ __(
+										'Enable all in %s',
+										'emcp-tools'
+									),
+									category.label
+								) }
+							>
+								{ __( 'Enable', 'emcp-tools' ) }
+							</Button>
+							<Button
+								size="sm"
+								onClick={ () =>
+									setValues(
+										setMany( values, category.tools, false )
+									)
+								}
+								aria-label={ sprintf(
+									/* translators: %s: category. */ __(
+										'Disable all in %s',
+										'emcp-tools'
+									),
+									category.label
+								) }
+							>
+								{ __( 'Disable', 'emcp-tools' ) }
+							</Button>
+						</div>
+					) }
+				</div>
+				{ category.notice && (
+					<Notice tone={ category.notice.type || 'info' }>
+						{ category.notice.message }
+					</Notice>
+				) }
+				{ category.note && (
+					<p className="eui-tools__note">{ category.note }</p>
+				) }
+				{ ! isCollapsed && (
+					<div className="eui-tools__grid">
+						{ category.tools.map( ( tool ) => (
+							<ToolCard
+								key={ tool.slug }
+								tool={ tool }
+								on={ !! values[ key( tool.slug ) ] }
+								onChange={ ( v ) =>
+									setValue( key( tool.slug ), v )
+								}
+							/>
+						) ) }
+					</div>
+				) }
+			</section>
+		);
 	};
 
 	const riskOptions = [
@@ -354,135 +514,46 @@ export function ToolsScreen( { data: initialData } ) {
 						{ __( 'No tools match these filters.', 'emcp-tools' ) }
 					</p>
 				) }
-				{ shown.map( ( category, index ) => {
-					const isCollapsed = collapsed.includes( category.id );
-					const { on, total } = groupCounts( category, values );
-					const heading = `eui-tools-group-${ category.id }`;
-					const showGroupLabel =
-						category.groupLabel &&
-						category.groupLabel !== shown[ index - 1 ]?.groupLabel;
-					return (
-						<section
-							key={ category.id }
-							className="eui-tools__group"
-							aria-labelledby={ heading }
-						>
-							{ showGroupLabel && (
-								<p className="eui-tools__group-label">
-									{ category.groupLabel }
-								</p>
-							) }
-							<div className="eui-tools__group-head">
-								<button
-									type="button"
-									className="eui-tools__group-toggle"
-									aria-expanded={ ! isCollapsed }
-									onClick={ () =>
-										toggleCollapsed( category.id )
-									}
-								>
-									<Icon
-										name={
-											isCollapsed
-												? 'chevron-right'
-												: 'chevron-down'
-										}
-									/>
-									<span
-										id={ heading }
-										className="eui-tools__group-title"
-									>
-										{ category.label }
-									</span>
-									<span className="eui-tools__group-count">{ `${ on } / ${ total }` }</span>
-								</button>
-								{ category.proLocked ? (
-									<a
-										className="eui-tools__upgrade"
-										href={ data.upgradeUrl }
-										target="_blank"
-										rel="noopener noreferrer"
-									>
-										<Icon name="lock" />{ ' ' }
-										{ __(
-											'Requires EMCP Pro, Upgrade',
-											'emcp-tools'
-										) }
-									</a>
-								) : (
-									<div className="eui-tools__group-actions">
-										<Button
-											size="sm"
-											onClick={ () =>
-												setValues(
-													setMany(
-														values,
-														category.tools,
-														true
-													)
-												)
-											}
-											aria-label={ sprintf(
-												/* translators: %s: category. */ __(
-													'Enable all in %s',
-													'emcp-tools'
-												),
-												category.label
-											) }
-										>
-											{ __( 'Enable', 'emcp-tools' ) }
-										</Button>
-										<Button
-											size="sm"
-											onClick={ () =>
-												setValues(
-													setMany(
-														values,
-														category.tools,
-														false
-													)
-												)
-											}
-											aria-label={ sprintf(
-												/* translators: %s: category. */ __(
-													'Disable all in %s',
-													'emcp-tools'
-												),
-												category.label
-											) }
-										>
-											{ __( 'Disable', 'emcp-tools' ) }
-										</Button>
-									</div>
+				{ blocksOf( shown, COMPACT_TABS.includes( activeTab ) ).map(
+					( block ) =>
+						block.rows ? (
+							<section
+								key={ block.key }
+								className="eui-tools__integrations"
+								aria-label={
+									block.label ||
+									__( 'Integrations', 'emcp-tools' )
+								}
+							>
+								{ block.label && (
+									<p className="eui-tools__group-label">
+										{ block.label }
+									</p>
 								) }
-							</div>
-							{ category.notice && (
-								<Notice tone={ category.notice.type || 'info' }>
-									{ category.notice.message }
-								</Notice>
-							) }
-							{ category.note && (
-								<p className="eui-tools__note">
-									{ category.note }
-								</p>
-							) }
-							{ ! isCollapsed && (
-								<div className="eui-tools__grid">
-									{ category.tools.map( ( tool ) => (
-										<ToolCard
-											key={ tool.slug }
-											tool={ tool }
-											on={ !! values[ key( tool.slug ) ] }
-											onChange={ ( v ) =>
-												setValue( key( tool.slug ), v )
+								<div className="eui-tools__int-list">
+									{ block.rows.map( ( category ) => (
+										<IntegrationRow
+											key={ category.id }
+											category={ category }
+											values={ values }
+											onToggle={ ( slug, v ) =>
+												setValue( key( slug ), v )
 											}
+											open={ openRows.includes(
+												category.id
+											) }
+											onOpen={ ( o ) =>
+												setRowOpen( category.id, o )
+											}
+											upgradeUrl={ data.upgradeUrl }
 										/>
 									) ) }
 								</div>
-							) }
-						</section>
-					);
-				} ) }
+							</section>
+						) : (
+							renderSection( block.category, block.previous )
+						)
+				) }
 			</div>
 
 			<SaveBar

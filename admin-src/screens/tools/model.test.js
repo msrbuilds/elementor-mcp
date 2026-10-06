@@ -6,6 +6,7 @@ import {
 	payloadFromDiff,
 	resetToDefaults,
 	setMany,
+	slotsOf,
 	tabCounts,
 	valuesFromPayload,
 } from './model';
@@ -163,5 +164,35 @@ describe( 'tools model', () => {
 		expect( next[ key( 'emcp-tools/acf-write' ) ] ).toBe( false );
 		expect( next[ key( 'emcp-tools/hidden-tab-tool' ) ] ).toBe( false );
 		expect( countTurnedOff( values, next ) ).toBe( 1 );
+	} );
+
+	it( 'slotsOf pairs one read tool with at most one other, else null', () => {
+		const t = ( slug, risk ) => ( { slug, risk } );
+		expect(
+			slotsOf( {
+				tools: [ t( 'w', 'destructive' ), t( 'r', 'read-only' ) ],
+			} )
+		).toEqual( {
+			read: t( 'r', 'read-only' ),
+			write: t( 'w', 'destructive' ),
+		} );
+		expect( slotsOf( { tools: [ t( 'r', 'read-only' ) ] } ) ).toEqual( {
+			read: t( 'r', 'read-only' ),
+			write: undefined,
+		} );
+		expect(
+			slotsOf( {
+				tools: [ t( 'a', 'read-only' ), t( 'b', 'read-only' ) ],
+			} )
+		).toBeNull();
+		expect(
+			slotsOf( {
+				tools: [
+					t( 'r', 'read-only' ),
+					t( 'w', 'writes' ),
+					t( 'd', 'destructive' ),
+				],
+			} )
+		).toBeNull();
 	} );
 } );

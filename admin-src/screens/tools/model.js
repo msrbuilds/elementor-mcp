@@ -58,6 +58,25 @@ function matches( tool, { search, risk, status }, values ) {
 	return true;
 }
 
+/** Tabs whose integrations are a Read and a Write tool each, shown as compact rows. */
+export const COMPACT_TABS = [ 'plugins', 'themes' ];
+
+/**
+ * A category's Read and Write tools, or null when it is not one read tool and
+ * at most one other (then it keeps the card grid).
+ *
+ * @param {Object} category Category.
+ * @return {{read: Object|undefined, write: Object|undefined}|null} Slots.
+ */
+export function slotsOf( category ) {
+	const reads = category.tools.filter( ( t ) => 'read-only' === t.risk );
+	const writes = category.tools.filter( ( t ) => 'read-only' !== t.risk );
+	if ( reads.length > 1 || writes.length > 1 ) {
+		return null;
+	}
+	return { read: reads[ 0 ], write: writes[ 0 ] };
+}
+
 export function filterCategories( categories, filters, values ) {
 	return categories
 		.filter( ( c ) => c.platform === filters.tab )

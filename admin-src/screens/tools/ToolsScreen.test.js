@@ -216,6 +216,165 @@ describe( 'ToolsScreen', () => {
 		).not.toBeInTheDocument();
 	} );
 
+	it( 'plugin integrations are one compact row with a Read and a Write switch', async () => {
+		const tool = ( slug, name, risk, ops, extra = {} ) => ( {
+			slug,
+			name,
+			description: name + ' description.',
+			risk,
+			available: true,
+			requirement: '',
+			requirementNote: '',
+			operations: ops,
+			...extra,
+		} );
+		const cat = ( id, label, groupLabel, tools, note = '' ) => ( {
+			id,
+			label,
+			platform: 'plugins',
+			group: groupLabel,
+			groupLabel,
+			note,
+			notice: null,
+			danger: false,
+			proLocked: false,
+			tools,
+		} );
+		const compact = {
+			...data,
+			tabs: [ { id: 'plugins', label: 'Plugins' } ],
+			categories: [
+				cat(
+					'woo',
+					'WooCommerce',
+					'E-Commerce',
+					[
+						tool( 'emcp-tools/woo-read', 'Woo Read', 'read-only', [
+							'list-products',
+							'get-order',
+						] ),
+						tool(
+							'emcp-tools/woo-write',
+							'Woo Write',
+							'destructive',
+							[ 'create-product' ]
+						),
+					],
+					'Needs WooCommerce 8+.'
+				),
+				cat( 'funnel', 'FunnelKit', 'E-Commerce', [
+					tool(
+						'emcp-tools/funnel-read',
+						'Funnel Read',
+						'read-only',
+						[ 'list-funnels' ]
+					),
+					tool(
+						'emcp-tools/funnel-write',
+						'Funnel Write',
+						'writes',
+						[ 'create-funnel' ],
+						{
+							available: false,
+							requirement: 'Needs FunnelKit',
+						}
+					),
+				] ),
+				cat( 'ea', 'Essential Addons', 'Elementor Addons', [
+					tool( 'emcp-tools/ea-read', 'EA Read', 'read-only', [
+						'list-widgets',
+					] ),
+				] ),
+				// Same group as WooCommerce but later in the catalog: one heading, one list.
+				cat( 'shop', 'ShopKit', 'E-Commerce', [
+					tool( 'emcp-tools/shop-read', 'Shop Read', 'read-only', [
+						'list-shops',
+					] ),
+				] ),
+			],
+			enabled: {
+				'emcp-tools/woo-read': true,
+				'emcp-tools/woo-write': false,
+				'emcp-tools/funnel-read': true,
+				'emcp-tools/funnel-write': false,
+				'emcp-tools/ea-read': true,
+				'emcp-tools/shop-read': true,
+			},
+		};
+		window.localStorage.clear();
+		window.history.replaceState(
+			{},
+			'',
+			'/wp-admin/admin.php?page=emcp-tools-tools&tab=plugins'
+		);
+		render(
+			<AppProviders>
+				<ToolsScreen data={ compact } />
+			</AppProviders>
+		);
+		// Each group label once, rows collapsed: no tool cards yet.
+		expect( screen.getAllByText( 'E-Commerce' ) ).toHaveLength( 1 );
+		expect(
+			within(
+				screen.getByRole( 'region', { name: 'E-Commerce' } )
+			).getByRole( 'switch', { name: 'ShopKit Read' } )
+		).toBeInTheDocument();
+		expect( screen.getByText( 'Elementor Addons' ) ).toBeInTheDocument();
+		expect(
+			screen.queryByText( 'Woo Read', NAME )
+		).not.toBeInTheDocument();
+		expect(
+			screen.getByRole( 'switch', { name: 'WooCommerce Read' } )
+		).toBeChecked();
+		const write = screen.getByRole( 'switch', {
+			name: 'WooCommerce Write',
+		} );
+		expect( write ).not.toBeChecked();
+		// An integration with one tool has only its Read switch.
+		expect(
+			screen.getByRole( 'switch', { name: 'Essential Addons Read' } )
+		).toBeInTheDocument();
+		expect(
+			screen.queryByRole( 'switch', { name: 'Essential Addons Write' } )
+		).not.toBeInTheDocument();
+		// An unavailable tool keeps its requirement in the row, its switch disabled.
+		expect(
+			screen.getByRole( 'switch', { name: 'FunnelKit Write' } )
+		).toBeDisabled();
+		expect( screen.getByText( 'Needs FunnelKit' ) ).toBeInTheDocument();
+		// No per-group Enable / Disable buttons on these tabs.
+		expect(
+			screen.queryByRole( 'button', {
+				name: 'Enable all in WooCommerce',
+			} )
+		).not.toBeInTheDocument();
+
+		await userEvent.click( write );
+		expect( screen.getByText( /1 unsaved change/ ) ).toBeInTheDocument();
+
+		// Expanding shows both tools' cards and the note.
+		const expand = screen.getByRole( 'button', { name: 'WooCommerce' } );
+		expect( expand ).toHaveAttribute( 'aria-expanded', 'false' );
+		await userEvent.click( expand );
+		expect( expand ).toHaveAttribute( 'aria-expanded', 'true' );
+		expect( screen.getByText( 'Woo Read', NAME ) ).toBeInTheDocument();
+		expect( screen.getByText( 'Woo Write', NAME ) ).toBeInTheDocument();
+		expect(
+			screen.getByText( 'emcp-tools/woo-write' )
+		).toBeInTheDocument();
+		expect(
+			screen.getByText( 'Needs WooCommerce 8+.' )
+		).toBeInTheDocument();
+
+		// "N operations" opens the row and lists that tool's operations.
+		await userEvent.click(
+			screen.getByRole( 'button', {
+				name: 'FunnelKit Read: 1 operation',
+			} )
+		);
+		expect( screen.getByText( 'list-funnels' ) ).toBeInTheDocument();
+	} );
+
 	it( 'group enable acts on its visible tools only', async () => {
 		mount();
 		const group = screen.getByRole( 'region', {
