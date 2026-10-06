@@ -4,7 +4,7 @@ All notable changes to MCP Tools for Elementor are documented in this file.
 
 ## [3.19.0]
 
-- Fixed: **Connection step 3 with an existing application password.** The chosen password stays selected while the setup opens, the cursor moves to "Its password", and the screen explains that WordPress keeps only a hash, so the saved password is pasted once and the configs fill in. The ChatGPT App form guide is laid out as an aligned table again, the "Copy it now" notice no longer runs into the steps below it, and the password list fills its field.
+- Fixed: **Connection step 3 with an existing application password.** The chosen password stays selected while the setup opens, and the screen explains that WordPress keeps only a hash, so the saved password is pasted once and the configs fill in. The paste field is now a plain text field that appears only after a password is chosen, so browsers no longer fill it with the WordPress login password, and the configs fill only from text in WordPress's application password format (a login password filled in earlier ended up in the Basic header). The ChatGPT App form guide is laid out as an aligned table again, the "Copy it now" notice no longer runs into the steps below it, and the password list fills its field.
 
 - Fixed: **Cloud refresh throttling no longer asks for reconnection.** Temporary HTTP 408, 429 and server errors retain the saved connection and defer refresh using Retry-After, with a bounded fallback. Successful refresh clears the cooldown; rejected credentials still require reconnection.
 

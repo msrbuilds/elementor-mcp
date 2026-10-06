@@ -190,28 +190,43 @@ describe( 'McpSetup', () => {
 		await userEvent.click(
 			await screen.findByText( 'Use a password I already have' )
 		);
+		expect(
+			screen.queryByLabelText( 'Paste its password' )
+		).not.toBeInTheDocument();
 		await userEvent.selectOptions(
 			screen.getByLabelText( 'Which password' ),
 			'old1'
 		);
-		const field = screen.getByLabelText( 'Its password' );
+		const field = screen.getByLabelText( 'Paste its password' );
+		// A plain text field browsers never fill with the saved WordPress login.
+		expect( field ).toHaveAttribute( 'type', 'text' );
+		expect( field ).toHaveAttribute( 'autocomplete', 'off' );
 		expect( field ).toHaveFocus();
 		expect(
 			screen.queryByText(
 				'Create a password to see the config for this client.'
 			)
 		).not.toBeInTheDocument();
+		// A login password (or anything not in WordPress's application password
+		// format) never reaches a config.
+		await userEvent.type( field, 'my-login-Passw0rd!' );
 		expect(
 			screen.getByText(
-				'WordPress keeps only a hash of an application password, so paste the password you saved when you created it into “Its password”; the configs then fill in.'
+				'That is not an application password. WordPress shows them once, as 24 letters and digits in groups of four.'
 			)
 		).toBeInTheDocument();
-		await userEvent.type( field, 'wxyz 1234' );
+		expect(
+			screen.queryByText( 'Manual config: direct HTTP' )
+		).not.toBeInTheDocument();
+		await userEvent.clear( field );
+		await userEvent.type( field, 'abcd EFGH 1234 ijkl MNOP 5678' );
 		expect(
 			screen.getByText( 'Manual config: direct HTTP' )
 		).toBeInTheDocument();
 		expect(
-			document.body.textContent.includes( btoa( 'admin:wxyz1234' ) )
+			document.body.textContent.includes(
+				btoa( 'admin:abcdEFGH1234ijklMNOP5678' )
+			)
 		).toBe( true );
 	} );
 

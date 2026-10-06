@@ -20,6 +20,10 @@ import {
 } from '@emcp/ui';
 import { appSteps, basic, cliSteps, oauthSteps, serverName } from './snippets';
 import { StepContent } from './StepContent';
+
+// WordPress generates application passwords as 24 letters and digits
+// (wp_generate_password( 24, false )), shown in groups of four.
+const APP_PASSWORD = /^[A-Za-z0-9]{24}$/;
 import { FirstCallStep } from './FirstCallStep';
 
 const API = '/emcp-tools/v1/admin/connection';
@@ -247,7 +251,15 @@ export function McpSetup( { data } ) {
 				/>
 			);
 		} else {
-			const hasCreds = creds.username && creds.password;
+			// A pasted password counts only in WordPress's application password
+			// format, so a browser-filled login password never reaches a config.
+			const appLike = APP_PASSWORD.test(
+				String( creds.password ).replace( /\s+/g, '' )
+			);
+			const hasCreds =
+				creds.username &&
+				creds.password &&
+				( creds.created || appLike );
 			content = (
 				<>
 					<div className="eui-conn__creds">
@@ -319,6 +331,10 @@ export function McpSetup( { data } ) {
 										value={ chosen }
 										onChange={ ( v ) => {
 											setChosen( v );
+											setCreds( ( c ) => ( {
+												...c,
+												password: '',
+											} ) );
 											openSetup( v ? 'app:' + v : '' );
 										} }
 										options={ [
@@ -337,30 +353,47 @@ export function McpSetup( { data } ) {
 									/>
 								) }
 							</Field>
-							<div ref={ pwRef }>
-								<Field
-									label={ __( 'Its password', 'emcp-tools' ) }
-									help={ __(
-										'Only used to fill the configs below; it is not sent to the server.',
-										'emcp-tools'
-									) }
-								>
-									{ ( a11y ) => (
-										<TextInput
-											{ ...a11y }
-											type="password"
-											autoComplete="off"
-											value={ creds.password }
-											onChange={ ( e ) =>
-												setCreds( ( c ) => ( {
-													...c,
-													password: e.target.value,
-												} ) )
-											}
-										/>
-									) }
-								</Field>
-							</div>
+							{ chosen && (
+								<div ref={ pwRef }>
+									<Field
+										label={ __(
+											'Paste its password',
+											'emcp-tools'
+										) }
+										help={ __(
+											'Only used to fill the configs below; it is not sent to the server.',
+											'emcp-tools'
+										) }
+										error={
+											creds.password && ! appLike
+												? __(
+														'That is not an application password. WordPress shows them once, as 24 letters and digits in groups of four.',
+														'emcp-tools'
+													)
+												: undefined
+										}
+									>
+										{ ( a11y ) => (
+											<TextInput
+												{ ...a11y }
+												type="text"
+												autoComplete="off"
+												spellCheck={ false }
+												data-1p-ignore="true"
+												data-lpignore="true"
+												value={ creds.password }
+												onChange={ ( e ) =>
+													setCreds( ( c ) => ( {
+														...c,
+														password:
+															e.target.value,
+													} ) )
+												}
+											/>
+										) }
+									</Field>
+								</div>
+							) }
 						</details>
 					) }
 					{ hasCreds ? (
@@ -377,7 +410,7 @@ export function McpSetup( { data } ) {
 						<p className="eui-conn__muted">
 							{ chosen && ! creds.created
 								? __(
-										'WordPress keeps only a hash of an application password, so paste the password you saved when you created it into “Its password”; the configs then fill in.',
+										'WordPress keeps only a hash of an application password, so paste the password you saved when you created it; the configs then fill in.',
 										'emcp-tools'
 									)
 								: __(
