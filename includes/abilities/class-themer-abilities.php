@@ -46,11 +46,14 @@ class EMCP_Tools_Themer_Abilities {
 
 	/** @param array|null $input @return bool */
 	public function check_read_permission( $input = null ): bool {
-		return current_user_can( 'edit_posts' );
+		return current_user_can( 'edit_posts' ) && ! EMCP_Tools_Themer_CPT::excluded( get_current_user_id() );
 	}
 
 	/** @param array|null $input @return bool */
 	public function check_write_permission( $input = null ): bool {
+		if ( EMCP_Tools_Themer_CPT::excluded( get_current_user_id() ) ) {
+			return false;
+		}
 		$id = absint( $input['template_id'] ?? 0 );
 		if ( $id ) {
 			return current_user_can( 'edit_post', $id );

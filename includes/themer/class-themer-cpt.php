@@ -44,11 +44,19 @@ class EMCP_Tools_Themer_CPT {
 	const LOOP_PREVIEW_DEFAULT_WIDTH = 400;
 
 	/**
+	 * Own capability names, mapped back to the page capabilities by
+	 * map_template_caps(), so the management access list can close Themer.
+	 * @since 3.19.0
+	 */
+	const CAPABILITY_TYPE = array( 'emcp_theme_template', 'emcp_theme_templates' );
+
+	/**
 	 * Register the CPT + Elementor support + its own dashboard menu. Hooked to
 	 * `init` by the module, which only boots when the module is active — so the
 	 * whole menu is gated behind module status.
 	 */
 	public function register(): void {
+		add_filter( 'map_meta_cap', array( __CLASS__, 'map_template_caps' ), 5, 4 );
 		add_filter( 'map_meta_cap', array( __CLASS__, 'protect_php_backed_template' ), 10, 4 );
 
 		register_post_type(
@@ -71,7 +79,7 @@ class EMCP_Tools_Themer_CPT {
 				'has_archive'         => false,
 				'rewrite'             => false,
 				'query_var'           => false,
-				'capability_type'     => 'page',
+				'capability_type'     => self::CAPABILITY_TYPE,
 				'map_meta_cap'        => true,
 				'supports'            => array( 'title', 'editor', 'author', 'custom-fields' ),
 				'labels'              => array(
@@ -121,6 +129,41 @@ class EMCP_Tools_Themer_CPT {
 				return $types;
 			}
 		);
+	}
+
+	/**
+	 * Map the template capabilities to the page capabilities.
+	 *
+	 * While a management allowlist is set, a user off the list is refused every
+	 * template capability, which closes the menu, list, editors and REST at once.
+	 *
+	 * @param string[] $caps    Primitive capabilities already mapped by WordPress.
+	 * @param string   $cap     Requested capability.
+	 * @param int      $user_id User id.
+	 * @param mixed[]  $args    Capability arguments.
+	 * @return string[]
+	 */
+	public static function map_template_caps( array $caps, string $cap, int $user_id, array $args ): array {
+		$suffix  = '_' . self::CAPABILITY_TYPE[1];
+		$mapped  = array();
+		$touched = false;
+		foreach ( $caps as $primitive ) {
+			if ( is_string( $primitive ) && str_ends_with( $primitive, $suffix ) ) {
+				$mapped[] = substr( $primitive, 0, -strlen( $suffix ) ) . '_pages';
+				$touched  = true;
+			} else {
+				$mapped[] = $primitive;
+			}
+		}
+		if ( ! $touched ) {
+			return $caps;
+		}
+		return self::excluded( $user_id ) ? array( 'do_not_allow' ) : array_values( array_unique( $mapped ) );
+	}
+
+	/** True when the management access list leaves this user out of Themer. */
+	public static function excluded( int $user_id ): bool {
+		return class_exists( 'EMCP_Tools_Management_Access' ) && EMCP_Tools_Management_Access::excludes( $user_id );
 	}
 
 	/**

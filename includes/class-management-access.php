@@ -33,6 +33,13 @@ final class EMCP_Tools_Management_Access {
 		return ! is_wp_error( $policy ) && EMCP_Tools_Management_Policy::allows( $policy, (int) get_current_user_id() );
 	}
 
+	/** True when a configured allowlist (or an unreadable policy) leaves this user out. */
+	public static function excludes( int $user_id ): bool {
+		$policy = EMCP_Tools_Management_Policy::read();
+		if ( is_wp_error( $policy ) ) { return true; }
+		return 'allowlist' === $policy['mode'] && ! EMCP_Tools_Management_Policy::allows( $policy, $user_id );
+	}
+
 	/** Map the dedicated menu capability without persistently changing WordPress roles. */
 	public static function map_capability( array $caps, string $cap, int $user_id, array $args ): array {
 		if ( self::CAPABILITY !== $cap ) { return $caps; }
@@ -48,6 +55,9 @@ final class EMCP_Tools_Management_Access {
 		if ( 'emcp-tools' === $page || str_starts_with( $page, 'emcp-tools-' ) || 'elementor-mcp' === $page || str_starts_with( $page, 'elementor-mcp-' ) || 'emcp-themer-php' === $page ) { return true; }
 		// This existing action verifies a scoped job token, including for logged-out workers.
 		if ( 'emcp_tools_migrate_restore_chunk_token' === $action ) { return false; }
+		// Themer's condition search serves template editors (editors included) and
+		// checks the Themer template capabilities, which follow the list, itself.
+		if ( 'emcp_themer_object_search' === $action ) { return false; }
 		return str_starts_with( $action, 'emcp_tools_' ) || str_starts_with( $action, 'emcp_themer_' ) || in_array( $action, array( 'emcp_backup_chunk', 'emcp_restore_chunk' ), true );
 	}
 

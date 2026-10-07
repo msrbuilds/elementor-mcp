@@ -37,12 +37,12 @@ class EMCP_Tools_Themer_PHP_Abilities {
 
 	/** @param array|null $input @return bool */
 	public function check_write_permission( $input = null ): bool {
-		return EMCP_Tools_Themer_PHP_Store::can_edit();
+		return EMCP_Tools_Themer_PHP_Store::can_edit() && ! EMCP_Tools_Themer_CPT::excluded( get_current_user_id() );
 	}
 
 	/** @param array|null $input @return bool */
 	public function check_read_permission( $input = null ): bool {
-		return EMCP_Tools_Themer_PHP_Store::can_read();
+		return EMCP_Tools_Themer_PHP_Store::can_read() && ! EMCP_Tools_Themer_CPT::excluded( get_current_user_id() );
 	}
 
 	/** Normalize a store result (array|WP_Error) to a tool payload. */

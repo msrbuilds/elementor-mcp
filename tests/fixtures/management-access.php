@@ -81,7 +81,7 @@ switch ($argv[1]) {
 		$seam->setValue(null,null);check(!EMCP_Tools_Management_Access::can_manage());break;
 	case 'admin-requests':
 		save();$actor=2;
-		foreach(array(array('page'=>'emcp-tools'),array('page'=>'emcp-tools-connection'),array('page'=>'emcp-themer-php'),array('action'=>'emcp_tools_cloud_gateway_reissue'),array('action'=>'emcp_tools_migrate_start_backup'),array('action'=>'emcp_themer_object_search'),array('action'=>'emcp_backup_chunk'),array('action'=>'emcp_restore_chunk')) as $params){$_GET=$params;$_POST=array();$_REQUEST=$params;denied(fn()=>EMCP_Tools_Management_Access::guard_admin_request());}
+		foreach(array(array('page'=>'emcp-tools'),array('page'=>'emcp-tools-connection'),array('page'=>'emcp-themer-php'),array('action'=>'emcp_tools_cloud_gateway_reissue'),array('action'=>'emcp_tools_migrate_start_backup'),array('action'=>'emcp_backup_chunk'),array('action'=>'emcp_restore_chunk')) as $params){$_GET=$params;$_POST=array();$_REQUEST=$params;denied(fn()=>EMCP_Tools_Management_Access::guard_admin_request());}check(!EMCP_Tools_Management_Access::is_management_request('','emcp_themer_object_search'));check(EMCP_Tools_Management_Access::is_management_request('','emcp_themer_php_save'));
 		$_GET=array('action'=>'unrelated');$_POST=array('action'=>'unrelated');$_REQUEST=array('action'=>'emcp_tools_settings_pull');denied(fn()=>EMCP_Tools_Management_Access::guard_admin_request());
 		$_GET=array('action'=>'emcp_tools_settings_push');$_POST=array('action'=>'emcp_tools_migrate_restore_chunk_token');$_REQUEST=$_POST;denied(fn()=>EMCP_Tools_Management_Access::guard_admin_request());
 		$_GET=$_POST=$_REQUEST=array('action'=>'emcp_tools_migrate_restore_chunk_token');EMCP_Tools_Management_Access::guard_admin_request();
