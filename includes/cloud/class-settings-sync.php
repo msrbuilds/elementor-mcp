@@ -15,6 +15,46 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 class EMCP_Tools_Settings_Sync {
 
+	/** Fixed v1 managed profile surface. Deliberately separate from the legacy filterable blob. */
+	public static function managed_snapshot() {
+		if ( ! current_user_can( 'manage_options' ) ) { return new WP_Error( 'forbidden', 'Administrator access required.' ); }
+		if ( EMCP_Tools_Cloud::identity_conflict() ) { return new WP_Error( 'site_identity_conflict', 'Separate this installation before collecting settings.' ); }
+		$boolean_keys = array(
+			'emcp_tools_dispatcher_mode', 'emcp_tools_strict_schemas', 'emcp_tools_content_mirror_enabled',
+			'emcp_tools_site_context_enabled', 'emcp_tools_module_themer_force_render',
+			'emcp_tools_memory_require_approval', 'emcp_tools_memory_auto_summarize',
+		);
+		$list_keys = array( 'emcp_tools_disabled_tools', 'emcp_tools_active_modules' );
+		$settings = array();
+		$missing = new stdClass();
+		foreach ( array_merge( $boolean_keys, $list_keys ) as $key ) {
+			$value = get_option( $key, $missing );
+			if ( $value === $missing ) { continue; }
+			if ( in_array( $key, $boolean_keys, true ) ) {
+				// WordPress returns a persisted false option as an empty string.
+				if ( ! in_array( $value, array( true, false, 0, 1, '', '0', '1' ), true ) ) {
+					return new WP_Error( 'invalid_managed_setting', 'A managed setting has an unsupported value.' );
+				}
+				$settings[ $key ] = in_array( $value, array( true, 1, '1' ), true );
+			} else {
+				if ( ! is_array( $value ) || count( $value ) > 5000 || array_values( $value ) !== $value ) {
+					return new WP_Error( 'invalid_managed_setting', 'A managed setting has an unsupported value.' );
+				}
+				foreach ( $value as $item ) {
+					if ( ! is_string( $item ) || strlen( $item ) > 120 || ! preg_match( '~^[a-z][a-z0-9_-]*(/[a-z][a-z0-9_-]*)?$~D', $item ) ) {
+						return new WP_Error( 'invalid_managed_setting', 'A managed setting has an unsupported value.' );
+					}
+				}
+				$value = array_values( array_unique( $value ) ); sort( $value, SORT_STRING );
+				$settings[ $key ] = $value;
+			}
+		}
+		ksort( $settings, SORT_STRING );
+		return array( 'schema_version' => 1, 'plugin_version' => EMCP_TOOLS_VERSION,
+			'site_uuid' => (string) get_option( EMCP_Tools_Cloud::OPTION_SITE_UUID, '' ),
+			'settings' => (object) $settings );
+	}
+
 	/**
 	 * Curated, filterable allowlist of syncable settings. NEVER secrets, tokens,
 	 * the cloud connection, the per-site UUID, audit logs, or notice state.
@@ -37,7 +77,8 @@ class EMCP_Tools_Settings_Sync {
 			'emcp_tools_memory_require_approval',   // memory prefs
 			'emcp_tools_memory_auto_summarize',
 		);
-		return array_values( array_unique( (array) apply_filters( 'emcp_tools_settings_sync_keys', $keys ) ) );
+		// Access policy is always site-local, even if a legacy extension requests it.
+		return array_values( array_diff( array_unique( (array) apply_filters( 'emcp_tools_settings_sync_keys', $keys ) ), array( 'emcp_tools_management_policy' ) ) );
 	}
 
 	/**

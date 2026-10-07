@@ -38,7 +38,7 @@ class EMCP_Tools_Themer_PHP_Admin {
 			'edit.php?post_type=' . EMCP_Tools_Themer_CPT::POST_TYPE,
 			__( 'PHP Templates', 'emcp-tools' ),
 			__( 'PHP Templates', 'emcp-tools' ),
-			'manage_options',
+			EMCP_Tools_Management_Access::CAPABILITY,
 			self::PAGE,
 			array( $this, 'render' )
 		);
@@ -65,7 +65,7 @@ class EMCP_Tools_Themer_PHP_Admin {
 	}
 
 	public function render(): void {
-		if ( ! current_user_can( 'manage_options' ) ) {
+		if ( ! current_user_can( EMCP_Tools_Management_Access::CAPABILITY ) ) {
 			wp_die( esc_html__( 'You do not have permission to view this page.', 'emcp-tools' ) );
 		}
 		$templates = EMCP_Tools_Themer_PHP_Store::list_templates();
@@ -90,7 +90,7 @@ class EMCP_Tools_Themer_PHP_Admin {
 			admin_url( 'edit.php' )
 		);
 
-		if ( ! EMCP_Tools_Themer_PHP_Store::can_edit() ) {
+		if ( ! current_user_can( EMCP_Tools_Management_Access::CAPABILITY ) || ! EMCP_Tools_Themer_PHP_Store::can_edit() ) {
 			$this->notice( 'error', __( 'You do not have permission to edit PHP templates.', 'emcp-tools' ) );
 			wp_safe_redirect( $back );
 			exit;
@@ -125,7 +125,7 @@ class EMCP_Tools_Themer_PHP_Admin {
 	public function handle_delete(): void {
 		$id = isset( $_POST['template_id'] ) ? absint( wp_unslash( $_POST['template_id'] ) ) : 0;
 		check_admin_referer( 'emcp_themer_php_delete_' . $id );
-		if ( current_user_can( 'manage_options' ) && current_user_can( 'unfiltered_html' ) ) {
+		if ( current_user_can( EMCP_Tools_Management_Access::CAPABILITY ) && current_user_can( 'unfiltered_html' ) ) {
 			EMCP_Tools_Themer_PHP_Store::delete( $id );
 		}
 		wp_safe_redirect( add_query_arg( array( 'post_type' => EMCP_Tools_Themer_CPT::POST_TYPE, 'page' => self::PAGE ), admin_url( 'edit.php' ) ) );

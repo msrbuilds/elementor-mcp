@@ -190,6 +190,7 @@ class EMCP_Tools_Admin {
 				self::PAGE_SLUG . '-page-builders' => __( 'Page Builders', 'emcp-tools' ),
 				self::PAGE_SLUG . '-tools'      => __( 'Tools', 'emcp-tools' ),
 				self::PAGE_SLUG . '-connection' => __( 'Connection', 'emcp-tools' ),
+				self::PAGE_SLUG . '-management' => __( 'Management access', 'emcp-tools' ),
 				self::PAGE_SLUG . '-ai-chat'    => __( 'AI Chat', 'emcp-tools' ),
 				self::PAGE_SLUG . '-context'    => __( 'Context', 'emcp-tools' ),
 				self::PAGE_SLUG . '-redirects'  => __( 'Redirects', 'emcp-tools' ),
@@ -265,6 +266,8 @@ class EMCP_Tools_Admin {
 				return 'modules';
 			case self::PAGE_SLUG . '-connection':
 				return 'connection';
+			case self::PAGE_SLUG . '-management':
+				return 'management';
 			case self::PAGE_SLUG . '-ai-chat':
 				return 'ai-chat';
 			case self::PAGE_SLUG . '-context':
@@ -430,10 +433,11 @@ class EMCP_Tools_Admin {
 	 * @since 1.0.0
 	 */
 	public function add_settings_page(): void {
+		if ( ! current_user_can( EMCP_Tools_Management_Access::CAPABILITY ) ) { return; }
 		$this->hook_suffixes[] = add_menu_page(
 			__( 'MCP Tools for Elementor', 'emcp-tools' ),
 			__( 'EMCP Tools', 'emcp-tools' ),
-			'manage_options',
+			EMCP_Tools_Management_Access::CAPABILITY,
 			self::PAGE_SLUG,
 			array( $this, 'render_page' ),
 			EMCP_TOOLS_URL . 'assets/img/icon-xs.png',
@@ -453,7 +457,7 @@ class EMCP_Tools_Admin {
 				self::PAGE_SLUG,
 				$label,
 				$menu_title,
-				'manage_options',
+				EMCP_Tools_Management_Access::CAPABILITY,
 				$slug,
 				array( $this, 'render_page' )
 			);
@@ -860,7 +864,7 @@ class EMCP_Tools_Admin {
 	 * @since 1.0.0
 	 */
 	public function render_page(): void {
-		if ( ! current_user_can( 'manage_options' ) ) {
+		if ( ! current_user_can( EMCP_Tools_Management_Access::CAPABILITY ) ) {
 			return;
 		}
 

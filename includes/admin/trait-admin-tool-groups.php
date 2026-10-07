@@ -129,6 +129,8 @@ trait EMCP_Tools_Admin_Tool_Groups_Trait {
 			'emcp-tools/cloud-backup',
 			'emcp-tools/cloud-pull',
 			'emcp-tools/cloud-config-sync',
+			'emcp-tools/cloud-config-inspect',
+			'emcp-tools/cloud-config-deploy',
 			'emcp-tools/cloud-marketplace-list',
 			'emcp-tools/cloud-marketplace-install',
 		);

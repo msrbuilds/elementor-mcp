@@ -25,6 +25,8 @@ class EMCP_Tools_Cloud_Abilities {
 			'emcp-tools/cloud-list',
 			'emcp-tools/cloud-pull',
 			'emcp-tools/cloud-config-sync',
+			'emcp-tools/cloud-config-inspect',
+			'emcp-tools/cloud-config-deploy',
 			'emcp-tools/cloud-marketplace-list',
 			'emcp-tools/cloud-marketplace-install',
 		);
@@ -41,6 +43,26 @@ class EMCP_Tools_Cloud_Abilities {
 	 * @return void
 	 */
 	public function register(): void {
+		emcp_tools_register_ability( 'emcp-tools/cloud-config-deploy', array(
+			'label' => __( 'Deploy managed Cloud settings', 'emcp-tools' ),
+			'description' => __( 'Apply an explicitly approved managed revision with a current fingerprint, inspect its durable receipt, or restore its before-image if changed keys still match. Cannot disable the Cloud recovery channel.', 'emcp-tools' ),
+			'category' => 'emcp-tools', 'execute_callback' => array( $this, 'execute_config_deploy' ),
+			'permission_callback' => array( $this, 'check_permission' ),
+			'input_schema' => array('type'=>'object','required'=>array('action','operation_id','site_uuid'),'additionalProperties'=>false,'properties'=>array(
+				'action'=>array('type'=>'string','enum'=>array('apply','rollback','status')),'operation_id'=>array('type'=>'string'),'site_uuid'=>array('type'=>'string'),
+				'expected'=>array('type'=>array('string','null')),'settings'=>array('type'=>array('object','null')),'confirm'=>array('type'=>'boolean'),
+			)),
+			'output_schema' => array('type'=>'object'), 'meta'=>array('annotations'=>array('readonly'=>false,'destructive'=>true),'show_in_rest'=>true),
+		));
+		emcp_tools_register_ability( 'emcp-tools/cloud-config-inspect', array(
+			'label' => __( 'Inspect managed Cloud settings', 'emcp-tools' ),
+			'description' => __( 'Read a versioned, fixed allowlist of stored EMCP settings for configuration previews. No settings are changed; secrets and free-text context are excluded.', 'emcp-tools' ),
+			'category' => 'emcp-tools', 'execute_callback' => array( $this, 'execute_config_inspect' ),
+			'permission_callback' => array( $this, 'check_permission' ),
+			'input_schema' => array( 'type' => 'object', 'properties' => new stdClass(), 'additionalProperties' => false ),
+			'output_schema' => array( 'type' => 'object' ),
+			'meta' => array( 'annotations' => array( 'readonly' => true, 'destructive' => false ), 'show_in_rest' => true ),
+		) );
 		emcp_tools_register_ability(
 			'emcp-tools/cloud-status',
 			array(
@@ -158,6 +180,16 @@ class EMCP_Tools_Cloud_Abilities {
 				'meta'                => array( 'annotations' => array( 'readonly' => false, 'destructive' => false ), 'show_in_rest' => true ),
 			)
 		);
+	}
+
+	public function execute_config_inspect( $input ) {
+		if ( ! empty( (array) $input ) ) { return new WP_Error( 'invalid_input', 'This read accepts no settings or actions.' ); }
+		return EMCP_Tools_Settings_Sync::managed_snapshot();
+	}
+	public function execute_config_deploy( $input ) {
+		require_once __DIR__ . '/../cloud/class-config-deployment.php';
+		$result = EMCP_Tools_Config_Deployment::execute( $input );
+		return is_wp_error($result) ? array('status'=>'rejected','code'=>$result->get_error_code()) : $result;
 	}
 
 	/**

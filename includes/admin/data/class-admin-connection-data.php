@@ -266,6 +266,7 @@ final class EMCP_Tools_Admin_Connection_Data {
 			}
 		}
 		$me = get_current_user_id();
+		$actor = wp_get_current_user();
 		usort( $users, static function ( $a, $b ) use ( $me ) { return ( $b['id'] === $me ) <=> ( $a['id'] === $me ); } );
 
 		return array(
@@ -281,6 +282,7 @@ final class EMCP_Tools_Admin_Connection_Data {
 			),
 			'users'           => $users,
 			'currentUserId'   => $me,
+			'management'      => array( 'id' => (int) $me, 'login' => (string) $actor->user_login, 'url' => admin_url( 'admin.php?page=emcp-tools-management' ) ),
 			'status'          => $this->status(),
 			'oauth'           => $this->oauth(),
 			'apps'            => $this->apps(),

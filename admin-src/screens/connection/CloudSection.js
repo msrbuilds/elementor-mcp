@@ -198,6 +198,30 @@ export function CloudSection( { data, navigate = defaultNavigate } ) {
 	};
 	return (
 		<div className="eui-conn__cloud">
+			{ data.management && (
+				<Notice tone="info">
+					<p>
+						{ sprintf(
+							/* translators: 1: WordPress login, 2: user ID. */
+							__(
+								'Managing this site as %1$s (WordPress user ID %2$d).',
+								'emcp-tools'
+							),
+							data.management.login,
+							data.management.id
+						) }
+					</p>
+					<p>
+						{ __(
+							'Reissuing Gateway access authorizes this WordPress account. Existing MCP credentials retain their original execution identity and permissions.',
+							'emcp-tools'
+						) }
+					</p>
+					<a href={ data.management.url }>
+						{ __( 'Manage local access', 'emcp-tools' ) }
+					</a>
+				</Notice>
+			) }
 			{ c.identityConflict && (
 				<Notice tone="warning">
 					{ __(

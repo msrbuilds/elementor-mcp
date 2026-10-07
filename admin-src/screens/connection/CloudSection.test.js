@@ -35,6 +35,39 @@ function mount( cloud = {}, navigate = jest.fn() ) {
 }
 
 describe( 'CloudSection account card', () => {
+	it( 'distinguishes the management actor from existing execution credentials', () => {
+		render(
+			<AppProviders>
+				<CloudSection
+					data={ {
+						adminPostUrl: '/wp-admin/admin-post.php',
+						cloud: base,
+						management: {
+							id: 42,
+							login: 'site-manager',
+							url: '/wp-admin/admin.php?page=emcp-tools-management',
+						},
+					} }
+				/>
+			</AppProviders>
+		);
+		expect(
+			screen.getByText(
+				'Managing this site as site-manager (WordPress user ID 42).'
+			)
+		).toBeVisible();
+		expect(
+			screen.getByText(
+				/Existing MCP credentials retain their original execution identity/
+			)
+		).toBeVisible();
+		expect(
+			screen.getByRole( 'link', { name: 'Manage local access' } )
+		).toHaveAttribute(
+			'href',
+			'/wp-admin/admin.php?page=emcp-tools-management'
+		);
+	} );
 	it( 'blocks copied credentials and confirms separate site identity', async () => {
 		mount( {
 			connected: false,

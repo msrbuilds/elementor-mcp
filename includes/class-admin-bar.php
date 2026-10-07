@@ -131,13 +131,13 @@ class EMCP_Tools_Admin_Bar {
 	}
 
 	/**
-	 * Render the admin-bar node + children. manage_options only; front-end + admin.
+	 * Render the admin-bar node + children for authorized local managers.
 	 *
 	 * @since 3.1.0
 	 * @param \WP_Admin_Bar $wp_admin_bar Admin bar instance.
 	 */
 	public function render_node( $wp_admin_bar ): void {
-		if ( ! is_admin_bar_showing() || ! current_user_can( 'manage_options' ) ) {
+		if ( ! is_admin_bar_showing() || ! current_user_can( EMCP_Tools_Management_Access::CAPABILITY ) ) {
 			return;
 		}
 
@@ -197,7 +197,7 @@ class EMCP_Tools_Admin_Bar {
 	 * @since 3.1.0
 	 */
 	public function handle_toggle(): void {
-		if ( ! current_user_can( 'manage_options' ) ) {
+		if ( ! current_user_can( EMCP_Tools_Management_Access::CAPABILITY ) ) {
 			wp_die( esc_html__( 'You are not allowed to do this.', 'emcp-tools' ), '', array( 'response' => 403 ) );
 		}
 		check_admin_referer( self::TOGGLE_ACTION );

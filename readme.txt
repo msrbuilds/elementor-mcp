@@ -195,6 +195,10 @@ The admin screens ship compiled in `assets/admin/build/`. Their full source and 
 
 = 3.19.0 =
 
+* New: Site-local management access policy with an optional administrator allowlist, consistent screen and endpoint checks, stale-update protection and host WP-CLI recovery. Cloud shows the acting WordPress account. Existing MCP execution identities and permissions remain separate; settings sync cannot overwrite the local policy.
+
+* New: Managed configuration inspection, confirmed apply, durable operation receipts and conflict-aware rollback for Cloud profiles. Uses a fixed settings allowlist without credentials, licences or free-text context. Atomic InnoDB writes preserve before-images and refuse stale previews or rollback over later edits. Requires the matching Cloud and Gateway rollout; deployment is disabled by default in Cloud.
+
 * New: Unattended Cloud onboarding with short-lived, workspace-scoped enrollment grants. WP-CLI and the manifest runner read the grant from the environment; Gateway activation requires explicit consent. Requires the matching Cloud deployment.
 
 Builds FunnelKit funnels and email automations over MCP, translates sites with Polylang and TranslatePress, builds TablePress tables, Tutor LMS and LifterLMS courses, The Events Calendar events, Amelia bookings, FluentCRM contacts, campaigns and automations, and MailPoet subscribers, newsletters and automations: new Pro tools drive each plugin through its own controllers, with confirm, dry run and History undo.

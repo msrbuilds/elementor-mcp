@@ -2100,6 +2100,16 @@ trait EMCP_Tools_Admin_Catalog_Trait {
 						'description' => __( 'Push or pull a config blob (settings, brand kit, tool toggles) to or from EMCP Cloud.', 'emcp-tools' ),
 						'badges'      => array(),
 					),
+					'emcp-tools/cloud-config-inspect' => array(
+						'label' => __( 'Inspect Managed Settings', 'emcp-tools' ),
+						'description' => __( 'Read the fixed managed settings allowlist for Cloud profile previews. No settings are changed.', 'emcp-tools' ),
+						'badges' => array(),
+					),
+					'emcp-tools/cloud-config-deploy' => array(
+						'label' => __( 'Deploy Managed Settings', 'emcp-tools' ),
+						'description' => __( 'Apply an explicitly approved revision, read its receipt, or restore its before-image when affected settings have not changed.', 'emcp-tools' ),
+						'badges' => array(),
+					),
 				),
 			);
 

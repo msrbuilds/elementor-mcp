@@ -173,6 +173,8 @@ class EMCP_Tools_Bootstrap {
 		require_once EMCP_TOOLS_DIR . 'includes/oauth/class-oauth-server.php';
 		require_once EMCP_TOOLS_DIR . 'includes/class-change-log.php';
 		require_once EMCP_TOOLS_DIR . 'includes/class-lease.php';
+		require_once EMCP_TOOLS_DIR . 'includes/class-management-policy.php';
+		require_once EMCP_TOOLS_DIR . 'includes/class-management-access.php';
 		require_once EMCP_TOOLS_DIR . 'includes/class-mcp-request-log.php';
 		require_once EMCP_TOOLS_DIR . 'includes/class-activity-stats.php';
 		require_once EMCP_TOOLS_DIR . 'includes/attention/interface-attention-check.php';
@@ -496,6 +498,7 @@ class EMCP_Tools_Bootstrap {
 	}
 
 	private static function wire_hooks(): void {
+		EMCP_Tools_Management_Access::init();
 		EMCP_Tools_Attention::init();
 		// structuredContent must be a JSON object; the adapter assigns a tool's
 		// return value to it verbatim, so a list result makes strict clients
