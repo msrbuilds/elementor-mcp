@@ -195,6 +195,8 @@ The admin screens ship compiled in `assets/admin/build/`. Their full source and 
 
 = 3.19.0 =
 
+Ten Pro plugin integrations, from Polylang and Tutor LMS to Amelia and MailPoet, each with undo, plus security hardening, management access control and Cloud onboarding.
+
 * Security: MCP post writes check the post type's own create, publish and author capabilities, and restores need edit rights on their target.
 * Security: Sitewide Elementor templates (headers, footers, popups, theme templates with conditions) need edit_theme_options to edit or delete, everywhere. Editors without it lose access to those templates.
 * Security: EMCP Themer templates with an attached PHP template are editable only by administrators with unfiltered_html.

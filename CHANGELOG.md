@@ -4,6 +4,8 @@ All notable changes to MCP Tools for Elementor are documented in this file.
 
 ## [3.19.0]
 
+> Ten Pro plugin integrations, from Polylang and Tutor LMS to Amelia and MailPoet, each with undo, plus security hardening, management access control and Cloud onboarding.
+
 - Security: **MCP post writes check the post type's own capabilities.** Creating a post checks that post type's create and publish capabilities (a WooCommerce product needs the product capabilities, not just `edit_posts`), assigning another author checks its `edit_others` capability, and changing a status to published, scheduled or private checks its publish capability. `restore-content` and History undo also need edit rights on the post they write to.
 
 - Security: **Sitewide Elementor templates need theme-management rights.** Editing or deleting an Elementor header, footer, single, archive, search, 404, popup or loop item template, or any template with display conditions or popup triggers, now needs `edit_theme_options`, in Elementor's editor, the REST API and EMCP alike. Editors without that capability can no longer change those templates. EMCP's theme-template and popup tools check the same rule and confirm the target is the right kind of template.
