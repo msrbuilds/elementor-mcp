@@ -12,6 +12,9 @@ final class EMCP_Tools_Management_Policy {
 
 	const OPTION = 'emcp_tools_management_policy';
 
+	/** wp-config override: comma-separated IDs or an array (allowlist), or 'all'. */
+	const CONSTANT = 'EMCP_TOOLS_MANAGEMENT_ADMINS';
+
 	/** @var EMCP_Tools_Lease_Store|null Storage seam used by isolated tests. */
 	private static $store;
 
@@ -54,10 +57,39 @@ final class EMCP_Tools_Management_Policy {
 
 	/** @return array|WP_Error Current local policy, without exposing storage diagnostics. */
 	public static function read() {
+		if ( self::locked_by_config() ) { return self::config_policy( constant( self::CONSTANT ) ); }
 		try { return self::decode( self::raw() ); }
 		catch ( Throwable $error ) {
 			return new WP_Error( 'emcp_management_policy_unavailable', __( 'Management access could not be verified. Use the documented host recovery command.', 'emcp-tools' ), array( 'status' => 503 ) );
 		}
+	}
+
+	/** True when wp-config.php defines the policy, which then overrides the stored one. */
+	public static function locked_by_config(): bool {
+		return defined( self::CONSTANT );
+	}
+
+	/**
+	 * Read the wp-config.php value strictly. An invalid value never grants
+	 * access: management stays closed until the constant is corrected.
+	 *
+	 * @param mixed $value Constant value.
+	 * @return array|WP_Error
+	 */
+	public static function config_policy( $value ) {
+		if ( is_string( $value ) && 'all' === strtolower( trim( $value ) ) ) {
+			return array( 'version' => 0, 'mode' => 'all_admins', 'users' => array(), 'source' => 'config' );
+		}
+		if ( is_array( $value ) && $value && array_values( $value ) === $value && ! array_filter( $value, static fn( $id ) => ! is_int( $id ) ) ) {
+			$value = implode( ',', $value );
+		}
+		$users = is_string( $value ) ? self::parse_users( trim( $value ) ) : null;
+		if ( ! is_array( $users ) ) {
+			return new WP_Error( 'emcp_management_config_invalid', __( 'EMCP_TOOLS_MANAGEMENT_ADMINS in wp-config.php must be comma-separated administrator IDs, an array of IDs, or "all". Management access stays closed until it is corrected.', 'emcp-tools' ), array( 'status' => 503 ) );
+		}
+		$users = array_values( array_unique( $users ) );
+		sort( $users, SORT_NUMERIC );
+		return array( 'version' => 0, 'mode' => 'allowlist', 'users' => $users, 'source' => 'config' );
 	}
 
 	/** User membership is checked in addition to their current WordPress capabilities. */
@@ -93,6 +125,9 @@ final class EMCP_Tools_Management_Policy {
 	 * @return array|WP_Error
 	 */
 	public static function save( string $mode, array $users, int $expected_version, int $actor, bool $recovery = false ) {
+		if ( self::locked_by_config() ) {
+			return new WP_Error( 'emcp_management_policy_locked', __( 'Management access is set by EMCP_TOOLS_MANAGEMENT_ADMINS in wp-config.php. Change or remove it there.', 'emcp-tools' ), array( 'status' => 409 ) );
+		}
 		if ( $actor < 1 || ! get_userdata( $actor ) || ! user_can( $actor, 'manage_options' ) ) {
 			return new WP_Error( 'emcp_management_forbidden', __( 'Administrator access is required.', 'emcp-tools' ), array( 'status' => 403 ) );
 		}

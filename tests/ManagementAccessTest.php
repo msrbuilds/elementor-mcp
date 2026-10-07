@@ -13,6 +13,6 @@ final class ManagementAccessTest extends TestCase {
 	}
 
 	public static function scenarios(): array {
-		return array_map( static fn( $name ) => array( $name ), array( 'default', 'membership', 'validation', 'concurrency', 'malformed', 'storage', 'admin-requests', 'rest', 'recovery', 'http-recovery', 'form', 'sync' ) );
+		return array_map( static fn( $name ) => array( $name ), array( 'default', 'membership', 'validation', 'concurrency', 'malformed', 'storage', 'admin-requests', 'rest', 'recovery', 'http-recovery', 'form', 'sync', 'config', 'config-array', 'config-all', 'config-invalid' ) );
 	}
 }

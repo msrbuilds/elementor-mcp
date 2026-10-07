@@ -105,6 +105,25 @@ switch ($argv[1]) {
 		require EMCP_TOOLS_DIR.'includes/cloud/class-settings-sync.php';
 		check(!in_array('emcp_tools_management_policy',EMCP_Tools_Settings_Sync::sync_keys(),true));check(!isset(EMCP_Tools_Settings_Sync::collect()['emcp_tools_management_policy']));
 		check(EMCP_Tools_Settings_Sync::apply(array('emcp_tools_management_policy'=>'overwrite'))===0);check(!$writes);break;
+	case 'config':
+		// wp-config overrides the stored list; the stored row is never touched.
+		save();$before=$store->raw;define('EMCP_TOOLS_MANAGEMENT_ADMINS',' 2 ');
+		$policy=EMCP_Tools_Management_Policy::read();check($policy['mode']==='allowlist'&&$policy['users']===array(2)&&$policy['source']==='config');
+		$actor=2;check(EMCP_Tools_Management_Access::can_manage());check(current_user_can('manage_emcp_tools'));check(!EMCP_Tools_Management_Access::excludes(2));
+		$actor=1;check(!EMCP_Tools_Management_Access::can_manage());check(EMCP_Tools_Management_Access::excludes(1));
+		code(save('all_admins',array(),1,2),'emcp_management_policy_locked');code(save('all_admins',array(),1,2,true),'emcp_management_policy_locked');check($store->raw===$before);
+		$actor=2;$nonce=true;$_POST=array('mode'=>'all_admins','version'=>'1','users'=>'','confirm'=>'1');denied(fn()=>EMCP_Tools_Management_Access_Admin::save(),409);check($store->raw===$before);break;
+	case 'config-array':
+		define('EMCP_TOOLS_MANAGEMENT_ADMINS',array(2,1,2));$policy=EMCP_Tools_Management_Policy::read();check($policy['users']===array(1,2));
+		$actor=1;check(EMCP_Tools_Management_Access::can_manage());$actor=2;check(EMCP_Tools_Management_Access::can_manage());break;
+	case 'config-all':
+		save();define('EMCP_TOOLS_MANAGEMENT_ADMINS','ALL');$policy=EMCP_Tools_Management_Policy::read();check($policy['mode']==='all_admins'&&$policy['source']==='config');
+		$actor=2;check(EMCP_Tools_Management_Access::can_manage());check(!EMCP_Tools_Management_Access::excludes(2));code(save('allowlist',array(1),1,1),'emcp_management_policy_locked');break;
+	case 'config-invalid':
+		foreach(array('', '1,x', '0', array(), array('1'), array(1.5), true, 7) as $i=>$bad){check(is_wp_error(EMCP_Tools_Management_Policy::config_policy($bad)));}
+		check(EMCP_Tools_Management_Policy::config_policy('1, 2')['users']===array(1,2));check(EMCP_Tools_Management_Policy::config_policy(array(3,1))['users']===array(1,3));
+		define('EMCP_TOOLS_MANAGEMENT_ADMINS','1,x');code(EMCP_Tools_Management_Policy::read(),'emcp_management_config_invalid');
+		$actor=1;check(!EMCP_Tools_Management_Access::can_manage());$actor=2;check(!EMCP_Tools_Management_Access::can_manage());check(EMCP_Tools_Management_Access::excludes(2));break;
 	default:throw new RuntimeException('Unknown scenario');
 }
 echo "PASS\n";
