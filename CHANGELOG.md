@@ -4,6 +4,8 @@ All notable changes to MCP Tools for Elementor are documented in this file.
 
 ## [3.19.0]
 
+- Fixed: **Integration write arguments and recovery reports match the installed plugins.** FluentCRM contact imports refuse unknown row and address keys before writing. LifterLMS quiz limits require their enabling switches. MailPoet block-editor newsletters accept a separate campaign name, default it to the subject, and restore it on undo. FunnelKit accepts scratch step types and JSON step designs, resolves checkout embed templates, and reports missing builders or incomplete imports. If a hook throws after a step is stored, the failure is recorded without replay; observed new step IDs are marked unverified until their ownership is checked.
+
 - Changed: **Plugins and Themes tabs on the Tools screen are one compact row per integration.** Each row shows the integration's Read and Write switches side by side with their operation counts and any requirement ("Needs Polylang"); opening a row shows each tool's description, slug and operations and the integration's note. Integrations that share a group sit under one heading, and the per-group Enable and Disable buttons are gone from these two tabs (Bulk Actions still applies). Other tabs keep the card grid.
 
 - New: **Unattended Cloud enrollment.** Workspace owners can issue short-lived grants with a fixed site allowance. `wp emcp cloud onboard --phase=enroll` and the manifest runner consume grants from the environment, preserve workspace and clone checks, and resume after transient failures. Enabling Gateway requires explicit consent. Requires bulk enrollment enabled in the matching Cloud deployment.
