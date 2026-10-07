@@ -40,6 +40,17 @@ class EMCP_Tools_Content_Mirror_Abilities {
 	}
 
 	/**
+	 * Restore permission includes the target post's mapped edit capability.
+	 *
+	 * @param array|null $input Tool input.
+	 * @return bool
+	 */
+	public function check_restore_permission( $input = null ): bool {
+		$post_id = absint( $input['post_id'] ?? 0 );
+		return $post_id > 0 && current_user_can( 'edit_post', $post_id );
+	}
+
+	/**
 	 * Register the abilities.
 	 */
 	public function register(): void {
@@ -67,7 +78,7 @@ class EMCP_Tools_Content_Mirror_Abilities {
 				'description'         => __( 'Restores a page/template\'s Elementor content from its mirror file (the JSON previously written by export-content), a file-based undo. Overwrites the current content with the mirrored version.', 'emcp-tools' ),
 				'category'            => 'emcp-tools',
 				'execute_callback'    => array( $this, 'execute_restore' ),
-				'permission_callback' => array( $this, 'check_permission' ),
+				'permission_callback' => array( $this, 'check_restore_permission' ),
 				'input_schema'        => array(
 					'type'       => 'object',
 					'properties' => array(

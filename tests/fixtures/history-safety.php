@@ -13,6 +13,10 @@ function is_wp_error( $v ) { return $v instanceof WP_Error; }
 function wp_json_encode( $v ) { return json_encode( $v ); }
 function maybe_serialize( $v ) { return is_array( $v ) || is_object( $v ) ? serialize( $v ) : (string) $v; }
 function get_current_user_id() { return 1; }
+function current_user_can( $cap, ...$args ) { return true; }
+function get_post_type_object( $type ) {
+	return (object) array( 'cap' => (object) array( 'create_posts' => 'edit_pages', 'edit_posts' => 'edit_pages', 'publish_posts' => 'publish_pages', 'edit_others_posts' => 'edit_others_pages' ) );
+}
 function get_option( $k, $default = false ) { return $GLOBALS['options'][ $k ] ?? $default; }
 function update_option( $k, $v, $autoload = null ) {
 	if ( ! empty( $GLOBALS['fail']['option'] ) ) { return false; }
@@ -94,6 +98,7 @@ if ( str_starts_with( $case, 'page-create-' ) ) {
 		return 43;
 	}
 	class EMCP_Tools_Element_Factory {}
+	require ABSPATH . 'includes/class-post-authorization.php';
 	require ABSPATH . 'includes/abilities/class-page-abilities.php';
 	$data = new class extends EMCP_Tools_Data {
 		public function save_page_data( int $post_id, array $data ) {

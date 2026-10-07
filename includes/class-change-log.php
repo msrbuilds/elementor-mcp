@@ -654,6 +654,10 @@ class EMCP_Tools_Change_Log {
 		if ( null === $rb ) {
 			return new WP_Error( 'not_reversible', __( 'This change is not reversible.', 'emcp-tools' ) );
 		}
+		$authorization = self::authorize_rollback_target( $rb );
+		if ( is_wp_error( $authorization ) ) {
+			return $authorization;
+		}
 		$blocker = self::rollback_blocker( $entry );
 		if ( is_wp_error( $blocker ) ) {
 			return $blocker;
@@ -676,6 +680,53 @@ class EMCP_Tools_Change_Log {
 			);
 		}
 		return self::restore_and_mark( $entry, $id, $rb, $force, false );
+	}
+
+	/**
+	 * Apply the target post's object capability before any rollback write.
+	 *
+	 * Deleted post snapshots receive equivalent checks for executable EMCP
+	 * Themer templates and globally rendered Elementor documents.
+	 *
+	 * @param array $rb Rollback reference.
+	 * @return true|WP_Error
+	 */
+	private static function authorize_rollback_target( array $rb ) {
+		$resolved = class_exists( 'EMCP_Tools_Change_Recorder' ) ? EMCP_Tools_Change_Recorder::resolve_before( $rb ) : $rb;
+		$post_id  = (int) ( $resolved['post_id'] ?? 0 );
+		if ( $post_id > 0 && get_post( $post_id ) ) {
+			return current_user_can( 'edit_post', $post_id )
+				? true
+				: new WP_Error( 'cannot_rollback_target', __( 'You do not have permission to edit the rollback target.', 'emcp-tools' ) );
+		}
+
+		$snapshot  = isset( $resolved['snapshot'] ) && is_array( $resolved['snapshot'] ) ? $resolved['snapshot'] : array();
+		$post      = isset( $snapshot['post'] ) && is_array( $snapshot['post'] ) ? $snapshot['post'] : array();
+		$meta      = isset( $snapshot['meta'] ) && is_array( $snapshot['meta'] ) ? $snapshot['meta'] : array();
+		$post_type = (string) ( $post['post_type'] ?? '' );
+		$meta_one  = static function ( string $key ) use ( $meta ) {
+			$values = isset( $meta[ $key ] ) ? (array) $meta[ $key ] : array();
+			return empty( $values ) ? null : maybe_unserialize( reset( $values ) );
+		};
+
+		if ( 'elementor_library' === $post_type ) {
+			$type = sanitize_key( (string) $meta_one( '_elementor_template_type' ) );
+			if ( in_array( $type, EMCP_Tools_Post_Authorization::SITEWIDE_ELEMENTOR_TYPES, true )
+				|| ! empty( $meta_one( '_elementor_conditions' ) )
+				|| ! empty( $meta_one( '_elementor_popup_triggers' ) )
+				|| ! empty( $meta_one( '_elementor_popup_timing' ) ) ) {
+				return current_user_can( 'edit_theme_options' )
+					? true
+					: new WP_Error( 'cannot_rollback_target', __( 'You do not have permission to restore a sitewide Elementor template.', 'emcp-tools' ) );
+			}
+		}
+
+		if ( 'emcp_theme_template' === $post_type && ! empty( $meta_one( '_emcp_themer_php_template' ) ) ) {
+			return current_user_can( 'manage_options' ) && current_user_can( 'unfiltered_html' )
+				? true
+				: new WP_Error( 'cannot_rollback_target', __( 'You do not have permission to restore a PHP-backed theme template.', 'emcp-tools' ) );
+		}
+		return true;
 	}
 
 	/**

@@ -107,6 +107,34 @@ class EMCP_Tools_Template_Abilities {
 		return true;
 	}
 
+	/**
+	 * Sitewide Elementor output is reserved for users who can edit theme options.
+	 *
+	 * @param array|null $input The input data.
+	 * @return bool
+	 */
+	public function check_sitewide_template_permission( $input = null ): bool {
+		if ( ! current_user_can( 'edit_theme_options' ) ) {
+			return false;
+		}
+
+		$post_id = absint( $input['post_id'] ?? 0 );
+		return ! $post_id || current_user_can( 'edit_post', $post_id );
+	}
+
+	/**
+	 * Repeat the sitewide capability check inside an execute callback.
+	 *
+	 * @param int $post_id Optional target post.
+	 * @return true|WP_Error
+	 */
+	private function authorize_sitewide_template( int $post_id = 0 ) {
+		if ( ! $this->check_sitewide_template_permission( $post_id ? array( 'post_id' => $post_id ) : array() ) ) {
+			return new \WP_Error( 'cannot_manage_theme_templates', __( 'You do not have permission to manage sitewide templates.', 'emcp-tools' ) );
+		}
+		return true;
+	}
+
 	// -------------------------------------------------------------------------
 	// save-as-template
 	// -------------------------------------------------------------------------
@@ -374,7 +402,7 @@ class EMCP_Tools_Template_Abilities {
 				'description'         => __( 'Creates a new Elementor Pro theme builder template (header, footer, single, archive, 404, etc.).', 'emcp-tools' ),
 				'category'            => 'emcp-tools',
 				'execute_callback'    => array( $this, 'execute_create_theme_template' ),
-				'permission_callback' => array( $this, 'check_edit_permission' ),
+				'permission_callback' => array( $this, 'check_sitewide_template_permission' ),
 				'input_schema'        => array(
 					'type'       => 'object',
 					'properties' => array(
@@ -409,9 +437,16 @@ class EMCP_Tools_Template_Abilities {
 	public function execute_create_theme_template( $input ) {
 		$title         = sanitize_text_field( $input['title'] ?? '' );
 		$template_type = sanitize_key( $input['template_type'] ?? '' );
+		$authorization = $this->authorize_sitewide_template();
+		if ( is_wp_error( $authorization ) ) {
+			return $authorization;
+		}
 
 		if ( empty( $title ) || empty( $template_type ) ) {
 			return new \WP_Error( 'missing_params', __( 'title and template_type are required.', 'emcp-tools' ) );
+		}
+		if ( ! in_array( $template_type, array( 'header', 'footer', 'single', 'single-post', 'single-page', 'archive', 'search-results', 'error-404', 'loop-item' ), true ) ) {
+			return new \WP_Error( 'invalid_template_type', __( 'Invalid theme template type.', 'emcp-tools' ) );
 		}
 
 		// Create the template post.
@@ -452,7 +487,7 @@ class EMCP_Tools_Template_Abilities {
 				'description'         => __( 'Sets display conditions for a theme builder template (e.g., Entire Site, specific pages, post types).', 'emcp-tools' ),
 				'category'            => 'emcp-tools',
 				'execute_callback'    => array( $this, 'execute_set_template_conditions' ),
-				'permission_callback' => array( $this, 'check_edit_permission' ),
+				'permission_callback' => array( $this, 'check_sitewide_template_permission' ),
 				'input_schema'        => array(
 					'type'       => 'object',
 					'properties' => array(
@@ -491,6 +526,14 @@ class EMCP_Tools_Template_Abilities {
 
 		if ( ! $post_id || empty( $conditions ) ) {
 			return new \WP_Error( 'missing_params', __( 'post_id and conditions are required.', 'emcp-tools' ) );
+		}
+		$authorization = $this->authorize_sitewide_template( $post_id );
+		if ( is_wp_error( $authorization ) ) {
+			return $authorization;
+		}
+		$post = get_post( $post_id );
+		if ( ! $post || 'elementor_library' !== $post->post_type ) {
+			return new \WP_Error( 'invalid_template', __( 'post_id must reference an Elementor template.', 'emcp-tools' ) );
 		}
 
 		$result = $this->save_elementor_conditions( $post_id, $conditions );
@@ -733,7 +776,7 @@ class EMCP_Tools_Template_Abilities {
 				'description'         => __( 'Creates a new Elementor Pro popup template.', 'emcp-tools' ),
 				'category'            => 'emcp-tools',
 				'execute_callback'    => array( $this, 'execute_create_popup' ),
-				'permission_callback' => array( $this, 'check_edit_permission' ),
+				'permission_callback' => array( $this, 'check_sitewide_template_permission' ),
 				'input_schema'        => array(
 					'type'       => 'object',
 					'properties' => array(
@@ -762,6 +805,10 @@ class EMCP_Tools_Template_Abilities {
 
 	public function execute_create_popup( $input ) {
 		$title = sanitize_text_field( $input['title'] ?? '' );
+		$authorization = $this->authorize_sitewide_template();
+		if ( is_wp_error( $authorization ) ) {
+			return $authorization;
+		}
 
 		if ( empty( $title ) ) {
 			return new \WP_Error( 'missing_params', __( 'title is required.', 'emcp-tools' ) );
@@ -784,8 +831,12 @@ class EMCP_Tools_Template_Abilities {
 			return $post_id;
 		}
 
-		wp_set_object_terms( $post_id, 'popup', 'elementor_library_type' );
 		$this->data->save_page_data( $post_id, array() );
+		// Elementor's document save can normalize an empty library document to
+		// its current default type. Assert the requested popup type afterwards so
+		// subsequent settings writes cannot be redirected to another template.
+		update_post_meta( $post_id, '_elementor_template_type', 'popup' );
+		wp_set_object_terms( $post_id, 'popup', 'elementor_library_type' );
 
 		return array(
 			'post_id'  => $post_id,
@@ -802,7 +853,7 @@ class EMCP_Tools_Template_Abilities {
 				'description'         => __( 'Configures popup triggers, timing, and display conditions for an Elementor Pro popup.', 'emcp-tools' ),
 				'category'            => 'emcp-tools',
 				'execute_callback'    => array( $this, 'execute_set_popup_settings' ),
-				'permission_callback' => array( $this, 'check_edit_permission' ),
+				'permission_callback' => array( $this, 'check_sitewide_template_permission' ),
 				'input_schema'        => array(
 					'type'       => 'object',
 					'properties' => array(
@@ -848,6 +899,14 @@ class EMCP_Tools_Template_Abilities {
 
 		if ( ! $post_id ) {
 			return new \WP_Error( 'missing_params', __( 'post_id is required.', 'emcp-tools' ) );
+		}
+		$authorization = $this->authorize_sitewide_template( $post_id );
+		if ( is_wp_error( $authorization ) ) {
+			return $authorization;
+		}
+		$post = get_post( $post_id );
+		if ( ! $post || 'elementor_library' !== $post->post_type || 'popup' !== get_post_meta( $post_id, '_elementor_template_type', true ) ) {
+			return new \WP_Error( 'invalid_popup', __( 'post_id must reference an Elementor popup.', 'emcp-tools' ) );
 		}
 
 		// Elementor Pro stores popup settings in post meta.

@@ -157,10 +157,16 @@ class EMCP_Tools_Page_Abilities {
 	 *
 	 * @since 1.0.0
 	 *
+	 * @param array|null $input The input data.
 	 * @return bool
 	 */
-	public function check_create_permission(): bool {
-		return current_user_can( 'publish_pages' ) || current_user_can( 'edit_pages' );
+	public function check_create_permission( $input = null ): bool {
+		$post_type = sanitize_key( $input['post_type'] ?? 'page' );
+		$status    = sanitize_key( $input['status'] ?? 'draft' );
+		if ( ! in_array( $post_type, array( 'page', 'post' ), true ) ) {
+			return false;
+		}
+		return true === EMCP_Tools_Post_Authorization::authorize_create( $post_type, $status ?: 'draft' );
 	}
 
 	/**
@@ -290,6 +296,16 @@ class EMCP_Tools_Page_Abilities {
 
 		if ( empty( $title ) ) {
 			return new \WP_Error( 'missing_title', __( 'The title parameter is required.', 'emcp-tools' ) );
+		}
+		if ( ! in_array( $post_type, array( 'page', 'post' ), true ) ) {
+			return new \WP_Error( 'invalid_post_type', __( 'post_type must be page or post.', 'emcp-tools' ) );
+		}
+		if ( ! in_array( $status, array( 'draft', 'publish' ), true ) ) {
+			return new \WP_Error( 'invalid_status', __( 'status must be draft or publish.', 'emcp-tools' ) );
+		}
+		$authorization = EMCP_Tools_Post_Authorization::authorize_create( $post_type, $status );
+		if ( is_wp_error( $authorization ) ) {
+			return $authorization;
 		}
 
 		$post_id = wp_insert_post(

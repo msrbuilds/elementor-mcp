@@ -96,14 +96,24 @@ class EMCP_Tools_Cloud_Client {
 	 * @return bool True on success.
 	 */
 	public static function put_gateway_credential( string $client_id, string $refresh_token ): bool {
+		return ! is_wp_error( self::put_gateway_credential_result( $client_id, $refresh_token ) );
+	}
+
+	/**
+	 * Upload a Gateway credential while preserving transport failure details.
+	 *
+	 * @param string $client_id     Gateway OAuth client id.
+	 * @param string $refresh_token Plaintext refresh token.
+	 * @return array|\WP_Error
+	 */
+	public static function put_gateway_credential_result( string $client_id, string $refresh_token ) {
 		$body = array(
 			'client_id'      => $client_id,
 			'refresh_token'  => $refresh_token,
 			'site_uuid'      => EMCP_Tools_Cloud::site_uuid(),
 			'token_endpoint' => (string) ( EMCP_Tools_OAuth_Metadata::authorization_server_document()['token_endpoint'] ?? '' ),
 		);
-		$res = self::put( '/api/cloud/v1/gateway/credential', $body );
-		return ! is_wp_error( $res );
+		return self::put( '/api/cloud/v1/gateway/credential', $body );
 	}
 
 	/**

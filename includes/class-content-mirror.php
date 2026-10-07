@@ -149,6 +149,9 @@ class EMCP_Tools_Content_Mirror {
 		if ( ! $post ) {
 			return new WP_Error( 'not_found', __( 'Post not found.', 'emcp-tools' ) );
 		}
+		if ( ! current_user_can( 'edit_post', $post_id ) ) {
+			return new WP_Error( 'cannot_edit_post', __( 'You do not have permission to restore this post.', 'emcp-tools' ) );
+		}
 		$type = ( 'elementor_library' === $post->post_type ) ? 'template' : 'page';
 		$path = self::dir() . '/' . self::file_name( $type, $post_id, (string) $post->post_name );
 		if ( ! is_file( $path ) ) {

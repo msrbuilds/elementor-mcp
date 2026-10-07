@@ -199,6 +199,43 @@ class EMCP_Tools_OAuth_Store {
 	}
 
 	/**
+	 * Acquire a lock for a normalized public-client registration identity.
+	 *
+	 * This closes the check-then-insert race in stable client provisioning
+	 * without changing the public DCR table contract.
+	 *
+	 * @param string   $name    Client name.
+	 * @param string[] $uris    Redirect URIs.
+	 * @param int      $timeout Seconds to wait.
+	 * @return bool
+	 */
+	public static function acquire_client_registration_lock( string $name, array $uris, int $timeout = 5 ): bool {
+		global $wpdb;
+		if ( '' === $name || ! is_object( $wpdb ) || ! method_exists( $wpdb, 'get_var' ) || ! method_exists( $wpdb, 'prepare' ) ) {
+			return false;
+		}
+		$normalized = array_values( array_unique( array_filter( array_map( 'strval', $uris ) ) ) );
+		$key        = 'emcp_oauth_reg_' . md5( $wpdb->prefix . '|' . mb_substr( $name, 0, 191 ) . '|' . wp_json_encode( $normalized ) );
+		return '1' === (string) $wpdb->get_var( $wpdb->prepare( 'SELECT GET_LOCK(%s, %d)', $key, max( 0, $timeout ) ) );
+	}
+
+	/**
+	 * Release a public-client registration identity lock.
+	 *
+	 * @param string   $name Client name.
+	 * @param string[] $uris Redirect URIs.
+	 */
+	public static function release_client_registration_lock( string $name, array $uris ): void {
+		global $wpdb;
+		if ( '' === $name || ! is_object( $wpdb ) || ! method_exists( $wpdb, 'get_var' ) || ! method_exists( $wpdb, 'prepare' ) ) {
+			return;
+		}
+		$normalized = array_values( array_unique( array_filter( array_map( 'strval', $uris ) ) ) );
+		$key        = 'emcp_oauth_reg_' . md5( $wpdb->prefix . '|' . mb_substr( $name, 0, 191 ) . '|' . wp_json_encode( $normalized ) );
+		$wpdb->get_var( $wpdb->prepare( 'SELECT RELEASE_LOCK(%s)', $key ) );
+	}
+
+	/**
 	 * Fetch a client by id.
 	 *
 	 * @param string $client_id Client id.
@@ -387,11 +424,81 @@ class EMCP_Tools_OAuth_Store {
 	 * Revoke every token issued to a client. Returns rows removed.
 	 *
 	 * @param string $client_id Client id.
-	 * @return int
+	 * @return int|false Rows removed, or false on lock/database failure.
 	 */
-	public static function revoke_client( string $client_id ): int {
+	public static function revoke_client( string $client_id ) {
+		if ( '' === $client_id || ! self::acquire_client_token_lock( $client_id ) ) {
+			return false;
+		}
+
+		try {
+			return self::revoke_client_locked( $client_id );
+		} finally {
+			self::release_client_token_lock( $client_id );
+		}
+	}
+
+	/**
+	 * Delete all tokens for a client while its mutation lock is held.
+	 *
+	 * @param string $client_id Client id.
+	 * @return int|false
+	 */
+	public static function revoke_client_locked( string $client_id ) {
 		global $wpdb;
-		return (int) $wpdb->delete( self::tokens_table(), array( 'client_id' => $client_id ), array( '%s' ) );
+		return $wpdb->delete( self::tokens_table(), array( 'client_id' => $client_id ), array( '%s' ) );
+	}
+
+	/**
+	 * Acquire the per-client token mutation lock.
+	 *
+	 * @param string $client_id Client id.
+	 * @param int    $timeout   Seconds to wait.
+	 * @return bool
+	 */
+	public static function acquire_client_token_lock( string $client_id, int $timeout = 5 ): bool {
+		global $wpdb;
+		if ( '' === $client_id || ! is_object( $wpdb ) || ! method_exists( $wpdb, 'get_var' ) || ! method_exists( $wpdb, 'prepare' ) ) {
+			return false;
+		}
+		$key = 'emcp_oauth_' . md5( $wpdb->prefix . '|' . $client_id );
+		return '1' === (string) $wpdb->get_var( $wpdb->prepare( 'SELECT GET_LOCK(%s, %d)', $key, max( 0, $timeout ) ) );
+	}
+
+	/**
+	 * Release the per-client token mutation lock.
+	 *
+	 * @param string $client_id Client id.
+	 */
+	public static function release_client_token_lock( string $client_id ): void {
+		global $wpdb;
+		if ( '' === $client_id || ! is_object( $wpdb ) || ! method_exists( $wpdb, 'get_var' ) || ! method_exists( $wpdb, 'prepare' ) ) {
+			return;
+		}
+		$key = 'emcp_oauth_' . md5( $wpdb->prefix . '|' . $client_id );
+		$wpdb->get_var( $wpdb->prepare( 'SELECT RELEASE_LOCK(%s)', $key ) );
+	}
+
+	/**
+	 * Revoke every token for a client except one newly-issued refresh token.
+	 *
+	 * @param string $client_id Client id.
+	 * @param int    $keep_id   Token row to preserve.
+	 * @return bool Whether the delete completed.
+	 */
+	public static function revoke_client_tokens_except( string $client_id, int $keep_id ): bool {
+		global $wpdb;
+		if ( '' === $client_id || $keep_id <= 0 ) {
+			return false;
+		}
+		$result = $wpdb->query(
+			$wpdb->prepare(
+				'DELETE FROM ' . self::tokens_table() . ' WHERE client_id = %s AND id <> %d',
+				$client_id,
+				$keep_id
+			)
+		);
+		return false !== $result;
 	}
 
 	/**
@@ -549,11 +656,27 @@ class EMCP_Tools_OAuth_Store {
 	 * @return bool Whether a registration row was removed.
 	 */
 	public static function delete_client( string $client_id ): bool {
-		if ( '' === $client_id ) {
+		if ( '' === $client_id || ! self::acquire_client_token_lock( $client_id ) ) {
 			return false;
 		}
+		try {
+			return self::delete_client_locked( $client_id );
+		} finally {
+			self::release_client_token_lock( $client_id );
+		}
+	}
+
+	/**
+	 * Delete a registration and its tokens while its mutation lock is held.
+	 *
+	 * @param string $client_id Client id.
+	 * @return bool Whether the registration row was removed.
+	 */
+	public static function delete_client_locked( string $client_id ): bool {
 		global $wpdb;
-		self::revoke_client( $client_id );
+		if ( false === self::revoke_client_locked( $client_id ) ) {
+			return false;
+		}
 		return (bool) $wpdb->delete( self::clients_table(), array( 'client_id' => $client_id ), array( '%s' ) );
 	}
 

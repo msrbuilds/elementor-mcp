@@ -195,19 +195,25 @@ final class EMCP_Tools_Admin_REST_Connection extends EMCP_Tools_Admin_REST_Contr
 
 	public function revoke_app( $request ) {
 		$id = (string) $request->get_param( 'id' );
-		if ( class_exists( 'EMCP_Tools_Gateway_Credential' ) ) {
-			EMCP_Tools_Gateway_Credential::handle_client_revoked( $id );
+		$is_gateway = class_exists( 'EMCP_Tools_Gateway_Credential' ) && EMCP_Tools_Gateway_Credential::is_gateway_client( $id );
+		$ok         = $is_gateway
+			? EMCP_Tools_Gateway_Credential::revoke_registered_client( $id, false )
+			: false !== EMCP_Tools_OAuth_Store::revoke_client( $id );
+		if ( ! $ok ) {
+			return new WP_Error( 'emcp_oauth_busy', __( 'This client is busy. Try revoking it again.', 'emcp-tools' ), array( 'status' => 503 ) );
 		}
-		EMCP_Tools_OAuth_Store::revoke_client( $id );
 		return new WP_REST_Response( array( 'apps' => $this->data()->apps() ) );
 	}
 
 	public function delete_app( $request ) {
 		$id = (string) $request->get_param( 'id' );
-		if ( class_exists( 'EMCP_Tools_Gateway_Credential' ) ) {
-			EMCP_Tools_Gateway_Credential::handle_client_revoked( $id );
+		$is_gateway = class_exists( 'EMCP_Tools_Gateway_Credential' ) && EMCP_Tools_Gateway_Credential::is_gateway_client( $id );
+		$ok         = $is_gateway
+			? EMCP_Tools_Gateway_Credential::revoke_registered_client( $id, true )
+			: EMCP_Tools_OAuth_Store::delete_client( $id );
+		if ( ! $ok ) {
+			return new WP_Error( 'emcp_oauth_delete_failed', __( 'The client could not be deleted. Try again.', 'emcp-tools' ), array( 'status' => 503 ) );
 		}
-		EMCP_Tools_OAuth_Store::delete_client( $id );
 		return new WP_REST_Response( array( 'apps' => $this->data()->apps() ) );
 	}
 }

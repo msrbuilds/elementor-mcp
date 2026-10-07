@@ -18,6 +18,11 @@ function wp_die( $message, $title = '', $args = array() ) { throw new RuntimeExc
 class EMCP_Tools_OAuth_Store {
 	public static function find_client_by_registration( $name, $uris ) { return array( 'client_id' => 'copied-gateway' ); }
 	public static function revoke_client( $id ) { $GLOBALS['local_revoked'] = 'copied-gateway' === $id; }
+	public static function acquire_client_registration_lock( $name, $uris ) { return true; }
+	public static function release_client_registration_lock( $name, $uris ) {}
+	public static function acquire_client_token_lock( $id ) { return true; }
+	public static function release_client_token_lock( $id ) {}
+	public static function revoke_client_locked( $id ) { $GLOBALS['local_revoked'] = 'copied-gateway' === $id; return 1; }
 }
 class EMCP_Tools_Cloud_Client {
 	public static function delete_gateway_credential() { throw new RuntimeException( 'Must not revoke the source remotely' ); }

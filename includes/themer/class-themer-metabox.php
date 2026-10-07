@@ -109,7 +109,7 @@ class EMCP_Tools_Themer_Metabox {
 		// PHP-template picker: rebuild its option list client-side whenever the type
 		// select changes (server-side it's only correct for the saved type — a new
 		// template starts with no type, so the dropdown must react live).
-		if ( class_exists( 'EMCP_Tools_Themer_PHP' ) && EMCP_Tools_Themer_PHP::enabled() ) {
+		if ( class_exists( 'EMCP_Tools_Themer_PHP' ) && EMCP_Tools_Themer_PHP::enabled() && EMCP_Tools_Themer_PHP_Store::can_edit() ) {
 			$templates = array();
 			foreach ( EMCP_Tools_Themer_PHP_Store::list_templates() as $tpl ) {
 				$templates[] = array( 'id' => (int) $tpl['template_id'], 'title' => (string) $tpl['title'], 'type' => (string) $tpl['type'] );
@@ -185,7 +185,7 @@ JS;
 
 		$type_labels = EMCP_Tools_Themer_CPT::type_labels();
 
-		$php_enabled = class_exists( 'EMCP_Tools_Themer_PHP' ) && EMCP_Tools_Themer_PHP::enabled();
+		$php_enabled = class_exists( 'EMCP_Tools_Themer_PHP' ) && EMCP_Tools_Themer_PHP::enabled() && EMCP_Tools_Themer_PHP_Store::can_edit();
 
 		// Template type + (optional) PHP-template override, side by side in one row.
 		echo '<div class="emcp-themer-field-row" style="display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start;margin:0 0 4px;">';
@@ -341,7 +341,7 @@ JS;
 		}
 
 		// PHP-template attachment (feature-gated; type-enforced server-side).
-		if ( class_exists( 'EMCP_Tools_Themer_PHP' ) && EMCP_Tools_Themer_PHP::enabled() && isset( $_POST['emcp_themer_php_template'] ) ) {
+		if ( class_exists( 'EMCP_Tools_Themer_PHP' ) && EMCP_Tools_Themer_PHP::enabled() && isset( $_POST['emcp_themer_php_template'] ) && EMCP_Tools_Themer_PHP_Store::can_edit() ) {
 			$prev   = (int) get_post_meta( $post_id, '_emcp_themer_php_template', true );
 			$chosen = absint( wp_unslash( $_POST['emcp_themer_php_template'] ) );
 			$ptype  = (string) get_post_meta( $post_id, '_emcp_themer_type', true );
@@ -352,7 +352,10 @@ JS;
 					$chosen = $prev; // keep the previous state on rejection
 				}
 			}
-			self::apply_attachment( $post_id, $chosen, $prev );
+			$applied = self::apply_attachment( $post_id, $chosen, $prev );
+			if ( is_wp_error( $applied ) ) {
+				set_transient( 'emcp_themer_php_notice_' . get_current_user_id(), $applied->get_error_message(), 60 );
+			}
 		}
 
 		$saved_type = (string) get_post_meta( $post_id, '_emcp_themer_type', true );
@@ -522,8 +525,23 @@ JS;
 	 * @param int $themer_id   Themer template id.
 	 * @param int $new_php_id  Newly-attached PHP-template id (0 = detach).
 	 * @param int $prev_php_id Previously-attached PHP-template id (0 = none).
+	 * @return true|WP_Error
 	 */
-	public static function apply_attachment( int $themer_id, int $new_php_id, int $prev_php_id ): void {
+	public static function apply_attachment( int $themer_id, int $new_php_id, int $prev_php_id ) {
+		$post = get_post( $themer_id );
+		if ( ! $post || EMCP_Tools_Themer_CPT::POST_TYPE !== $post->post_type ) {
+			return new WP_Error( 'invalid_themer_template', __( 'The target is not an EMCP Themer template.', 'emcp-tools' ) );
+		}
+		$prev_php_id = (int) get_post_meta( $themer_id, '_emcp_themer_php_template', true );
+		if ( $new_php_id !== $prev_php_id && ! EMCP_Tools_Themer_PHP_Store::can_edit() ) {
+			return new WP_Error( 'cannot_attach_php_template', __( 'You do not have permission to attach PHP templates.', 'emcp-tools' ) );
+		}
+		if ( $new_php_id > 0 ) {
+			$valid = self::validate_attachment( $new_php_id, (string) get_post_meta( $themer_id, '_emcp_themer_type', true ) );
+			if ( is_wp_error( $valid ) ) {
+				return $valid;
+			}
+		}
 		if ( $new_php_id > 0 ) {
 			update_post_meta( $themer_id, '_emcp_themer_php_template', $new_php_id );
 		} else {
@@ -536,5 +554,6 @@ JS;
 		if ( $new_php_id > 0 ) {
 			EMCP_Tools_Themer_PHP_Store::sync_reference( $new_php_id );
 		}
+		return true;
 	}
 }

@@ -94,10 +94,13 @@ class EMCP_Tools_Content_Abilities {
 	 * read==create cap is therefore intentional, not an oversight.
 	 *
 	 * @since 3.0.0
+	 * @param array|null $input Tool input.
 	 * @return bool
 	 */
-	public function check_create_permission(): bool {
-		return current_user_can( 'edit_posts' );
+	public function check_create_permission( $input = null ): bool {
+		$post_type = sanitize_key( $input['post_type'] ?? 'post' );
+		$status    = sanitize_key( $input['status'] ?? 'draft' );
+		return true === EMCP_Tools_Post_Authorization::authorize_create( $post_type ?: 'post', $status ?: 'draft' );
 	}
 
 	/**
@@ -108,11 +111,8 @@ class EMCP_Tools_Content_Abilities {
 	 * @return bool
 	 */
 	public function check_edit_permission( $input = null ): bool {
-		if ( ! current_user_can( 'edit_posts' ) ) {
-			return false;
-		}
 		$post_id = absint( $input['post_id'] ?? 0 );
-		return ! $post_id || current_user_can( 'edit_post', $post_id );
+		return $post_id ? current_user_can( 'edit_post', $post_id ) : current_user_can( 'edit_posts' );
 	}
 
 	/**
@@ -123,11 +123,8 @@ class EMCP_Tools_Content_Abilities {
 	 * @return bool
 	 */
 	public function check_delete_permission( $input = null ): bool {
-		if ( ! current_user_can( 'delete_posts' ) ) {
-			return false;
-		}
 		$post_id = absint( $input['post_id'] ?? 0 );
-		return ! $post_id || current_user_can( 'delete_post', $post_id );
+		return $post_id ? current_user_can( 'delete_post', $post_id ) : current_user_can( 'delete_posts' );
 	}
 
 	// ---------------------------------------------------------------------
@@ -500,8 +497,9 @@ class EMCP_Tools_Content_Abilities {
 		if ( ! in_array( $status, $this->valid_statuses(), true ) ) {
 			return new \WP_Error( 'invalid_status', __( 'Invalid status.', 'emcp-tools' ) );
 		}
-		if ( 'publish' === $status && ! current_user_can( 'publish_posts' ) ) {
-			return new \WP_Error( 'cannot_publish', __( 'You do not have permission to publish.', 'emcp-tools' ) );
+		$authorization = EMCP_Tools_Post_Authorization::authorize_create( $post_type, $status );
+		if ( is_wp_error( $authorization ) ) {
+			return $authorization;
 		}
 
 		if ( isset( $input['meta'] ) && is_array( $input['meta'] ) ) {
@@ -512,8 +510,9 @@ class EMCP_Tools_Content_Abilities {
 		}
 
 		$author = absint( $input['author'] ?? 0 );
-		if ( $author && (int) $author !== get_current_user_id() && ! current_user_can( 'edit_others_posts' ) ) {
-			return new \WP_Error( 'cannot_set_author', __( 'You cannot assign another author.', 'emcp-tools' ) );
+		$authorization = EMCP_Tools_Post_Authorization::authorize_author( $post_type, $author );
+		if ( is_wp_error( $authorization ) ) {
+			return $authorization;
 		}
 
 		$postarr = array(
@@ -781,15 +780,17 @@ class EMCP_Tools_Content_Abilities {
 			if ( ! in_array( $status, $this->valid_statuses(), true ) ) {
 				return new \WP_Error( 'invalid_status', __( 'Invalid status.', 'emcp-tools' ) );
 			}
-			if ( 'publish' === $status && ! current_user_can( 'publish_posts' ) ) {
-				return new \WP_Error( 'cannot_publish', __( 'You do not have permission to publish.', 'emcp-tools' ) );
+			$authorization = EMCP_Tools_Post_Authorization::authorize_status( (string) $post->post_type, $status );
+			if ( is_wp_error( $authorization ) ) {
+				return $authorization;
 			}
 			$postarr['post_status'] = $status;
 		}
 		if ( ! empty( $input['author'] ) ) {
 			$author = absint( $input['author'] );
-			if ( (int) $author !== get_current_user_id() && ! current_user_can( 'edit_others_posts' ) ) {
-				return new \WP_Error( 'cannot_set_author', __( 'You cannot assign another author.', 'emcp-tools' ) );
+			$authorization = EMCP_Tools_Post_Authorization::authorize_author( (string) $post->post_type, $author );
+			if ( is_wp_error( $authorization ) ) {
+				return $authorization;
 			}
 			$postarr['post_author'] = $author;
 		}

@@ -49,6 +49,8 @@ class EMCP_Tools_Themer_CPT {
 	 * whole menu is gated behind module status.
 	 */
 	public function register(): void {
+		add_filter( 'map_meta_cap', array( __CLASS__, 'protect_php_backed_template' ), 10, 4 );
+
 		register_post_type(
 			self::POST_TYPE,
 			array(
@@ -119,6 +121,43 @@ class EMCP_Tools_Themer_CPT {
 				return $types;
 			}
 		);
+	}
+
+	/**
+	 * Require PHP-template administrators for edits to a template that can run PHP.
+	 *
+	 * This protects status changes and every native or API edit path after an
+	 * administrator attaches executable PHP to an otherwise ordinary template.
+	 *
+	 * @param string[] $caps    Primitive capabilities already mapped by WordPress.
+	 * @param string   $cap     Requested meta capability.
+	 * @param int      $user_id User id.
+	 * @param mixed[]  $args    Meta-capability arguments.
+	 * @return string[]
+	 */
+	public static function protect_php_backed_template( array $caps, string $cap, int $user_id, array $args ): array {
+		if ( ! in_array( $cap, array( 'edit_post', 'delete_post', 'edit_page', 'delete_page' ), true ) ) {
+			return $caps;
+		}
+		$post_id = absint( $args[0] ?? 0 );
+		$parent  = $post_id ? wp_is_post_revision( $post_id ) : false;
+		if ( $parent ) {
+			$post_id = (int) $parent;
+		}
+		$post    = $post_id ? get_post( $post_id ) : null;
+		if ( ! $post || self::POST_TYPE !== $post->post_type || ! get_post_meta( $post_id, '_emcp_themer_php_template', true ) ) {
+			return $caps;
+		}
+
+		// `unfiltered_html` is a mapped capability on multisite. Adding its raw
+		// name here would let a subsite administrator pass even though WordPress
+		// maps the capability to `do_not_allow` for that user.
+		$can_manage = function_exists( 'user_can' ) ? user_can( $user_id, 'manage_options' ) : current_user_can( 'manage_options' );
+		$can_php    = function_exists( 'user_can' ) ? user_can( $user_id, 'unfiltered_html' ) : current_user_can( 'unfiltered_html' );
+		if ( ! $can_manage || ! $can_php ) {
+			$caps[] = 'do_not_allow';
+		}
+		return array_values( array_unique( $caps ) );
 	}
 
 	/**

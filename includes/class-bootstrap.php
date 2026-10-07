@@ -142,6 +142,8 @@ class EMCP_Tools_Bootstrap {
 		require_once EMCP_TOOLS_DIR . 'includes/class-id-generator.php';
 		require_once EMCP_TOOLS_DIR . 'includes/class-url-guard.php';
 		require_once EMCP_TOOLS_DIR . 'includes/class-frontend-page-fetcher.php';
+		require_once EMCP_TOOLS_DIR . 'includes/class-post-authorization.php';
+		EMCP_Tools_Post_Authorization::register();
 		require_once EMCP_TOOLS_DIR . 'includes/class-context-sections.php';
 		require_once EMCP_TOOLS_DIR . 'includes/class-site-context.php';
 		require_once EMCP_TOOLS_DIR . 'includes/class-elementor-data.php';
