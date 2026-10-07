@@ -1,6 +1,6 @@
-/* Free builds: the call to action for a Pro library (Prompts, Brand Kits). Flat brand fill; the badge and
-   the button are solid colours, because translucent overlays on the brand
-   fill fail contrast. */
+/* Free builds: the call to action for a Pro library (Prompts, Brand Kits).
+   Flat brand fill; the badge and the button are solid colours, because
+   translucent overlays on the brand fill fail contrast. */
 .eui-pro-banner {
 	display: flex;
 	flex-wrap: wrap;

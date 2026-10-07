@@ -3,7 +3,7 @@ Contributors: mianshahzadraza
 Tags: elementor, mcp, ai, page-builder, automation
 Requires at least: 6.9
 Tested up to: 7.1
-Stable tag: 3.18.1
+Stable tag: 3.19.0
 Requires PHP: 8.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -203,6 +203,13 @@ The admin screens ship compiled in `assets/admin/build/`. Their full source and 
 
 * New: Unattended Cloud onboarding with short-lived, workspace-scoped enrollment grants. WP-CLI and the manifest runner read the grant from the environment; Gateway activation requires explicit consent. Requires the matching Cloud deployment.
 
+* New: Operator-run Cloud onboarding from WP-CLI: a read-only preflight, a pinned browser approval per site, then explicit Gateway consent.
+* New: Cloud protection for cloned sites: a copied site cannot use the original's Cloud connection, and Connection > Cloud can create a separate identity for it.
+* Fixed: Cloud refresh throttling (HTTP 408, 429 and server errors) keeps the connection and retries later instead of asking for reconnection.
+* Changed: The Plugins and Themes tabs on the Tools screen show one compact row per integration, with its Read and Write switches and operation counts side by side.
+* Fixed: Connection step 3 keeps a chosen existing application password selected, and a browser-filled login password never reaches a config.
+* Fixed: Meta Box and ACF switches on the Tools screen follow their plugin instead of looking live without it.
+
 Builds FunnelKit funnels and email automations over MCP, translates sites with Polylang and TranslatePress, builds TablePress tables, Tutor LMS and LifterLMS courses, The Events Calendar events, Amelia bookings, FluentCRM contacts, campaigns and automations, and MailPoet subscribers, newsletters and automations: new Pro tools drive each plugin through its own controllers, with confirm, dry run and History undo.
 
 * New: FunnelKit Funnel Builder write tool (Pro, #143): funnels, steps, checkout products and fields, order bumps, upsells, opt-in and thank-you pages, A/B tests, the store checkout, and template and funnel imports. Deletes need confirm; creates and updates accept dry_run; History records and undoes the writes.
@@ -238,6 +245,7 @@ Builds FunnelKit funnels and email automations over MCP, translates sites with P
 * Fixed: History offered some large integration entries as undoable when their blockers would refuse the undo.
 * New: The Connection screen and the Dashboard name another plugin's MCP Adapter copy when it is the one loaded (Amelia loads an older copy before EMCP).
 * New: emcp-events-calendar agent skill (Pro).
+* New: emcp-amelia, emcp-fluentcrm and emcp-mailpoet agent skills (Pro), and the emcp-plugins skill names the plugins with a skill of their own.
 * Changed: History undoes multi-row changes in one database transaction.
 * Fixed: Themer Post Content now shows the password form for a password-protected post instead of its content.
 
