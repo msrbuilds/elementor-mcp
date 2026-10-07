@@ -195,6 +195,11 @@ The admin screens ship compiled in `assets/admin/build/`. Their full source and 
 
 = 3.19.0 =
 
+* Security: MCP post writes check the post type's own create, publish and author capabilities, and restores need edit rights on their target.
+* Security: Sitewide Elementor templates (headers, footers, popups, theme templates with conditions) need edit_theme_options to edit or delete, everywhere. Editors without it lose access to those templates.
+* Security: EMCP Themer templates with an attached PHP template are editable only by administrators with unfiltered_html.
+* Security: OAuth token exchange, refresh and revocation, and the Cloud Gateway credential, are serialized per client to close race conditions; databases without MySQL named locks use an options-table lock instead.
+
 * Fixed: Integration write contracts and recovery: FluentCRM rejects unknown import keys, LifterLMS quiz limits require their switches, MailPoet campaign names are saved and undoable, and FunnelKit scratch steps/designs follow its API. Incomplete FunnelKit step writes are recorded without replay or automatic deletion; observed step ownership must be checked before recovery.
 
 * New: Site-local management access policy with an optional administrator allowlist, consistent screen and endpoint checks, stale-update protection and host WP-CLI recovery. Cloud shows the acting WordPress account. Existing MCP execution identities and permissions remain separate; settings sync cannot overwrite the local policy.
@@ -209,6 +214,7 @@ The admin screens ship compiled in `assets/admin/build/`. Their full source and 
 * Changed: The Plugins and Themes tabs on the Tools screen show one compact row per integration, with its Read and Write switches and operation counts side by side.
 * Fixed: Connection step 3 keeps a chosen existing application password selected, and a browser-filled login password never reaches a config.
 * Fixed: Meta Box and ACF switches on the Tools screen follow their plugin instead of looking live without it.
+* Changed: The Facebook community invitation moved from the WordPress Dashboard into EMCP's announcement bar, the What's new announcement describes 3.19.0, and Management access sits below Page Builders in the sidebar.
 
 Builds FunnelKit funnels and email automations over MCP, translates sites with Polylang and TranslatePress, builds TablePress tables, Tutor LMS and LifterLMS courses, The Events Calendar events, Amelia bookings, FluentCRM contacts, campaigns and automations, and MailPoet subscribers, newsletters and automations: new Pro tools drive each plugin through its own controllers, with confirm, dry run and History undo.
 

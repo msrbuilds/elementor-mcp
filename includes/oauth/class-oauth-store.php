@@ -198,6 +198,110 @@ class EMCP_Tools_OAuth_Store {
 		return $row ? self::get_client( (string) $row['client_id'] ) : null;
 	}
 
+	/** Seconds a fallback lease lives if its process dies without releasing it. */
+	const LOCK_LEASE_TTL = 60;
+
+	/** @var array<string, array{depth:int, mode:string, owner:string}> Locks this process holds. */
+	private static $held = array();
+
+	/** @var EMCP_Tools_Lease|null Lease used where the database has no named locks (tests inject one). */
+	private static $lease = null;
+
+	/**
+	 * Use this lease for the fallback lock; null restores the options-table lease.
+	 *
+	 * @param EMCP_Tools_Lease|null $lease Lease.
+	 */
+	public static function use_lease( ?EMCP_Tools_Lease $lease ): void {
+		self::$lease = $lease;
+		self::$held  = array();
+	}
+
+	/** The registration identity lock name. */
+	private static function registration_lock_key( string $name, array $uris ): string {
+		global $wpdb;
+		$normalized = array_values( array_unique( array_filter( array_map( 'strval', $uris ) ) ) );
+		return 'emcp_oauth_reg_' . md5( $wpdb->prefix . '|' . mb_substr( $name, 0, 191 ) . '|' . wp_json_encode( $normalized ) );
+	}
+
+	/**
+	 * Take a lock, waiting up to $timeout seconds. Re-entrant within this process.
+	 *
+	 * MySQL and MariaDB answer GET_LOCK with 1 (held) or 0 (busy, so the caller
+	 * waits or answers busy). A database without named locks (some managed and
+	 * clustered setups) answers NULL or an error; there the lock is EMCP's lease,
+	 * an atomic options-table row, so OAuth keeps working instead of answering 503.
+	 *
+	 * @param string $key     Lock name.
+	 * @param int    $timeout Seconds to wait.
+	 * @return bool
+	 */
+	private static function lock( string $key, int $timeout ): bool {
+		global $wpdb;
+		if ( isset( self::$held[ $key ] ) ) {
+			++self::$held[ $key ]['depth'];
+			return true;
+		}
+		// A database without named locks answers this with an error: keep it off the page.
+		$quiet  = method_exists( $wpdb, 'suppress_errors' ) ? $wpdb->suppress_errors( true ) : null;
+		$answer = $wpdb->get_var( $wpdb->prepare( 'SELECT GET_LOCK(%s, %d)', $key, max( 0, $timeout ) ) );
+		if ( null !== $quiet ) {
+			$wpdb->suppress_errors( $quiet );
+		}
+		if ( '1' === (string) $answer ) {
+			self::$held[ $key ] = array( 'depth' => 1, 'mode' => 'named', 'owner' => '' );
+			return true;
+		}
+		if ( '0' === (string) $answer ) {
+			return false;
+		}
+		$lease = self::$lease;
+		if ( null === $lease ) {
+			if ( ! class_exists( 'EMCP_Tools_Lease' ) ) {
+				return false;
+			}
+			$lease = new EMCP_Tools_Lease();
+		}
+		$owner    = function_exists( 'wp_generate_uuid4' ) ? wp_generate_uuid4() : bin2hex( random_bytes( 16 ) );
+		$name     = 'oauth_' . md5( $key );
+		$deadline = microtime( true ) + max( 0, $timeout );
+		while ( true ) {
+			if ( $lease->acquire( $name, $owner, self::LOCK_LEASE_TTL ) ) {
+				self::$held[ $key ] = array( 'depth' => 1, 'mode' => 'lease', 'owner' => $owner );
+				return true;
+			}
+			if ( microtime( true ) >= $deadline ) {
+				return false;
+			}
+			usleep( 100000 );
+		}
+	}
+
+	/**
+	 * Release a lock taken with lock(); the outermost release frees it.
+	 *
+	 * @param string $key Lock name.
+	 */
+	private static function unlock( string $key ): void {
+		global $wpdb;
+		if ( ! isset( self::$held[ $key ] ) ) {
+			return;
+		}
+		if ( --self::$held[ $key ]['depth'] > 0 ) {
+			return;
+		}
+		$held = self::$held[ $key ];
+		unset( self::$held[ $key ] );
+		if ( 'named' === $held['mode'] ) {
+			$wpdb->get_var( $wpdb->prepare( 'SELECT RELEASE_LOCK(%s)', $key ) );
+			return;
+		}
+		$lease = self::$lease ?? ( class_exists( 'EMCP_Tools_Lease' ) ? new EMCP_Tools_Lease() : null );
+		if ( $lease ) {
+			$lease->release( 'oauth_' . md5( $key ), $held['owner'] );
+		}
+	}
+
 	/**
 	 * Acquire a lock for a normalized public-client registration identity.
 	 *
@@ -214,9 +318,7 @@ class EMCP_Tools_OAuth_Store {
 		if ( '' === $name || ! is_object( $wpdb ) || ! method_exists( $wpdb, 'get_var' ) || ! method_exists( $wpdb, 'prepare' ) ) {
 			return false;
 		}
-		$normalized = array_values( array_unique( array_filter( array_map( 'strval', $uris ) ) ) );
-		$key        = 'emcp_oauth_reg_' . md5( $wpdb->prefix . '|' . mb_substr( $name, 0, 191 ) . '|' . wp_json_encode( $normalized ) );
-		return '1' === (string) $wpdb->get_var( $wpdb->prepare( 'SELECT GET_LOCK(%s, %d)', $key, max( 0, $timeout ) ) );
+		return self::lock( self::registration_lock_key( $name, $uris ), $timeout );
 	}
 
 	/**
@@ -230,9 +332,7 @@ class EMCP_Tools_OAuth_Store {
 		if ( '' === $name || ! is_object( $wpdb ) || ! method_exists( $wpdb, 'get_var' ) || ! method_exists( $wpdb, 'prepare' ) ) {
 			return;
 		}
-		$normalized = array_values( array_unique( array_filter( array_map( 'strval', $uris ) ) ) );
-		$key        = 'emcp_oauth_reg_' . md5( $wpdb->prefix . '|' . mb_substr( $name, 0, 191 ) . '|' . wp_json_encode( $normalized ) );
-		$wpdb->get_var( $wpdb->prepare( 'SELECT RELEASE_LOCK(%s)', $key ) );
+		self::unlock( self::registration_lock_key( $name, $uris ) );
 	}
 
 	/**
@@ -461,8 +561,7 @@ class EMCP_Tools_OAuth_Store {
 		if ( '' === $client_id || ! is_object( $wpdb ) || ! method_exists( $wpdb, 'get_var' ) || ! method_exists( $wpdb, 'prepare' ) ) {
 			return false;
 		}
-		$key = 'emcp_oauth_' . md5( $wpdb->prefix . '|' . $client_id );
-		return '1' === (string) $wpdb->get_var( $wpdb->prepare( 'SELECT GET_LOCK(%s, %d)', $key, max( 0, $timeout ) ) );
+		return self::lock( 'emcp_oauth_' . md5( $wpdb->prefix . '|' . $client_id ), $timeout );
 	}
 
 	/**
@@ -475,8 +574,7 @@ class EMCP_Tools_OAuth_Store {
 		if ( '' === $client_id || ! is_object( $wpdb ) || ! method_exists( $wpdb, 'get_var' ) || ! method_exists( $wpdb, 'prepare' ) ) {
 			return;
 		}
-		$key = 'emcp_oauth_' . md5( $wpdb->prefix . '|' . $client_id );
-		$wpdb->get_var( $wpdb->prepare( 'SELECT RELEASE_LOCK(%s)', $key ) );
+		self::unlock( 'emcp_oauth_' . md5( $wpdb->prefix . '|' . $client_id ) );
 	}
 
 	/**

@@ -84,9 +84,18 @@ final class EMCP_Tools_Admin_Frame {
 			'icon'  => 'gift',
 			/* translators: %s: plugin version. */
 			'title' => sprintf( __( 'What\'s new in %s.', 'emcp-tools' ), EMCP_TOOLS_VERSION ),
-			'text'  => __( 'A redesigned admin with a Dashboard, History sessions and undo, an MCP Log and scheduled backups.', 'emcp-tools' ),
+			'text'  => __( 'Ten new Pro integrations, from Polylang and Tutor LMS to Amelia and MailPoet, each with undo.', 'emcp-tools' ),
 			'cta'   => __( 'See what\'s new', 'emcp-tools' ),
 			'url'   => admin_url( 'admin.php?page=' . EMCP_Tools_Admin::PAGE_SLUG . '-changelog' ),
+		);
+		$list[] = array(
+			'key'   => 'community',
+			'badge' => __( 'Community', 'emcp-tools' ),
+			'icon'  => 'users',
+			'title' => __( 'Join the EMCP community.', 'emcp-tools' ),
+			'text'  => __( 'Share builds, get help and hear about releases first in our Facebook group.', 'emcp-tools' ),
+			'cta'   => __( 'Join the group', 'emcp-tools' ),
+			'url'   => 'https://www.facebook.com/groups/emcptools',
 		);
 		return $list;
 	}

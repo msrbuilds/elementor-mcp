@@ -633,11 +633,6 @@ class EMCP_Tools_Bootstrap {
 		require_once EMCP_TOOLS_DIR . 'includes/admin/class-upgrade-notice.php';
 		( new EMCP_Tools_Upgrade_Notice() )->init();
 
-		// Facebook community banner, only renders once the upgrade banner is out
-		// of the way (Pro users, or free users who dismissed it), so we never
-		// stack two banners on the dashboard.
-		require_once EMCP_TOOLS_DIR . 'includes/admin/class-community-notice.php';
-		( new EMCP_Tools_Community_Notice() )->init();
 	}
 
 	/**

@@ -64,5 +64,6 @@
 	"database",
 	"folder",
 	"play",
-	"archive"
+	"archive",
+	"users"
 ]

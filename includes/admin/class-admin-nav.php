@@ -121,10 +121,10 @@ final class EMCP_Tools_Admin_Nav {
 		return array(
 			'dashboard'     => array( 'label' => __( 'Dashboard', 'emcp-tools' ), 'group' => 'overview', 'icon' => 'layout-dashboard' ),
 			'connection'    => array( 'label' => __( 'Connection', 'emcp-tools' ), 'group' => 'setup', 'icon' => 'plug' ),
-			'management'    => array( 'label' => __( 'Management access', 'emcp-tools' ), 'group' => 'setup', 'icon' => 'lock' ),
 			'tools'         => array( 'label' => __( 'Tools', 'emcp-tools' ), 'group' => 'setup', 'icon' => 'wrench' ),
 			'modules'       => array( 'label' => __( 'Modules', 'emcp-tools' ), 'group' => 'setup', 'icon' => 'blocks' ),
 			'page-builders' => array( 'label' => __( 'Page Builders', 'emcp-tools' ), 'group' => 'setup', 'icon' => 'layout-template' ),
+			'management'    => array( 'label' => __( 'Management access', 'emcp-tools' ), 'group' => 'setup', 'icon' => 'lock' ),
 			'ai-chat'       => array( 'label' => __( 'AI Chat', 'emcp-tools' ), 'group' => 'build', 'icon' => 'message-square' ),
 			'context'       => array( 'label' => __( 'Context', 'emcp-tools' ), 'group' => 'build', 'icon' => 'info' ),
 			'prompts'       => array( 'label' => __( 'Prompts', 'emcp-tools' ), 'group' => 'build', 'icon' => 'lightbulb' ),

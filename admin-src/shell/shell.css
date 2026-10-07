@@ -46,6 +46,11 @@ html:has(.eui-frame) {
 	--emcp-promo-strong: #115e59;
 }
 
+.eui-frame-promo[data-tone="community"] {
+	--emcp-promo-bg: #1d4ed8;
+	--emcp-promo-strong: #1e3a8a;
+}
+
 @media (prefers-reduced-motion: reduce) {
 
 	.eui-frame-promo {
