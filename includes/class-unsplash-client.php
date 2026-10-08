@@ -124,13 +124,14 @@ class EMCP_Tools_Unsplash_Client {
 	 */
 	public function trigger_download( string $download_location ): void {
 		$download_location = esc_url_raw( $download_location );
-		if ( '' === $download_location || 0 !== strpos( $download_location, self::API_BASE ) ) {
+		if ( ! self::is_api_url( $download_location ) ) {
 			return; // Only ever call Unsplash's own endpoint.
 		}
 		wp_remote_get(
 			$download_location,
 			array(
-				'timeout' => self::TIMEOUT,
+				'timeout'     => self::TIMEOUT,
+				'redirection' => 0,
 				'headers' => array( 'Authorization' => 'Client-ID ' . self::access_key() ),
 			)
 		);
@@ -151,7 +152,7 @@ class EMCP_Tools_Unsplash_Client {
 	 */
 	public static function resolve_download( string $url ) {
 		$url = esc_url_raw( $url );
-		if ( 0 !== strpos( $url, self::API_BASE ) ) {
+		if ( ! self::is_api_url( $url ) ) {
 			return new \WP_Error( 'not_unsplash_api', __( 'Not an Unsplash API URL.', 'emcp-tools' ) );
 		}
 		if ( ! self::has_key() ) {
@@ -161,7 +162,8 @@ class EMCP_Tools_Unsplash_Client {
 		$response = wp_remote_get(
 			$url,
 			array(
-				'timeout' => self::TIMEOUT,
+				'timeout'     => self::TIMEOUT,
+				'redirection' => 0,
 				'headers' => array( 'Authorization' => 'Client-ID ' . self::access_key() ),
 			)
 		);
@@ -173,6 +175,22 @@ class EMCP_Tools_Unsplash_Client {
 			return new \WP_Error( 'resolve_failed', __( 'Unsplash did not return a downloadable URL.', 'emcp-tools' ) );
 		}
 		return (string) $body['url'];
+	}
+
+	/**
+	 * Restrict credentialed requests to the provider's exact HTTPS origin.
+	 *
+	 * @param string $url Candidate API URL.
+	 * @return bool
+	 */
+	private static function is_api_url( string $url ): bool {
+		$parts = wp_parse_url( $url );
+		return is_array( $parts )
+			&& 'https' === strtolower( $parts['scheme'] ?? '' )
+			&& 'api.unsplash.com' === strtolower( $parts['host'] ?? '' )
+			&& ! isset( $parts['user'] )
+			&& ! isset( $parts['pass'] )
+			&& ( ! isset( $parts['port'] ) || 443 === $parts['port'] );
 	}
 
 	/**
@@ -242,7 +260,8 @@ class EMCP_Tools_Unsplash_Client {
 		$response = wp_remote_get(
 			$url,
 			array(
-				'timeout'    => self::TIMEOUT,
+				'timeout'     => self::TIMEOUT,
+				'redirection' => 0,
 				'user-agent' => 'Elementor-MCP/' . EMCP_TOOLS_VERSION . ' (WordPress/' . get_bloginfo( 'version' ) . ')',
 				'headers'    => array(
 					'Accept-Version' => 'v1',

@@ -3,7 +3,7 @@ Contributors: mianshahzadraza
 Tags: elementor, mcp, ai, page-builder, automation
 Requires at least: 6.9
 Tested up to: 7.1
-Stable tag: 3.19.1
+Stable tag: 3.19.2
 Requires PHP: 8.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -192,6 +192,13 @@ The admin screens ship compiled in `assets/admin/build/`. Their full source and 
 2. Connection configuration page with copy-paste configs.
 
 == Changelog ==
+
+= 3.19.2 =
+
+Security update: protect Unsplash credentials and tool defaults during installation and upgrades.
+
+* Security: Restrict credentialed Unsplash requests to the exact trusted HTTPS origin and disable redirects, preventing API key disclosure through crafted image URLs.
+* Security: Require management authorization and a valid settings nonce before interpreting posted tool toggles, preventing unauthorized changes during pending defaults updates.
 
 = 3.19.1 =
 

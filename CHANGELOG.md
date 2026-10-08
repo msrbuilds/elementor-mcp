@@ -2,6 +2,13 @@
 
 All notable changes to MCP Tools for Elementor are documented in this file.
 
+## [3.19.2]
+
+> Security update: protect Unsplash credentials and tool defaults during installation and upgrades.
+
+- Security: Restrict credentialed Unsplash requests to the exact trusted HTTPS origin and disable redirects, preventing API key disclosure through crafted image URLs.
+- Security: Require management authorization and a valid settings nonce before interpreting posted tool toggles, preventing unauthorized changes during pending defaults updates.
+
 ## [3.19.1]
 
 > Patch release: Cloud buttons on the Connection screen work again, and uninstalling the plugin now completes and removes everything it stored.

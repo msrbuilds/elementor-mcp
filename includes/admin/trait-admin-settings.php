@@ -662,9 +662,15 @@ trait EMCP_Tools_Admin_Settings_Trait {
 		// $input twice would zero the result (all -> none). It also keeps
 		// programmatic update_option() calls (e.g. the default-disabled seeder)
 		// from being inverted at all.
-		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- options.php verifies the settings nonce before sanitization runs.
-		$is_settings_form = isset( $_POST['option_page'] )
-			&& self::SETTINGS_GROUP === sanitize_text_field( wp_unslash( $_POST['option_page'] ) );
+		// This callback also runs during defaults migration, before options.php
+		// checks the form. Never let an unverified POST override programmatic input.
+		$is_settings_form = isset( $_POST['option_page'], $_POST['_wpnonce'] )
+			&& is_string( $_POST['option_page'] )
+			&& is_string( $_POST['_wpnonce'] )
+			&& self::SETTINGS_GROUP === sanitize_text_field( wp_unslash( $_POST['option_page'] ) )
+			&& 'options.php' === ( $GLOBALS['pagenow'] ?? '' )
+			&& EMCP_Tools_Management_Access::can_manage()
+			&& wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ), self::SETTINGS_GROUP . '-options' );
 
 		if ( $is_settings_form ) {
 			$enabled = array();

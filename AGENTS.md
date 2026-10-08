@@ -1070,3 +1070,5 @@ Two repository skills are configured in `.claude/skills/`; agents that support s
 
 - **wp-plugin-dev** — Scaffolding and building WordPress plugins following WP coding standards. Has reference docs for architecture patterns, security functions, and WP.org guidelines.
 - **wp-plugin-review** — Automated + manual plugin review (PHPCS/WPCS, PHPStan, PHPUnit, security audit, accessibility). Produces a structured Markdown report.
+
+**3.19.2 security boundaries.** Unsplash credentials may be sent only to the exact parsed HTTPS api.unsplash.com origin, without userinfo or alternate ports; all credentialed calls disable redirects. Tool-settings sanitization also runs during automatic defaults migration, before options.php verifies its nonce: posted checkbox semantics require options.php context, current management authorization and a valid settings-group nonce. Otherwise preserve the programmatic disabled list. Public regressions: UnsplashOriginTest and SettingsSanitizerTest. Pro PageBuildersTest models an authorized settings form and readable management policy. Native WordPress probes confirm rejected forged input and preserved legitimate behavior.
