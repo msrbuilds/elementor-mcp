@@ -3,7 +3,7 @@ Contributors: mianshahzadraza
 Tags: elementor, mcp, ai, page-builder, automation
 Requires at least: 6.9
 Tested up to: 7.1
-Stable tag: 3.19.0
+Stable tag: 3.19.1
 Requires PHP: 8.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -192,6 +192,15 @@ The admin screens ship compiled in `assets/admin/build/`. Their full source and 
 2. Connection configuration page with copy-paste configs.
 
 == Changelog ==
+
+= 3.19.1 =
+
+Patch release: Cloud buttons on the Connection screen work again, and uninstalling the plugin now completes and removes everything it stored.
+
+* Fixed: The Cloud Connect, Disconnect, gateway and re-issue buttons on the Connection screen no longer fail with "The link you followed has expired". The links carried an HTML-escaped "&amp;" that dropped the security token (reported by a customer; #158 by @amiriqbalmcs).
+* Fixed: The v1 prompts download on the Prompts screen no longer fails the same way.
+* Fixed: Deleting the plugin from the Plugins screen no longer stops with a fatal error. The uninstall stopped at the custom widget step, so PHP snippets, Pro blocks, Project Memory and AI Chat data were left behind.
+* Fixed: Uninstalling now removes everything EMCP stored in the database: the OAuth clients and tokens (#157 by @amiriqbalmcs), History, redirects, the search index, Backup & Migrate records and paired sites, every EMCP option, transient and user setting, and its scheduled tasks. Your pages, EMCP Themer templates, Brand Kit backups and backup archive files are kept.
 
 = 3.19.0 =
 

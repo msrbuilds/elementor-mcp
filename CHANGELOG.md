@@ -2,6 +2,15 @@
 
 All notable changes to MCP Tools for Elementor are documented in this file.
 
+## [3.19.1]
+
+> Patch release: Cloud buttons on the Connection screen work again, and uninstalling the plugin now completes and removes everything it stored.
+
+- Fixed: **Cloud buttons no longer fail with "The link you followed has expired".** The Connection screen's Cloud Connect, Disconnect, gateway and re-issue links carried an HTML-escaped `&amp;`, so the browser dropped the security token and every click was refused, however fresh the session. The links are now plain URLs (reported by a customer; [#158](https://github.com/msrbuilds/elementor-mcp/pull/158) by @amiriqbalmcs).
+- Fixed: **The v1 prompts download works again.** The Prompts screen's download link had the same escaped `&amp;`.
+- Fixed: **Deleting the plugin no longer stops with a fatal error.** WordPress runs the uninstall without the plugin's normal startup, and the uninstaller did not load two classes it needed, so it stopped at the custom widget step: PHP snippets, Pro blocks, Project Memory and AI Chat conversations and keys were never removed.
+- Fixed: **Uninstalling removes everything EMCP stored.** It now drops the OAuth client and token tables ([#157](https://github.com/msrbuilds/elementor-mcp/pull/157) by @amiriqbalmcs), History, redirects, the search index and the Backup & Migrate tables (paired sites hold connector secrets), deletes every EMCP option, transient and user setting, and unschedules its tasks. Your pages, EMCP Themer templates, Brand Kit backups and backup archive files are kept.
+
 ## [3.19.0]
 
 > Ten Pro plugin integrations, from Polylang and Tutor LMS to Amelia and MailPoet, each with undo, plus security hardening, management access control and Cloud onboarding.
