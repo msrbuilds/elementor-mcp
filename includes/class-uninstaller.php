@@ -46,6 +46,18 @@ class EMCP_Tools_Uninstaller {
 		// on uninstall — treated as recoverable user content so a user who removes
 		// the plugin can still roll back their pre-kit brand after reinstalling.
 
+		// The bootstrap does not run during an uninstall, so load what the
+		// sandbox stores below need (widgets, snippets and the Pro block store,
+		// which extends the shared sandbox store), in the bootstrap's order.
+		foreach ( array( 'class-sandbox-paths.php', 'interface-sandbox-artifact.php', 'class-sandbox-store.php' ) as $emcp_file ) {
+			require_once EMCP_TOOLS_DIR . 'includes/sandbox/' . $emcp_file;
+		}
+		// The Pro steps below find their files through the Pro loader, which the
+		// bootstrap normally loads; without it they were skipped on Pro installs.
+		if ( ! class_exists( 'EMCP_Tools_Pro_Loader' ) ) {
+			require_once EMCP_TOOLS_DIR . 'includes/class-pro-loader.php';
+		}
+
 		// Widget Builder: generated executable PHP must NOT survive uninstall —
 		// delete every emcp_widget post and remove the uploads sandbox tree.
 		if ( ! class_exists( 'EMCP_Tools_Widget_Store' ) ) {
