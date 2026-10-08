@@ -6,7 +6,8 @@
  * plugin-owned options/transients/user-meta, the generated executable PHP
  * (custom widgets + PHP snippets) which must never survive an uninstall, and
  * the OAuth tables, whose registered clients and issued tokens are live
- * credentials that must not survive one either.
+ * credentials that must not survive one either, and then everything else EMCP
+ * keeps in the database (see remove_remaining_data()).
  *
  * @package EMCP_Tools
  * @since   2.1.0 (extracted from emcp_tools_after_uninstall, since 1.6.1)
@@ -136,5 +137,46 @@ class EMCP_Tools_Uninstaller {
 		delete_option( 'emcp_tools_ai_models' );
 		delete_metadata( 'user', 0, 'emcp_tools_ai_keys', '', true );
 		delete_metadata( 'user', 0, 'emcp_tools_ai_defaults', '', true );
+
+		self::remove_remaining_data();
+	}
+
+	/**
+	 * Removes everything else EMCP keeps in the database, after the stores above
+	 * have run: its own tables, every emcp_tools_* option, transient and user
+	 * meta row, the config-deployment journals, the builder lock options, and
+	 * every emcp_tools_* cron event. User content stays: pages, EMCP Themer
+	 * templates, Brand Kit backups and backup archives on disk.
+	 *
+	 * @since 3.19.1
+	 */
+	private static function remove_remaining_data(): void {
+		global $wpdb;
+
+		// History, redirects, search index and Backup & Migrate (its paired
+		// targets hold connector secrets). OAuth's tables went with its store.
+		foreach ( array( 'emcp_changes', 'emcp_change_blobs', 'emcp_redirects', 'emcp_search_index', 'emcp_migrate_backups', 'emcp_migrate_jobs', 'emcp_migrate_targets' ) as $table ) {
+			$wpdb->query( 'DROP TABLE IF EXISTS ' . $wpdb->prefix . $table ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery,WordPress.DB.PreparedSQL.NotPrepared -- fixed plugin table names.
+		}
+
+		foreach ( array( 'emcp_tools_', '_transient_emcp_tools_', '_transient_timeout_emcp_tools_', '_site_transient_emcp_tools_', '_site_transient_timeout_emcp_tools_', 'emcp_config_operation_', '_transient_emcp_themer_php_notice_', '_transient_timeout_emcp_themer_php_notice_' ) as $prefix ) {
+			$wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->options} WHERE option_name LIKE %s", $wpdb->esc_like( $prefix ) . '%' ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		}
+		foreach ( array( 'emcp_blocksy_theme_lock', 'emcp_divi_recovery', 'emcp_divi_settings_lock', 'emcp_divi_theme_builder_lock', 'emcp_otter_settings_lock', 'emcp_oxygen_design_revisions', 'emcp_oxygen_import_lock' ) as $option ) {
+			delete_option( $option );
+		}
+		$wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->usermeta} WHERE meta_key LIKE %s", $wpdb->esc_like( 'emcp_tools_' ) . '%' ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+
+		$hooks = array();
+		foreach ( (array) _get_cron_array() as $events ) {
+			foreach ( array_keys( (array) $events ) as $hook ) {
+				if ( is_string( $hook ) && 0 === strpos( $hook, 'emcp_tools_' ) ) {
+					$hooks[ $hook ] = true;
+				}
+			}
+		}
+		foreach ( array_keys( $hooks ) as $hook ) {
+			wp_unschedule_hook( $hook );
+		}
 	}
 }

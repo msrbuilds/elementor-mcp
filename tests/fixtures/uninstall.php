@@ -22,6 +22,8 @@ function update_option( $k, $v, $a = null ) { return true; }
 function get_posts( $args = array() ) { return array(); }
 function delete_post_meta( ...$a ) { return true; }
 function get_users( $args = array() ) { return array(); }
+function _get_cron_array() { return array( 1700000000 => array( 'emcp_tools_changes_prune' => array(), 'emcp_tools_oauth_gc' => array(), 'tribe_events_cron' => array() ), 1700000600 => array( 'emcp_tools_scheduled_backup' => array() ) ); }
+function wp_unschedule_hook( $hook ) { $GLOBALS['deleted'][] = 'cron:' . $hook; return 1; }
 class WP_Query {
 	public $posts;
 	public function __construct( $args ) { $this->posts = 'emcp_widget' === ( $args['post_type'] ?? '' ) ? array( 7 ) : array(); }
@@ -29,6 +31,7 @@ class WP_Query {
 class Fake_WPDB {
 	public $prefix = 'wp_';
 	public $options = 'wp_options';
+	public $usermeta = 'wp_usermeta';
 	public $queries = array();
 	public function prepare( $q, ...$a ) { $a = is_array( $a[0] ?? null ) ? $a[0] : $a; return vsprintf( str_replace( '%s', "'%s'", $q ), $a ); }
 	public function esc_like( $s ) { return addcslashes( $s, '_%\\' ); }
@@ -54,6 +57,19 @@ $checks = array(
 	'oauth tokens table drop'   => str_contains( $sql, 'DROP TABLE IF EXISTS wp_emcp_oauth_tokens' ),
 	'oauth lease rows deleted'  => str_contains( $sql, "LIKE 'emcp\\_tools\\_lease\\_oauth\\_%'" ),
 	'ai chat options deleted'   => in_array( 'option:emcp_tools_ai_models', $GLOBALS['deleted'], true ),
+	'drop emcp_changes' => str_contains( $sql, 'DROP TABLE IF EXISTS wp_emcp_changes' ),
+	'drop emcp_change_blobs' => str_contains( $sql, 'DROP TABLE IF EXISTS wp_emcp_change_blobs' ),
+	'drop emcp_redirects' => str_contains( $sql, 'DROP TABLE IF EXISTS wp_emcp_redirects' ),
+	'drop emcp_search_index' => str_contains( $sql, 'DROP TABLE IF EXISTS wp_emcp_search_index' ),
+	'drop emcp_migrate_backups' => str_contains( $sql, 'DROP TABLE IF EXISTS wp_emcp_migrate_backups' ),
+	'drop emcp_migrate_jobs' => str_contains( $sql, 'DROP TABLE IF EXISTS wp_emcp_migrate_jobs' ),
+	'drop emcp_migrate_targets' => str_contains( $sql, 'DROP TABLE IF EXISTS wp_emcp_migrate_targets' ),
+	'emcp_tools_ options and transients' => str_contains( $sql, "option_name LIKE 'emcp\_tools\_%'" ) && str_contains( $sql, "option_name LIKE '\_transient\_emcp\_tools\_%'" ) && str_contains( $sql, "option_name LIKE '\_transient\_timeout\_emcp\_tools\_%'" ),
+	'config journals' => str_contains( $sql, "option_name LIKE 'emcp\_config\_operation\_%'" ),
+	'builder lock options' => in_array( 'option:emcp_divi_settings_lock', $GLOBALS['deleted'], true ) && in_array( 'option:emcp_oxygen_import_lock', $GLOBALS['deleted'], true ),
+	'emcp_tools_ user meta' => str_contains( $sql, "meta_key LIKE 'emcp\_tools\_%'" ),
+	'emcp cron hooks cleared' => in_array( 'cron:emcp_tools_changes_prune', $GLOBALS['deleted'], true ) && in_array( 'cron:emcp_tools_oauth_gc', $GLOBALS['deleted'], true ) && in_array( 'cron:emcp_tools_scheduled_backup', $GLOBALS['deleted'], true ),
+	'other plugins cron kept' => ! in_array( 'cron:tribe_events_cron', $GLOBALS['deleted'], true ),
 );
 foreach ( $checks as $name => $ok ) {
 	if ( ! $ok ) {
