@@ -906,5 +906,7 @@ class EMCP_Tools_OAuth_Store {
 		$wpdb->query( 'DROP TABLE IF EXISTS ' . self::tokens_table() );
 		delete_option( self::DB_VERSION_OPTION );
 		delete_transient( self::GC_THROTTLE_OPTION );
+		// Lease rows the lock fallback writes on databases without named locks.
+		$wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->options} WHERE option_name LIKE %s", $wpdb->esc_like( 'emcp_tools_lease_oauth_' ) . '%' ) );
 	}
 }
