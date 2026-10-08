@@ -591,10 +591,35 @@ class EMCP_Tools_Cloud_Connect {
 	}
 
 	/**
+	 * Builds a nonce'd admin-post.php URL for a Cloud action.
+	 *
+	 * wp_nonce_url() runs its result through esc_html(), which HTML-entity-
+	 * encodes "&" to "&amp;" for safe echoing into markup. These URLs are not
+	 * echoed into markup: they are JSON-encoded in the Connection screen's
+	 * REST payload and consumed directly by the browser (React sets the href
+	 * via the DOM, which does not re-decode HTML entities), so the literal
+	 * "&amp;" survives into the actual request. The browser then parses
+	 * "&amp;_wpnonce=..." as a parameter named "amp;_wpnonce", the real
+	 * "_wpnonce" is never sent, and every such action 403s on
+	 * check_admin_referer() with "The link you followed has expired",
+	 * however fresh the session is. Decoding here, once, keeps the URL a
+	 * plain one for its actual (JS) consumer.
+	 *
+	 * @param string $action Nonce action, also the admin-post.php action name.
+	 * @return string Nonce'd URL with "&amp;" decoded back to "&".
+	 */
+	private static function nonce_url_for_js( string $action ): string {
+		return wp_specialchars_decode(
+			wp_nonce_url( admin_url( 'admin-post.php?action=' . $action ), $action ),
+			ENT_QUOTES
+		);
+	}
+
+	/**
 	 * @return string Nonce'd connect button URL.
 	 */
 	public static function connect_url(): string {
-		return wp_nonce_url( admin_url( 'admin-post.php?action=' . self::ACTION_CONNECT ), self::ACTION_CONNECT );
+		return self::nonce_url_for_js( self::ACTION_CONNECT );
 	}
 
 	public static function handle_separate(): void {
@@ -611,20 +636,20 @@ class EMCP_Tools_Cloud_Connect {
 	 * @return string Nonce'd re-issue-gateway button URL.
 	 */
 	public static function reissue_url(): string {
-		return wp_nonce_url( admin_url( 'admin-post.php?action=' . self::ACTION_REISSUE ), self::ACTION_REISSUE );
+		return self::nonce_url_for_js( self::ACTION_REISSUE );
 	}
 
 	/**
 	 * @return string Nonce'd switch-gateway-off URL.
 	 */
 	public static function disable_gateway_url(): string {
-		return wp_nonce_url( admin_url( 'admin-post.php?action=' . self::ACTION_GATEWAY_OFF ), self::ACTION_GATEWAY_OFF );
+		return self::nonce_url_for_js( self::ACTION_GATEWAY_OFF );
 	}
 
 	/**
 	 * @return string Nonce'd disconnect button URL.
 	 */
 	public static function disconnect_url(): string {
-		return wp_nonce_url( admin_url( 'admin-post.php?action=' . self::ACTION_DISCONNECT ), self::ACTION_DISCONNECT );
+		return self::nonce_url_for_js( self::ACTION_DISCONNECT );
 	}
 }
