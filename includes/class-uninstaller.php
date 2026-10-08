@@ -3,9 +3,10 @@
  * Uninstall cleanup.
  *
  * Wired to Freemius's `after_uninstall` action from the bootstrap file. Removes
- * plugin-owned options/transients/user-meta and, critically, the generated
- * executable PHP (custom widgets + PHP snippets) which must never survive an
- * uninstall.
+ * plugin-owned options/transients/user-meta, the generated executable PHP
+ * (custom widgets + PHP snippets) which must never survive an uninstall, and
+ * the OAuth tables, whose registered clients and issued tokens are live
+ * credentials that must not survive one either.
  *
  * @package EMCP_Tools
  * @since   2.1.0 (extracted from emcp_tools_after_uninstall, since 1.6.1)
@@ -60,6 +61,15 @@ class EMCP_Tools_Uninstaller {
 		}
 		if ( class_exists( 'EMCP_Tools_PHP_Snippet_Store' ) ) {
 			EMCP_Tools_PHP_Snippet_Store::uninstall_cleanup();
+		}
+
+		// OAuth: registered clients and issued tokens are live credentials,
+		// they must not survive uninstall either.
+		if ( ! class_exists( 'EMCP_Tools_OAuth_Store' ) ) {
+			require_once EMCP_TOOLS_DIR . 'includes/oauth/class-oauth-store.php';
+		}
+		if ( class_exists( 'EMCP_Tools_OAuth_Store' ) ) {
+			EMCP_Tools_OAuth_Store::uninstall_cleanup();
 		}
 
 		// Block Builder: generated block source + registry must NOT survive

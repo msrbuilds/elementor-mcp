@@ -892,4 +892,19 @@ class EMCP_Tools_OAuth_Store {
 		self::gc();
 		return true;
 	}
+
+	/**
+	 * Drops the OAuth tables and clears the version/throttle options. Called
+	 * from the plugin's uninstall handler, registered clients and issued
+	 * tokens are live credentials and must not survive uninstall.
+	 *
+	 * @since 3.19.1
+	 */
+	public static function uninstall_cleanup(): void {
+		global $wpdb;
+		$wpdb->query( 'DROP TABLE IF EXISTS ' . self::clients_table() );
+		$wpdb->query( 'DROP TABLE IF EXISTS ' . self::tokens_table() );
+		delete_option( self::DB_VERSION_OPTION );
+		delete_transient( self::GC_THROTTLE_OPTION );
+	}
 }
