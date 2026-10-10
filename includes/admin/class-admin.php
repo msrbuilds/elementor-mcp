@@ -341,7 +341,7 @@ class EMCP_Tools_Admin {
 		if ( class_exists( 'EMCP_Tools_Admin_REST_Sandbox_Export' ) ) {
 			EMCP_Tools_Admin_REST_Sandbox_Export::register_screen();
 		}
-		add_action( 'admin_head', array( $this, 'print_menu_icon_style' ) );
+		add_action( 'admin_enqueue_scripts', array( $this, 'print_menu_icon_style' ) );
 		add_action( 'admin_post_emcp_tools_download_mcpb', array( $this, 'handle_download_mcpb' ) );
 		add_action( 'admin_post_emcp_tools_settings_push', array( $this, 'handle_settings_push' ) );
 		add_action( 'admin_post_emcp_tools_settings_pull', array( $this, 'handle_settings_pull' ) );
@@ -486,7 +486,9 @@ class EMCP_Tools_Admin {
 	 * @since 1.7.2
 	 */
 	public function print_menu_icon_style(): void {
-		echo '<style>'
+		wp_register_style( 'emcp-admin-menu', false, array(), EMCP_TOOLS_VERSION );
+		wp_enqueue_style( 'emcp-admin-menu' );
+		wp_add_inline_style( 'emcp-admin-menu', ''
 			. '#toplevel_page_' . esc_attr( self::PAGE_SLUG ) . ' .wp-menu-image img{'
 			. 'width:20px;height:20px;padding:7px 0 0;object-fit:contain;opacity:.95;'
 			. '}'
@@ -500,7 +502,7 @@ class EMCP_Tools_Admin {
 			. '#toplevel_page_' . esc_attr( self::PAGE_SLUG ) . ' .wp-submenu{'
 			. 'display:none !important;'
 			. '}'
-			. '</style>';
+		);
 	}
 
 	/**

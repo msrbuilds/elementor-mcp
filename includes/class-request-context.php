@@ -134,7 +134,7 @@ final class EMCP_Tools_Request_Context {
 			);
 		}
 		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- only matched, never output.
-		$uri = isset( $_SERVER['REQUEST_URI'] ) ? (string) wp_unslash( $_SERVER['REQUEST_URI'] ) : '';
+		$uri = isset( $_SERVER['REQUEST_URI'] ) && is_string( $_SERVER['REQUEST_URI'] ) ? esc_url_raw( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '';
 		$sid = isset( $_SERVER['HTTP_MCP_SESSION_ID'] ) ? EMCP_Tools_Change_Codec::text( sanitize_text_field( wp_unslash( $_SERVER['HTTP_MCP_SESSION_ID'] ) ), 100 ) : '';
 		if ( '' !== $sid || false !== strpos( $uri, '/mcp/emcp-tools-server' ) ) {
 			$cred = self::http_credential( self::http_auth() );
@@ -157,7 +157,7 @@ final class EMCP_Tools_Request_Context {
 
 	/** A stable id for this WP-CLI process: pid plus process start time. */
 	public static function cli_session(): string {
-		$start = isset( $_SERVER['REQUEST_TIME_FLOAT'] ) ? (string) $_SERVER['REQUEST_TIME_FLOAT'] : '';
+		$start = isset( $_SERVER['REQUEST_TIME_FLOAT'] ) ? (string) floatval( wp_unslash( $_SERVER['REQUEST_TIME_FLOAT'] ) ) : '';
 		return 'cli-' . substr( md5( getmypid() . '|' . $start ), 0, 16 );
 	}
 

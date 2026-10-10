@@ -120,7 +120,7 @@ class EMCP_Tools_OAuth_Server {
 		if ( 0 === strpos( (string) home_url(), 'https://' ) ) {
 			return true;
 		}
-		$host = isset( $_SERVER['HTTP_HOST'] ) ? strtolower( (string) wp_unslash( $_SERVER['HTTP_HOST'] ) ) : '';
+		$host = strtolower( (string) wp_parse_url( home_url(), PHP_URL_HOST ) );
 		return self::is_local_host( $host );
 	}
 

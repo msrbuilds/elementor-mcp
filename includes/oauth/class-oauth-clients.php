@@ -124,7 +124,8 @@ class EMCP_Tools_OAuth_Clients {
 	 * @return bool True when the caller is over budget.
 	 */
 	public static function client_ip(): string {
-		$remote = isset( $_SERVER['REMOTE_ADDR'] ) ? trim( (string) wp_unslash( $_SERVER['REMOTE_ADDR'] ) ) : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput
+		$remote = isset( $_SERVER['REMOTE_ADDR'] ) && is_string( $_SERVER['REMOTE_ADDR'] ) ? filter_var( wp_unslash( $_SERVER['REMOTE_ADDR'] ), FILTER_VALIDATE_IP ) : false;
+		$remote = false === $remote ? '' : $remote;
 		/**
 		 * Reverse proxies whose forwarded client-IP headers may be believed.
 		 *
@@ -138,10 +139,13 @@ class EMCP_Tools_OAuth_Clients {
 		$trusted = (array) apply_filters( 'emcp_tools_trusted_proxies', array() );
 		if ( '' !== $remote && in_array( $remote, $trusted, true ) ) {
 			foreach ( array( 'HTTP_CF_CONNECTING_IP', 'HTTP_X_FORWARDED_FOR' ) as $key ) {
-				if ( empty( $_SERVER[ $key ] ) ) {
+				if ( empty( $_SERVER[ $key ] ) || ! is_string( $_SERVER[ $key ] ) ) {
 					continue;
 				}
-				$raw   = (string) wp_unslash( $_SERVER[ $key ] ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput
+				$raw   = wp_unslash( $_SERVER[ $key ] ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Validate IP below without transforming malformed header bytes into a valid address.
+				if ( preg_match( '/[\x00-\x1f\x7f]/', $raw ) ) {
+					continue;
+				}
 				$first = trim( explode( ',', $raw )[0] );
 				if ( filter_var( $first, FILTER_VALIDATE_IP ) ) {
 					return $first;
@@ -194,7 +198,7 @@ class EMCP_Tools_OAuth_Clients {
 		}
 		global $wpdb;
 		$table = EMCP_Tools_OAuth_Store::clients_table();
-		$n     = (int) $wpdb->get_var( "SELECT COUNT(*) FROM `{$table}` WHERE authorized_at = 0" ); // phpcs:ignore WordPress.DB
+		$n     = (int) $wpdb->get_var( $wpdb->prepare( 'SELECT COUNT(*) FROM %i WHERE authorized_at = 0', $table ) ); // phpcs:ignore WordPress.DB
 		return $n >= $max;
 	}
 
@@ -249,7 +253,7 @@ class EMCP_Tools_OAuth_Clients {
 	 * @return bool
 	 */
 	public static function is_allowed_redirect_uri( string $uri ): bool {
-		$p = parse_url( $uri );
+		$p = wp_parse_url( $uri );
 		if ( ! is_array( $p ) || empty( $p['scheme'] ) || isset( $p['fragment'] ) ) {
 			return false;
 		}

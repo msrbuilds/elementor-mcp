@@ -329,7 +329,8 @@ class EMCP_Tools_Themer_Loop_Renderer {
 			return '';
 		}
 		self::$dyn_printed[ $key ] = true;
-		return '<style class="emcp-loop-dynamic-css">' . wp_strip_all_tags( self::rewrite_dynamic_css( $css, $template_id, $post_id ) ) . '</style>';
+		EMCP_Tools_Themer_Loop_Assets::enqueue_dynamic_css( $template_id, $post_id, wp_strip_all_tags( self::rewrite_dynamic_css( $css, $template_id, $post_id ) ) );
+		return '';
 	}
 
 	/**

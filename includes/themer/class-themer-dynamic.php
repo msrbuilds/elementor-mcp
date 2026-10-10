@@ -362,7 +362,7 @@ class EMCP_Tools_Themer_Dynamic {
 			}
 		}
 		$out = wp_nav_menu( $menu_args );
-		return is_string( $out ) ? $out : '';
+		return is_string( $out ) ? wp_kses_post( $out ) : '';
 	}
 
 	/**

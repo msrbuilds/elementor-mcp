@@ -273,7 +273,7 @@ class EMCP_Tools_OAuth_Metadata {
 	 * @return string
 	 */
 	private static function request_path(): string {
-		$uri  = isset( $_SERVER['REQUEST_URI'] ) ? (string) wp_unslash( $_SERVER['REQUEST_URI'] ) : '';
+		$uri  = isset( $_SERVER['REQUEST_URI'] ) && is_string( $_SERVER['REQUEST_URI'] ) ? esc_url_raw( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '';
 		$path = (string) wp_parse_url( $uri, PHP_URL_PATH );
 
 		// Subdirectory installs (e.g. WordPress at /gpt-build/) receive the request

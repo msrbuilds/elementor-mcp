@@ -42,7 +42,7 @@ class EMCP_Tools_Redirect_Handler {
 		if ( function_exists( 'wp_is_json_request' ) && wp_is_json_request() ) {
 			return true;
 		}
-		$uri = isset( $_SERVER['REQUEST_URI'] ) ? (string) wp_unslash( $_SERVER['REQUEST_URI'] ) : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput
+		$uri = isset( $_SERVER['REQUEST_URI'] ) && is_string( $_SERVER['REQUEST_URI'] ) ? esc_url_raw( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '';
 		return (bool) preg_match( '#^(wp-admin|wp-json|wp-login\.php)#', ltrim( $uri, '/' ) );
 	}
 
@@ -53,7 +53,7 @@ class EMCP_Tools_Redirect_Handler {
 		if ( self::should_skip() || ! class_exists( 'EMCP_Tools_Redirect_Store' ) ) {
 			return;
 		}
-		$uri  = isset( $_SERVER['REQUEST_URI'] ) ? (string) wp_unslash( $_SERVER['REQUEST_URI'] ) : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput
+		$uri  = isset( $_SERVER['REQUEST_URI'] ) && is_string( $_SERVER['REQUEST_URI'] ) ? esc_url_raw( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '';
 		$path = EMCP_Tools_Redirect_Store::normalize_path( $uri );
 		if ( '/' === $path ) {
 			return;

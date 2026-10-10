@@ -63,7 +63,7 @@ class EMCP_Tools_OAuth_Authorize {
 	 * @param WP $wp Current environment (unused).
 	 */
 	public static function maybe_serve( $wp = null ): void {
-		$uri  = isset( $_SERVER['REQUEST_URI'] ) ? (string) wp_unslash( $_SERVER['REQUEST_URI'] ) : '';
+		$uri  = isset( $_SERVER['REQUEST_URI'] ) && is_string( $_SERVER['REQUEST_URI'] ) ? esc_url_raw( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '';
 		$path = (string) wp_parse_url( $uri, PHP_URL_PATH );
 		$path = class_exists( 'EMCP_Tools_OAuth_Metadata' )
 			? EMCP_Tools_OAuth_Metadata::normalize_request_path( $path )
@@ -71,11 +71,16 @@ class EMCP_Tools_OAuth_Authorize {
 		if ( self::PATH !== $path ) {
 			return;
 		}
+		// Consent must never be embedded, including on same-site subdomains.
+		if ( ! headers_sent() ) {
+			header( "Content-Security-Policy: frame-ancestors 'none'" );
+			header( 'X-Frame-Options: DENY' );
+		}
 		if ( ! EMCP_Tools_OAuth_Server::is_enabled() ) {
 			self::error_page( __( 'OAuth sign-in is not enabled on this site.', 'emcp-tools' ) );
 		}
 
-		if ( 'POST' === strtoupper( (string) ( $_SERVER['REQUEST_METHOD'] ?? 'GET' ) ) ) {
+		if ( 'POST' === strtoupper( sanitize_key( wp_unslash( isset( $_SERVER['REQUEST_METHOD'] ) && is_string( $_SERVER['REQUEST_METHOD'] ) ? $_SERVER['REQUEST_METHOD'] : 'GET' ) ) ) ) {
 			self::handle_post();
 		} else {
 			self::handle_get();
@@ -142,7 +147,7 @@ class EMCP_Tools_OAuth_Authorize {
 		}
 
 		if ( ! is_user_logged_in() ) {
-			wp_redirect( wp_login_url( self::current_url() ) );
+			wp_safe_redirect( wp_login_url( self::current_url() ) );
 			exit;
 		}
 		if ( ! current_user_can( self::required_cap() ) ) {
@@ -163,7 +168,7 @@ class EMCP_Tools_OAuth_Authorize {
 		}
 
 		$p     = self::request_params( $_POST ); // phpcs:ignore WordPress.Security.NonceVerification.Missing -- nonce verified immediately below.
-		$nonce = (string) ( $p['_emcp_oauth_nonce'] ?? '' );
+		$nonce = sanitize_text_field( $p['_emcp_oauth_nonce'] ?? '' );
 		if ( ! wp_verify_nonce( $nonce, self::NONCE_ACTION ) ) {
 			self::error_page( __( 'Security check failed. Please start the connection again.', 'emcp-tools' ) );
 		}
@@ -320,26 +325,16 @@ class EMCP_Tools_OAuth_Authorize {
 		$hidden .= '<input type="hidden" name="_emcp_oauth_nonce" value="' . esc_attr( $nonce ) . '" />';
 
 		$action = esc_url( self::endpoint_url() );
+		wp_enqueue_style( 'emcp-oauth-consent', EMCP_TOOLS_URL . 'assets/css/oauth-consent.css', array(), EMCP_TOOLS_VERSION );
+		ob_start();
+		wp_print_styles( array( 'emcp-oauth-consent' ) );
+		$styles = (string) ob_get_clean();
 
 		return '<!doctype html><html><head><meta charset="utf-8" />'
 			. '<meta name="viewport" content="width=device-width, initial-scale=1" />'
 			. '<meta name="robots" content="noindex" />'
 			. '<title>' . esc_html__( 'Authorize connection', 'emcp-tools' ) . '</title>'
-			. '<style>'
-			. 'body{margin:0;background:#f5f6fa;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;color:#0a0a14}'
-			. '.wrap{max-width:460px;margin:8vh auto;padding:0 20px}'
-			. '.card{background:#fff;border:1px solid #0a0a141a;border-radius:16px;padding:32px}'
-			. '.eyebrow{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#4338ca;font-weight:700;margin-bottom:14px}'
-			. 'h1{font-size:22px;line-height:1.25;margin:0 0 14px}'
-			. 'p{font-size:15px;line-height:1.6;color:#3a3b52;margin:0 0 14px}'
-			. '.who{background:#f5f6fa;border:1px solid #0a0a1410;border-radius:10px;padding:12px 14px;font-size:14px;margin:0 0 20px}'
-			. '.who b{color:#0a0a14}'
-			. '.warn{font-size:13px;color:#71748b;margin:0 0 22px}'
-			. '.row{display:flex;gap:10px}'
-			. 'button{flex:1;padding:12px 16px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;border:1px solid transparent}'
-			. '.approve{background:#4f46e5;color:#fff}'
-			. '.deny{background:#fff;border-color:#0a0a1428;color:#3a3b52}'
-			. '</style></head><body><div class="wrap"><div class="card">'
+			. $styles . '</head><body><div class="wrap"><div class="card">'
 			. '<div class="eyebrow">' . esc_html__( 'Authorize MCP connection', 'emcp-tools' ) . '</div>'
 			. '<h1>' . sprintf(
 				/* translators: 1: client name, 2: site name */
@@ -443,9 +438,9 @@ class EMCP_Tools_OAuth_Authorize {
 	 * @return string
 	 */
 	private static function current_url(): string {
-		$scheme = ( function_exists( 'is_ssl' ) && is_ssl() ) ? 'https' : 'http';
-		$host   = isset( $_SERVER['HTTP_HOST'] ) ? (string) wp_unslash( $_SERVER['HTTP_HOST'] ) : '';
-		$uri    = isset( $_SERVER['REQUEST_URI'] ) ? (string) wp_unslash( $_SERVER['REQUEST_URI'] ) : '';
-		return esc_url_raw( $scheme . '://' . $host . $uri );
+		// The destination uses the configured origin, never a request Host header.
+		$params = self::request_params( $_GET ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Login return only; no state change.
+		$params = array_intersect_key( $params, array_flip( array( 'response_type', 'client_id', 'redirect_uri', 'code_challenge', 'code_challenge_method', 'state', 'scope', 'resource' ) ) );
+		return esc_url_raw( add_query_arg( $params, self::endpoint_url() ) );
 	}
 }

@@ -189,7 +189,7 @@ class EMCP_Tools_OAuth_Store {
 		global $wpdb;
 		$row = $wpdb->get_row(
 			$wpdb->prepare(
-				'SELECT client_id FROM ' . self::clients_table() . ' WHERE client_name = %s AND redirect_uris = %s LIMIT 1',
+				'SELECT client_id FROM %i WHERE client_name = %s AND redirect_uris = %s LIMIT 1', self::clients_table(),
 				mb_substr( $name, 0, 191 ),
 				(string) wp_json_encode( $uris )
 			),
@@ -344,7 +344,7 @@ class EMCP_Tools_OAuth_Store {
 	public static function get_client( string $client_id ): ?array {
 		global $wpdb;
 		$row = $wpdb->get_row(
-			$wpdb->prepare( 'SELECT * FROM ' . self::clients_table() . ' WHERE client_id = %s', $client_id ),
+			$wpdb->prepare( 'SELECT * FROM %i WHERE client_id = %s', self::clients_table(), $client_id ),
 			ARRAY_A
 		);
 		if ( ! $row ) {
@@ -458,7 +458,7 @@ class EMCP_Tools_OAuth_Store {
 		global $wpdb;
 		$row = $wpdb->get_row(
 			$wpdb->prepare(
-				'SELECT * FROM ' . self::tokens_table() . ' WHERE token_hash = %s AND token_type = %s AND expires_at > %d',
+				'SELECT * FROM %i WHERE token_hash = %s AND token_type = %s AND expires_at > %d', self::tokens_table(),
 				EMCP_Tools_OAuth_Util::hash_token( $token ),
 				$type,
 				time()
@@ -512,7 +512,7 @@ class EMCP_Tools_OAuth_Store {
 		$until = time() + $grace;
 		$wpdb->query(
 			$wpdb->prepare(
-				'UPDATE ' . self::tokens_table() . ' SET expires_at = %d WHERE id = %d AND expires_at > %d',
+				'UPDATE %i SET expires_at = %d WHERE id = %d AND expires_at > %d', self::tokens_table(),
 				$until,
 				$id,
 				$until
@@ -591,7 +591,7 @@ class EMCP_Tools_OAuth_Store {
 		}
 		$result = $wpdb->query(
 			$wpdb->prepare(
-				'DELETE FROM ' . self::tokens_table() . ' WHERE client_id = %s AND id <> %d',
+				'DELETE FROM %i WHERE client_id = %s AND id <> %d', self::tokens_table(),
 				$client_id,
 				$keep_id
 			)
@@ -615,12 +615,12 @@ class EMCP_Tools_OAuth_Store {
 				"SELECT c.client_id, c.client_name, c.created_at,
 					COUNT( t.id ) AS active_tokens,
 					MAX( t.user_id ) AS user_id
-				FROM {$clients} c
-				INNER JOIN {$tokens} t
+				FROM %i c
+				INNER JOIN %i t
 					ON t.client_id = c.client_id AND t.expires_at > %d
 				GROUP BY c.client_id, c.client_name, c.created_at
 				ORDER BY c.created_at DESC",
-				time()
+				$clients, $tokens, time()
 			),
 			ARRAY_A
 		);
@@ -673,13 +673,13 @@ class EMCP_Tools_OAuth_Store {
 				"SELECT c.client_id, c.client_name, c.redirect_uris, c.created_at, c.authorized_at,
 					COUNT( t.id ) AS active_tokens,
 					MAX( t.user_id ) AS user_id
-				FROM {$clients} c
-				LEFT JOIN {$tokens} t
+				FROM %i c
+				LEFT JOIN %i t
 					ON t.client_id = c.client_id AND t.expires_at > %d
 				GROUP BY c.client_id, c.client_name, c.redirect_uris, c.created_at, c.authorized_at
 				ORDER BY active_tokens DESC, c.created_at DESC, c.client_id DESC
 				LIMIT %d OFFSET %d",
-				time(),
+				$clients, $tokens, time(),
 				max( 1, $limit ),
 				max( 0, $offset )
 			),
@@ -714,7 +714,7 @@ class EMCP_Tools_OAuth_Store {
 	 */
 	public static function count_clients(): int {
 		global $wpdb;
-		return (int) $wpdb->get_var( 'SELECT COUNT(*) FROM ' . self::clients_table() );
+		return (int) $wpdb->get_var( $wpdb->prepare( 'SELECT COUNT(*) FROM %i', self::clients_table() ) );
 	}
 
 	/**
@@ -790,7 +790,7 @@ class EMCP_Tools_OAuth_Store {
 		$tokens  = self::tokens_table();
 
 		// 1) Expired access/refresh tokens.
-		$wpdb->query( $wpdb->prepare( "DELETE FROM {$tokens} WHERE expires_at < %d", $now ) ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		$wpdb->query( $wpdb->prepare( 'DELETE FROM %i WHERE expires_at < %d', $tokens, $now ) ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 
 		// 2) Orphan clients — repeat DCR (or an abandoned registration retry)
 		// leaves token-less rows; drop those older than the grace window.
@@ -807,9 +807,11 @@ class EMCP_Tools_OAuth_Store {
 		// gateway teardown removes it.
 		$wpdb->query(
 			$wpdb->prepare(
-				"DELETE c FROM {$clients} c
-				 LEFT JOIN {$tokens} t ON t.client_id = c.client_id
+				"DELETE c FROM %i c
+				 LEFT JOIN %i t ON t.client_id = c.client_id
 				 WHERE t.id IS NULL AND c.authorized_at = 0 AND c.created_at < %d",
+				$clients,
+				$tokens,
 				$now - self::ORPHAN_CLIENT_GRACE
 			) // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		);
@@ -835,11 +837,13 @@ class EMCP_Tools_OAuth_Store {
 		$tokens  = self::tokens_table();
 		$wpdb->query(
 			$wpdb->prepare(
-				"UPDATE {$clients} c
+				"UPDATE %i c
 				 SET c.authorized_at = %d
 				 WHERE c.authorized_at = 0
-				   AND EXISTS ( SELECT 1 FROM {$tokens} t WHERE t.client_id = c.client_id )",
-				time()
+				   AND EXISTS ( SELECT 1 FROM %i t WHERE t.client_id = c.client_id )",
+				$clients,
+				time(),
+				$tokens
 			) // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		);
 	}
@@ -853,7 +857,7 @@ class EMCP_Tools_OAuth_Store {
 		global $wpdb;
 		$wpdb->query(
 			$wpdb->prepare(
-				'UPDATE ' . self::tokens_table() . ' SET resource = %s WHERE resource = %s OR resource IS NULL',
+				'UPDATE %i SET resource = %s WHERE resource = %s OR resource IS NULL', self::tokens_table(),
 				EMCP_Tools_OAuth_Metadata::resource(),
 				''
 			)
@@ -867,7 +871,7 @@ class EMCP_Tools_OAuth_Store {
 		global $wpdb;
 		$wpdb->query(
 			$wpdb->prepare(
-				'UPDATE ' . self::clients_table() . ' SET authorized_at = %d WHERE client_id = %s AND authorized_at = 0',
+				'UPDATE %i SET authorized_at = %d WHERE client_id = %s AND authorized_at = 0', self::clients_table(),
 				time(),
 				$client_id
 			)

@@ -30,6 +30,7 @@ class EMCP_Tools_Elementor_Notice {
 	const NONCE_ACTION = 'emcp_tools_dismiss_elementor_notice';
 
 	public function init(): void {
+		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue' ) );
 		add_action( 'admin_notices', array( $this, 'maybe_render' ) );
 		add_action( 'wp_ajax_emcp_tools_dismiss_elementor_notice', array( $this, 'ajax_dismiss' ) );
 	}
@@ -38,6 +39,10 @@ class EMCP_Tools_Elementor_Notice {
 	 * Decide whether the notice should render on the current request.
 	 */
 	private function should_show(): bool {
+		$screen = get_current_screen();
+		if ( ! $screen || false === strpos( $screen->id, 'emcp-tools' ) ) {
+			return false;
+		}
 		if ( class_exists( 'EMCP_Tools_Page_Builders' ) && in_array( EMCP_Tools_Page_Builders::selected(), array( 'bricks', 'bebuilder', 'breakdance', 'avada' ), true ) ) {
 			return false;
 		}
@@ -59,6 +64,12 @@ class EMCP_Tools_Elementor_Notice {
 		return true;
 	}
 
+	public function enqueue(): void {
+		if ( $this->should_show() ) {
+			wp_enqueue_script( 'emcp-elementor-notice', EMCP_TOOLS_URL . 'assets/js/elementor-notice.js', array(), EMCP_TOOLS_VERSION, true );
+		}
+	}
+
 	public function maybe_render(): void {
 		if ( ! $this->should_show() ) {
 			return;
@@ -74,28 +85,6 @@ class EMCP_Tools_Elementor_Notice {
 			esc_url( $install ),
 			esc_html__( 'Install Elementor', 'emcp-tools' )
 		);
-		?>
-		<script>
-		( function () {
-			var notice = document.querySelector( '[data-emcp-elementor-notice]' );
-			if ( ! notice ) return;
-			// WordPress renders the dismiss button asynchronously; delegate on the
-			// notice so we catch the click whenever the button is added.
-			notice.addEventListener( 'click', function ( e ) {
-				if ( ! e.target.closest( '.notice-dismiss' ) ) return;
-				var body = new URLSearchParams();
-				body.append( 'action', 'emcp_tools_dismiss_elementor_notice' );
-				body.append( 'nonce', notice.getAttribute( 'data-emcp-nonce' ) || '' );
-				fetch( ajaxurl, {
-					method: 'POST',
-					credentials: 'same-origin',
-					headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-					body: body.toString(),
-				} );
-			} );
-		} )();
-		</script>
-		<?php
 	}
 
 	public function ajax_dismiss(): void {

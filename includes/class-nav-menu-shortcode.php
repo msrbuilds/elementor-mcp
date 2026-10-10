@@ -87,7 +87,7 @@ class EMCP_Tools_Nav_Menu_Shortcode {
 		}
 
 		$html = wp_nav_menu( $args );
-		return is_string( $html ) ? $html : '';
+		return is_string( $html ) ? wp_kses_post( $html ) : '';
 	}
 
 	/**

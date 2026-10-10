@@ -42,6 +42,9 @@ class EMCP_Tools_MCP_Host_Guard {
 	 * @return bool True when the hosts match (or the request host is empty).
 	 */
 	public static function host_matches( string $request_host, string $home_host ): bool {
+		if ( '' !== $request_host && ! preg_match( '/\A(?:[a-z0-9.-]+|\[[a-f0-9:]+\])(?::[0-9]{1,5})?\z/i', $request_host ) ) {
+			return false;
+		}
 		$req = self::norm( $request_host );
 		if ( '' === $req ) {
 			return true;
@@ -126,7 +129,10 @@ class EMCP_Tools_MCP_Host_Guard {
 			return $result;
 		}
 
-		$req_host = (string) ( $request->get_header( 'host' ) ? $request->get_header( 'host' ) : ( isset( $_SERVER['HTTP_HOST'] ) ? wp_unslash( $_SERVER['HTTP_HOST'] ) : '' ) ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput
+		$req_host = $request->get_header( 'host' );
+		if ( ! is_string( $req_host ) || '' === $req_host ) {
+			$req_host = isset( $_SERVER['HTTP_HOST'] ) && is_string( $_SERVER['HTTP_HOST'] ) ? wp_unslash( $_SERVER['HTTP_HOST'] ) : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- host_matches strictly validates the complete host before use.
+		}
 		$expected = class_exists( 'EMCP_Tools_Site_Context' )
 			? EMCP_Tools_Site_Context::public_host()
 			: (string) wp_parse_url( home_url(), PHP_URL_HOST );

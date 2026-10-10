@@ -123,7 +123,7 @@ class EMCP_Tools_SVG_Support_Module extends EMCP_Tools_Module {
 		add_filter( 'wp_handle_upload_prefilter', array( $this, 'sanitize_upload' ) );
 		add_filter( 'wp_handle_sideload_prefilter', array( $this, 'sanitize_upload' ) );
 		if ( is_admin() ) {
-			add_action( 'admin_head', array( $this, 'media_thumbnail_css' ) );
+			add_action( 'admin_enqueue_scripts', array( $this, 'media_thumbnail_css' ) );
 		}
 	}
 
@@ -188,7 +188,9 @@ class EMCP_Tools_SVG_Support_Module extends EMCP_Tools_Module {
 
 	/** Make SVG thumbnails render in the Media Library grid/list. */
 	public function media_thumbnail_css(): void {
-		echo '<style>.attachment .thumbnail img[src$=".svg"],.media-icon img[src$=".svg"],td.column-title img[src$=".svg"]{width:100%;height:auto;}</style>';
+		wp_register_style( 'emcp-svg-thumbnails', false, array(), EMCP_TOOLS_VERSION );
+		wp_enqueue_style( 'emcp-svg-thumbnails' );
+		wp_add_inline_style( 'emcp-svg-thumbnails', '.attachment .thumbnail img[src$=".svg"],.media-icon img[src$=".svg"],td.column-title img[src$=".svg"]{width:100%;height:auto;}' );
 	}
 
 	/** Render the card knobs. */

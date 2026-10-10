@@ -40,4 +40,10 @@ class McpHostGuardTest extends TestCase {
 		$this->assertFalse( EMCP_Tools_MCP_Host_Guard::is_mcp_route( '/wp/v2/posts' ) );
 		$this->assertFalse( EMCP_Tools_MCP_Host_Guard::is_mcp_route( '/mcp/other-server' ) );
 	}
+	public function test_malformed_host_is_rejected_without_normalizing_it_into_a_match(): void {
+		foreach ( array( "example.com\r\n", 'example.com/path', 'example.com@evil.test', ' example.com' ) as $host ) {
+			$this->assertFalse( EMCP_Tools_MCP_Host_Guard::host_matches( $host, 'example.com' ) );
+		}
+		$this->assertTrue( EMCP_Tools_MCP_Host_Guard::host_matches( '[::1]:443', '[::1]' ) );
+	}
 }

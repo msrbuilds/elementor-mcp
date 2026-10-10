@@ -143,8 +143,8 @@ class EMCP_Tools_OAuth_Util {
 			return true;
 		}
 
-		$r = parse_url( $registered );
-		$g = parse_url( $given );
+		$r = wp_parse_url( $registered );
+		$g = wp_parse_url( $given );
 		if ( ! is_array( $r ) || ! is_array( $g ) ) {
 			return false;
 		}

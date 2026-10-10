@@ -4,7 +4,7 @@
  *
  * One script and one stylesheet, plus Swiper for carousels: Elementor's own
  * `swiper` handle when it is registered (front end and editor preview), else
- * a bundled Swiper 8. One handle decides at enqueue time, so a page never
+ * the bundled Swiper. One handle decides at enqueue time, so a page never
  * loads two copies. `enqueue()` must be called from an element's own render,
  * not from an early `wp_enqueue_scripts` callback, because the handle choice
  * depends on Elementor having already registered its `swiper` handle by then.
@@ -35,6 +35,29 @@ class EMCP_Tools_Themer_Loop_Assets {
 
 	/** @var bool Whether the stylesheet handle is registered. */
 	private static $style_registered = false;
+
+	/** @var string[] Styles discovered after the document head. */
+	private static $dynamic_handles = array();
+
+	/** Generated design CSS uses the same queue on full pages and REST renders. */
+	public static function enqueue_dynamic_css( int $template_id, int $post_id, string $css ): void {
+		$handle = 'emcp-loop-dynamic-' . $template_id . '-' . $post_id;
+		if ( in_array( $handle, self::$dynamic_handles, true ) ) {
+			return;
+		}
+		wp_register_style( $handle, false, array(), EMCP_TOOLS_VERSION );
+		wp_enqueue_style( $handle );
+		wp_add_inline_style( $handle, $css );
+		if ( empty( self::$dynamic_handles ) ) {
+			add_action( 'wp_footer', array( __CLASS__, 'print_dynamic_styles' ), 20 );
+		}
+		self::$dynamic_handles[] = $handle;
+	}
+
+	/** Print only queued styles that WordPress has not printed in the head. */
+	public static function print_dynamic_styles(): void {
+		wp_print_styles( self::$dynamic_handles );
+	}
 
 	/**
 	 * Hook registration on every surface that renders a loop.
@@ -218,5 +241,6 @@ class EMCP_Tools_Themer_Loop_Assets {
 		self::$registered       = false;
 		self::$style_registered = false;
 		self::$swiper_pending   = false;
+		self::$dynamic_handles  = array();
 	}
 }
