@@ -4,8 +4,16 @@ class EMCP_Update_Runtime {
 	const GUARD = "<?php exit; ?>\n";
 	const TERMINAL = array( 'completed', 'rolled_back', 'failed' );
 
+	/**
+	 * Temporary name for an atomic write. Only a .php target (a guarded journal or
+	 * snapshot, or a real PHP file) gets a .php temporary; anything else, such as an
+	 * upload that holds PHP code, keeps a .tmp name the web server will not execute.
+	 */
+	public static function temp_path( $path ) {
+		return $path . '.' . bin2hex( random_bytes( 6 ) ) . ( str_ends_with( strtolower( $path ), '.php' ) ? '.php' : '.tmp' );
+	}
 	public static function atomic( $path, $bytes ) {
-		$temp = $path . '.' . bin2hex( random_bytes( 6 ) ) . '.php';
+		$temp = self::temp_path( $path );
 		if ( file_put_contents( $temp, $bytes, LOCK_EX ) !== strlen( $bytes ) ) { @unlink( $temp ); throw new RuntimeException( 'storage_error' ); }
 		@chmod( $temp, is_file( $path ) ? ( fileperms( $path ) & 0777 ) : 0600 );
 		if ( ! rename( $temp, $path ) ) { @unlink( $temp ); throw new RuntimeException( 'storage_error' ); }
@@ -141,15 +149,30 @@ class EMCP_Update_Runtime {
 		foreach ( $db->query( 'SHOW TRIGGERS' ) as $row ) { if ( str_starts_with( $row['Table'], $prefix ) ) { throw new RuntimeException( 'database_triggers_not_supported' ); } }
 		return $tables;
 	}
+	/**
+	 * Whether a path (relative to the root) is something WordPress updates write: the
+	 * root's own files, wp-admin, wp-includes and wp-content, except uploads, caches and
+	 * EMCP backup archives. Other applications under the root are never read or deleted.
+	 */
+	public static function in_scope( $relative, $is_dir ) {
+		$relative = trim( str_replace( '\\', '/', $relative ), '/' );
+		if ( false === strpos( $relative, '/' ) && ! $is_dir ) { return true; }
+		if ( ! in_array( explode( '/', $relative )[0], array( 'wp-admin', 'wp-includes', 'wp-content' ), true ) ) { return false; }
+		foreach ( array( 'wp-content/uploads', 'wp-content/cache', 'wp-content/emcp-backups' ) as $excluded ) {
+			if ( $relative === $excluded || str_starts_with( $relative, $excluded . '/' ) ) { return false; }
+		}
+		return true;
+	}
 	private static function files( $s, $check_space = true ) {
 		$files = array(); $bytes = 0;
 		$scan = function ( $dir ) use ( &$scan, &$files, &$bytes, $s ) {
 			foreach ( new DirectoryIterator( $dir ) as $entry ) {
 				if ( $entry->isDot() || str_starts_with( $entry->getFilename(), '.emcp-update-' ) ) { continue; }
 				$path = $entry->getPathname();
+				$relative = str_replace( '\\', '/', substr( $path, strlen( $s['root'] ) ) );
+				if ( ! self::in_scope( $relative, $entry->isDir() ) ) { continue; }
 				if ( $entry->isLink() ) { throw new RuntimeException( 'symlinks_not_supported' ); }
 				if ( $entry->isDir() ) { $scan( $path ); continue; }
-				$relative = str_replace( '\\', '/', substr( $path, strlen( $s['root'] ) ) );
 				if ( 'wp-config.php' === $relative || '.maintenance' === $relative ) { continue; }
 				if ( ! $entry->isFile() || ! is_readable( $path ) || ! is_writable( $path ) ) { throw new RuntimeException( 'files_not_writable' ); }
 				$bytes += $entry->getSize();

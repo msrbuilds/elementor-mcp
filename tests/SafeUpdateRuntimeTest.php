@@ -87,4 +87,24 @@ final class SafeUpdateRuntimeTest extends TestCase {
 		$row = array( 'a' => 'bytes' . chr( 0 ) . chr( 255 ) . "'\"", 'b' => null, 'c' => '' );
 		$this->assertSame( $row, EMCP_Update_Runtime::decode_row( EMCP_Update_Runtime::encode_row( $row ) ) );
 	}
+
+	/** A restored non-PHP file (an upload holding PHP code) must never sit under a .php name, even briefly. */
+	public function test_temporary_copies_keep_a_non_executable_name(): void {
+		$this->assertStringEndsWith( '.tmp', EMCP_Update_Runtime::temp_path( '/site/wp-content/uploads/photo.jpg' ) );
+		$this->assertStringEndsWith( '.tmp', EMCP_Update_Runtime::temp_path( '/site/.htaccess' ) );
+		$this->assertStringEndsWith( '.php', EMCP_Update_Runtime::temp_path( '/site/.emcp-update-x/state.php' ) );
+		$this->assertNotSame( EMCP_Update_Runtime::temp_path( '/site/a.php' ), EMCP_Update_Runtime::temp_path( '/site/a.php' ) );
+	}
+
+	/** Snapshots and restore deletions stay inside what updates write; other apps and user files are never touched. */
+	public function test_snapshot_scope_excludes_other_apps_uploads_and_backups(): void {
+		foreach ( array( 'index.php', 'wp-admin/a.php', 'wp-includes/b.php', 'wp-content/plugins/p/p.php', 'wp-content/themes/t/style.css', 'wp-content/languages/x.mo', 'shop/app.php', 'wp-content/uploads/2026/photo.jpg', 'wp-content/cache/page.html', 'wp-content/emcp-backups/site.emcp' ) as $file ) {
+			if ( ! is_dir( dirname( $this->root . $file ) ) ) { mkdir( dirname( $this->root . $file ), 0700, true ); }
+			file_put_contents( $this->root . $file, 'x' );
+		}
+		$files = ( new ReflectionMethod( EMCP_Update_Runtime::class, 'files' ) )->invoke( null, $this->state, false );
+		$paths = array_column( $files, 'path' );
+		sort( $paths );
+		$this->assertSame( array( 'index.php', 'wp-admin/a.php', 'wp-content/languages/x.mo', 'wp-content/plugins/p/p.php', 'wp-content/themes/t/style.css', 'wp-includes/b.php' ), $paths );
+	}
 }
