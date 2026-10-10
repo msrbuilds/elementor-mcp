@@ -70,6 +70,7 @@ Thumbs.db
 # Claude Code local settings
 .claude/settings.local.json
 .claude/settings.json
+.claude/skills/
 
 #Tests
 releases/*
