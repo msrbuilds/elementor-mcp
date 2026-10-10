@@ -4,10 +4,15 @@ All notable changes to MCP Tools for Elementor are documented in this file.
 
 ## [3.19.2]
 
-> Security update: protect Unsplash credentials and tool defaults during installation and upgrades.
+> Security update with review hardening for OAuth, menus and loops, and Cloud Safe Updates for reviewing plugin, theme and WordPress updates with a snapshot and automatic restore.
+
+- New: **Cloud Safe Updates.** From **Account → Safe updates** on EMCP Cloud, workspace owners can review the plugin, theme and WordPress updates a connected site has waiting and run them in groups. Each group gets a file and database snapshot first; the site shows a short maintenance page while it runs, chosen pages are checked afterwards, and a failed group is restored from its snapshot. Nothing starts without the owner's maintenance consent, the plugin never accepts download links, and sites it cannot recover safely (no HTTPS, multisite, must-use plugins, custom content paths, read-only files) are refused before anything changes. The new `cloud-safe-updates` tool is under Tools → EMCP Modules → EMCP Cloud.
 
 - Security: Restrict credentialed Unsplash requests to the exact trusted HTTPS origin and disable redirects, preventing API key disclosure through crafted image URLs.
 - Security: Require management authorization and a valid settings nonce before interpreting posted tool toggles, preventing unauthorized changes during pending defaults updates.
+- Security: **OAuth and request handling are stricter.** Request values are type checked before they are used, malformed bearer tokens, hosts and client addresses are refused instead of being reinterpreted, the sign-in return address uses the configured site origin, and the consent page can no longer be framed by another site.
+- Security: **Menu output is filtered**, Elementor notices only show on EMCP screens, and the consent, menu icon, SVG and loop styles load through WordPress's own queues. Loop pages load their scripts with WordPress's own printers.
+- Security (Pro): **EMCP Themer's condition search checks its inputs and only returns posts you can read**, and the Widget Builder's current page links are normalized.
 
 ## [3.19.1]
 

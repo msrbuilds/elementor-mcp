@@ -2105,6 +2105,11 @@ trait EMCP_Tools_Admin_Catalog_Trait {
 						'description' => __( 'Read the fixed managed settings allowlist for Cloud profile previews. No settings are changed.', 'emcp-tools' ),
 						'badges' => array(),
 					),
+					'emcp-tools/cloud-safe-updates' => array(
+						'label' => __( 'Cloud Safe Updates', 'emcp-tools' ),
+						'description' => __( 'Inspect WordPress updates and prepare an approved maintenance window with independent snapshot recovery.', 'emcp-tools' ),
+						'badges' => array(),
+					),
 					'emcp-tools/cloud-config-deploy' => array(
 						'label' => __( 'Deploy Managed Settings', 'emcp-tools' ),
 						'description' => __( 'Apply an explicitly approved revision, read its receipt, or restore its before-image when affected settings have not changed.', 'emcp-tools' ),

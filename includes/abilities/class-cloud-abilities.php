@@ -20,6 +20,7 @@ class EMCP_Tools_Cloud_Abilities {
 	 */
 	public function get_ability_names(): array {
 		return array(
+			'emcp-tools/cloud-safe-updates',
 			'emcp-tools/cloud-status',
 			'emcp-tools/cloud-backup',
 			'emcp-tools/cloud-list',
@@ -43,6 +44,20 @@ class EMCP_Tools_Cloud_Abilities {
 	 * @return void
 	 */
 	public function register(): void {
+		emcp_tools_register_ability( 'emcp-tools/cloud-safe-updates', array(
+			'label' => __( 'Cloud safe updates', 'emcp-tools' ),
+			'description' => __( 'Inspect available updates or prepare an explicitly approved maintenance and recovery job. Never accepts arbitrary download URLs.', 'emcp-tools' ),
+			'category' => 'emcp-tools', 'execute_callback' => array( $this, 'execute_safe_updates' ),
+			'permission_callback' => array( $this, 'check_permission' ),
+			'input_schema' => array( 'type' => 'object', 'required' => array( 'action' ), 'additionalProperties' => false, 'properties' => array(
+				'action' => array( 'type' => 'string', 'enum' => array( 'inspect', 'prepare' ) ),
+				'job' => array( 'type' => array( 'string', 'null' ) ), 'token' => array( 'type' => array( 'string', 'null' ) ),
+				'site_uuid' => array( 'type' => array( 'string', 'null' ) ), 'fingerprint' => array( 'type' => array( 'string', 'null' ) ),
+				'groups' => array( 'type' => array( 'array', 'null' ), 'items' => array( 'type' => 'array', 'items' => array( 'type' => 'object' ) ) ),
+				'paths' => array( 'type' => array( 'array', 'null' ), 'items' => array( 'type' => 'string' ) ), 'maintenance_accepted' => array( 'type' => 'boolean' ),
+			) ), 'output_schema' => array( 'type' => 'object' ),
+			'meta' => array( 'annotations' => array( 'readonly' => false, 'destructive' => true ), 'show_in_rest' => true ),
+		) );
 		emcp_tools_register_ability( 'emcp-tools/cloud-config-deploy', array(
 			'label' => __( 'Deploy managed Cloud settings', 'emcp-tools' ),
 			'description' => __( 'Apply an explicitly approved managed revision with a current fingerprint, inspect its durable receipt, or restore its before-image if changed keys still match. Cannot disable the Cloud recovery channel.', 'emcp-tools' ),
@@ -185,6 +200,10 @@ class EMCP_Tools_Cloud_Abilities {
 	public function execute_config_inspect( $input ) {
 		if ( ! empty( (array) $input ) ) { return new WP_Error( 'invalid_input', 'This read accepts no settings or actions.' ); }
 		return EMCP_Tools_Settings_Sync::managed_snapshot();
+	}
+	public function execute_safe_updates( $input ) {
+		require_once __DIR__ . '/../cloud/class-safe-updates.php';
+		return EMCP_Tools_Safe_Updates::execute( $input );
 	}
 	public function execute_config_deploy( $input ) {
 		require_once __DIR__ . '/../cloud/class-config-deployment.php';

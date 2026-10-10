@@ -124,6 +124,7 @@ trait EMCP_Tools_Admin_Tool_Groups_Trait {
 	 */
 	public static function cloud_tool_slugs(): array {
 		return array(
+			'emcp-tools/cloud-safe-updates',
 			'emcp-tools/cloud-status',
 			'emcp-tools/cloud-list',
 			'emcp-tools/cloud-backup',
