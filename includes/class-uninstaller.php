@@ -134,6 +134,10 @@ class EMCP_Tools_Uninstaller {
 		if ( class_exists( 'EMCP_Tools_AI_Chat_Store' ) ) {
 			EMCP_Tools_AI_Chat_Store::uninstall_cleanup();
 		}
+		// Cloud Safe Updates: finished job folders hold snapshots and database credentials.
+		require_once EMCP_TOOLS_DIR . 'includes/cloud/class-safe-updates.php';
+		EMCP_Tools_Safe_Updates::uninstall_cleanup();
+
 		delete_option( 'emcp_tools_ai_models' );
 		delete_metadata( 'user', 0, 'emcp_tools_ai_keys', '', true );
 		delete_metadata( 'user', 0, 'emcp_tools_ai_defaults', '', true );

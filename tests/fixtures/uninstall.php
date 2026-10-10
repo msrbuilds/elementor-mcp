@@ -7,6 +7,13 @@ define( 'WP_CONTENT_DIR', ABSPATH . 'wp-content' );
 define( 'EMCP_TOOLS_DIR', dirname( __DIR__, 2 ) . '/' );
 @mkdir( WP_CONTENT_DIR . '/emcp-sandbox/widgets/7', 0777, true );
 file_put_contents( WP_CONTENT_DIR . '/emcp-sandbox/widgets/7/widget.php', '<?php // generated' );
+// Safe updates: a finished job folder (with a leftover snapshot) and one still recovering.
+foreach ( array( 'done' => 'completed', 'live' => 'verify' ) as $emcp_job => $emcp_phase ) {
+	@mkdir( ABSPATH . '.emcp-update-' . $emcp_job . '/snapshot-0', 0777, true );
+	file_put_contents( ABSPATH . '.emcp-update-' . $emcp_job . '/snapshot-0/file-0.php', "<?php exit; ?>\nx" );
+	file_put_contents( ABSPATH . '.emcp-update-' . $emcp_job . '/state.php', "<?php exit; ?>\n" . json_encode( array( 'phase' => $emcp_phase ) ) );
+}
+file_put_contents( ABSPATH . '.emcp-update-lock.php', '' );
 
 $GLOBALS['deleted'] = array();
 function delete_option( $k ) { $GLOBALS['deleted'][] = 'option:' . $k; return true; }
@@ -70,6 +77,8 @@ $checks = array(
 	'emcp_tools_ user meta' => str_contains( $sql, "meta_key LIKE 'emcp\_tools\_%'" ),
 	'emcp cron hooks cleared' => in_array( 'cron:emcp_tools_changes_prune', $GLOBALS['deleted'], true ) && in_array( 'cron:emcp_tools_oauth_gc', $GLOBALS['deleted'], true ) && in_array( 'cron:emcp_tools_scheduled_backup', $GLOBALS['deleted'], true ),
 	'other plugins cron kept' => ! in_array( 'cron:tribe_events_cron', $GLOBALS['deleted'], true ),
+	'finished safe-update job removed' => ! file_exists( ABSPATH . '.emcp-update-done' ),
+	'recovering safe-update job kept' => is_file( ABSPATH . '.emcp-update-live/snapshot-0/file-0.php' ) && is_file( ABSPATH . '.emcp-update-lock.php' ),
 );
 foreach ( $checks as $name => $ok ) {
 	if ( ! $ok ) {

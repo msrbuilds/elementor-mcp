@@ -1,8 +1,39 @@
 <?php
 /** Self-contained recovery engine. Copied outside plugins before any update. No WordPress dependency for restore. */
+// Runs inside WordPress (preparation) or as the copy inside a job folder (recovery), never as a direct request to the plugin.
+if ( ! defined( 'ABSPATH' ) && 0 !== strpos( basename( __DIR__ ), '.emcp-update-' ) ) { exit; }
 class EMCP_Update_Runtime {
 	const GUARD = "<?php exit; ?>\n";
 	const TERMINAL = array( 'completed', 'rolled_back', 'failed' );
+	/** Work per request, so each tick ends well inside common host time limits. */
+	public static $tick_bytes = 33554432;
+	public static $tick_rows = 5000;
+
+	/**
+	 * The line prepended to wp-config.php for the window. When the job folder is missing
+	 * (deleted or quarantined) it still answers with the maintenance page, never a fatal.
+	 */
+	public static function gate_line( $dir ) {
+		$gate = var_export( $dir . '/gate.php', true );
+		return '<?php /* EMCP_UPDATE_GATE */ if ( is_file( ' . $gate . ' ) ) { require ' . $gate . '; } else { http_response_code( 503 ); header( \'Retry-After: 120\' ); header( \'Cache-Control: no-store\' ); header( \'Content-Type: text/html; charset=utf-8\' ); exit( \'' . self::MAINTENANCE . '\' ); } ?>';
+	}
+	const MAINTENANCE = '<!doctype html><html lang="en"><title>Maintenance</title><h1>Scheduled maintenance</h1><p>This website is installing verified updates. Please try again shortly.</p></html>';
+
+	/**
+	 * Prefixes of other WordPress installs whose tables also start with ours (wp_shop_ under
+	 * wp_). Their tables would be snapshotted and rolled back with this site, so a shared
+	 * prefix refuses the job. An install is recognised by its own options and posts tables.
+	 */
+	public static function other_installs( array $tables, $prefix ) {
+		$set = array_flip( $tables ); $found = array();
+		foreach ( $tables as $table ) {
+			if ( ! str_starts_with( $table, $prefix ) || ! str_ends_with( $table, 'options' ) ) { continue; }
+			$other = substr( $table, 0, -7 );
+			if ( strlen( $other ) > strlen( $prefix ) && isset( $set[ $other . 'posts' ] ) ) { $found[] = $other; }
+		}
+		sort( $found );
+		return array_values( array_unique( $found ) );
+	}
 
 	/**
 	 * Temporary name for an atomic write. Only a .php target (a guarded journal or
@@ -39,6 +70,9 @@ class EMCP_Update_Runtime {
 
 	public static function serve( $dir ) {
 		ini_set( 'display_errors', '0' );
+		// A client timeout must not stop a tick halfway; each tick is bounded by its own budget.
+		ignore_user_abort( true );
+		if ( function_exists( 'set_time_limit' ) ) { @set_time_limit( 300 ); }
 		header( 'Content-Type: application/json' );
 		header( 'Cache-Control: no-store' );
 		$lock = null;
@@ -62,7 +96,8 @@ class EMCP_Update_Runtime {
 	/** Phase/group compare-and-swap makes delayed approvals unable to approve a later checkpoint. */
 	public static function advance( &$s, $input ) {
 		$action = $input['action'] ?? '';
-		if ( 'status' === $action || in_array( $s['phase'], self::TERMINAL, true ) ) { return; }
+		if ( in_array( $s['phase'], self::TERMINAL, true ) ) { self::cleanup( $s ); return; }
+		if ( 'status' === $action ) { return; }
 		if ( ! in_array( $action, array( 'tick', 'approve', 'rollback', 'release' ), true ) ) { throw new RuntimeException( 'invalid_action' ); }
 		if ( ( $input['phase'] ?? '' ) !== $s['phase'] || ( $input['group'] ?? -1 ) !== $s['group'] ) { return; }
 		try {
@@ -71,7 +106,7 @@ class EMCP_Update_Runtime {
 				$s['code'] = $s['code'] ?? 'health_failed_or_cancelled';
 				if ( empty( $s['snapshot_ready'] ) ) { self::release( $s, 'failed' ); return; }
 				$s['phase'] = 'restoring'; $s['restore_step'] = 0; $s['restore_db'] = 0;
-				unset( $s['restore_pruned'] );
+				unset( $s['restore_pruned'], $s['restore_swept'], $s['restore_created'] );
 				self::save( $s ); return;
 			}
 			if ( 'release' === $action && 'verify_restore' === $s['phase'] ) { self::release( $s, 'rolled_back' ); return; }
@@ -90,8 +125,7 @@ class EMCP_Update_Runtime {
 				case 'prepared':
 					$config = self::read( $s['dir'] . '/original-config.php' );
 					if ( ! hash_equals( $s['config_hash'], hash_file( 'sha256', $s['root'] . 'wp-config.php' ) ) ) { throw new RuntimeException( 'config_changed' ); }
-					$guard = '<?php /* EMCP_UPDATE_GATE */ require ' . var_export( $s['dir'] . '/gate.php', true ) . '; ?>';
-					self::atomic( $s['root'] . 'wp-config.php', $guard . $config );
+					self::atomic( $s['root'] . 'wp-config.php', self::gate_line( $s['dir'] ) . $config );
 					$s['phase'] = 'baseline'; break;
 				case 'draining':
 					if ( time() >= $s['drain_until'] ) { $s['phase'] = 'snapshot'; }
@@ -115,11 +149,66 @@ class EMCP_Update_Runtime {
 	private static function release( &$s, $phase ) {
 		$config = self::read( $s['dir'] . '/original-config.php' );
 		$current = file_get_contents( $s['root'] . 'wp-config.php' );
-		$guard = '<?php /* EMCP_UPDATE_GATE */ require ' . var_export( $s['dir'] . '/gate.php', true ) . '; ?>';
-		if ( $current !== $config && $current !== $guard . $config ) { $s['phase'] = 'manual_recovery'; $s['code'] = 'config_conflict'; self::save( $s ); return; }
+		if ( $current !== $config && $current !== self::gate_line( $s['dir'] ) . $config ) { $s['phase'] = 'manual_recovery'; $s['code'] = 'config_conflict'; self::save( $s ); return; }
 		self::atomic( $s['root'] . 'wp-config.php', $config );
 		$s['phase'] = $phase;
 		self::save( $s );
+		self::cleanup( $s );
+	}
+
+	/** Whether the window has changed nothing outside the job folder yet: no update has run, so reopening needs no restore. */
+	private static function untouched( $s ) {
+		if ( in_array( $s['phase'], array( 'baseline', 'draining' ), true ) ) { return true; }
+		if ( 0 !== $s['group'] || ! empty( $s['core_migration'] ) ) { return false; }
+		return 'snapshot' === $s['phase'] || ( 'applying' === $s['phase'] && 0 === ( $s['item_index'] ?? 0 ) );
+	}
+
+	/**
+	 * Called by the gate on every blocked request. Past the deadline, a window that changed
+	 * nothing reopens the site by itself, so a silent Cloud cannot leave it in maintenance.
+	 * Anything later stays closed until Cloud restores it. Returns the current journal.
+	 */
+	public static function expire( $dir ) {
+		$s = self::read( $dir . '/state.php' );
+		if ( time() <= $s['deadline'] || ! self::untouched( $s ) ) { return $s; }
+		$lock = @fopen( $s['root'] . '.emcp-update-lock.php', 'c+' );
+		if ( ! $lock ) { return $s; }
+		try {
+			if ( ! flock( $lock, LOCK_EX | LOCK_NB ) ) { return $s; }
+			$s = self::read( $dir . '/state.php' );
+			if ( time() > $s['deadline'] && self::untouched( $s ) ) { $s['code'] = 'deadline_exceeded'; self::release( $s, 'failed' ); }
+			return $s;
+		} finally { flock( $lock, LOCK_UN ); fclose( $lock ); }
+	}
+
+	/**
+	 * A finished job (wp-config already restored) keeps only its authenticated receipt: the
+	 * database credentials, original config, download offers and snapshots are removed.
+	 */
+	public static function cleanup( &$s ) {
+		if ( ! in_array( $s['phase'], self::TERMINAL, true ) || ! empty( $s['cleaned'] ) ) { return; }
+		$base = rtrim( str_replace( '\\', '/', $s['dir'] ), '/' ) . '/';
+		foreach ( glob( $base . 'snapshot-*', GLOB_NOSORT ) ?: array() as $path ) { self::remove_tree( $path, $base ); }
+		foreach ( array( 'original-config.php', 'gate.php' ) as $file ) { if ( is_file( $base . $file ) ) { unlink( $base . $file ); } }
+		foreach ( $s['groups'] ?? array() as $g => $group ) { foreach ( $group as $i => $item ) { unset( $s['groups'][ $g ][ $i ]['_source'] ); } }
+		unset( $s['db'], $s['files'], $s['tables'], $s['table_hashes'] );
+		$s['cleaned'] = true;
+		self::save( $s );
+	}
+	/** Removes a whole job folder (uninstall), refusing anything that is not one. */
+	public static function remove_job( $dir ) {
+		$dir = rtrim( str_replace( '\\', '/', $dir ), '/' );
+		if ( 0 !== strpos( basename( $dir ), '.emcp-update-' ) || is_link( $dir ) || ! is_dir( $dir ) ) { throw new RuntimeException( 'not_a_job_folder' ); }
+		self::remove_tree( $dir, dirname( $dir ) . '/' );
+	}
+	private static function remove_tree( $path, $base ) {
+		$path = str_replace( '\\', '/', $path );
+		if ( ! str_starts_with( $path, $base ) || strlen( $path ) <= strlen( $base ) ) { throw new RuntimeException( 'cleanup_outside_job' ); }
+		if ( is_dir( $path ) && ! is_link( $path ) ) {
+			foreach ( scandir( $path ) as $entry ) { if ( '.' !== $entry && '..' !== $entry ) { self::remove_tree( $path . '/' . $entry, $base ); } }
+			rmdir( $path ); return;
+		}
+		unlink( $path );
 	}
 
 	private static function db( $s ) {
@@ -137,6 +226,9 @@ class EMCP_Update_Runtime {
 		return '`' . $name . '`';
 	}
 	private static function tables( $db, $prefix ) {
+		$names = array();
+		foreach ( $db->query( 'SHOW TABLES' ) as $row ) { $names[] = reset( $row ); }
+		if ( self::other_installs( $names, $prefix ) ) { throw new RuntimeException( 'shared_database_prefix' ); }
 		$tables = array();
 		foreach ( $db->query( 'SHOW TABLE STATUS' ) as $row ) {
 			if ( ! str_starts_with( $row['Name'], $prefix ) ) { continue; }
@@ -163,24 +255,43 @@ class EMCP_Update_Runtime {
 		}
 		return true;
 	}
-	private static function files( $s, $check_space = true ) {
+	/** Up to 20 in-scope paths the last scan could not read or write, so the refusal can name them. */
+	public static $last_unwritable = array();
+
+	/**
+	 * Walks what a job would snapshot (no hashing) before the window starts, so a file or
+	 * folder the job cannot write is refused up front instead of after maintenance began.
+	 */
+	public static function preflight_files( $root ) {
+		self::files( array( 'root' => rtrim( str_replace( '\\', '/', $root ), '/' ) . '/' ), false, false );
+	}
+	private static function files( $s, $check_space = true, $hash = true ) {
 		$files = array(); $bytes = 0;
-		$scan = function ( $dir ) use ( &$scan, &$files, &$bytes, $s ) {
+		self::$last_unwritable = array();
+		$scan = function ( $dir ) use ( &$scan, &$files, &$bytes, $s, $hash ) {
 			foreach ( new DirectoryIterator( $dir ) as $entry ) {
 				if ( $entry->isDot() || str_starts_with( $entry->getFilename(), '.emcp-update-' ) ) { continue; }
 				$path = $entry->getPathname();
 				$relative = str_replace( '\\', '/', substr( $path, strlen( $s['root'] ) ) );
 				if ( ! self::in_scope( $relative, $entry->isDir() ) ) { continue; }
 				if ( $entry->isLink() ) { throw new RuntimeException( 'symlinks_not_supported' ); }
-				if ( $entry->isDir() ) { $scan( $path ); continue; }
+				if ( $entry->isDir() ) {
+					// Restore creates and deletes files here, so the folder itself must be writable.
+					if ( ! is_writable( $path ) && count( self::$last_unwritable ) < 20 ) { self::$last_unwritable[] = $relative . '/'; }
+					$scan( $path ); continue;
+				}
 				if ( 'wp-config.php' === $relative || '.maintenance' === $relative ) { continue; }
-				if ( ! $entry->isFile() || ! is_readable( $path ) || ! is_writable( $path ) ) { throw new RuntimeException( 'files_not_writable' ); }
+				if ( ! $entry->isFile() || ! is_readable( $path ) || ! is_writable( $path ) ) {
+					if ( count( self::$last_unwritable ) < 20 ) { self::$last_unwritable[] = $relative; }
+					continue;
+				}
 				$bytes += $entry->getSize();
 				if ( count( $files ) >= 50000 || $bytes > 2147483648 || $entry->getSize() > 67108864 ) { throw new RuntimeException( 'snapshot_size_limit' ); }
-				$files[] = array( 'path' => $relative, 'mode' => fileperms( $path ) & 0777, 'hash' => hash_file( 'sha256', $path ) );
+				$files[] = array( 'path' => $relative, 'mode' => fileperms( $path ) & 0777, 'hash' => $hash ? hash_file( 'sha256', $path ) : '' );
 			}
 		};
 		$scan( rtrim( $s['root'], '/\\' ) );
+		if ( self::$last_unwritable ) { throw new RuntimeException( 'files_not_writable' ); }
 		if ( $check_space && disk_free_space( $s['dir'] ) < $bytes * 2 + 134217728 ) { throw new RuntimeException( 'insufficient_disk_space' ); }
 		return $files;
 	}
@@ -200,12 +311,13 @@ class EMCP_Update_Runtime {
 			$s['snapshot'] = 'snapshot-' . $s['group'];
 			return;
 		}
-		$end = min( count( $s['files'] ), $s['file_index'] + 20 );
-		for ( ; $s['file_index'] < $end; $s['file_index']++ ) {
+		$budget = 0;
+		for ( ; $s['file_index'] < count( $s['files'] ) && $budget < self::$tick_bytes; $s['file_index']++ ) {
 			$i = $s['file_index']; $file = $s['files'][ $i ];
 			$bytes = file_get_contents( $s['root'] . $file['path'] );
 			if ( false === $bytes || ! hash_equals( $file['hash'], hash( 'sha256', $bytes ) ) ) { throw new RuntimeException( 'site_changed_during_snapshot' ); }
 			self::atomic( $dir . '/file-' . $i . '.php', self::GUARD . $bytes );
+			$budget += strlen( $bytes ) + 4096;
 		}
 		if ( $s['file_index'] < count( $s['files'] ) ) { return; }
 		if ( $s['table_index'] < count( $s['tables'] ) ) {
@@ -296,15 +408,11 @@ class EMCP_Update_Runtime {
 	private static function restore( &$s ) {
 		$dir = $s['dir'] . '/' . $s['snapshot'];
 		if ( empty( $s['restore_pruned'] ) ) {
-			// All candidates are re-enumerated beneath the fixed root; symlinks fail closed.
-			$known = array_fill_keys( array_column( $s['files'], 'path' ), true );
-			foreach ( self::files( $s, false ) as $file ) {
-				if ( ! isset( $known[ $file['path'] ] ) && ! unlink( $s['root'] . $file['path'] ) ) { throw new RuntimeException( 'restore_delete_failed' ); }
-			}
+			self::prune( $s );
 			$s['restore_pruned'] = true; return;
 		}
-		$end = min( count( $s['files'] ), $s['restore_step'] + 20 );
-		for ( ; $s['restore_step'] < $end; $s['restore_step']++ ) {
+		$budget = 0;
+		for ( ; $s['restore_step'] < count( $s['files'] ) && $budget < self::$tick_bytes; $s['restore_step']++ ) {
 			$i = $s['restore_step']; $file = $s['files'][ $i ];
 			$bytes = file_get_contents( $dir . '/file-' . $i . '.php' );
 			if ( false === $bytes || ! str_starts_with( $bytes, self::GUARD ) ) { throw new RuntimeException( 'snapshot_corrupt' ); }
@@ -313,22 +421,46 @@ class EMCP_Update_Runtime {
 			$target = $s['root'] . $file['path'];
 			if ( ! is_dir( dirname( $target ) ) && ! mkdir( dirname( $target ), 0755, true ) ) { throw new RuntimeException( 'restore_directory_failed' ); }
 			self::atomic( $target, $bytes ); chmod( $target, $file['mode'] );
+			$budget += strlen( $bytes ) + 4096;
 		}
 		if ( $s['restore_step'] < count( $s['files'] ) ) { return; }
+		if ( empty( $s['restore_swept'] ) ) {
+			// A write killed mid-request can leave a temporary copy behind; sweep again once every file is back.
+			self::prune( $s );
+			$s['restore_swept'] = true; self::save( $s );
+		}
 		$db = self::db( $s ); $db->query( 'SET FOREIGN_KEY_CHECKS=0' );
 		try {
 			if ( $s['restore_db'] < count( $s['tables'] ) ) {
 				$i = $s['restore_db']; $path = $dir . '/table-' . $i . '.php';
 				if ( ! hash_equals( $s['table_hashes'][ $i ], hash_file( 'sha256', $path ) ) ) { throw new RuntimeException( 'snapshot_corrupt' ); }
 				$backup = self::read( $path ); $table = self::ident( $s['tables'][ $i ] );
-				// Retrying an interrupted table always starts from its immutable before-image.
-				$db->query( 'DROP TABLE IF EXISTS ' . $table ); $db->query( $backup['create'] );
-				foreach ( $backup['rows'] as $row ) {
-					$columns = implode( ',', array_map( array( self::class, 'ident' ), array_keys( $row ) ) );
-					$values = implode( ',', array_map( static fn( $v ) => null === $v ? 'NULL' : "'" . $db->real_escape_string( $v ) . "'", self::decode_row( $row ) ) );
-					$db->query( 'INSERT INTO ' . $table . ' (' . $columns . ') VALUES (' . $values . ')' );
+				if ( ( $s['restore_created'] ?? -1 ) !== $i ) {
+					$db->query( 'DROP TABLE IF EXISTS ' . $table ); $db->query( $backup['create'] );
+					$s['restore_created'] = $i; self::save( $s );
 				}
-				$s['restore_db']++; return;
+				// Each INSERT commits atomically (InnoDB, autocommit) and only this job writes the
+				// recreated table, so its row count is exactly how far an interrupted restore got.
+				$done = (int) $db->query( 'SELECT COUNT(*) FROM ' . $table )->fetch_row()[0];
+				$total = count( $backup['rows'] );
+				if ( $done > $total ) { throw new RuntimeException( 'restore_count_mismatch' ); }
+				$limit = min( 1048576, intdiv( (int) $db->query( 'SELECT @@max_allowed_packet' )->fetch_row()[0], 2 ) );
+				$batch = array(); $batch_bytes = 0; $columns = null; $rows = 0; $bytes = 0;
+				$flush = static function () use ( $db, $table, &$batch, &$batch_bytes, &$columns ) {
+					if ( $batch ) { $db->query( 'INSERT INTO ' . $table . ' (' . $columns . ') VALUES ' . implode( ',', $batch ) ); }
+					$batch = array(); $batch_bytes = 0;
+				};
+				for ( $r = $done; $r < $total && $rows < self::$tick_rows && $bytes < self::$tick_bytes; $r++ ) {
+					$row = $backup['rows'][ $r ];
+					$cols = implode( ',', array_map( array( self::class, 'ident' ), array_keys( $row ) ) );
+					$values = '(' . implode( ',', array_map( static fn( $v ) => null === $v ? 'NULL' : "'" . $db->real_escape_string( $v ) . "'", self::decode_row( $row ) ) ) . ')';
+					if ( $batch && ( $cols !== $columns || $batch_bytes + strlen( $values ) > $limit ) ) { $flush(); }
+					$columns = $cols; $batch[] = $values; $batch_bytes += strlen( $values ) + 1;
+					$rows++; $bytes += strlen( $values );
+				}
+				$flush();
+				if ( $r >= $total ) { $s['restore_db']++; unset( $s['restore_created'] ); }
+				return;
 			}
 			foreach ( $db->query( 'SHOW TABLE STATUS' ) as $row ) {
 				$table = $row['Name'];
@@ -340,5 +472,12 @@ class EMCP_Update_Runtime {
 		if ( function_exists( 'opcache_reset' ) ) { opcache_reset(); }
 		if ( is_file( $s['root'] . '.maintenance' ) ) { unlink( $s['root'] . '.maintenance' ); }
 		$s['phase'] = 'verify_restore';
+	}
+	/** Deletes every in-scope file the snapshot does not know, re-enumerated beneath the fixed root (symlinks fail closed). */
+	private static function prune( $s ) {
+		$known = array_fill_keys( array_column( $s['files'], 'path' ), true );
+		foreach ( self::files( $s, false, false ) as $file ) {
+			if ( ! isset( $known[ $file['path'] ] ) && ! unlink( $s['root'] . $file['path'] ) ) { throw new RuntimeException( 'restore_delete_failed' ); }
+		}
 	}
 }

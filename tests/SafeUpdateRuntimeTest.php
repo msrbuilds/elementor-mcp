@@ -14,6 +14,7 @@ final class SafeUpdateRuntimeTest extends TestCase {
 		EMCP_Update_Runtime::write( $this->state['dir'] . '/state.php', $this->state );
 	}
 	protected function tearDown(): void {
+		EMCP_Update_Runtime::$tick_bytes = 33554432; EMCP_Update_Runtime::$tick_rows = 5000;
 		$it = new RecursiveIteratorIterator( new RecursiveDirectoryIterator( $this->root, FilesystemIterator::SKIP_DOTS ), RecursiveIteratorIterator::CHILD_FIRST );
 		foreach ( $it as $entry ) { $entry->isDir() ? rmdir( $entry->getPathname() ) : unlink( $entry->getPathname() ); }
 		rmdir( $this->root );
@@ -106,5 +107,178 @@ final class SafeUpdateRuntimeTest extends TestCase {
 		$paths = array_column( $files, 'path' );
 		sort( $paths );
 		$this->assertSame( array( 'index.php', 'wp-admin/a.php', 'wp-content/languages/x.mo', 'wp-content/plugins/p/p.php', 'wp-content/themes/t/style.css', 'wp-includes/b.php' ), $paths );
+	}
+
+	/** Files the job could not snapshot or restore are found before the maintenance window starts, and named. */
+	public function test_preflight_names_files_the_job_cannot_write(): void {
+		mkdir( $this->root . 'wp-includes', 0700 );
+		file_put_contents( $this->root . 'wp-includes/locked.php', 'x' );
+		file_put_contents( $this->root . 'wp-includes/open.php', 'x' );
+		chmod( $this->root . 'wp-includes/locked.php', 0444 );
+		try {
+			EMCP_Update_Runtime::preflight_files( $this->root );
+			$this->fail( 'expected files_not_writable' );
+		} catch ( RuntimeException $e ) {
+			$this->assertSame( 'files_not_writable', $e->getMessage() );
+			$this->assertSame( array( 'wp-includes/locked.php' ), EMCP_Update_Runtime::$last_unwritable );
+		} finally {
+			chmod( $this->root . 'wp-includes/locked.php', 0644 );
+		}
+		chmod( $this->root . 'wp-includes/locked.php', 0644 );
+		EMCP_Update_Runtime::preflight_files( $this->root );
+		$this->assertSame( array(), EMCP_Update_Runtime::$last_unwritable );
+	}
+
+	/** A second WordPress install whose prefix extends ours (wp_shop_ under wp_) must never be snapshotted or restored. */
+	public function test_other_installs_sharing_the_prefix_are_detected(): void {
+		$tables = array( 'wp_options', 'wp_posts', 'wp_wc_orders', 'wp_actionscheduler_actions', 'wp_shop_options', 'wp_shop_posts', 'wp_shop_usermeta', 'wp_forms_options' );
+		$this->assertSame( array( 'wp_shop_' ), EMCP_Update_Runtime::other_installs( $tables, 'wp_' ) );
+		$this->assertSame( array(), EMCP_Update_Runtime::other_installs( array( 'wp_options', 'wp_posts', 'wp_wc_orders', 'wp_forms_options' ), 'wp_' ) );
+		$this->assertSame( array(), EMCP_Update_Runtime::other_installs( array( 'wp_options', 'wp_posts', 'wp_shop_options', 'wp_shop_posts' ), 'wp_shop_' ) );
+	}
+
+	private function install_gate( string $original = "<?php echo 'SITE';" ): void {
+		copy( dirname( __DIR__ ) . '/includes/cloud/safe-update-runtime.php', $this->state['dir'] . '/runtime.php' );
+		copy( dirname( __DIR__ ) . '/includes/cloud/safe-update-gate.php', $this->state['dir'] . '/gate.php' );
+		EMCP_Update_Runtime::write( $this->state['dir'] . '/original-config.php', $original );
+		file_put_contents( $this->root . 'wp-config.php', EMCP_Update_Runtime::gate_line( $this->state['dir'] ) . $original );
+		EMCP_Update_Runtime::write( $this->state['dir'] . '/state.php', $this->state );
+	}
+	/** A visitor request: like wp-load.php, the entry script includes wp-config.php. */
+	private function visit(): string {
+		file_put_contents( $this->root . 'index.php', '<?php require __DIR__ . "/wp-config.php";' );
+		return $this->php( $this->root . 'index.php' );
+	}
+	private function php( string $script ): string {
+		return (string) shell_exec( escapeshellarg( PHP_BINARY ) . ' ' . escapeshellarg( $script ) . ' 2>&1' );
+	}
+
+	/** Cloud going silent before any update ran must not leave the site in maintenance past the deadline. */
+	public function test_gate_reopens_an_expired_window_when_nothing_was_changed(): void {
+		foreach ( array( array( 'baseline', 0 ), array( 'draining', 0 ), array( 'snapshot', 0 ) ) as list( $phase, $group ) ) {
+			$this->state['phase'] = $phase; $this->state['group'] = $group; $this->state['deadline'] = time() - 1;
+			$this->install_gate();
+			$this->assertSame( 'SITE', $this->visit(), $phase );
+			$state = EMCP_Update_Runtime::read( $this->state['dir'] . '/state.php' );
+			$this->assertSame( array( 'failed', 'deadline_exceeded' ), array( $state['phase'], $state['code'] ), $phase );
+			$this->assertSame( "<?php echo 'SITE';", file_get_contents( $this->root . 'wp-config.php' ), $phase );
+		}
+	}
+
+	/** Once an update may have run, only an explicit restore can reopen the site. */
+	public function test_gate_keeps_maintenance_after_updates_may_have_run(): void {
+		foreach ( array( array( 'verify', 0 ), array( 'updating', 0 ), array( 'snapshot', 1 ), array( 'restoring', 0 ), array( 'verify_restore', 0 ), array( 'manual_recovery', 0 ) ) as list( $phase, $group ) ) {
+			$this->state['phase'] = $phase; $this->state['group'] = $group; $this->state['deadline'] = time() - 1;
+			$this->install_gate();
+			$this->assertStringContainsString( 'Scheduled maintenance', $this->visit(), $phase );
+			$this->assertSame( $phase, EMCP_Update_Runtime::read( $this->state['dir'] . '/state.php' )['phase'], $phase );
+		}
+	}
+
+	/** A deleted or quarantined job folder shows the maintenance page instead of a fatal error on every request. */
+	public function test_missing_job_folder_shows_maintenance_instead_of_a_fatal(): void {
+		file_put_contents( $this->root . 'wp-config.php', EMCP_Update_Runtime::gate_line( $this->root . '.emcp-update-gone' ) . "<?php echo 'SITE';" );
+		$out = $this->visit();
+		$this->assertStringContainsString( 'Scheduled maintenance', $out );
+		$this->assertStringNotContainsString( 'SITE', $out );
+		$this->assertStringNotContainsString( 'Fatal', $out );
+	}
+
+	/** The plugin's own copies refuse direct requests; only the copies inside a job folder run. */
+	public function test_source_files_refuse_direct_requests(): void {
+		$this->assertSame( '', $this->php( dirname( __DIR__ ) . '/includes/cloud/safe-update-gate.php' ) );
+		file_put_contents( $this->root . 'probe.php', '<?php require ' . var_export( dirname( __DIR__ ) . '/includes/cloud/safe-update-runtime.php', true ) . '; echo "LOADED";' );
+		$this->assertSame( '', $this->php( $this->root . 'probe.php' ) );
+	}
+
+	/** A finished job keeps only an authenticated receipt: no credentials, original config, offers or snapshots. */
+	public function test_finished_job_keeps_only_a_receipt(): void {
+		foreach ( array( array( 'verify', 'approve', 'completed' ), array( 'verify_restore', 'release', 'rolled_back' ) ) as list( $phase, $action, $terminal ) ) {
+			$this->state['phase'] = $phase; $this->state['group'] = 1; $this->state['snapshot'] = 'snapshot-1';
+			$this->state['db'] = array( 'password' => 'private' );
+			$this->state['groups'][1][0]['_source'] = array( 'key' => 'b/b.php', 'offer' => array( 'package' => 'https://example.com/b.zip?key=secret' ) );
+			$this->install_gate();
+			mkdir( $this->state['dir'] . '/snapshot-1', 0700 ); file_put_contents( $this->state['dir'] . '/snapshot-1/file-0.php', 'x' );
+			$this->command( $action );
+			$this->assertSame( $terminal, $this->state['phase'] );
+			$stored = EMCP_Update_Runtime::read( $this->state['dir'] . '/state.php' );
+			$this->assertSame( $terminal, $stored['phase'] );
+			$this->assertArrayNotHasKey( 'db', $stored );
+			$this->assertStringNotContainsString( 'secret', json_encode( $stored ) );
+			$this->assertFileDoesNotExist( $this->state['dir'] . '/snapshot-1' );
+			$this->assertFileDoesNotExist( $this->state['dir'] . '/original-config.php' );
+			$this->assertFileDoesNotExist( $this->state['dir'] . '/gate.php' );
+			$this->assertSame( "<?php echo 'SITE';", file_get_contents( $this->root . 'wp-config.php' ) );
+			unset( $stored['cleaned'] );
+			$this->state = $stored + array( 'groups' => array( array( array( 'id' => 'plugin:a' ) ), array( array( 'id' => 'plugin:b' ) ) ) );
+		}
+	}
+
+	/** File restore and snapshot work stay within a per-request byte budget. */
+	public function test_file_restore_is_bounded_per_request(): void {
+		$this->state['phase'] = 'restoring'; $this->state['snapshot'] = 'snapshot-0'; $this->state['restore_step'] = 0; $this->state['restore_db'] = 0;
+		$this->state['restore_pruned'] = true; $this->state['tables'] = array();
+		mkdir( $this->state['dir'] . '/snapshot-0', 0700 );
+		foreach ( array( 'a', 'b', 'c' ) as $i => $name ) {
+			$this->state['files'][] = array( 'path' => $name . '.php', 'mode' => 0644, 'hash' => hash( 'sha256', $name ) );
+			file_put_contents( $this->state['dir'] . '/snapshot-0/file-' . $i . '.php', EMCP_Update_Runtime::GUARD . $name );
+		}
+		EMCP_Update_Runtime::$tick_bytes = 1;
+		$this->command( 'tick' );
+		$this->assertSame( 1, $this->state['restore_step'] );
+		$this->assertFileDoesNotExist( $this->root . 'b.php' );
+	}
+
+	/** Files left by an interrupted write (such as a temporary copy) are swept before the database is restored. */
+	public function test_restore_sweeps_files_left_by_interrupted_writes(): void {
+		$this->state['phase'] = 'restoring'; $this->state['snapshot'] = 'snapshot-0'; $this->state['restore_step'] = 0; $this->state['restore_db'] = 0;
+		$this->state['restore_pruned'] = true; $this->state['files'] = array(); $this->state['tables'] = array();
+		mkdir( $this->state['dir'] . '/snapshot-0', 0700 );
+		mkdir( $this->root . 'wp-content/plugins/p', 0700, true );
+		file_put_contents( $this->root . 'wp-content/plugins/p/p.php.0123456789ab.php', 'leftover' );
+		$this->state['db'] = array( 'host' => '127.0.0.1:1', 'user' => 'x', 'password' => '', 'name' => 'x', 'prefix' => 'wp_' );
+		$this->command( 'tick' );
+		$this->assertFileDoesNotExist( $this->root . 'wp-content/plugins/p/p.php.0123456789ab.php' );
+	}
+
+	/**
+	 * A restore killed between a committed insert and the journal save resumes from the
+	 * rows actually present, never duplicating or skipping any. Needs a scratch MySQL server:
+	 * EMCP_SAFE_UPDATE_TEST_DB="host|user|password".
+	 */
+	public function test_interrupted_table_restore_resumes_exactly(): void {
+		$conf = getenv( 'EMCP_SAFE_UPDATE_TEST_DB' );
+		if ( ! $conf || ! extension_loaded( 'mysqli' ) ) { $this->markTestSkipped( 'EMCP_SAFE_UPDATE_TEST_DB not set.' ); }
+		list( $host, $user, $pass ) = array_pad( explode( '|', $conf ), 3, '' );
+		$name = 'emcp_su_' . bin2hex( random_bytes( 4 ) );
+		mysqli_report( MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT );
+		$admin = new mysqli( $host, $user, $pass );
+		$admin->query( 'CREATE DATABASE `' . $name . '`' );
+		try {
+			$create = 'CREATE TABLE `wp_t` (`id` bigint NOT NULL AUTO_INCREMENT, `v` longblob, PRIMARY KEY (`id`)) ENGINE=InnoDB';
+			$rows = array();
+			for ( $i = 0; $i < 25; $i++ ) { $rows[] = EMCP_Update_Runtime::encode_row( array( 'id' => (string) $i, 'v' => 0 === $i % 5 ? null : random_bytes( 40 ) . "'\\" ) ); }
+			$this->state['db'] = array( 'host' => $host, 'user' => $user, 'password' => $pass, 'name' => $name, 'prefix' => 'wp_' );
+			$this->state['phase'] = 'restoring'; $this->state['snapshot'] = 'snapshot-0'; $this->state['restore_step'] = 0; $this->state['restore_db'] = 0;
+			$this->state['restore_pruned'] = true; $this->state['restore_swept'] = true; $this->state['files'] = array(); $this->state['tables'] = array( 'wp_t' );
+			mkdir( $this->state['dir'] . '/snapshot-0', 0700 );
+			EMCP_Update_Runtime::write( $this->state['dir'] . '/snapshot-0/table-0.php', array( 'create' => $create, 'rows' => $rows ) );
+			$this->state['table_hashes'] = array( hash_file( 'sha256', $this->state['dir'] . '/snapshot-0/table-0.php' ) );
+			EMCP_Update_Runtime::$tick_rows = 7;
+			$this->command( 'tick' );
+			$saved = $this->state;
+			$this->command( 'tick' ); // Committed, then "killed": the journal never records it.
+			$this->state = $saved;
+			for ( $n = 0; $n < 10 && 'restoring' === $this->state['phase']; $n++ ) { $this->command( 'tick' ); }
+			$this->assertSame( 'verify_restore', $this->state['phase'] );
+			$db = new mysqli( $host, $user, $pass, $name );
+			$got = array();
+			foreach ( $db->query( 'SELECT * FROM `wp_t` ORDER BY id' ) as $row ) { $got[] = EMCP_Update_Runtime::encode_row( $row ); }
+			$this->assertSame( $rows, $got );
+			$db->close();
+		} finally {
+			$admin->query( 'DROP DATABASE `' . $name . '`' );
+			$admin->close();
+		}
 	}
 }

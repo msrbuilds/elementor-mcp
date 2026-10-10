@@ -1,9 +1,14 @@
 <?php
 /** Loaded at the start of wp-config.php during an explicitly approved update window. */
+// Only the copy inside a job folder runs; the plugin's own copy refuses direct requests.
+if ( 0 !== strpos( basename( __DIR__ ), '.emcp-update-' ) ) { exit; }
 if ( defined( 'EMCP_UPDATE_INTERNAL' ) && EMCP_UPDATE_INTERNAL ) { return; }
-require_once __DIR__ . '/runtime.php';
 try {
-	$emcp_update_state = EMCP_Update_Runtime::read( __DIR__ . '/state.php' );
+	// A failed require is a fatal, not an exception, so check the file first.
+	if ( ! is_file( __DIR__ . '/runtime.php' ) ) { throw new RuntimeException( 'runtime_missing' ); }
+	require_once __DIR__ . '/runtime.php';
+	// Past the deadline, a window that changed nothing reopens the site by itself.
+	$emcp_update_state = EMCP_Update_Runtime::expire( __DIR__ );
 	if ( in_array( $emcp_update_state['phase'], EMCP_Update_Runtime::TERMINAL, true ) ) { return; }
 	$emcp_update_auth = $_SERVER['HTTP_AUTHORIZATION'] ?? $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ?? '';
 	$emcp_update_path = parse_url( $_SERVER['REQUEST_URI'] ?? '', PHP_URL_PATH );

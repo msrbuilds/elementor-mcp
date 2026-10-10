@@ -2108,7 +2108,7 @@ trait EMCP_Tools_Admin_Catalog_Trait {
 					'emcp-tools/cloud-safe-updates' => array(
 						'label' => __( 'Cloud Safe Updates', 'emcp-tools' ),
 						'description' => __( 'Inspect WordPress updates and prepare an approved maintenance window with independent snapshot recovery.', 'emcp-tools' ),
-						'badges' => array(),
+						'badges' => array( 'destructive' ),
 					),
 					'emcp-tools/cloud-config-deploy' => array(
 						'label' => __( 'Deploy Managed Settings', 'emcp-tools' ),

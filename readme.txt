@@ -197,7 +197,7 @@ The admin screens ship compiled in `assets/admin/build/`. Their full source and 
 
 Security update with review hardening for OAuth, menus and loops, and Cloud Safe Updates for reviewing plugin, theme and WordPress updates with a snapshot and automatic restore.
 
-* New: Cloud Safe Updates. Workspace owners can review and run a connected site's plugin, theme and WordPress updates from EMCP Cloud in groups, each with a file and database snapshot, a short maintenance page, page checks and automatic restore of a failed group. Unsupported sites are refused before anything changes.
+* New: Cloud Safe Updates. Workspace owners can review and run a connected site's plugin, theme and WordPress updates from EMCP Cloud in groups, each with a file and database snapshot, a short maintenance page, page checks and automatic restore of a failed group. Unsupported sites, including a database shared with another WordPress install under the same table prefix, are refused before anything changes. If Cloud stops responding before any update ran, the site reopens on its own at the deadline, interrupted restores resume, and finished jobs keep only a status receipt.
 
 * Security: Restrict credentialed Unsplash requests to the exact trusted HTTPS origin and disable redirects, preventing API key disclosure through crafted image URLs.
 * Security: Require management authorization and a valid settings nonce before interpreting posted tool toggles, preventing unauthorized changes during pending defaults updates.
