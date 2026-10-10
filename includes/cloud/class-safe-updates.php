@@ -64,7 +64,11 @@ class EMCP_Tools_Safe_Updates {
 		} catch ( RuntimeException $error ) {
 			$codes[] = preg_match( '/^[a-z_]+$/D', $error->getMessage() ) ? $error->getMessage() : 'files_not_supported';
 		}
-		if ( get_mu_plugins() || get_dropins() ) { $codes[] = 'mu_plugins_or_dropins_need_host_recovery'; }
+		// MU plugins run after the wp-config gate and are covered by the file snapshot.
+		// Recovery never boots WordPress, so even a fatal in an MU plugin is recoverable.
+		if ( defined( 'WPMU_PLUGIN_DIR' ) && wp_normalize_path( WPMU_PLUGIN_DIR ) !== wp_normalize_path( ABSPATH . 'wp-content/mu-plugins' ) ) { $codes[] = 'custom_mu_plugin_path'; }
+		foreach ( array_keys( get_dropins() ) as $dropin ) { $codes[] = 'dropin_requires_host_recovery:' . $dropin; }
+		if ( wp_using_ext_object_cache() ) { $codes[] = 'external_object_cache_requires_host_recovery'; }
 		if ( defined( 'DISALLOW_FILE_MODS' ) && DISALLOW_FILE_MODS ) { $codes[] = 'file_modifications_disabled'; }
 		if ( defined( 'FS_METHOD' ) && 'direct' !== FS_METHOD ) { $codes[] = 'direct_filesystem_required'; }
 		if ( is_file( ABSPATH . '.maintenance' ) || (int) get_option( 'auto_updater.lock' ) > time() - 900 || (int) get_option( 'core_updater.lock' ) > time() - 900 ) { $codes[] = 'another_update_in_progress'; }

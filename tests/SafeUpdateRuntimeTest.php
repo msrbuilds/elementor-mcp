@@ -129,6 +129,87 @@ final class SafeUpdateRuntimeTest extends TestCase {
 		$this->assertSame( array(), EMCP_Update_Runtime::$last_unwritable );
 	}
 
+	public function test_host_marker_is_preserved_while_mu_plugins_remain_in_snapshot_and_prune_scope(): void {
+		mkdir( $this->root . 'wp-content/mu-plugins', 0700, true );
+		$mu = 'wp-content/mu-plugins/host.php';
+		file_put_contents( $this->root . $mu, '<?php /* host integration */' );
+		file_put_contents( $this->root . '.wp-launcher-ready', 'host-owned' );
+		chmod( $this->root . '.wp-launcher-ready', 0444 );
+		try {
+			EMCP_Update_Runtime::preflight_files( $this->root );
+			$files = ( new ReflectionMethod( EMCP_Update_Runtime::class, 'files' ) )->invoke( null, $this->state, false );
+			$this->assertSame( array( $mu ), array_column( $files, 'path' ) );
+			$this->state['files'] = $files;
+			file_put_contents( $this->root . 'wp-content/mu-plugins/new.php', '<?php throw new Exception("broken");' );
+			( new ReflectionMethod( EMCP_Update_Runtime::class, 'prune' ) )->invoke( null, $this->state );
+			$this->assertFileDoesNotExist( $this->root . 'wp-content/mu-plugins/new.php' );
+			$this->assertSame( 'host-owned', file_get_contents( $this->root . '.wp-launcher-ready' ) );
+			$this->assertFileExists( $this->root . $mu );
+		} finally { chmod( $this->root . '.wp-launcher-ready', 0644 ); }
+		$this->assertTrue( EMCP_Update_Runtime::in_scope( '.htaccess', false ) );
+		$this->assertTrue( EMCP_Update_Runtime::in_scope( '.user.ini', false ) );
+		$this->assertTrue( EMCP_Update_Runtime::in_scope( 'wp-content/plugins/x/.wp-launcher-ready', false ) );
+	}
+
+	public function test_gate_blocks_before_a_broken_mu_plugin_can_execute(): void {
+		$this->state['phase'] = 'restoring';
+		$this->install_gate( '<?php throw new Exception("MU plugin loaded");' );
+		$out = $this->visit();
+		$this->assertStringContainsString( 'Scheduled maintenance', $out );
+		$this->assertStringNotContainsString( 'MU plugin loaded', $out );
+	}
+
+	/** Real file + MySQL snapshot, then fresh-process recovery while MU PHP cannot boot. */
+	public function test_standalone_rollback_restores_broken_mu_plugin_and_database_preserving_host_marker(): void {
+		$conf = getenv( 'EMCP_SAFE_UPDATE_TEST_DB' );
+		if ( ! $conf || ! extension_loaded( 'mysqli' ) ) { $this->markTestSkipped( 'EMCP_SAFE_UPDATE_TEST_DB not set.' ); }
+		list( $host, $user, $pass ) = array_pad( explode( '|', $conf ), 3, '' );
+		$name = 'emcp_su_' . bin2hex( random_bytes( 4 ) );
+		mysqli_report( MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT );
+		$admin = new mysqli( $host, $user, $pass );
+		$admin->query( 'CREATE DATABASE `' . $name . '`' );
+		try {
+			$admin->select_db( $name );
+			$admin->query( 'CREATE TABLE wp_options (id INT PRIMARY KEY, value TEXT) ENGINE=InnoDB' );
+			$admin->query( "INSERT INTO wp_options VALUES (1,'before')" );
+			mkdir( $this->root . 'wp-content/mu-plugins', 0700, true );
+			$mu = $this->root . 'wp-content/mu-plugins/host.php';
+			$original = '<?php echo "HOST HEALTHY";';
+			file_put_contents( $mu, $original );
+			file_put_contents( $this->root . '.wp-launcher-ready', 'host-owned' );
+			chmod( $this->root . '.wp-launcher-ready', 0444 );
+			$this->state['db'] = array( 'host' => $host, 'user' => $user, 'password' => $pass, 'name' => $name, 'prefix' => 'wp_' );
+			$this->state['phase'] = 'snapshot';
+			$this->install_gate();
+			for ( $i = 0; $i < 10 && 'snapshot' === $this->state['phase']; $i++ ) { $this->command( 'tick' ); }
+			$this->assertSame( 'applying', $this->state['phase'], $this->state['code'] ?? '' );
+			$this->assertTrue( $this->state['snapshot_ready'] );
+			file_put_contents( $mu, '<?php throw new Exception("broken host integration");' );
+			file_put_contents( $this->root . 'wp-content/mu-plugins/added.php', '<?php die("bad");' );
+			$admin->query( "UPDATE wp_options SET value='after'" );
+			$this->command( 'rollback' );
+			$script = $this->state['dir'] . '/step.php';
+			file_put_contents( $script, '<?php require __DIR__ . "/runtime.php"; $s = EMCP_Update_Runtime::read(__DIR__ . "/state.php"); EMCP_Update_Runtime::advance($s, array("action" => "tick", "phase" => $s["phase"], "group" => $s["group"])); echo $s["phase"];' );
+			for ( $i = 0; $i < 10; $i++ ) {
+				$out = $this->php( $script );
+				$this->assertContains( $out, array( 'restoring', 'verify_restore' ) );
+				if ( 'verify_restore' === $out ) { break; }
+			}
+			$this->assertSame( 'verify_restore', $out );
+			$this->assertSame( $original, file_get_contents( $mu ) );
+			$this->assertSame( 'HOST HEALTHY', $this->php( $mu ) );
+			$this->assertFileDoesNotExist( $this->root . 'wp-content/mu-plugins/added.php' );
+			$this->assertSame( 'before', $admin->query( 'SELECT value FROM wp_options' )->fetch_row()[0] );
+			$this->assertSame( 'host-owned', file_get_contents( $this->root . '.wp-launcher-ready' ) );
+			$this->state = EMCP_Update_Runtime::read( $this->state['dir'] . '/state.php' );
+			$this->command( 'release' );
+			$this->assertSame( 'rolled_back', $this->state['phase'] );
+		} finally {
+			chmod( $this->root . '.wp-launcher-ready', 0644 );
+			$admin->query( 'DROP DATABASE `' . $name . '`' ); $admin->close();
+		}
+	}
+
 	/** A second WordPress install whose prefix extends ours (wp_shop_ under wp_) must never be snapshotted or restored. */
 	public function test_other_installs_sharing_the_prefix_are_detected(): void {
 		$tables = array( 'wp_options', 'wp_posts', 'wp_wc_orders', 'wp_actionscheduler_actions', 'wp_shop_options', 'wp_shop_posts', 'wp_shop_usermeta', 'wp_forms_options' );

@@ -248,6 +248,9 @@ class EMCP_Update_Runtime {
 	 */
 	public static function in_scope( $relative, $is_dir ) {
 		$relative = trim( str_replace( '\\', '/', $relative ), '/' );
+		// WP Launcher's provisioning marker is not WordPress state. Preserve it in
+		// both snapshot and prune; never broadly exclude hidden or read-only files.
+		if ( '.wp-launcher-ready' === $relative && ! $is_dir ) { return false; }
 		if ( false === strpos( $relative, '/' ) && ! $is_dir ) { return true; }
 		if ( ! in_array( explode( '/', $relative )[0], array( 'wp-admin', 'wp-includes', 'wp-content' ), true ) ) { return false; }
 		foreach ( array( 'wp-content/uploads', 'wp-content/cache', 'wp-content/emcp-backups' ) as $excluded ) {
@@ -273,6 +276,7 @@ class EMCP_Update_Runtime {
 				if ( $entry->isDot() || str_starts_with( $entry->getFilename(), '.emcp-update-' ) ) { continue; }
 				$path = $entry->getPathname();
 				$relative = str_replace( '\\', '/', substr( $path, strlen( $s['root'] ) ) );
+				if ( '.wp-launcher-ready' === $relative && $entry->isLink() ) { throw new RuntimeException( 'symlinks_not_supported' ); }
 				if ( ! self::in_scope( $relative, $entry->isDir() ) ) { continue; }
 				if ( $entry->isLink() ) { throw new RuntimeException( 'symlinks_not_supported' ); }
 				if ( $entry->isDir() ) {
