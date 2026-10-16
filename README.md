@@ -23,9 +23,13 @@ Turn your WordPress site into something an AI agent can actually operate.
 
 EMCP Tools is a WordPress plugin that exposes your site as **[MCP](https://modelcontextprotocol.io/) tools**, so Claude, Cursor, and any other MCP client can build Elementor pages, write content, manage plugins and users, audit performance and security, and drive the plugins you already run. It builds on the [WordPress MCP Adapter](https://github.com/WordPress/mcp-adapter), which ships bundled.
 
-<img width="1995" height="1141" alt="EMCP Tools admin" src="https://github.com/user-attachments/assets/06ab916a-0146-4a5f-828c-d5aa409cb072" />
+<img width="2331" height="1399" alt="emc-dashboard" src="https://github.com/user-attachments/assets/e939408d-7005-4c0f-b157-fdb353d4c0c6" />
 
-> **EMCP Pro, 25% off for the GitHub community**: use code **`MSRGIT`** at [emcptools.com/pricing](https://emcptools.com/pricing).
+
+> **EMCP Pro, 10% off for the GitHub community**: use code **`EMCPGIT`** at [emcptools.com/pricing](https://emcptools.com/pricing).
+
+<img width="2132" height="471" alt="emcp-promo-banner-new" src="https://github.com/user-attachments/assets/d2439b0b-2f56-461d-b3be-1ccc39bc2877" />
+
 
 ## What it does
 
