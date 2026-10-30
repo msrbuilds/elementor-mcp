@@ -248,6 +248,7 @@ Incident-response tools for a hacked site, contributed by @Mrshahidali420, a swi
 * Fixed: OAuth sign-in works on the subsites of a subdirectory multisite.
 * Fixed: the Connection wizard shows ChatGPT's current MCP settings path and a Codex command that Codex accepts.
 * Changed: EMCP Tools uses the official MCP Adapter plugin from WordPress.org when it is active, so plugins that need MCP Adapter 0.7 work next to it and WordPress no longer reports a duplicate copy. Otherwise its built-in copy, updated to 0.7.1, serves as before; the Connection screen can install and activate the official plugin in one click.
+* Security: on a network-activated multisite, installing the MCP Adapter network-wide from the Connection screen now needs network administrator rights.
 * Fixed: Cloud Safe Updates handles many more sites: database checks and large tables in small checked pieces, exact restores of BIT, FLOAT, ENUM and SET values, cleanup of tables a failed update added, and support for WP Rocket and 10Web Booster page caches.
 * Fixed: Image Optimization's WebP copies were no smaller than the JPEGs. WebP is now made from the original at its own quality (automatic: 15 below Quality), and on sample photos is 15% smaller than the JPEG.
 * Fixed: Cached pages showed JPEG or WebP to everyone depending on the first visitor. With "Serve WebP on the site" on, every visitor gets WebP, and Elementor's cache is flushed when the module or its WebP settings change and after a bulk run.
