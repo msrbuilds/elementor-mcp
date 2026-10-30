@@ -477,25 +477,25 @@ trait EMCP_Tools_Admin_Connection_Trait {
 			'template' => "{\n    \"mcpServers\": {\n        \"%NAME%\": {\n            \"url\": \"%ENDPOINT%\"\n        }\n    }\n}",
 			'deeplink' => 'cursor',
 		);
-		// The ChatGPT App signs in through its own MCP UI (Settings → MCP servers →
-		// Add server → Streamable HTTP → Save → Restart → Authenticate). Codex is
-		// part of the desktop app since July 2026 and shares its MCP settings.
+		// The ChatGPT App adds EMCP as a custom MCP plugin (Plugins → Add → Add
+		// custom MCP server → OAuth → Create as a plugin → Continue → Approve →
+		// Open ChatGPT). The OAuth round trip runs through chatgpt.com.
 		$oauth_codex = array(
 			'type'  => 'steps',
 			'steps' => array(
 				array(
-					'title' => __( 'a. Open the MCP settings', 'emcp-tools' ),
-					'desc'  => __( 'In the ChatGPT desktop app, open Settings, select “MCP servers”, and click “Add server”.', 'emcp-tools' ),
+					'title' => __( 'a. Add a custom MCP server', 'emcp-tools' ),
+					'desc'  => __( 'In the ChatGPT desktop app, click Plugins in the sidebar, then “Add” → “Add custom MCP server”.', 'emcp-tools' ),
 				),
 				array(
-					'title' => __( 'b. Choose Streamable HTTP', 'emcp-tools' ),
-					'desc'  => __( 'Choose “Streamable HTTP”, then enter a name and this server URL:', 'emcp-tools' ),
+					'title' => __( 'b. Fill in the form', 'emcp-tools' ),
+					'desc'  => __( 'Enter this name and server URL, keep Authentication on “OAuth”, tick “I understand and want to continue” and click “Create as a plugin”:', 'emcp-tools' ),
 				),
 				array( 'title' => __( 'Name', 'emcp-tools' ), 'copy' => '%NAME%' ),
 				array( 'title' => __( 'URL', 'emcp-tools' ), 'copy' => '%ENDPOINT%' ),
 				array(
-					'title' => __( 'c. Save, Restart, then Authenticate', 'emcp-tools' ),
-					'desc'  => __( 'Click Save, then Restart. Click “Authenticate” on the server row, then “Approve” on the consent screen that opens. Your site is now connected and you can start chatting.', 'emcp-tools' ),
+					'title' => __( 'c. Continue, then Approve', 'emcp-tools' ),
+					'desc'  => __( 'Click “Continue”, then “Approve” on the consent screen that opens on this site, and “Open ChatGPT” when your browser asks. Your site is now connected and you can start chatting.', 'emcp-tools' ),
 				),
 			),
 		);
@@ -541,7 +541,7 @@ trait EMCP_Tools_Admin_Connection_Trait {
 		// with the live endpoint + Basic-auth token in JS (escaped). HTML tags are
 		// kept outside the translation calls so they are not escaped.
 		$codex_guide = '<p class="description">'
-			. esc_html__( 'Prefer the ChatGPT App\'s UI? Open Settings → MCP servers → Add server, choose “Streamable HTTP”, then fill the form like this:', 'emcp-tools' )
+			. esc_html__( 'Prefer the ChatGPT App\'s UI? Open Settings → Plugins → MCPs → Add, choose to connect a custom MCP with “Streamable HTTP”, then fill the form like this:', 'emcp-tools' )
 			. '</p>'
 			. '<table class="emcp-conn-guide"><tbody>'
 			. '<tr><th>' . esc_html__( 'Name', 'emcp-tools' ) . '</th><td><code>%NAME%</code></td></tr>'
@@ -550,7 +550,7 @@ trait EMCP_Tools_Admin_Connection_Trait {
 			. '<tr><th>' . esc_html__( 'Bearer token env var', 'emcp-tools' ) . '</th><td>' . esc_html__( 'Leave blank, EMCP uses a WordPress Application Password (HTTP Basic), not a bearer token.', 'emcp-tools' ) . '</td></tr>'
 			. '<tr><th>' . esc_html__( 'Headers', 'emcp-tools' ) . '</th><td>' . esc_html__( 'Key', 'emcp-tools' ) . ' <code>Authorization</code> &middot; ' . esc_html__( 'Value', 'emcp-tools' ) . ' <code>Basic %B64%</code></td></tr>'
 			. '</tbody></table>'
-			. '<p class="description">' . esc_html__( 'Then Save and Restart. The config blocks below do the same thing, “direct HTTP” for the URL + header approach, or the “Node proxy / npx” config if the HTTP transport gives you handshake trouble.', 'emcp-tools' ) . '</p>';
+			. '<p class="description">' . esc_html__( 'Then Save. The config blocks below do the same thing, “direct HTTP” for the URL + header approach, or the “Node proxy / npx” config if the HTTP transport gives you handshake trouble.', 'emcp-tools' ) . '</p>';
 
 		return array(
 			array(
