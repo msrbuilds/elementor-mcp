@@ -138,12 +138,16 @@ class EMCP_Tools_Themer_CPT {
 	 * template capability, which closes the menu, list, editors and REST at once.
 	 *
 	 * @param string[] $caps    Primitive capabilities already mapped by WordPress.
-	 * @param string   $cap     Requested capability.
+	 * @param mixed    $cap     Requested capability; not always a string.
 	 * @param int      $user_id User id.
 	 * @param mixed[]  $args    Capability arguments.
 	 * @return string[]
 	 */
-	public static function map_template_caps( array $caps, string $cap, int $user_id, array $args ): array {
+	public static function map_template_caps( array $caps, $cap, int $user_id, array $args ): array {
+		// Core passes whatever reached current_user_can(), null included (#174).
+		if ( ! is_string( $cap ) ) {
+			return $caps;
+		}
 		$suffix  = '_' . self::CAPABILITY_TYPE[1];
 		$mapped  = array();
 		$touched = false;
@@ -173,12 +177,16 @@ class EMCP_Tools_Themer_CPT {
 	 * administrator attaches executable PHP to an otherwise ordinary template.
 	 *
 	 * @param string[] $caps    Primitive capabilities already mapped by WordPress.
-	 * @param string   $cap     Requested meta capability.
+	 * @param mixed    $cap     Requested meta capability; not always a string.
 	 * @param int      $user_id User id.
 	 * @param mixed[]  $args    Meta-capability arguments.
 	 * @return string[]
 	 */
-	public static function protect_php_backed_template( array $caps, string $cap, int $user_id, array $args ): array {
+	public static function protect_php_backed_template( array $caps, $cap, int $user_id, array $args ): array {
+		// Core passes whatever reached current_user_can(), null included (#174).
+		if ( ! is_string( $cap ) ) {
+			return $caps;
+		}
 		if ( ! in_array( $cap, array( 'edit_post', 'delete_post', 'edit_page', 'delete_page' ), true ) ) {
 			return $caps;
 		}

@@ -41,7 +41,11 @@ final class EMCP_Tools_Management_Access {
 	}
 
 	/** Map the dedicated menu capability without persistently changing WordPress roles. */
-	public static function map_capability( array $caps, string $cap, int $user_id, array $args ): array {
+	public static function map_capability( array $caps, $cap, int $user_id, array $args ): array {
+		// Core passes whatever reached current_user_can(), null included (#174).
+		if ( ! is_string( $cap ) ) {
+			return $caps;
+		}
 		if ( self::CAPABILITY !== $cap ) { return $caps; }
 		$policy = EMCP_Tools_Management_Policy::read();
 		if ( is_wp_error( $policy ) || ! EMCP_Tools_Management_Policy::allows( $policy, $user_id ) ) {

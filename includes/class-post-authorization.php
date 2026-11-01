@@ -31,12 +31,16 @@ class EMCP_Tools_Post_Authorization {
 	 * native admin requests, REST writes, revisions and plugin integrations.
 	 *
 	 * @param string[] $caps    Primitive capabilities mapped by WordPress.
-	 * @param string   $cap     Requested meta capability.
+	 * @param mixed    $cap     Requested meta capability; not always a string.
 	 * @param int      $user_id User id.
 	 * @param mixed[]  $args    Meta-capability arguments.
 	 * @return string[]
 	 */
-	public static function protect_sitewide_elementor_template( array $caps, string $cap, int $user_id, array $args ): array {
+	public static function protect_sitewide_elementor_template( array $caps, $cap, int $user_id, array $args ): array {
+		// Core passes whatever reached current_user_can(), null included (#174).
+		if ( ! is_string( $cap ) ) {
+			return $caps;
+		}
 		if ( ! in_array( $cap, array( 'edit_post', 'delete_post', 'edit_page', 'delete_page' ), true ) ) {
 			return $caps;
 		}
