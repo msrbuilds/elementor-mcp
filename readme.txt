@@ -3,7 +3,7 @@ Contributors: mianshahzadraza
 Tags: elementor, mcp, ai, page-builder, automation
 Requires at least: 6.9
 Tested up to: 7.1
-Stable tag: 3.21.1
+Stable tag: 3.21.2
 Requires PHP: 8.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -218,6 +218,13 @@ EMCP Tools works on your own site. It contacts the services below only in the si
 2. Connection configuration page with copy-paste configs.
 
 == Changelog ==
+
+= 3.21.2 =
+
+Fixes wp-admin errors for non-administrators on some sites and corrects the ChatGPT App connection steps.
+
+* Fixed: Every wp-admin page showed a critical error for users who are not administrators when another plugin added a menu item with no capability.
+* Fixed: The ChatGPT App steps on the Connection screen now match the app's Plugins flow.
 
 = 3.21.1 =
 

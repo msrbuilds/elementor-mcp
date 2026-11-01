@@ -2,6 +2,13 @@
 
 All notable changes to MCP Tools for WordPress & Page Builders are documented in this file.
 
+## [3.21.2] - 2026-11-02
+
+> A fix for wp-admin errors that non-administrators saw on some sites, and corrected ChatGPT App connection steps.
+
+- Fixed: **Every wp-admin page showed "There has been a critical error" for users who are not administrators** on sites where another plugin adds a menu item with no capability (reported in #174). WordPress passes that empty capability to every permission filter, and four EMCP filters only accepted text, so PHP stopped the page. They now pass anything that is not a capability name through unchanged. Administrators were not affected.
+- Fixed: The ChatGPT App steps on the Connection screen now match the app: Plugins, Add, Add custom MCP server, keep OAuth, Create as a plugin, then Approve on your site. The Application password guide uses Settings, Plugins, MCPs, Add and has no Restart step (#175).
+
 ## [3.21.1] - 2026-10-31
 
 > Ten native plugin integrations, six of them free and also in EMCP Lite, plus fixes for the EMCP Cloud Gateway and for Safe Updates on MariaDB after 3.21.0.
