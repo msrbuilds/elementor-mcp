@@ -4,9 +4,13 @@ All notable changes to MCP Tools for WordPress & Page Builders are documented in
 
 ## [3.21.2] - 2026-11-02
 
-> A fix for wp-admin errors that non-administrators saw on some sites, and corrected ChatGPT App connection steps.
+> Fixes for pulling settings from EMCP Cloud, for wp-admin errors that non-administrators saw on some sites, and corrected ChatGPT App connection steps.
 
 - Fixed: **Every wp-admin page showed "There has been a critical error" for users who are not administrators** on sites where another plugin adds a menu item with no capability (reported in #174). WordPress passes that empty capability to every permission filter, and four EMCP filters only accepted text, so PHP stopped the page. They now pass anything that is not a capability name through unchanged. Administrators were not affected.
+- Fixed: **Pulling settings from EMCP Cloud did nothing or failed without saying why.** With nothing pushed yet, the Connection screen said "try again or reconnect", which never helps: it now says to push from the site you want to copy first. A pull that applies nothing is reported as an error instead of a success, and a successful pull says how many settings it applied. Every other sync error gets its own message.
+- Fixed: Pulling settings pushed from an older version switched on tools that newer versions ship switched off. Pushes now record their source and tool defaults, and a pull keeps the newer default-off tools off (unless new tools are set to turn on after updates).
+- Improved: A settings pull is recorded in History, so one click undoes it.
+- Fixed: The `cloud-config-sync` MCP tool returned pulled settings without applying them, and its push stored whatever data the agent sent over the settings shared by every site. For settings it now pushes this site's own settings and applies pulls, like the Connection screen.
 - Fixed: The ChatGPT App steps on the Connection screen now match the app: Plugins, Add, Add custom MCP server, keep OAuth, Create as a plugin, then Approve on your site. The Application password guide uses Settings, Plugins, MCPs, Add and has no Restart step (#175).
 
 ## [3.21.1] - 2026-10-31

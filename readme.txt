@@ -221,9 +221,11 @@ EMCP Tools works on your own site. It contacts the services below only in the si
 
 = 3.21.2 =
 
-Fixes wp-admin errors for non-administrators on some sites and corrects the ChatGPT App connection steps.
+Fixes pulling settings from EMCP Cloud and wp-admin errors for non-administrators on some sites, and corrects the ChatGPT App connection steps.
 
 * Fixed: Every wp-admin page showed a critical error for users who are not administrators when another plugin added a menu item with no capability.
+* Fixed: Pulling settings from EMCP Cloud now explains why it failed (for example, nothing pushed yet), reports how many settings it applied, keeps tools that newer versions switch off switched off, and can be undone from History.
+* Fixed: The cloud-config-sync MCP tool now applies pulled settings and pushes this site's own settings.
 * Fixed: The ChatGPT App steps on the Connection screen now match the app's Plugins flow.
 
 = 3.21.1 =
