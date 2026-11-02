@@ -1,5 +1,5 @@
 import { useState } from '@wordpress/element';
-import { __ } from '@wordpress/i18n';
+import { __, _n, sprintf } from '@wordpress/i18n';
 import { Notice, PageHeader, Segmented, useQueryState } from '@emcp/ui';
 import { McpSetup } from './McpSetup';
 import { ServerRail } from './ServerRail';
@@ -65,21 +65,75 @@ function flagNotice() {
 		];
 	}
 	if ( 'pull' === q.get( 'synced' ) ) {
+		const applied = parseInt( q.get( 'sync_applied' ) || '0', 10 );
 		return [
 			'success',
-			__( 'Settings pulled from the cloud and applied.', 'emcp-tools' ),
+			applied > 0
+				? sprintf(
+						/* translators: %d: number of settings applied. */
+						_n(
+							'Settings pulled from the cloud: %d setting applied.',
+							'Settings pulled from the cloud: %d settings applied.',
+							applied,
+							'emcp-tools'
+						),
+						applied
+				  )
+				: __( 'Settings pulled from the cloud and applied.', 'emcp-tools' ),
 		];
 	}
 	if ( 'err' === q.get( 'synced' ) ) {
-		return [
-			'error',
-			__(
-				'Settings sync failed. Please try again or reconnect this site to EMCP Cloud.',
-				'emcp-tools'
-			),
-		];
+		return [ 'error', syncErrorMessage( q.get( 'sync_error' ) || '' ) ];
 	}
 	return null;
+}
+
+/**
+ * What went wrong with a settings push or pull, from the handler's error code.
+ *
+ * @param {string} code WP_Error code passed back by the admin-post handler.
+ * @return {string} Notice text.
+ */
+export function syncErrorMessage( code ) {
+	switch ( code ) {
+		case 'nothing_pushed':
+			return __(
+				'There are no settings in EMCP Cloud to pull yet. Open the site whose settings you want to copy, click "Push settings to cloud" there, then pull here.',
+				'emcp-tools'
+			);
+		case 'nothing_applied':
+		case 'invalid_blob':
+			return __(
+				'The settings stored in EMCP Cloud could not be applied to this site. Push them again from the site you want to copy, then pull here.',
+				'emcp-tools'
+			);
+		case 'not_entitled':
+		case 'cloud_http_402':
+			return __(
+				'Settings sync is part of the paid EMCP Cloud plans. Upgrade your plan, then try again.',
+				'emcp-tools'
+			);
+		case 'not_connected':
+		case 'cloud_http_401':
+			return __(
+				'This site is no longer signed in to EMCP Cloud. Reconnect it, then try again.',
+				'emcp-tools'
+			);
+		default:
+			return code
+				? sprintf(
+						/* translators: %s: error code. */
+						__(
+							'Settings sync failed (%s). EMCP Cloud may be busy: please try again in a minute.',
+							'emcp-tools'
+						),
+						code
+				  )
+				: __(
+						'Settings sync failed. Please try again in a minute.',
+						'emcp-tools'
+				  );
+	}
 }
 
 export function ConnectionScreen( { data } ) {

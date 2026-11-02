@@ -1,6 +1,6 @@
 <?php
 // Isolated transport harness: no WordPress bootstrap/test doubles from other suites.
-define( 'ABSPATH', __DIR__ ); define( 'EMCP_TOOLS_DIR', dirname( __DIR__, 2 ) . '/' ); define( 'WP_CLI', true );
+define( 'ABSPATH', __DIR__ ); define( 'EMCP_TOOLS_DIR', dirname( __DIR__, 2 ) . '/' ); define( 'WP_CLI', true ); define( 'EMCP_TOOLS_VERSION', '0.0.0' );
 set_error_handler( static function( $severity, $message ) { throw new RuntimeException( $message ); } );
 class WP_Error {
 	public function __construct( public $code, public $message, public $data = array() ) {}
@@ -13,6 +13,7 @@ $accounts = array( 1 => true, 2 => true, 3 => false ); $actor = 1; $nonce = true
 function __( $text, $domain = '' ) { return $text; }
 function esc_html__( $text, $domain = '' ) { return $text; }
 function esc_html( $text ) { return $text; }
+function home_url() { return 'https://example.test'; }
 function is_wp_error( $value ) { return $value instanceof WP_Error; }
 function wp_json_encode( $value ) { return json_encode( $value, JSON_THROW_ON_ERROR ); }
 function get_userdata( $id ) { global $accounts; return array_key_exists( $id, $accounts ) ? (object) array( 'ID' => $id ) : false; }

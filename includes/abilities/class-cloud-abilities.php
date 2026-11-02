@@ -148,7 +148,7 @@ class EMCP_Tools_Cloud_Abilities {
 			'emcp-tools/cloud-config-sync',
 			array(
 				'label'               => __( 'Cloud Config Sync', 'emcp-tools' ),
-				'description'         => __( 'Push or pull a config blob (settings, brand_kit, tool_toggles) to/from EMCP Cloud.', 'emcp-tools' ),
+				'description'         => __( 'Push or pull a config blob (settings, brand_kit, tool_toggles) to/from EMCP Cloud. For settings, push sends this site\'s EMCP settings (data is ignored) and pull applies the stored settings to this site.', 'emcp-tools' ),
 				'category'            => 'emcp-tools',
 				'execute_callback'    => array( $this, 'execute_config_sync' ),
 				'permission_callback' => array( $this, 'check_permission' ),
@@ -278,6 +278,12 @@ class EMCP_Tools_Cloud_Abilities {
 	public function execute_config_sync( $input ) {
 		$type      = isset( $input['type'] ) ? sanitize_key( (string) $input['type'] ) : '';
 		$direction = isset( $input['direction'] ) ? sanitize_key( (string) $input['direction'] ) : 'pull';
+		// Settings go through the same path as the Connection screen: a push
+		// sends this site's own settings and a pull applies them, so an agent
+		// cannot overwrite the workspace's shared settings with arbitrary data.
+		if ( 'settings' === $type && class_exists( 'EMCP_Tools_Settings_Sync' ) ) {
+			return 'push' === $direction ? EMCP_Tools_Settings_Sync::push() : EMCP_Tools_Settings_Sync::pull_and_apply();
+		}
 		if ( 'push' === $direction ) {
 			$data = isset( $input['data'] ) && is_array( $input['data'] ) ? $input['data'] : array();
 			$r    = EMCP_Tools_Cloud_Sync::push_config( $type, $data );
