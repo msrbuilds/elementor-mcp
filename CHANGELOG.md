@@ -9,6 +9,7 @@ All notable changes to MCP Tools for Elementor are documented in this file.
 - New write tools start disabled and enforce capabilities, confirmation, native plugin constraints and supported-version checks. Reversible operations include conflict-aware History undo; irreversible actions report their recovery limits.
 - Improved: CPT UI preserves quoted labels and descriptions and refuses filtered storage during undo. Pods verifies persisted schema and record values after native hooks.
 - Security: Mail tests reject competing SMTP plugins, retain durable replay protection and report uncertain outcomes. Flamingo filters nested sensitive fields and reconciles post-commit failures. Ultimate Member refuses ambiguous duplicate metadata before writes or undo.
+- Improved: Compact tool mode now tells the hosted Gateway which tools only read, so read-only team members can use compact sites.
 
 ## [3.21.0] - 2026-10-20
 

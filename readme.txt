@@ -227,6 +227,7 @@ Ten native plugin integrations with guarded writes, History recovery and verifie
 * New in Pro: FluentSMTP, Flamingo, Site Kit and Ultimate Member. Site Kit reads local setup, authentication and module state.
 * New write tools start disabled. Enable them explicitly on the Tools screen.
 * Improved: Native write verification, conflict-aware undo, partial-write recovery, nested sensitive-field filtering and mail-test receipts that prevent accidental replay.
+* Improved: Compact tool mode now tells the hosted Gateway which tools only read, so read-only team members can use compact sites.
 
 = 3.21.0 =
 
