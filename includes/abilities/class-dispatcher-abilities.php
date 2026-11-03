@@ -77,6 +77,19 @@ class EMCP_Tools_Dispatcher_Abilities {
 	}
 
 	/**
+	 * True only when the ability declares readonly => true. The hosted Gateway
+	 * reads this to let read-only team members use compact sites, so anything
+	 * short of a strict true counts as a write.
+	 *
+	 * @param object $ability
+	 * @return bool
+	 */
+	private function is_readonly( $ability ): bool {
+		$meta = method_exists( $ability, 'get_meta' ) ? (array) $ability->get_meta() : array();
+		return true === ( $meta['annotations']['readonly'] ?? null );
+	}
+
+	/**
 	 * list-tools: compact catalog of enabled tools (+ discovery context).
 	 *
 	 * @param array $input { search?: string, category?: string }
@@ -105,6 +118,7 @@ class EMCP_Tools_Dispatcher_Abilities {
 				'description' => $desc,
 				'category'    => $cat,
 				'destructive' => $this->is_destructive( $ability ),
+				'readonly'    => $this->is_readonly( $ability ),
 			);
 		}
 
@@ -136,6 +150,7 @@ class EMCP_Tools_Dispatcher_Abilities {
 			$schemas[ $name ] = array(
 				'description' => (string) $ability->get_description(),
 				'inputSchema' => (array) $ability->get_input_schema(),
+				'readonly'    => $this->is_readonly( $ability ),
 			);
 		}
 
