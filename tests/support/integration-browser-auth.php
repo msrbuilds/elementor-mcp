@@ -1,7 +1,7 @@
 <?php
 /** Short-lived, revocable local browser session. Never prints cookies. */
 $local_ols = 'http://localhost:18880' === home_url() && 'local' === wp_get_environment_type();
-if ( ! defined( 'WP_CLI' ) || ! WP_CLI || ( ! $local_ols && ! in_array( home_url(), array( 'https://msrplugins.test', 'https://emcp-lite.test' ), true ) ) ) { throw new RuntimeException( 'Local test sites only.' ); }
+if ( ! defined( 'WP_CLI' ) || ! WP_CLI || ( ! $local_ols && ! in_array( home_url(), array( 'https://msrplugins.test', 'https://emcp-lite.test', 'https://elementor-mcp.test' ), true ) ) ) { throw new RuntimeException( 'Local test sites only.' ); }
 $mode = $args[0] ?? '';
 $path = $args[1] ?? '';
 if ( ! $path || ! is_dir( dirname( $path ) ) ) { throw new RuntimeException( 'Provide a private temporary cookie-file path.' ); }

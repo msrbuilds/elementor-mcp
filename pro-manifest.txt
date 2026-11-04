@@ -115,6 +115,11 @@ includes/divi/class-divi-settings.php
 includes/divi/class-divi-theme-builder.php
 includes/abilities/class-divi-integration.php
 includes/abilities/class-avada-integration.php
+includes/flatsome/class-flatsome-native.php
+includes/flatsome/class-flatsome-writer.php
+includes/abilities/class-flatsome-integration.php
+includes/abilities/class-flatsome-theme-integration.php
+skills/emcp-flatsome/SKILL.md
 
 includes/oxygen/class-oxygen-conditions.php
 includes/oxygen/class-oxygen-design.php

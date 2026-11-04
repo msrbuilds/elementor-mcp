@@ -35,6 +35,7 @@ class EMCP_Tools_Page_Builders {
 	/** Implemented standalone integrations. Block packs belong to Gutenberg. */
 	public static function catalog(): array {
 		return array(
+			'flatsome' => array('label'=>__('Flatsome','emcp-tools'),'description'=>__('Native block pages, responsive styles, patterns and recovery.','emcp-tools'),'requirement'=>__('Requires Flatsome Site Builder and Block Theme 1.0.0-beta.7 and EMCP Pro.','emcp-tools')),
 			'visual-composer' => array('label'=>__('Visual Composer','emcp-tools'),'description'=>__('Native documents, element schemas, staged HTML/CSS, local library and recovery.','emcp-tools'),'requirement'=>__('Requires active Visual Composer 45.16.2–45.16.x and EMCP Pro.','emcp-tools')),
 			'beaver' => array('label'=>__('Beaver Builder','emcp-tools'),'description'=>__('Native staged layouts, module schemas, responsive styles, saved library and recovery.','emcp-tools'),'requirement'=>__('Requires active Beaver Builder 2.11.1–2.11.x and EMCP Pro.','emcp-tools')),
 			'wpbakery' => array('label'=>__('WPBakery','emcp-tools'),'description'=>__('Native shortcode layouts, element schemas, page CSS, templates and recovery.','emcp-tools'),'requirement'=>__('Requires active WPBakery 9.0.1–9.0.x and EMCP Pro.','emcp-tools')),
@@ -67,6 +68,7 @@ class EMCP_Tools_Page_Builders {
 	}
 
 	public static function available( string $id ): bool {
+		if ('flatsome' === $id) { return function_exists('emcp_tools_fs') && emcp_tools_fs()->can_use_premium_code() && class_exists('EMCP_Tools_Flatsome_Integration') && EMCP_Tools_Flatsome_Integration::supported(); }
 		if ('visual-composer' === $id) { return function_exists('emcp_tools_fs') && emcp_tools_fs()->can_use_premium_code() && class_exists('EMCP_Tools_Visual_Composer_Integration') && EMCP_Tools_Visual_Composer_Integration::supported(); }
 		if (isset(self::block_packs()[$id])) {
 			$class=self::block_packs()[$id]['class'];

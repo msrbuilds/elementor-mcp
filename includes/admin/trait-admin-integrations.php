@@ -51,6 +51,7 @@ trait EMCP_Tools_Admin_Integrations_Trait {
 			'kirki' => __('Kirki','emcp-tools'),
 			'oxygen' => __('Oxygen','emcp-tools'),
 			'avada' => __( 'Avada', 'emcp-tools' ),
+			'flatsome' => __( 'Flatsome', 'emcp-tools' ),
 			'divi' => __( 'Divi', 'emcp-tools' ),
 			'thrive' => __( 'Thrive Architect', 'emcp-tools' ),
 			'spectra' => __( 'Spectra', 'emcp-tools' ),

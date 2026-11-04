@@ -489,6 +489,12 @@ class EMCP_Tools_Ability_Registrar {
 			try { $avada->register(); } finally { EMCP_Tools_Page_Builders::$registering = ''; }
 			$this->ability_names = array_merge( $this->ability_names, $avada->get_ability_names() );
 		}
+		if ( EMCP_Tools_Page_Builders::enabled( 'flatsome' ) ) {
+			$flatsome = new EMCP_Tools_Flatsome_Integration();
+			EMCP_Tools_Page_Builders::$registering = 'flatsome';
+			try { $flatsome->register(); } finally { EMCP_Tools_Page_Builders::$registering = ''; }
+			$this->ability_names = array_merge( $this->ability_names, $flatsome->get_ability_names() );
+		}
 
 		if ( EMCP_Tools_Page_Builders::enabled( 'beaver' ) ) {
 			$beaver = new EMCP_Tools_Beaver_Integration();
@@ -546,6 +552,7 @@ class EMCP_Tools_Ability_Registrar {
 		// Themes-tab integrations — the framework-agnostic active-theme pack always,
 		// per-framework packs only when that framework is the active theme.
 		$theme_integrations = array();
+		if ( class_exists( 'EMCP_Tools_Flatsome_Theme_Integration' ) ) { $theme_integrations[] = new EMCP_Tools_Flatsome_Theme_Integration(); }
 		if ( class_exists( 'EMCP_Tools_Active_Theme_Integration' ) ) {
 			$theme_integrations[] = new EMCP_Tools_Active_Theme_Integration();
 		}

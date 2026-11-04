@@ -21,6 +21,8 @@ final class EMCP_Tools_Pro_Loader {
 
 	/** Pro class files, in load order. Relative to the Pro root. */
 	private const FILES = array(
+		'includes/flatsome/class-flatsome-native.php',
+		'includes/flatsome/class-flatsome-writer.php',
 		'includes/abilities/ultimate-member/class-ultimate-member-api.php',
 		'includes/abilities/sitekit/class-sitekit-api.php',
 		'includes/abilities/ultimate-member/class-ultimate-member-writer.php',
@@ -209,6 +211,8 @@ final class EMCP_Tools_Pro_Loader {
 		'includes/divi/class-divi-theme-builder.php',
 		'includes/abilities/class-divi-integration.php',
 		'includes/abilities/class-avada-integration.php',
+		'includes/abilities/class-flatsome-integration.php',
+		'includes/abilities/class-flatsome-theme-integration.php',
 		'includes/breakdance/class-breakdance-tree.php',
 		'includes/abilities/class-breakdance-integration.php',
 		'includes/oxygen/class-oxygen-conditions.php',
@@ -421,6 +425,7 @@ final class EMCP_Tools_Pro_Loader {
 	}
 
 	public static function wire_runtime_hooks(): void {
+		if ( class_exists( 'EMCP_Tools_Flatsome_Writer' ) ) { EMCP_Tools_Flatsome_Writer::boot(); }
 		if ( class_exists( 'EMCP_Tools_Ultimate_Member_Writer' ) ) { EMCP_Tools_Ultimate_Member_Writer::boot(); }
 		if ( class_exists( 'EMCP_Tools_Flamingo_Writer' ) ) { EMCP_Tools_Flamingo_Writer::boot(); }
 		// AI Chat runtime wiring now lives in EMCP_Tools_AI_Chat_Module::register(),

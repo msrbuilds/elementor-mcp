@@ -2655,6 +2655,7 @@ trait EMCP_Tools_Admin_Catalog_Trait {
 		if ( class_exists( 'EMCP_Tools_Avada_Integration' ) ) {
 			$tools = array_merge( $tools, EMCP_Tools_Avada_Integration::admin_categories() );
 		}
+		if ( class_exists( 'EMCP_Tools_Flatsome_Integration' ) ) { $tools = array_merge($tools, EMCP_Tools_Flatsome_Integration::admin_categories(), EMCP_Tools_Flatsome_Theme_Integration::admin_categories()); }
 		if ( class_exists( 'EMCP_Tools_Thrive_Integration' ) ) { $tools = array_merge( $tools, EMCP_Tools_Thrive_Integration::admin_categories() ); }
 		if ( class_exists( 'EMCP_Tools_Divi_Integration' ) ) {
 			$tools = array_merge( $tools, EMCP_Tools_Divi_Integration::admin_categories() );
