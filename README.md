@@ -15,7 +15,7 @@
 [![GitHub Issues](https://img.shields.io/github/issues/msrbuilds/elementor-mcp)](https://github.com/msrbuilds/elementor-mcp/issues)
 [![GitHub Stars](https://img.shields.io/github/stars/msrbuilds/elementor-mcp?style=social)](https://github.com/msrbuilds/elementor-mcp)
 
-**[Docs](https://emcptools.com/docs/) · [Integrations](https://emcptools.com/integrations/) · [Changelog](https://emcptools.com/changelog) · [Pro](https://emcptools.com/pricing)**
+**[Docs](https://emcptools.com/docs/) · [Integrations](https://emcptools.com/integrations/) · [Changelog](https://emcptools.com/changelog) · [Pro](https://emcptools.com/pricing) [Download from WordPress](https://wordpress.org/plugins/emcp-lite/)**
 
 </div>
 
