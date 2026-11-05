@@ -35,7 +35,7 @@ class EMCP_Tools_Page_Builders {
 	/** Implemented standalone integrations. Block packs belong to Gutenberg. */
 	public static function catalog(): array {
 		return array(
-			'flatsome' => array('label'=>__('Flatsome','emcp-tools'),'description'=>__('Native block pages, responsive styles, patterns and recovery.','emcp-tools'),'requirement'=>__('Requires Flatsome Site Builder and Block Theme 1.0.0-beta.7 or later and EMCP Pro.','emcp-tools')),
+			'flatsome' => array('label'=>__('Flatsome','emcp-tools'),'description'=>__('Native block pages, responsive styles, patterns and recovery.','emcp-tools'),'requirement'=>__('Requires Flatsome Site Builder and Block Theme 1.0.0-beta.7 or later (child themes included) and EMCP Pro.','emcp-tools')),
 			'visual-composer' => array('label'=>__('Visual Composer','emcp-tools'),'description'=>__('Native documents, element schemas, staged HTML/CSS, local library and recovery.','emcp-tools'),'requirement'=>__('Requires active Visual Composer 45.16.2 or later and EMCP Pro.','emcp-tools')),
 			'beaver' => array('label'=>__('Beaver Builder','emcp-tools'),'description'=>__('Native staged layouts, module schemas, responsive styles, saved library and recovery.','emcp-tools'),'requirement'=>__('Requires active Beaver Builder 2.11.1 or later and EMCP Pro.','emcp-tools')),
 			'wpbakery' => array('label'=>__('WPBakery','emcp-tools'),'description'=>__('Native shortcode layouts, element schemas, page CSS, templates and recovery.','emcp-tools'),'requirement'=>__('Requires active WPBakery 9.0.1 or later and EMCP Pro.','emcp-tools')),

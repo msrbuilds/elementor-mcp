@@ -1,6 +1,6 @@
 # Flatsome Site Builder integration
 
-EMCP Pro supports the **Flatsome Site Builder plugin and Flatsome Block Theme pair, 1.0.0-beta.7 or later**. This is native WordPress block storage. Classic Flatsome and UX Builder shortcodes are a different product and are not supported by this adapter. Other versions and child themes fail the qualification gate.
+EMCP Pro supports the **Flatsome Site Builder plugin and Flatsome Block Theme pair, 1.0.0-beta.7 or later**. This is native WordPress block storage. A child of the Flatsome Block Theme works too. Classic Flatsome and UX Builder shortcodes are a different product and are not supported by this adapter. Other versions and child themes fail the qualification gate.
 
 Select Flatsome in EMCP's builder setting to expose its 16 builder tools. The two theme dispatchers are independent of that selection. All seven builder mutations and the theme write dispatcher default off. Existing selections and toggles are preserved during installation.
 
