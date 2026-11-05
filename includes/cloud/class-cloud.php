@@ -78,6 +78,11 @@ class EMCP_Tools_Cloud {
 		return '' !== $bound && $bound !== self::installation_base();
 	}
 
+	/** Whether this connection carries the marker that lets a copy be told from the original. */
+	public static function identity_bound(): bool {
+		return '' !== (string) get_option( self::OPTION_IDENTITY_BASE, '' );
+	}
+
 	/** Detach this copy locally. Never revoke the source's Cloud connection. */
 	public static function separate_identity(): void {
 		self::clear_connection();

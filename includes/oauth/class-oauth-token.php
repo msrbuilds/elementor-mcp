@@ -287,7 +287,7 @@ class EMCP_Tools_OAuth_Token {
 	 * @return array{access:string,refresh:string}
 	 */
 	private static function issue_pair( string $client_id, int $user_id, string $scope, string $resource ): array {
-		$refresh = EMCP_Tools_OAuth_Store::issue_token( 'refresh', $client_id, $user_id, $scope, self::REFRESH_TTL, null, $resource );
+		$refresh = EMCP_Tools_OAuth_Store::issue_token( 'refresh', $client_id, $user_id, $scope, self::refresh_ttl( $client_id, $scope ), null, $resource );
 		if ( '' === $refresh['token'] ) {
 			return array( 'access' => '', 'refresh' => '' );
 		}
@@ -296,6 +296,21 @@ class EMCP_Tools_OAuth_Token {
 			return array( 'access' => '', 'refresh' => '' );
 		}
 		return array( 'access' => $access['token'], 'refresh' => $refresh['token'] );
+	}
+
+	/**
+	 * Refresh-token lifetime. The Gateway calls a site only when an agent does,
+	 * so a quiet site can go months between rotations: its token keeps the long
+	 * life it was issued with, or the first rotation cuts it to 30 days and the
+	 * site needs a reconnect after a quiet month.
+	 *
+	 * @param string $client_id Client id.
+	 * @param string $scope     Granted scope.
+	 * @return int Seconds.
+	 */
+	private static function refresh_ttl( string $client_id, string $scope ): int {
+		$gateway = EMCP_Tools_Gateway_Credential::SCOPE === $scope && EMCP_Tools_Gateway_Credential::is_gateway_client( $client_id );
+		return $gateway ? EMCP_Tools_Gateway_Credential::REFRESH_TTL : self::REFRESH_TTL;
 	}
 
 	/**

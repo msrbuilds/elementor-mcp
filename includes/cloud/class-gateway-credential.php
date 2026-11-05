@@ -46,6 +46,28 @@ class EMCP_Tools_Gateway_Credential {
 	}
 
 	/**
+	 * Give live Gateway tokens rotated before 3.21.3, which got only 30 days,
+	 * their long life back. Retired tokens in their rotation grace stay retired.
+	 *
+	 * @return bool False when the client lock was busy or the update failed: retry later.
+	 */
+	public static function extend_existing_tokens(): bool {
+		$client_id = self::existing_client_id();
+		if ( '' === $client_id ) {
+			return true;
+		}
+		if ( ! EMCP_Tools_OAuth_Store::acquire_client_token_lock( $client_id ) ) {
+			return false;
+		}
+		try {
+			$now = time();
+			return EMCP_Tools_OAuth_Store::extend_refresh_tokens( $client_id, self::SCOPE, $now + self::REFRESH_TTL, $now + EMCP_Tools_OAuth_Token::refresh_grace() );
+		} finally {
+			EMCP_Tools_OAuth_Store::release_client_token_lock( $client_id );
+		}
+	}
+
+	/**
 	 * Ensure the stable "EMCP Gateway" OAuth client exists and return its
 	 * client_id. Idempotent: reuses an existing registration (matched by
 	 * name + redirect URIs) instead of minting a new client every call.

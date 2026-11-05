@@ -24,6 +24,12 @@ class EMCP_Tools_Cloud_Connect {
 	// Seconds a waiting request blocks on the refresh mutex before giving up and
 	// proceeding best-effort. Kept short so an admin page never stalls.
 	const REFRESH_LOCK_WAIT = 5;
+	const KEEPALIVE_HOOK = 'emcp_tools_cloud_keepalive';
+	// Cloud refresh tokens last 30 days from their last use. A daily check that
+	// renews weekly survives weeks without WP-Cron traffic, and rotates seldom,
+	// because each rotation is a chance to lose the response.
+	const KEEPALIVE_AGE = 604800;
+	const OPTION_GATEWAY_TOKENS_EXTENDED = 'emcp_tools_gateway_tokens_extended';
 
 	/**
 	 * Register the admin-post handlers (called from the module's register()).
@@ -37,6 +43,10 @@ class EMCP_Tools_Cloud_Connect {
 		add_action( 'admin_post_' . self::ACTION_DISCONNECT, array( __CLASS__, 'handle_disconnect' ) );
 		add_action( 'admin_post_' . self::ACTION_REISSUE, array( __CLASS__, 'handle_gateway_reissue' ) );
 		add_action( 'admin_post_' . self::ACTION_GATEWAY_OFF, array( __CLASS__, 'handle_gateway_off' ) );
+		add_action( self::KEEPALIVE_HOOK, array( __CLASS__, 'keepalive_tick' ) );
+		if ( ! wp_next_scheduled( self::KEEPALIVE_HOOK ) ) {
+			wp_schedule_event( time() + HOUR_IN_SECONDS, 'daily', self::KEEPALIVE_HOOK );
+		}
 	}
 
 	/**
@@ -295,10 +305,45 @@ class EMCP_Tools_Cloud_Connect {
 		$save['access_token']      = (string) $j['access_token'];
 		$save['refresh_token']     = (string) ( $j['refresh_token'] ?? ( $save['refresh_token'] ?? $used_rt ) );
 		$save['access_expires_at'] = time() + (int) ( $j['expires_in'] ?? 3600 );
+		$save['refreshed_at']      = time();
 		unset( $save['unhealthy'], $save['refresh_retry_at'] );
 		EMCP_Tools_Cloud::save_connection( $save );
 		self::db_unlock( $lock_key, $locked );
 		return true;
+	}
+
+	/**
+	 * The daily WP-Cron job.
+	 *
+	 * @return void
+	 */
+	public static function keepalive_tick(): void {
+		self::keepalive();
+		if ( ! get_option( self::OPTION_GATEWAY_TOKENS_EXTENDED ) && EMCP_Tools_Gateway_Credential::extend_existing_tokens() ) {
+			update_option( self::OPTION_GATEWAY_TOKENS_EXTENDED, 1, false );
+		}
+	}
+
+	/**
+	 * Renew a connection nothing has used lately. A site only refreshes when it
+	 * calls Cloud, so a quiet site otherwise lets its refresh token lapse and
+	 * needs a reconnect in wp-admin.
+	 *
+	 * Skips a connection with no identity marker: a copy of it cannot be told
+	 * from the original, and a copy renewing by itself would reuse a rotated
+	 * token and revoke the original site's whole token family.
+	 *
+	 * @return bool Whether the connection was renewed.
+	 */
+	public static function keepalive(): bool {
+		$c = EMCP_Tools_Cloud::get_connection();
+		if ( empty( $c['refresh_token'] ) || ! empty( $c['unhealthy'] ) || ! EMCP_Tools_Cloud::identity_bound() ) {
+			return false;
+		}
+		if ( (int) ( $c['refreshed_at'] ?? 0 ) + self::KEEPALIVE_AGE > time() ) {
+			return false;
+		}
+		return self::refresh();
 	}
 
 	/**

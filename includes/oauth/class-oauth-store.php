@@ -521,6 +521,31 @@ class EMCP_Tools_OAuth_Store {
 	}
 
 	/**
+	 * Move the expiry of a client's live refresh tokens. Tokens at or below
+	 * $floor are skipped: that is where rotate_out_refresh() parks retired ones.
+	 *
+	 * @param string $client_id  Client id.
+	 * @param string $scope      Token scope.
+	 * @param int    $expires_at New expiry.
+	 * @param int    $floor      Only tokens expiring after this move.
+	 * @return bool Whether the update completed.
+	 */
+	public static function extend_refresh_tokens( string $client_id, string $scope, int $expires_at, int $floor ): bool {
+		global $wpdb;
+		$result = $wpdb->query(
+			$wpdb->prepare(
+				'UPDATE %i SET expires_at = %d WHERE client_id = %s AND token_type = %s AND scopes = %s AND expires_at > %d', self::tokens_table(),
+				$expires_at,
+				$client_id,
+				'refresh',
+				$scope,
+				$floor
+			)
+		);
+		return false !== $result;
+	}
+
+	/**
 	 * Revoke every token issued to a client. Returns rows removed.
 	 *
 	 * @param string $client_id Client id.
