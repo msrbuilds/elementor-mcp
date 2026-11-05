@@ -966,7 +966,7 @@ trait EMCP_Tools_Admin_Catalog_Trait {
 				'group'    => 'events',
 				'pro'      => true,
 				'label'    => __( 'Amelia', 'emcp-tools' ),
-				'note'     => __( 'Run the Amelia booking system: service categories, services with their employees and prices, employees with their working week and days off, customers, appointments (book, reschedule, approve, cancel), events with their periods, and attendees. Every write goes through Amelia\'s own controllers, names only the fields it sets, and is read back; no customer is emailed unless the call asks for it, and every message Amelia sends is reported. Every change to an existing object names the version it read, and every write can be undone in History. Writes ship disabled. Requires Amelia 2.4 or later (Lite included) active.', 'emcp-tools' ),
+				'note'     => __( 'Run Amelia service categories, services, employees and schedules, customers, appointments and events through its native controllers, with verified writes and History undo. Supports Lite 2.4 to 2.x and qualified Pro 9.9.1, including group capacity, buffers, deposits and event tags. Pro preserves service extras, galleries and calculated package prices. Writes with remote integration effects, linked WordPress users, package bookings, resources or ticketed events are refused. Undo rechecks dependencies and availability; force does not bypass safety checks. Writes ship disabled.', 'emcp-tools' ),
 				'tools'    => array(
 					'emcp-tools/amelia-read'  => array(
 						'label'       => __( 'Amelia Read', 'emcp-tools' ),
