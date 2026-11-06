@@ -2,6 +2,16 @@
 
 All notable changes to MCP Tools for WordPress & Page Builders are documented in this file.
 
+## [3.21.3] - 2026-11-06
+
+> Quiet sites stay connected to EMCP Cloud, page builders no longer disappear after a vendor update, and Pro gains Flatsome and Amelia Pro.
+
+- New in Pro: **Flatsome.** 16 builder tools build pages with Flatsome Site Builder through its own block schemas, serializer and renderer, and separate read and write tools handle the Flatsome Block Theme's global styles, templates and template parts. It needs both Flatsome packages at 1.0.0-beta.7 or later, works with child themes, and its writes start disabled. Writes are recorded in History with conflict-aware undo.
+- New in Pro: **Amelia Pro 9.9.1 is supported.** The existing `amelia-read` and `amelia-write` tools now run on Amelia Pro as well as Lite, with extras, galleries, package prices and deletion links covered by undo. Writes that would reach outside WordPress or that undo could not restore are refused: remote calendar and meeting effects, connected people, linked WordPress profiles, and package, resource or ticket bookings.
+- Fixed: **Quiet sites needed a reconnect in wp-admin** (reported by a customer). A Gateway credential issued for 10 years dropped to 30 days the first time it rotated, so a month without traffic ended it, and the site's Cloud connection only renewed when the site used Cloud. Rotation now keeps the long life, live credentials already cut short get it back once, and a daily background check renews a connection that has not renewed for a week. A site that already lapsed needs one last reconnect. The check runs on WP-Cron, so a site with no visits at all can still lapse.
+- Fixed: **A page builder showed "Not detected" after the vendor released a newer version** (reported by a customer on Divi 5.18). Builders and block packs now accept their tested version and every later one, across 11 integrations, and `get-context` reports the tested version. Plugin integrations with History and undo keep their verified version ranges.
+- Improved: Compact tool mode now tells the hosted Gateway which tools only read, so read-only team members can use compact sites.
+
 ## [3.21.2] - 2026-11-02
 
 > Fixes for pulling settings from EMCP Cloud, for wp-admin errors that non-administrators saw on some sites, and corrected ChatGPT App connection steps.
