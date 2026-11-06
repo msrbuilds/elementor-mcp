@@ -196,6 +196,7 @@ includes/abilities/tec/class-tec-writer.php
 includes/abilities/tec/ops
 includes/abilities/amelia
 includes/abilities/amelia/class-amelia-api.php
+includes/abilities/amelia/class-amelia-pro.php
 includes/abilities/amelia/class-amelia-history.php
 includes/abilities/amelia/class-amelia-integration.php
 includes/abilities/amelia/class-amelia-writer.php
