@@ -224,7 +224,7 @@ EMCP Tools works on your own site. It contacts the services below only in the si
 Quiet sites stay connected to EMCP Cloud, page builders no longer disappear after a vendor update, and Pro gains Flatsome and Amelia Pro.
 
 * New in Pro: Flatsome builder and theme tools for Flatsome Site Builder and the Flatsome Block Theme 1.0.0-beta.7 or later, child themes included. Writes start disabled and are recorded in History.
-* New in Pro: Amelia Pro 9.9.1 works with the existing Amelia tools, with undo covering extras, galleries, package prices and deletion links.
+* New in Pro: Amelia Pro 9.9.1 or later works with the existing Amelia tools, with undo covering extras, galleries, package prices and deletion links.
 * Fixed: Quiet sites needed a reconnect in wp-admin. Gateway credentials keep their full life when they rotate, and a daily background check renews a Cloud connection that has not renewed for a week. A site that already lapsed needs one last reconnect.
 * Fixed: A page builder showed "Not detected" after the vendor released a newer version. Builders and block packs now accept their tested version and every later one.
 * Improved: Compact tool mode now tells the hosted Gateway which tools only read, so read-only team members can use compact sites.

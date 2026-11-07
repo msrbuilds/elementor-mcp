@@ -966,7 +966,7 @@ trait EMCP_Tools_Admin_Catalog_Trait {
 				'group'    => 'events',
 				'pro'      => true,
 				'label'    => __( 'Amelia', 'emcp-tools' ),
-				'note'     => __( 'Run Amelia service categories, services, employees and schedules, customers, appointments and events through its native controllers, with verified writes and History undo. Supports Lite 2.4 to 2.x and qualified Pro 9.9.1, including group capacity, buffers, deposits and event tags. Pro preserves service extras, galleries and calculated package prices. Writes with remote integration effects, linked WordPress users, package bookings, resources or ticketed events are refused. Undo rechecks dependencies and availability; force does not bypass safety checks. Writes ship disabled.', 'emcp-tools' ),
+				'note'     => __( 'Run Amelia service categories, services, employees and schedules, customers, appointments and events through its native controllers, with verified writes and History undo. Supports Lite 2.4 to 2.x and Pro 9.9.1 or later, including group capacity, buffers, deposits and event tags. Pro preserves service extras, galleries and calculated package prices. Writes with remote integration effects, linked WordPress users, package bookings, resources or ticketed events are refused. Undo rechecks dependencies and availability; force does not bypass safety checks. Writes ship disabled.', 'emcp-tools' ),
 				'tools'    => array(
 					'emcp-tools/amelia-read'  => array(
 						'label'       => __( 'Amelia Read', 'emcp-tools' ),

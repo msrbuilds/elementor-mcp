@@ -78,8 +78,11 @@ function flagNotice() {
 							'emcp-tools'
 						),
 						applied
-				  )
-				: __( 'Settings pulled from the cloud and applied.', 'emcp-tools' ),
+					)
+				: __(
+						'Settings pulled from the cloud and applied.',
+						'emcp-tools'
+					),
 		];
 	}
 	if ( 'err' === q.get( 'synced' ) ) {
@@ -128,11 +131,11 @@ export function syncErrorMessage( code ) {
 							'emcp-tools'
 						),
 						code
-				  )
+					)
 				: __(
 						'Settings sync failed. Please try again in a minute.',
 						'emcp-tools'
-				  );
+					);
 	}
 }
 
