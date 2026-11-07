@@ -30,6 +30,13 @@ class EMCP_Tools_Cloud_Connect {
 	// because each rotation is a chance to lose the response.
 	const KEEPALIVE_AGE = 604800;
 	const OPTION_GATEWAY_TOKENS_EXTENDED = 'emcp_tools_gateway_tokens_extended';
+	// Cloud replays a rotated refresh token for 2 minutes. A quiet site has no other
+	// request to retry a lost response in that window, so the tick retries itself.
+	const KEEPALIVE_RETRY_LIMIT = 60;
+	/** @var callable Waits between keepalive attempts; a seam for tests. */
+	public static $pause = 'sleep';
+	/** @var string Lease owner while the refresh mutex is a lease. */
+	private static $lease_owner = '';
 
 	/**
 	 * Register the admin-post handlers (called from the module's register()).
@@ -267,7 +274,11 @@ class EMCP_Tools_Cloud_Connect {
 		// Transient failure (no response or a server-side 5xx): leave the
 		// connection untouched so the next request retries. Marking it unhealthy
 		// on a blip is a false "Reconnect needed".
-		if ( is_wp_error( $res ) || in_array( (int) $res['code'], array( 408, 429 ), true ) || (int) $res['code'] >= 500 ) {
+		// Only an OAuth error body is a rejection. A firewall's 403 or a challenge page
+		// never reached Cloud, and the refresh token is still good.
+		$oauth_error = ! is_wp_error( $res ) && ! empty( $res['json']['error'] ) && is_string( $res['json']['error'] );
+		$refreshed   = ! is_wp_error( $res ) && 200 === (int) $res['code'] && ! empty( $res['json']['access_token'] );
+		if ( ! $refreshed && ! $oauth_error ) {
 			$fresh = EMCP_Tools_Cloud::get_connection();
 			// Do not overwrite a reconnect or a concurrent successful rotation.
 			if ( ( $fresh['refresh_token'] ?? '' ) === $used_rt && ( $fresh['client_id'] ?? '' ) === $c['client_id'] ) {
@@ -329,9 +340,10 @@ class EMCP_Tools_Cloud_Connect {
 	 * calls Cloud, so a quiet site otherwise lets its refresh token lapse and
 	 * needs a reconnect in wp-admin.
 	 *
-	 * Skips a connection with no identity marker: a copy of it cannot be told
-	 * from the original, and a copy renewing by itself would reuse a rotated
-	 * token and revoke the original site's whole token family.
+	 * Skips a connection that cannot prove it belongs to this site. A copy renewing
+	 * by itself would reuse a rotated token and revoke the original site's whole token
+	 * family. The proof is the address inside the encrypted bundle: a search-replace on
+	 * a staging copy rewrites the plain identity option, but cannot reach that one.
 	 *
 	 * @return bool Whether the connection was renewed.
 	 */
@@ -340,9 +352,23 @@ class EMCP_Tools_Cloud_Connect {
 		if ( empty( $c['refresh_token'] ) || ! empty( $c['unhealthy'] ) || ! EMCP_Tools_Cloud::identity_bound() ) {
 			return false;
 		}
+		if ( ( $c['installation_base'] ?? '' ) !== EMCP_Tools_Cloud::installation_base() ) {
+			return false;
+		}
 		if ( (int) ( $c['refreshed_at'] ?? 0 ) + self::KEEPALIVE_AGE > time() ) {
 			return false;
 		}
+		if ( self::refresh() ) {
+			return true;
+		}
+		// A lost response may have rotated the token. Present it again inside Cloud's
+		// replay window, or tomorrow's tick revokes the token family.
+		$after = EMCP_Tools_Cloud::get_connection();
+		$wait  = (int) ( $after['refresh_retry_at'] ?? 0 ) - time();
+		if ( ! empty( $after['unhealthy'] ) || $wait < 0 || $wait > self::KEEPALIVE_RETRY_LIMIT ) {
+			return false;
+		}
+		( self::$pause )( $wait + 1 );
 		return self::refresh();
 	}
 
@@ -374,7 +400,26 @@ class EMCP_Tools_Cloud_Connect {
 		if ( ! is_object( $wpdb ) || ! method_exists( $wpdb, 'get_var' ) || ! method_exists( $wpdb, 'prepare' ) ) {
 			return true;
 		}
-		return '1' === (string) $wpdb->get_var( $wpdb->prepare( 'SELECT GET_LOCK(%s, %d)', $key, $timeout ) );
+		// A database without named locks answers with an error: keep it off the page.
+		$quiet  = method_exists( $wpdb, 'suppress_errors' ) ? $wpdb->suppress_errors( true ) : null;
+		$answer = $wpdb->get_var( $wpdb->prepare( 'SELECT GET_LOCK(%s, %d)', $key, $timeout ) );
+		if ( null !== $quiet ) {
+			$wpdb->suppress_errors( $quiet );
+		}
+		if ( null !== $answer || ! class_exists( 'EMCP_Tools_Lease' ) ) {
+			return '1' === (string) $answer;
+		}
+		$lease    = new EMCP_Tools_Lease();
+		$owner    = wp_generate_uuid4();
+		$deadline = microtime( true ) + $timeout;
+		while ( ! $lease->acquire( $key, $owner, 60 ) ) {
+			if ( microtime( true ) >= $deadline ) {
+				return false;
+			}
+			usleep( 100000 );
+		}
+		self::$lease_owner = $owner;
+		return true;
 	}
 
 	/**
@@ -384,6 +429,11 @@ class EMCP_Tools_Cloud_Connect {
 	 */
 	private static function db_unlock( string $key, bool $locked ): void {
 		global $wpdb;
+		if ( $locked && '' !== self::$lease_owner ) {
+			( new EMCP_Tools_Lease() )->release( $key, self::$lease_owner );
+			self::$lease_owner = '';
+			return;
+		}
 		if ( $locked && is_object( $wpdb ) && method_exists( $wpdb, 'query' ) && method_exists( $wpdb, 'prepare' ) ) {
 			$wpdb->query( $wpdb->prepare( 'SELECT RELEASE_LOCK(%s)', $key ) );
 		}

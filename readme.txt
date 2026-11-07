@@ -190,7 +190,7 @@ The admin screens ship compiled in `assets/admin/build/`. Their full source and 
 
 EMCP Tools works on your own site. It contacts the services below only in the situations described. Services marked (Pro) are used by the Pro edition only.
 
-**EMCP Cloud (emcptools.com).** Used only after an administrator connects the site on Connection > Cloud. Connecting sends the site address and a generated site ID and stores OAuth tokens. While connected, the plugin sends what each feature you use needs: Marketplace installs and Sandbox artifact sync send or receive widget, block and snippet bundles; settings sync sends the tool and module settings on its allowlist; Safe Updates sends the update offers, job progress and receipts of a job you approved in Cloud; Static Site sends a generation request ID and the site identity so a generation can be counted. Leaving "Let EMCP Cloud manage this site through the gateway" switched on also uploads a revocable credential for the site's own MCP server. The WP-CLI command `wp emcp cloud onboard` sends the site ID, address and enrolment grant. [Terms of service](https://emcptools.com/terms-of-service), [privacy policy](https://emcptools.com/privacy).
+**EMCP Cloud (emcptools.com).** Used only after an administrator connects the site on Connection > Cloud. Connecting sends the site address and a generated site ID and stores OAuth tokens. While connected, the plugin renews the connection in the background about once a week, so a quiet site stays connected, and sends what each feature you use needs: Marketplace installs and Sandbox artifact sync send or receive widget, block and snippet bundles; settings sync sends the tool and module settings on its allowlist; Safe Updates sends the update offers, job progress and receipts of a job you approved in Cloud; Static Site sends a generation request ID and the site identity so a generation can be counted. Leaving "Let EMCP Cloud manage this site through the gateway" switched on also uploads a revocable credential for the site's own MCP server. The WP-CLI command `wp emcp cloud onboard` sends the site ID, address and enrolment grant. [Terms of service](https://emcptools.com/terms-of-service), [privacy policy](https://emcptools.com/privacy).
 
 **EMCP notifications (emcptools.com).** EMCP admin screens fetch the product announcements shown in the notifications drawer, at most every six hours. The request carries no site data beyond what any web request sends (IP address and WordPress user agent). Same terms and privacy policy as above.
 
@@ -225,9 +225,9 @@ Quiet sites stay connected to EMCP Cloud, page builders no longer disappear afte
 
 * New in Pro: Flatsome builder and theme tools for Flatsome Site Builder and the Flatsome Block Theme 1.0.0-beta.7 or later, child themes included. Writes start disabled and are recorded in History.
 * New in Pro: Amelia Pro 9.9.1 or later works with the existing Amelia tools, with undo covering extras, galleries, package prices and deletion links.
-* Fixed: Quiet sites needed a reconnect in wp-admin. Gateway credentials keep their full life when they rotate, and a daily background check renews a Cloud connection that has not renewed for a week. A site that already lapsed needs one last reconnect.
+* Fixed: Quiet sites needed a reconnect in wp-admin. Gateway credentials keep their full life when they rotate, and a daily background check renews a Cloud connection that has not renewed for a week. A site that already lapsed needs one last reconnect. A connection made before 3.19 starts renewing after its next Cloud call.
 * Fixed: A page builder showed "Not detected" after the vendor released a newer version. Builders and block packs now accept their tested version and every later one.
-* Improved: Compact tool mode now tells the hosted Gateway which tools only read, so read-only team members can use compact sites.
+* Improved: Compact tool mode now reports which tools only read.
 
 = 3.21.2 =
 

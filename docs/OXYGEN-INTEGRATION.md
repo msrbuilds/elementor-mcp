@@ -3,7 +3,7 @@
 ## Plan and implementation
 
 Target the installed Oxygen **6.1.3** on both local sites. Gate the adapter to
-Oxygen mode and 6.1.3–6.1.x, excluding Oxygen Classic and Breakdance mode.
+Oxygen mode and 6.1.3 or later, excluding Oxygen Classic and Breakdance mode.
 
 1. Verify native tree, storage keys, permissions, save/cache APIs and styles.
 2. Register standalone Oxygen selection, dedicated tab, 11 sections and 38 tools.
@@ -32,7 +32,7 @@ Oxygen mode and 6.1.3–6.1.x, excluding Oxygen Classic and Breakdance mode.
 ## Coverage — September 20, 2026
 
 The adapter provides **38 tools across 11 sections**, gated to the installed
-Oxygen 6.1.3–6.1.x native APIs. Gutenberg and independently enabled block packs
+Oxygen 6.1.3 or later native APIs. Gutenberg and independently enabled block packs
 remain available beside the selected standalone Oxygen integration.
 
 | Area | Implementation |

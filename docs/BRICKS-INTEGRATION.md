@@ -2,7 +2,7 @@
 
 ## Target and architecture
 
-Verified against Bricks **2.3.13 and 2.4.1**, supporting 2.3.13 through 2.4.x. The adapter continues to use native element, metadata, permissions and CSS APIs; this does not add integration with Bricks native AI abilities.
+Verified against Bricks **2.3.13 and 2.4.1**, and accepts 2.3.13 or later. The adapter continues to use native element, metadata, permissions and CSS APIs; this does not add integration with Bricks native AI abilities.
 
 Bricks is an EMCP Pro standalone integration. It shares the scalar Page Builders selector with Elementor/BeBuilder, while Gutenberg and its existing block packs remain independent. Only a selected, active, supported Bricks installation exposes the Bricks tab and abilities. Every execution rechecks availability. AI Chat gets a dedicated Bricks group.
 
@@ -39,7 +39,7 @@ Bricks is an EMCP Pro standalone integration. It shares the scalar Page Builders
 
 Run the repeatable local test with `php scripts/e2e/bricks-smoke.php`. It exercises registered WordPress abilities on the real theme, creates disposable drafts/templates and revisions, and cleans them up in `finally`. It temporarily opts Bricks tools in for the test and restores the previous disabled-tool list. The test uses the existing local administrator and refuses non-local hostnames.
 
-This is the initial 2.3.13–2.3.x adapter. It does not claim full Bricks parity: component instances, PHP/code editing, template creation/conditions and global design writes remain follow-up work. It does not install the supplied third-party skill globally or redistribute its example library.
+This is the initial adapter, first built on 2.3.13. It does not claim full Bricks parity: component instances, PHP/code editing, template creation/conditions and global design writes remain follow-up work. It does not install the supplied third-party skill globally or redistribute its example library.
 
 ## Sources
 

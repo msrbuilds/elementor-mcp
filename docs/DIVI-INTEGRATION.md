@@ -73,7 +73,7 @@ Completed on 2026-09-16 against Divi 5.13:
 
 ## Current boundaries
 
-Compatibility is intentionally limited to the inspected Divi 5.13.x contract.
+Compatibility starts at the inspected Divi 5.13 contract, and later releases are accepted.
 Divi 4 shortcode layouts and mixed/unsupported content are never converted or
 silently discarded. Discovery is broader than live module coverage; not every
 native module has been visually tested. Executable code, external-action forms,

@@ -10,7 +10,7 @@
 [![PHP](https://img.shields.io/badge/PHP-%3E%3D8.1-8892BF.svg)](https://php.net)
 [![WordPress](https://img.shields.io/badge/WordPress-%3E%3D6.9-21759B.svg)](https://wordpress.org)
 [![Free MCP Tools](https://img.shields.io/badge/Free_MCP_Tools-244-orange.svg)](https://emcptools.com/docs/tools/overview/)
-[![Total MCP Tools with Pro](https://img.shields.io/badge/Total_MCP_Tools_with_Pro-578-blue.svg)](https://emcptools.com/free-vs-pro/)
+[![Total MCP Tools with Pro](https://img.shields.io/badge/Total_MCP_Tools_with_Pro-596-blue.svg)](https://emcptools.com/free-vs-pro/)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 [![GitHub Issues](https://img.shields.io/github/issues/msrbuilds/elementor-mcp)](https://github.com/msrbuilds/elementor-mcp/issues)
 [![GitHub Stars](https://img.shields.io/github/stars/msrbuilds/elementor-mcp?style=social)](https://github.com/msrbuilds/elementor-mcp)
@@ -33,9 +33,9 @@ EMCP Tools is a WordPress plugin that exposes your site as **[MCP](https://model
 
 ## What it does
 
-**244 Free tools, 578 total with Pro.** These are catalog totals across all supported integrations, including 334 Pro tools. The tools available to your AI client depend on your installed plugins, selected builder, and enabled tools. See the [tool catalog](https://emcptools.com/tools/) for every tool and what it needs.
+**244 Free tools, 596 total with Pro.** These are catalog totals across all supported integrations, including 352 Pro tools. The tools available to your AI client depend on your installed plugins, selected builder, and enabled tools. See the [tool catalog](https://emcptools.com/tools/) for every tool and what it needs.
 
-**Build pages.** Dedicated integrations cover Elementor, Bricks, Breakdance, Avada, Divi 5, Thrive Architect, Oxygen, Kirki, WPBakery, Beaver Builder, BeBuilder, Visual Composer and Flatsome. Select one standalone builder while Gutenberg stays available. Spectra, Kadence Blocks, GenerateBlocks, Blocksy Blocks and Otter Blocks have independent toggles. Pro adapters expose native features verified for supported vendor versions; see each bundled skill for scope and limitations.
+**Build pages.** Dedicated integrations cover Elementor, Bricks, Breakdance, Avada, Divi 5, Thrive Architect, Oxygen, Kirki, WPBakery, Beaver Builder, BeBuilder, Visual Composer and Flatsome. Select one standalone builder while Gutenberg stays available. Spectra, Kadence Blocks, GenerateBlocks, Blocksy Blocks and Otter Blocks have independent toggles. Pro adapters expose native features verified on their tested vendor versions and accept later releases; see each bundled skill for scope and limitations.
 
 **Run the site.** Content and taxonomies, media, users, settings, plugins and themes, nav menus, the filesystem, and the database, all over MCP.
 

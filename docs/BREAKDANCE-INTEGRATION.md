@@ -3,7 +3,7 @@
 ## Target and scope
 
 Implement a standalone Pro integration for installed Breakdance 2.8.3. Gate this
-first adapter to 2.8.3–2.8.x and Breakdance mode (not Oxygen). Gutenberg stays
+first adapter to 2.8.3 or later and Breakdance mode (not Oxygen). Gutenberg stays
 available alongside the selected builder. Existing explicit selections are kept
 until the user selects another integration.
 

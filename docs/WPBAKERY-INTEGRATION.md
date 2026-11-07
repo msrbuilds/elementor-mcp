@@ -1,6 +1,6 @@
 # WPBakery integration plan and contract
 
-Target: installed WPBakery 9.0.1, gated to 9.0.x. Separate standalone selection, with Gutenberg and enabled block packs preserved.
+Target: installed WPBakery 9.0.1, with later releases accepted. Separate standalone selection, with Gutenberg and enabled block packs preserved.
 
 ## Implementation
 
