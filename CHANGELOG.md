@@ -2,7 +2,7 @@
 
 All notable changes to MCP Tools for WordPress & Page Builders are documented in this file.
 
-## [3.21.3] - 2026-11-06
+## [3.21.3] - 2026-11-09
 
 > Quiet sites stay connected to EMCP Cloud, page builders no longer disappear after a vendor update, and Pro gains Flatsome and Amelia Pro.
 
