@@ -312,7 +312,8 @@ trait EMCP_Tools_Admin_Connection_Trait {
 		$base   = class_exists( 'EMCP_Tools_Site_Context' ) ? EMCP_Tools_Site_Context::public_base_url() : rtrim( (string) home_url(), '/' );
 		$checks = array(
 			'well_known_protected_resource' => $this->probe_oauth_document( $base . EMCP_Tools_OAuth_Metadata::PATH_PROTECTED_RESOURCE, 'resource', EMCP_Tools_OAuth_Metadata::resource() ),
-			'well_known_authorization_server' => $this->probe_oauth_document( $base . EMCP_Tools_OAuth_Metadata::PATH_AUTH_SERVER, 'issuer', EMCP_Tools_OAuth_Metadata::issuer() ),
+			// The URL clients derive from the issuer, path-inserted since 3.21.4.
+			'well_known_authorization_server' => $this->probe_oauth_document( EMCP_Tools_OAuth_Metadata::issuer_metadata_url(), 'issuer', EMCP_Tools_OAuth_Metadata::issuer() ),
 			'rest_protected_resource'       => $this->probe_oauth_document( EMCP_Tools_OAuth_Metadata::protected_resource_url(), 'resource', EMCP_Tools_OAuth_Metadata::resource() ),
 			'rest_authorization_server'     => $this->probe_oauth_document( EMCP_Tools_OAuth_Metadata::authorization_server_url(), 'issuer', EMCP_Tools_OAuth_Metadata::issuer() ),
 		);

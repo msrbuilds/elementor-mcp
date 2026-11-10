@@ -2,6 +2,10 @@
 
 All notable changes to MCP Tools for WordPress & Page Builders are documented in this file.
 
+## [3.21.4] - Unreleased
+
+- Fixed: **Claude could not connect on sites where another plugin answers the shared OAuth discovery address** (reported in a support ticket; the same cause as earlier Tropk and SiteGround reports). Claude signed in with the other plugin, so EMCP rejected its tokens and the MCP Log showed every request failing with "Sorry, you are not allowed to do that." EMCP's OAuth issuer is now its own REST address (`/wp-json/emcp-tools/oauth/v1`), so clients look for its settings at addresses only EMCP answers. Sites with plain permalinks keep the old address. Existing connections keep working; a client that failed this way needs to be removed and added again.
+
 ## [3.21.3] - 2026-11-09
 
 > Quiet sites stay connected to EMCP Cloud, page builders no longer disappear after a vendor update, and Pro gains Flatsome and Amelia Pro.

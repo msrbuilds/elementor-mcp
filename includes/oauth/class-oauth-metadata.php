@@ -4,6 +4,14 @@
  * the flow: Protected Resource Metadata (RFC 9728) and Authorization Server
  * Metadata (RFC 8414). Both are served at the site root under `/.well-known/`.
  *
+ * The issuer is EMCP's own REST namespace (`<site>/wp-json/emcp-tools/oauth/v1`),
+ * not the site root. A client derives the metadata URL from the issuer (RFC 8414
+ * section 3.1), so a root issuer sends it to the shared bare
+ * `/.well-known/oauth-authorization-server`, which another OAuth plugin on the
+ * same site can own: the client then signs in with that plugin and EMCP rejects
+ * its tokens. A path issuer sends clients to the path-inserted well-known URL and
+ * to the REST-appended OIDC URL, which only EMCP answers.
+ *
  * @package EMCP_Tools
  * @since   3.4.1
  */
@@ -21,6 +29,7 @@ class EMCP_Tools_OAuth_Metadata {
 
 	const PATH_PROTECTED_RESOURCE = '/.well-known/oauth-protected-resource';
 	const PATH_AUTH_SERVER        = '/.well-known/oauth-authorization-server';
+	const PATH_OIDC               = '/.well-known/openid-configuration';
 
 	/**
 	 * Wire the root-level well-known request interception.
@@ -41,15 +50,23 @@ class EMCP_Tools_OAuth_Metadata {
 				'permission_callback' => '__return_true',
 			)
 		);
-		register_rest_route(
-			EMCP_Tools_OAuth_Server::REST_NAMESPACE,
-			'/authorization-server',
-			array(
-				'methods'             => 'GET',
-				'callback'            => array( __CLASS__, 'rest_authorization_server' ),
-				'permission_callback' => '__return_true',
-			)
-		);
+		// The authorization-server document at the issuer-relative URLs clients
+		// build from a path issuer: `<issuer>/.well-known/openid-configuration`
+		// (OIDC path appending, which the MCP authorization spec lists) and the
+		// non-standard `<issuer>/.well-known/oauth-authorization-server` some
+		// clients try. Both live under EMCP's own namespace, so no other plugin and
+		// no host rule on the site-root `/.well-known/` can answer them instead.
+		foreach ( array( '/authorization-server', '/.well-known/oauth-authorization-server', '/.well-known/openid-configuration' ) as $route ) {
+			register_rest_route(
+				EMCP_Tools_OAuth_Server::REST_NAMESPACE,
+				$route,
+				array(
+					'methods'             => 'GET',
+					'callback'            => array( __CLASS__, 'rest_authorization_server' ),
+					'permission_callback' => '__return_true',
+				)
+			);
+		}
 	}
 
 	/** Edge-friendly protected-resource metadata URL used in the 401 challenge. */
@@ -81,11 +98,30 @@ class EMCP_Tools_OAuth_Metadata {
 	}
 
 	/**
-	 * The issuer identifier (the site's home URL, no trailing slash).
+	 * The issuer identifier: EMCP's OAuth REST namespace on the public base
+	 * (`<base>/wp-json/emcp-tools/oauth/v1`), no trailing slash. Falls back to the
+	 * site origin when that address carries a query (plain permalinks give
+	 * `?rest_route=`), because an RFC 8414 issuer may not have one.
 	 *
 	 * @return string
 	 */
 	public static function issuer(): string {
+		$rest  = class_exists( 'EMCP_Tools_OAuth_Server' ) ? EMCP_Tools_OAuth_Server::base_url() : '';
+		$parts = '' !== $rest ? wp_parse_url( $rest ) : false;
+		if ( is_array( $parts ) && ! empty( $parts['scheme'] ) && ! empty( $parts['host'] ) && empty( $parts['query'] ) && empty( $parts['fragment'] )
+			&& '' !== trim( (string) ( $parts['path'] ?? '' ), '/' ) ) {
+			return untrailingslashit( $rest );
+		}
+		return self::origin_issuer();
+	}
+
+	/**
+	 * The site-root issuer EMCP advertised before 3.21.4, still used when the
+	 * REST namespace cannot be an issuer.
+	 *
+	 * @return string
+	 */
+	public static function origin_issuer(): string {
 		// The reachable public base (rest_url-derived / admin-overridable), NOT
 		// home_url() — a host that pins the Site Address to a not-yet-live domain
 		// would otherwise advertise an unreachable issuer and break OAuth
@@ -236,7 +272,7 @@ class EMCP_Tools_OAuth_Metadata {
 		if ( self::path_matches( $path, self::PATH_PROTECTED_RESOURCE ) ) {
 			self::emit( self::protected_resource_document() );
 		}
-		if ( self::path_matches( $path, self::PATH_AUTH_SERVER ) ) {
+		if ( self::path_matches( $path, self::PATH_AUTH_SERVER ) || self::issuer_path_matches( $path, self::PATH_OIDC ) ) {
 			self::emit( self::authorization_server_document() );
 		}
 	}
@@ -261,12 +297,20 @@ class EMCP_Tools_OAuth_Metadata {
 			return null;
 		}
 		$suffix = trim( $suffix, '/' );
-		if ( '' === $suffix ) {
+		// A subsite's issuer is its OAuth REST namespace, so the path-inserted
+		// suffix ends with `<rest prefix>/emcp-tools/oauth/v1`. The subsite path is
+		// what comes before it; a bare `/<subsite>` suffix is the pre-3.21.4 form.
+		$tail = trim( ( function_exists( 'rest_get_url_prefix' ) ? rest_get_url_prefix() : 'wp-json' ), '/' ) . '/' . EMCP_Tools_OAuth_Server::REST_NAMESPACE;
+		$name = $suffix;
+		if ( $suffix === $tail || str_ends_with( $suffix, '/' . $tail ) ) {
+			$name = trim( substr( $suffix, 0, -strlen( $tail ) ), '/' );
+		}
+		if ( '' === $name ) {
 			return null;
 		}
 
 		$current   = get_site();
-		$site_path = '/' . $suffix . '/';
+		$site_path = '/' . $name . '/';
 		$site      = $current ? get_site_by_path( $current->domain, $site_path ) : null;
 		if ( ! $site || $site_path !== $site->path || (int) $site->blog_id === get_current_blog_id()
 			|| ! empty( $site->deleted ) || ! empty( $site->archived ) || ! empty( $site->spam ) ) {
@@ -316,7 +360,59 @@ class EMCP_Tools_OAuth_Metadata {
 			return false;
 		}
 		$suffix = untrailingslashit( substr( $path, strlen( $wellknown ) ) );
-		return in_array( $suffix, self::own_resource_paths(), true );
+		return in_array( $suffix, self::own_resource_paths(), true ) || in_array( $suffix, self::own_issuer_paths(), true );
+	}
+
+	/**
+	 * Whether a request path is the given well-known path followed by EMCP's own
+	 * issuer path (RFC 8414 path insertion). Never the bare well-known path: the
+	 * root OIDC document belongs to whichever identity provider runs the site.
+	 *
+	 * @since 3.21.4
+	 *
+	 * @param string $path      Request path (site-root-relative, no trailing slash).
+	 * @param string $wellknown Base well-known path.
+	 * @return bool
+	 */
+	public static function issuer_path_matches( string $path, string $wellknown ): bool {
+		if ( 0 !== strpos( $path, $wellknown . '/' ) ) {
+			return false;
+		}
+		$suffix = untrailingslashit( substr( $path, strlen( $wellknown ) ) );
+		return in_array( $suffix, self::own_issuer_paths(), true );
+	}
+
+	/**
+	 * The issuer path suffixes for path-inserted discovery requests: the path of
+	 * issuer() as advertised, plus its home-stripped form for subdirectory
+	 * installs. Empty when the issuer is the site origin.
+	 *
+	 * @since 3.21.4
+	 *
+	 * @return string[] Paths starting with "/", no trailing slash.
+	 */
+	public static function own_issuer_paths(): array {
+		$issuer = (string) wp_parse_url( self::issuer(), PHP_URL_PATH );
+		$issuer = '/' . ltrim( untrailingslashit( $issuer ), '/' );
+		$paths  = array( $issuer, self::normalize_request_path( $issuer ) );
+		return array_values( array_unique( array_filter( $paths, static function ( $p ) {
+			return '' !== $p && '/' !== $p;
+		} ) ) );
+	}
+
+	/**
+	 * The metadata URL a client derives from the issuer (RFC 8414 section 3.1):
+	 * the well-known path inserted between the origin and the issuer path.
+	 *
+	 * @since 3.21.4
+	 *
+	 * @return string
+	 */
+	public static function issuer_metadata_url(): string {
+		$parts  = wp_parse_url( self::issuer() );
+		$origin = ( $parts['scheme'] ?? 'https' ) . '://' . ( $parts['host'] ?? '' ) . ( isset( $parts['port'] ) ? ':' . (int) $parts['port'] : '' );
+		$path   = untrailingslashit( (string) ( $parts['path'] ?? '' ) );
+		return $origin . self::PATH_AUTH_SERVER . $path;
 	}
 
 	/**

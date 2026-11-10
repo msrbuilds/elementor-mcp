@@ -16,6 +16,7 @@ require_once dirname( __DIR__ ) . '/includes/class-site-context.php';
 require_once dirname( __DIR__ ) . '/includes/oauth/class-oauth-server.php';
 require_once dirname( __DIR__ ) . '/includes/oauth/class-oauth-metadata.php';
 require_once dirname( __DIR__ ) . '/includes/oauth/class-oauth-bearer.php';
+require_once dirname( __DIR__ ) . '/includes/oauth/class-oauth-authorize.php';
 
 class OAuthMetadataSubdirTest extends \PHPUnit\Framework\TestCase {
 
@@ -133,5 +134,54 @@ class OAuthMetadataSubdirTest extends \PHPUnit\Framework\TestCase {
 				$expected
 			)
 		);
+	}
+
+	/**
+	 * The issuer is EMCP's own REST namespace (ticket 156, and the Tropk and
+	 * SiteGround cases before it): a root issuer sends clients to the shared bare
+	 * /.well-known/oauth-authorization-server, which another OAuth plugin can own.
+	 */
+	public function test_issuer_is_the_oauth_rest_namespace() {
+		$GLOBALS['emcp_test']['home_url'] = 'https://galar.test';
+		$this->assertSame( 'https://galar.test/wp-json/emcp-tools/oauth/v1', EMCP_Tools_OAuth_Metadata::issuer() );
+		$this->assertSame( 'https://galar.test/.well-known/oauth-authorization-server/wp-json/emcp-tools/oauth/v1', EMCP_Tools_OAuth_Metadata::issuer_metadata_url() );
+		$doc = EMCP_Tools_OAuth_Metadata::protected_resource_document();
+		$this->assertSame( array( 'https://galar.test/wp-json/emcp-tools/oauth/v1' ), $doc['authorization_servers'] );
+		$this->assertSame( EMCP_Tools_OAuth_Metadata::issuer(), EMCP_Tools_OAuth_Metadata::authorization_server_document()['issuer'] );
+	}
+
+	/** Plain permalinks give ?rest_route=, which an RFC 8414 issuer may not carry: keep the site-root issuer there. */
+	public function test_plain_permalinks_keep_the_origin_issuer() {
+		$GLOBALS['emcp_test']['home_url']      = 'https://plain.test';
+		$GLOBALS['emcp_test']['rest_url_base'] = 'https://plain.test/?rest_route=';
+		try {
+			$this->assertSame( 'https://plain.test', EMCP_Tools_OAuth_Metadata::issuer() );
+			$this->assertSame( array(), EMCP_Tools_OAuth_Metadata::own_issuer_paths() );
+			$this->assertFalse( EMCP_Tools_OAuth_Metadata::issuer_path_matches( '/.well-known/openid-configuration', '/.well-known/openid-configuration' ) );
+		} finally {
+			unset( $GLOBALS['emcp_test']['rest_url_base'] );
+		}
+	}
+
+	/** Path-inserted discovery for EMCP's issuer is answered; the bare OIDC root and other issuers are not. */
+	public function test_issuer_path_discovery_matching() {
+		$GLOBALS['emcp_test']['home_url'] = 'https://galar.test';
+		$as   = '/.well-known/oauth-authorization-server';
+		$oidc = '/.well-known/openid-configuration';
+		$this->assertTrue( EMCP_Tools_OAuth_Metadata::path_matches( $as . '/wp-json/emcp-tools/oauth/v1', $as ) );
+		$this->assertTrue( EMCP_Tools_OAuth_Metadata::path_matches( $as . '/wp-json/emcp-tools/oauth/v1/', $as ), 'trailing slash tolerated' );
+		$this->assertTrue( EMCP_Tools_OAuth_Metadata::path_matches( $as, $as ), 'the bare root is still answered when EMCP owns it' );
+		$this->assertTrue( EMCP_Tools_OAuth_Metadata::issuer_path_matches( $oidc . '/wp-json/emcp-tools/oauth/v1', $oidc ) );
+		$this->assertFalse( EMCP_Tools_OAuth_Metadata::issuer_path_matches( $oidc, $oidc ), 'the site OIDC root belongs to its identity provider' );
+		$this->assertFalse( EMCP_Tools_OAuth_Metadata::issuer_path_matches( $oidc . '/wp-json/tropk-mcp/v1', $oidc ) );
+		$this->assertFalse( EMCP_Tools_OAuth_Metadata::path_matches( $as . '/wp-json/emcp-tools/oauth/v2', $as ) );
+	}
+
+	/** Subdirectory install: the issuer path keeps the subdirectory, and the home-stripped form is accepted too. */
+	public function test_issuer_paths_on_a_subdirectory_install() {
+		$GLOBALS['emcp_test']['home_url'] = 'https://demo.emcptools.com/gpt-build';
+		$this->assertSame( 'https://demo.emcptools.com/gpt-build/wp-json/emcp-tools/oauth/v1', EMCP_Tools_OAuth_Metadata::issuer() );
+		$this->assertContains( '/gpt-build/wp-json/emcp-tools/oauth/v1', EMCP_Tools_OAuth_Metadata::own_issuer_paths() );
+		$this->assertSame( 'https://demo.emcptools.com/.well-known/oauth-authorization-server/gpt-build/wp-json/emcp-tools/oauth/v1', EMCP_Tools_OAuth_Metadata::issuer_metadata_url() );
 	}
 }
