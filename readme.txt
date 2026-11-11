@@ -3,7 +3,7 @@ Contributors: mianshahzadraza
 Tags: elementor, mcp, ai, page-builder, automation
 Requires at least: 6.9
 Tested up to: 7.1
-Stable tag: 3.21.3
+Stable tag: 3.21.4
 Requires PHP: 8.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -218,6 +218,15 @@ EMCP Tools works on your own site. It contacts the services below only in the si
 2. Connection configuration page with copy-paste configs.
 
 == Changelog ==
+
+= 3.21.4 =
+
+Claude connects on sites where another OAuth plugin owns the shared discovery address, plus three fixes from user reports.
+
+* Fixed: Claude could not connect on sites where another plugin answers the shared OAuth discovery address. EMCP's OAuth issuer is now its own REST address. A client that failed this way needs to be removed and added again.
+* Fixed: Atomic paragraphs, headings and buttons kept no inline HTML. They now keep the inline tags Elementor accepts and remove the rest.
+* Fixed: The query tool refused a SELECT that used the REPLACE() or INSERT() string functions.
+* Fixed: PHP snippet tools returned empty values right after a write on sites with a persistent object cache.
 
 = 3.21.3 =
 

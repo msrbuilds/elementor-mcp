@@ -4,7 +4,12 @@ All notable changes to MCP Tools for WordPress & Page Builders are documented in
 
 ## [3.21.4] - Unreleased
 
+> Claude connects on sites where another OAuth plugin owns the shared discovery address, plus three fixes from user reports.
+
 - Fixed: **Claude could not connect on sites where another plugin answers the shared OAuth discovery address** (reported in a support ticket; the same cause as earlier Tropk and SiteGround reports). Claude signed in with the other plugin, so EMCP rejected its tokens and the MCP Log showed every request failing with "Sorry, you are not allowed to do that." EMCP's OAuth issuer is now its own REST address (`/wp-json/emcp-tools/oauth/v1`), so clients look for its settings at addresses only EMCP answers. Sites with plain permalinks keep the old address. Existing connections keep working; a client that failed this way needs to be removed and added again.
+- Fixed: **`add-atomic-paragraph` removed inline HTML** ([#180](https://github.com/msrbuilds/elementor-mcp/issues/180)). Atomic paragraphs, headings and buttons lost every tag, so bold text and links came out as plain text. They now keep the inline tags Elementor accepts for each element (for a paragraph: `strong`, `em`, `a`, `span`, `br`, lists and similar) and remove everything else, including scripts and event attributes.
+- Fixed: **The `query` tool refused a SELECT that used `REPLACE()` or `INSERT()`** ([#181](https://github.com/msrbuilds/elementor-mcp/issues/181)). The read-only check treated the string functions as the write statements of the same name. They are now allowed when followed by an opening parenthesis; `REPLACE INTO` and `INSERT INTO` are still refused.
+- Fixed: **PHP snippet tools returned empty values right after a write on sites with a persistent object cache** ([#182](https://github.com/msrbuilds/elementor-mcp/issues/182)). `create-php-snippet` answered with an empty context and code, and `update-php-snippet` without `code` could fail or reset the run context. The snippet's stored values are now read fresh from the database around every write.
 
 ## [3.21.3] - 2026-11-09
 
