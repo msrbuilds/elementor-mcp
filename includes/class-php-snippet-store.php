@@ -228,6 +228,7 @@ class EMCP_Tools_PHP_Snippet_Store {
 		}
 
 		// Merge code: new code if given, else the stored code.
+		self::refresh_meta( $post_id );
 		$code       = array_key_exists( 'code', $args ) ? (string) $args['code'] : (string) get_post_meta( $post_id, self::META_CODE, true );
 		$validation = EMCP_Tools_PHP_Snippet_Validator::validate( $code );
 		if ( ! $validation['valid'] ) {
@@ -267,6 +268,7 @@ class EMCP_Tools_PHP_Snippet_Store {
 	 * @param array $validation Validation report.
 	 */
 	private static function persist_meta( int $post_id, array $args, array $validation ): void {
+		self::refresh_meta( $post_id );
 		if ( array_key_exists( 'code', $args ) ) {
 			update_post_meta( $post_id, self::META_CODE, wp_slash( (string) $args['code'] ) );
 		}
@@ -283,6 +285,24 @@ class EMCP_Tools_PHP_Snippet_Store {
 			update_post_meta( $post_id, self::META_PRIORITY, (int) $args['priority'] );
 		}
 		update_post_meta( $post_id, self::META_VALIDATION, wp_slash( (string) wp_json_encode( $validation ) ) );
+		self::refresh_meta( $post_id );
+	}
+
+	/**
+	 * Drops the snippet's cached meta and loads it again from the database.
+	 * Some persistent object caches kept serving the meta read before a write,
+	 * so a create answered empty fields and a code-less update found no stored
+	 * code (#182).
+	 *
+	 * @since 3.21.4
+	 *
+	 * @param int $post_id Snippet ID.
+	 */
+	private static function refresh_meta( int $post_id ): void {
+		wp_cache_delete( $post_id, 'post_meta' );
+		if ( function_exists( 'update_meta_cache' ) ) {
+			update_meta_cache( 'post', array( $post_id ) );
+		}
 	}
 
 	private static function sanitize_hook( string $hook ): string {

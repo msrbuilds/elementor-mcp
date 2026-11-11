@@ -82,6 +82,14 @@ class EMCP_Tools_SQL_Policy {
 		'purge', 'change', 'stop', 'restart', 'clone', 'import',
 	);
 
+	/**
+	 * Forbidden keywords that are also read-only string functions (`REPLACE( s, a, b )`,
+	 * `INSERT( s, pos, len, new )`). Allowed only when followed by `(`; the write
+	 * statements put a table name or INTO there, and the statement must open with a
+	 * read keyword anyway (#181).
+	 */
+	const KEYWORD_FUNCTIONS = array( 'replace', 'insert' );
+
 	/** Keywords that read or write server files. */
 	const FILE_KEYWORDS = array( 'outfile', 'dumpfile', 'infile' );
 
@@ -182,7 +190,7 @@ class EMCP_Tools_SQL_Policy {
 				) {
 					return new WP_Error( 'file_access_blocked', __( 'File-access SQL (OUTFILE/DUMPFILE/LOAD_FILE/LOAD DATA) is not allowed.', 'emcp-tools' ) );
 				}
-				if ( in_array( $lower, self::FORBIDDEN_KEYWORDS, true ) ) {
+				if ( in_array( $lower, self::FORBIDDEN_KEYWORDS, true ) && ! ( $call && in_array( $lower, self::KEYWORD_FUNCTIONS, true ) ) ) {
 					return new WP_Error( 'not_read_only', __( 'The query contains a write or unsafe keyword.', 'emcp-tools' ) );
 				}
 				if ( $call && in_array( $lower, self::FORBIDDEN_FUNCTIONS, true ) ) {

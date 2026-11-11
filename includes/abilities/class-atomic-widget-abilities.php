@@ -322,9 +322,9 @@ class EMCP_Tools_Atomic_Widget_Abilities {
 		$this->register_atomic_convenience(
 			'add-atomic-heading',
 			__( 'Add Atomic Heading', 'emcp-tools' ),
-			__( 'Adds an Elementor 4.0 atomic heading element. Accepts plain text and tag; $$type wrapping is handled automatically.', 'emcp-tools' ),
+			__( 'Adds an Elementor 4.0 atomic heading element. Accepts text with inline markup (strong, em, a, span, br and similar) and a tag; $$type wrapping is handled automatically.', 'emcp-tools' ),
 			array(
-				'title'  => array( 'type' => 'string', 'description' => __( 'Heading text content.', 'emcp-tools' ) ),
+				'title'  => array( 'type' => 'string', 'description' => __( 'Heading text. Inline tags such as <strong>, <em>, <a> and <span> are kept; other markup is removed.', 'emcp-tools' ) ),
 				'tag'    => array( 'type' => 'string', 'enum' => array( 'h1', 'h2', 'h3', 'h4', 'h5', 'h6' ), 'description' => __( 'HTML tag. Default: h2.', 'emcp-tools' ) ),
 				'link'   => array( 'type' => 'string', 'description' => __( 'Optional URL to link the heading.', 'emcp-tools' ) ),
 				'css_id' => array( 'type' => 'string', 'description' => __( 'Optional CSS ID for the element.', 'emcp-tools' ) ),
@@ -341,9 +341,9 @@ class EMCP_Tools_Atomic_Widget_Abilities {
 		$this->register_atomic_convenience(
 			'add-atomic-paragraph',
 			__( 'Add Atomic Paragraph', 'emcp-tools' ),
-			__( 'Adds an Elementor 4.0 atomic paragraph element.', 'emcp-tools' ),
+			__( 'Adds an Elementor 4.0 atomic paragraph element. Content may hold inline markup (strong, em, a, span, br, lists and similar).', 'emcp-tools' ),
 			array(
-				'content' => array( 'type' => 'string', 'description' => __( 'Paragraph text content.', 'emcp-tools' ) ),
+				'content' => array( 'type' => 'string', 'description' => __( 'Paragraph text. Inline tags such as <strong>, <em>, <a>, <span>, <br> and lists are kept; other markup is removed.', 'emcp-tools' ) ),
 				'link'    => array( 'type' => 'string', 'description' => __( 'Optional URL to link the paragraph.', 'emcp-tools' ) ),
 				'css_id'  => array( 'type' => 'string', 'description' => __( 'Optional CSS ID.', 'emcp-tools' ) ),
 			),
@@ -361,7 +361,7 @@ class EMCP_Tools_Atomic_Widget_Abilities {
 			__( 'Add Atomic Button', 'emcp-tools' ),
 			__( 'Adds an Elementor 4.0 atomic button element.', 'emcp-tools' ),
 			array(
-				'text'         => array( 'type' => 'string', 'description' => __( 'Button label text.', 'emcp-tools' ) ),
+				'text'         => array( 'type' => 'string', 'description' => __( 'Button label. Inline tags such as <strong>, <em> and <span> are kept; other markup is removed.', 'emcp-tools' ) ),
 				'link'         => array( 'type' => 'string', 'description' => __( 'Button URL.', 'emcp-tools' ) ),
 				'target_blank' => array( 'type' => 'boolean', 'description' => __( 'Open in new tab.', 'emcp-tools' ) ),
 				'css_id'       => array( 'type' => 'string', 'description' => __( 'Optional CSS ID.', 'emcp-tools' ) ),

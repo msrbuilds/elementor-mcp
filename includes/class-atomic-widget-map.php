@@ -109,12 +109,54 @@ class EMCP_Tools_Atomic_Widget_Map {
 	}
 
 	/**
+	 * Inline tags each rich-text prop keeps, matching Elementor's
+	 * Escaped_Html_Prop_Type lists (#180). Elementor's own list wins when the
+	 * class is loaded.
+	 */
+	const INLINE_TAGS = array(
+		'e-button'    => array( 'b', 'strong', 'sup', 'sub', 's', 'em', 'i', 'u', 'del', 'span', 'br' ),
+		'e-heading'   => array( 'b', 'strong', 'sup', 'sub', 's', 'em', 'i', 'u', 'a', 'del', 'span', 'br' ),
+		'e-paragraph' => array( 'b', 'strong', 'sup', 'sub', 's', 'em', 'u', 'ul', 'ol', 'li', 'blockquote', 'a', 'del', 'span', 'br' ),
+	);
+
+	/**
+	 * Cleans rich text for a heading, paragraph or button: keeps the inline tags
+	 * the prop accepts and removes everything else. sanitize_text_field() used
+	 * to strip every tag (#180).
+	 *
+	 * @since 3.21.4
+	 *
+	 * @param string $widget_type Atomic widget type.
+	 * @param string $prop        Prop name.
+	 * @param mixed  $value       Text, may hold inline markup.
+	 * @return string
+	 */
+	public static function inline_markup( string $widget_type, string $prop, $value ): string {
+		$tags  = self::INLINE_TAGS[ $widget_type ] ?? array();
+		$class = '\Elementor\Modules\AtomicWidgets\PropTypes\Escaped_Html_Prop_Type';
+		if ( class_exists( $class ) && method_exists( $class, 'get_allowed_html_tags_for_prop' ) ) {
+			$native = $class::get_allowed_html_tags_for_prop( $widget_type, $prop );
+			if ( is_array( $native ) ) {
+				$tags = $native;
+			}
+		}
+		$allowed = array();
+		foreach ( $tags as $tag ) {
+			$allowed[ $tag ] = 'a' === $tag
+				? array( 'href' => true, 'target' => true, 'rel' => true, 'title' => true, 'class' => true )
+				: array( 'class' => true );
+		}
+		$text = (string) preg_replace( '/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/', '', (string) $value );
+		return trim( wp_kses( $text, $allowed ) );
+	}
+
+	/**
 	 * @param array $params Convenience params.
 	 * @return array
 	 */
 	private static function heading( array $params ): array {
 		$settings = array(
-			'title' => EMCP_Tools_Atomic_Props::rich_text( 'e-heading', 'title', sanitize_text_field( $params['title'] ?? 'Heading' ) ),
+			'title' => EMCP_Tools_Atomic_Props::rich_text( 'e-heading', 'title', self::inline_markup( 'e-heading', 'title', $params['title'] ?? 'Heading' ) ),
 			'tag'   => EMCP_Tools_Atomic_Props::string( sanitize_text_field( $params['tag'] ?? 'h2' ) ),
 		);
 		return self::finish( $settings, $params );
@@ -129,7 +171,7 @@ class EMCP_Tools_Atomic_Widget_Map {
 		// Elementor 4.3+, html-v3 before; rich_text() asks the schema), not
 		// `text`. Writing `text` silently dropped the content (issue #56).
 		$settings = array(
-			'paragraph' => EMCP_Tools_Atomic_Props::rich_text( 'e-paragraph', 'paragraph', sanitize_text_field( $params['content'] ?? 'Paragraph text' ) ),
+			'paragraph' => EMCP_Tools_Atomic_Props::rich_text( 'e-paragraph', 'paragraph', self::inline_markup( 'e-paragraph', 'paragraph', $params['content'] ?? 'Paragraph text' ) ),
 		);
 		return self::finish( $settings, $params );
 	}
@@ -140,7 +182,7 @@ class EMCP_Tools_Atomic_Widget_Map {
 	 */
 	private static function button( array $params ): array {
 		$settings = array(
-			'text' => EMCP_Tools_Atomic_Props::rich_text( 'e-button', 'text', sanitize_text_field( $params['text'] ?? 'Click Here' ) ),
+			'text' => EMCP_Tools_Atomic_Props::rich_text( 'e-button', 'text', self::inline_markup( 'e-button', 'text', $params['text'] ?? 'Click Here' ) ),
 		);
 		return self::finish( $settings, $params, true );
 	}
