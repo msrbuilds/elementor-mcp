@@ -2,7 +2,7 @@
 
 All notable changes to MCP Tools for WordPress & Page Builders are documented in this file.
 
-## [3.21.4] - Unreleased
+## [3.21.4] - 2026-11-12
 
 > Claude connects on sites where another OAuth plugin owns the shared discovery address, plus three fixes from user reports.
 
