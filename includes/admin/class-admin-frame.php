@@ -377,17 +377,13 @@ final class EMCP_Tools_Admin_Frame {
 	}
 
 	/**
-	 * Body classes for EMCP screens: fold the WordPress menu unless the user expanded it.
+	 * Body classes for EMCP screens. The WordPress menu is left as the user set
+	 * it: core adds 'folded' itself when they collapsed it, so EMCP never folds it.
 	 *
 	 * @param string $classes Existing admin body classes.
-	 * @param string $mfold   get_user_setting( 'mfold' ): 'o' = expanded, 'f' = folded.
 	 */
-	public static function body_class( string $classes, string $mfold ): string {
-		$classes .= ' emcp-admin-frame';
-		if ( 'o' !== $mfold && false === strpos( ' ' . $classes . ' ', ' folded ' ) ) {
-			$classes .= ' folded';
-		}
-		return $classes;
+	public static function body_class( string $classes ): string {
+		return $classes . ' emcp-admin-frame';
 	}
 
 	/**

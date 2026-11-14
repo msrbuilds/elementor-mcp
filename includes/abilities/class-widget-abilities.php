@@ -266,6 +266,68 @@ class EMCP_Tools_Widget_Abilities {
 		return $settings;
 	}
 
+	/**
+	 * Adds the dynamic tag a control binds to by default (#183).
+	 *
+	 * Elementor Pro's theme widgets (Post Title, Post Excerpt, Site Logo and
+	 * so on) declare their source as the control's `dynamic.default`. The
+	 * editor copies that into `__dynamic__` when a widget is dropped on the
+	 * canvas; the front end never reads it. A widget created outside the
+	 * editor therefore rendered the control's placeholder. This does what the
+	 * editor does, for top-level controls only, and never replaces a value or
+	 * a dynamic tag the caller sent.
+	 *
+	 * @since 3.21.5
+	 * @param array $settings Widget settings.
+	 * @param array $controls Registered controls, keyed by name.
+	 * @return array
+	 */
+	public static function apply_dynamic_defaults( array $settings, array $controls ): array {
+		$dynamic = isset( $settings['__dynamic__'] ) && is_array( $settings['__dynamic__'] ) ? $settings['__dynamic__'] : array();
+		$added   = false;
+		foreach ( $controls as $name => $control ) {
+			// The editor only binds controls whose dynamic support is on.
+			$active  = is_array( $control ) && ! empty( $control['dynamic']['active'] );
+			$default = $active ? ( $control['dynamic']['default'] ?? '' ) : '';
+			if ( ! is_string( $name ) || ! is_string( $default ) || '' === $default ) {
+				continue;
+			}
+			if ( array_key_exists( $name, $settings ) || array_key_exists( $name, $dynamic ) ) {
+				continue;
+			}
+			$dynamic[ $name ] = $default;
+			$added            = true;
+		}
+		if ( $added ) {
+			$settings['__dynamic__'] = $dynamic;
+		}
+		return $settings;
+	}
+
+	/**
+	 * Applies apply_dynamic_defaults() with a registered widget's controls.
+	 *
+	 * @since 3.21.5
+	 * @param string      $widget_type Widget type.
+	 * @param array       $settings    Widget settings.
+	 * @param object|null $instance    The widget type instance, when known.
+	 * @return array
+	 */
+	public static function with_dynamic_defaults( string $widget_type, array $settings, $instance = null ): array {
+		try {
+			if ( null === $instance && class_exists( '\Elementor\Plugin' ) && isset( \Elementor\Plugin::$instance->widgets_manager ) ) {
+				$instance = \Elementor\Plugin::$instance->widgets_manager->get_widget_types( $widget_type );
+			}
+			if ( ! is_object( $instance ) || ! method_exists( $instance, 'get_controls' ) ) {
+				return $settings;
+			}
+			$controls = $instance->get_controls();
+			return is_array( $controls ) ? self::apply_dynamic_defaults( $settings, $controls ) : $settings;
+		} catch ( \Throwable $e ) {
+			return $settings;
+		}
+	}
+
 	private function insert_catalog_widget( $input, string $expected_tier ) {
 		$widget_type = sanitize_text_field( $input['widget_type'] ?? '' );
 		if ( '' === $widget_type ) {
@@ -351,6 +413,9 @@ class EMCP_Tools_Widget_Abilities {
 		if ( is_wp_error( $page_data ) ) {
 			return $page_data;
 		}
+
+		// The editor binds a control's default dynamic tag on creation (#183).
+		$settings = self::with_dynamic_defaults( $widget_type, (array) $settings, $widget_instance );
 
 		$widget = $this->factory->create_widget( $widget_type, $settings );
 

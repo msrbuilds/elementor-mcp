@@ -40,6 +40,17 @@ class EMCP_Tools_PHP_Snippet_Store {
 	/** Allowed run contexts. */
 	const CONTEXTS = array( 'shortcode', 'hook', 'both' );
 
+	/** The meta keys the store owns, read straight from the database. */
+	const META_KEYS = array(
+		self::META_CODE,
+		self::META_CONTEXT,
+		self::META_HOOK,
+		self::META_PRIORITY,
+		self::META_VALIDATION,
+		self::META_HASH,
+		self::META_ERROR,
+	);
+
 	// -------------------------------------------------------------------------
 	// CPT + permissions
 	// -------------------------------------------------------------------------
@@ -228,8 +239,14 @@ class EMCP_Tools_PHP_Snippet_Store {
 		}
 
 		// Merge code: new code if given, else the stored code.
-		self::refresh_meta( $post_id );
-		$code       = array_key_exists( 'code', $args ) ? (string) $args['code'] : (string) get_post_meta( $post_id, self::META_CODE, true );
+		if ( array_key_exists( 'code', $args ) ) {
+			$code = (string) $args['code'];
+		} else {
+			$code = self::meta( self::stored_meta( $post_id ), self::META_CODE );
+			if ( '' === trim( $code ) ) {
+				return new WP_Error( 'snippet_empty', __( 'This snippet has no stored code. Pass the code argument to update it.', 'emcp-tools' ) );
+			}
+		}
 		$validation = EMCP_Tools_PHP_Snippet_Validator::validate( $code );
 		if ( ! $validation['valid'] ) {
 			return new WP_Error( 'invalid_php', sprintf( /* translators: %s: parse error */ __( 'The snippet is not valid PHP: %s', 'emcp-tools' ), $validation['parse_error'] ), array( 'validation' => $validation ) );
@@ -256,6 +273,7 @@ class EMCP_Tools_PHP_Snippet_Store {
 			self::rebuild_manifest();
 		}
 
+		self::flush_cache( $post_id );
 		return self::get( $post_id );
 	}
 
@@ -268,14 +286,13 @@ class EMCP_Tools_PHP_Snippet_Store {
 	 * @param array $validation Validation report.
 	 */
 	private static function persist_meta( int $post_id, array $args, array $validation ): void {
-		self::refresh_meta( $post_id );
 		if ( array_key_exists( 'code', $args ) ) {
 			update_post_meta( $post_id, self::META_CODE, wp_slash( (string) $args['code'] ) );
 		}
 		if ( array_key_exists( 'context', $args ) ) {
 			$ctx = in_array( $args['context'], self::CONTEXTS, true ) ? (string) $args['context'] : 'shortcode';
 			update_post_meta( $post_id, self::META_CONTEXT, $ctx );
-		} elseif ( '' === (string) get_post_meta( $post_id, self::META_CONTEXT, true ) ) {
+		} elseif ( '' === self::meta( self::stored_meta( $post_id ), self::META_CONTEXT ) ) {
 			update_post_meta( $post_id, self::META_CONTEXT, 'shortcode' );
 		}
 		if ( array_key_exists( 'hook', $args ) ) {
@@ -285,24 +302,91 @@ class EMCP_Tools_PHP_Snippet_Store {
 			update_post_meta( $post_id, self::META_PRIORITY, (int) $args['priority'] );
 		}
 		update_post_meta( $post_id, self::META_VALIDATION, wp_slash( (string) wp_json_encode( $validation ) ) );
-		self::refresh_meta( $post_id );
+		self::flush_cache( $post_id );
 	}
 
 	/**
-	 * Drops the snippet's cached meta and loads it again from the database.
-	 * Some persistent object caches kept serving the meta read before a write,
-	 * so a create answered empty fields and a code-less update found no stored
-	 * code (#182).
+	 * Drops the snippet's cached post and meta after a write, so other code
+	 * reading it through WordPress sees the new values.
 	 *
 	 * @since 3.21.4
 	 *
 	 * @param int $post_id Snippet ID.
 	 */
-	private static function refresh_meta( int $post_id ): void {
-		wp_cache_delete( $post_id, 'post_meta' );
-		if ( function_exists( 'update_meta_cache' ) ) {
-			update_meta_cache( 'post', array( $post_id ) );
+	private static function flush_cache( int $post_id ): void {
+		if ( function_exists( 'clean_post_cache' ) ) {
+			clean_post_cache( $post_id );
 		}
+		wp_cache_delete( $post_id, 'post_meta' );
+	}
+
+	/**
+	 * Reads the store's own meta for one or more snippets straight from the
+	 * database, in one query for all of them. A persistent object cache can
+	 * keep serving an empty meta array for a new post through every write and
+	 * every delete request (W3 Total Cache on Valkey, #182), so the store never
+	 * trusts the meta cache for its own keys. Values match what single
+	 * get_post_meta() reads give: the first row by meta_id, unserialized.
+	 *
+	 * Falls back to get_post_meta() where there is no real database (unit tests).
+	 *
+	 * @since 3.21.5
+	 *
+	 * @param int|int[] $post_ids Snippet ID or IDs.
+	 * @return array Meta by key for one ID, or by ID then key for a list.
+	 */
+	private static function stored_meta( $post_ids ): array {
+		$single = ! is_array( $post_ids );
+		$ids    = array_values( array_unique( array_filter( array_map( 'intval', (array) $post_ids ) ) ) );
+		$out    = array_fill_keys( $ids, array() );
+
+		global $wpdb;
+		if ( $ids && class_exists( 'wpdb', false ) && $wpdb instanceof wpdb ) {
+			$id_marks  = implode( ',', array_fill( 0, count( $ids ), '%d' ) );
+			$key_marks = implode( ',', array_fill( 0, count( self::META_KEYS ), '%s' ) );
+			// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery
+			$rows = $wpdb->get_results(
+				$wpdb->prepare(
+					"SELECT post_id, meta_key, meta_value FROM {$wpdb->postmeta} WHERE post_id IN ({$id_marks}) AND meta_key IN ({$key_marks}) ORDER BY meta_id ASC",
+					array_merge( $ids, self::META_KEYS )
+				),
+				ARRAY_A
+			);
+			// phpcs:enable
+			foreach ( (array) $rows as $row ) {
+				$id  = (int) $row['post_id'];
+				$key = (string) $row['meta_key'];
+				if ( isset( $out[ $id ] ) && ! array_key_exists( $key, $out[ $id ] ) ) {
+					$out[ $id ][ $key ] = maybe_unserialize( $row['meta_value'] );
+				}
+			}
+		} else {
+			foreach ( $ids as $id ) {
+				foreach ( self::META_KEYS as $key ) {
+					$value = get_post_meta( $id, $key, true );
+					if ( '' !== $value && null !== $value ) {
+						$out[ $id ][ $key ] = $value;
+					}
+				}
+			}
+		}
+
+		if ( $single ) {
+			return $ids ? $out[ $ids[0] ] : array();
+		}
+		return $out;
+	}
+
+	/**
+	 * One stored meta value as a string ('' when the row is missing).
+	 *
+	 * @param array  $meta Meta by key, from stored_meta().
+	 * @param string $key  Meta key.
+	 * @return string
+	 */
+	private static function meta( array $meta, string $key ): string {
+		$value = $meta[ $key ] ?? '';
+		return is_scalar( $value ) ? (string) $value : '';
 	}
 
 	private static function sanitize_hook( string $hook ): string {
@@ -372,7 +456,7 @@ class EMCP_Tools_PHP_Snippet_Store {
 		}
 
 		if ( 'active' === $status ) {
-			$code       = (string) get_post_meta( $post_id, self::META_CODE, true );
+			$code       = self::meta( self::stored_meta( $post_id ), self::META_CODE );
 			$validation = EMCP_Tools_PHP_Snippet_Validator::validate( $code );
 			if ( ! $validation['valid'] || ! $validation['safe'] ) {
 				update_post_meta( $post_id, self::META_VALIDATION, wp_slash( (string) wp_json_encode( $validation ) ) );
@@ -390,6 +474,7 @@ class EMCP_Tools_PHP_Snippet_Store {
 			wp_update_post( array( 'ID' => $post_id, 'post_status' => 'draft' ) );
 		}
 
+		self::flush_cache( $post_id );
 		self::rebuild_manifest();
 		return self::get( $post_id );
 	}
@@ -430,6 +515,7 @@ class EMCP_Tools_PHP_Snippet_Store {
 		self::delete_file( self::php_path( $post_id ) );
 		delete_post_meta( $post_id, self::META_HASH );
 		wp_update_post( array( 'ID' => $post_id, 'post_status' => 'draft' ) );
+		self::flush_cache( $post_id );
 		self::rebuild_manifest();
 	}
 
@@ -446,12 +532,13 @@ class EMCP_Tools_PHP_Snippet_Store {
 	 * @return array|WP_Error
 	 */
 	public static function get( int $post_id ) {
-		$summary = self::summary( $post_id );
+		$meta    = self::stored_meta( $post_id );
+		$summary = self::summary( $post_id, $meta );
 		if ( is_wp_error( $summary ) ) {
 			return $summary;
 		}
-		$summary['code']       = (string) get_post_meta( $post_id, self::META_CODE, true );
-		$summary['validation'] = self::get_validation( $post_id );
+		$summary['code']       = self::meta( $meta, self::META_CODE );
+		$summary['validation'] = self::validation_from( $meta );
 		return $summary;
 	}
 
@@ -460,24 +547,29 @@ class EMCP_Tools_PHP_Snippet_Store {
 	 *
 	 * @since 2.1.0
 	 *
-	 * @param int $post_id Snippet ID.
+	 * @param int        $post_id Snippet ID.
+	 * @param array|null $meta    The snippet's stored meta from stored_meta(),
+	 *                            or null to read it here.
 	 * @return array|WP_Error
 	 */
-	public static function summary( int $post_id ) {
+	public static function summary( int $post_id, ?array $meta = null ) {
 		$post = get_post( $post_id );
 		if ( ! $post || self::POST_TYPE !== $post->post_type ) {
 			return new WP_Error( 'not_found', __( 'Snippet not found.', 'emcp-tools' ) );
 		}
-		$context = (string) get_post_meta( $post_id, self::META_CONTEXT, true );
+		if ( null === $meta ) {
+			$meta = self::stored_meta( $post_id );
+		}
+		$context = self::meta( $meta, self::META_CONTEXT );
 		return array(
 			'snippet_id' => (int) $post_id,
 			'title'      => (string) $post->post_title,
 			'status'     => ( 'publish' === $post->post_status ) ? 'active' : 'draft',
 			'context'    => '' !== $context ? $context : 'shortcode',
-			'hook'       => (string) get_post_meta( $post_id, self::META_HOOK, true ),
-			'priority'   => (int) get_post_meta( $post_id, self::META_PRIORITY, true ),
+			'hook'       => self::meta( $meta, self::META_HOOK ),
+			'priority'   => (int) self::meta( $meta, self::META_PRIORITY ),
 			'shortcode'  => '[emcp_snippet id="' . (int) $post_id . '"]',
-			'last_error' => (string) get_post_meta( $post_id, self::META_ERROR, true ),
+			'last_error' => self::meta( $meta, self::META_ERROR ),
 			'updated'    => (string) $post->post_modified,
 		);
 	}
@@ -489,7 +581,17 @@ class EMCP_Tools_PHP_Snippet_Store {
 	 * @return array
 	 */
 	public static function get_validation( int $post_id ): array {
-		$raw = get_post_meta( $post_id, self::META_VALIDATION, true );
+		return self::validation_from( self::stored_meta( $post_id ) );
+	}
+
+	/**
+	 * Decodes the validation report from a snippet's stored meta.
+	 *
+	 * @param array $meta Meta by key, from stored_meta().
+	 * @return array
+	 */
+	private static function validation_from( array $meta ): array {
+		$raw = $meta[ self::META_VALIDATION ] ?? '';
 		if ( empty( $raw ) ) {
 			return array( 'valid' => true, 'safe' => true, 'parse_error' => '', 'findings' => array() );
 		}
@@ -522,9 +624,11 @@ class EMCP_Tools_PHP_Snippet_Store {
 				'no_found_rows'  => true,
 			)
 		);
-		$out = array();
-		foreach ( $query->posts as $post ) {
-			$summary = self::summary( (int) $post->ID );
+		$ids  = array_map( 'intval', wp_list_pluck( $query->posts, 'ID' ) );
+		$meta = self::stored_meta( $ids );
+		$out  = array();
+		foreach ( $ids as $post_id ) {
+			$summary = self::summary( $post_id, $meta[ $post_id ] ?? array() );
 			if ( ! is_wp_error( $summary ) ) {
 				$out[] = $summary;
 			}
@@ -549,9 +653,11 @@ class EMCP_Tools_PHP_Snippet_Store {
 	public static function list_snippets_page( string $status = 'any', int $page = 1, int $per_page = EMCP_Tools_Sandbox_List_Query::PER_PAGE ): array {
 		$result = EMCP_Tools_Sandbox_List_Query::page( self::POST_TYPE, $status, $page, $per_page );
 
+		$ids   = array_map( 'intval', (array) $result['ids'] );
+		$meta  = self::stored_meta( $ids );
 		$items = array();
-		foreach ( $result['ids'] as $emcp_id ) {
-			$summary = self::summary( $emcp_id );
+		foreach ( $ids as $emcp_id ) {
+			$summary = self::summary( $emcp_id, $meta[ $emcp_id ] ?? array() );
 			if ( ! is_wp_error( $summary ) ) {
 				$items[] = $summary;
 			}
@@ -584,18 +690,20 @@ class EMCP_Tools_PHP_Snippet_Store {
 				'no_found_rows'  => true,
 			)
 		);
+		$ids     = array_map( 'intval', wp_list_pluck( $query->posts, 'ID' ) );
+		$all     = self::stored_meta( $ids );
 		$entries = array();
-		foreach ( $query->posts as $post ) {
-			$post_id   = (int) $post->ID;
-			$context   = (string) get_post_meta( $post_id, self::META_CONTEXT, true );
+		foreach ( $ids as $post_id ) {
+			$meta      = $all[ $post_id ] ?? array();
+			$context   = self::meta( $meta, self::META_CONTEXT );
 			$entries[] = array(
 				'post_id'   => $post_id,
 				'func'      => self::func_name( $post_id ),
 				'php_path'  => self::relative_php_path( $post_id ),
-				'hash'      => (string) get_post_meta( $post_id, self::META_HASH, true ),
+				'hash'      => self::meta( $meta, self::META_HASH ),
 				'context'   => '' !== $context ? $context : 'shortcode',
-				'hook'      => (string) get_post_meta( $post_id, self::META_HOOK, true ),
-				'priority'  => (int) get_post_meta( $post_id, self::META_PRIORITY, true ),
+				'hook'      => self::meta( $meta, self::META_HOOK ),
+				'priority'  => (int) self::meta( $meta, self::META_PRIORITY ),
 			);
 		}
 		self::ensure_sandbox();

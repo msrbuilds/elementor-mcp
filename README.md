@@ -98,4 +98,4 @@ Bug reports, feature requests, and pull requests are all welcome. See [CONTRIBUT
 
 ## License
 
-[GNU General Public License v2.0 or later](LICENSE).
+[GNU General Public License v2.0 or later](LICENSE)

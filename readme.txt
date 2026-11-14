@@ -3,7 +3,7 @@ Contributors: mianshahzadraza
 Tags: elementor, mcp, ai, page-builder, automation
 Requires at least: 6.9
 Tested up to: 7.1
-Stable tag: 3.21.4
+Stable tag: 3.21.5
 Requires PHP: 8.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -218,6 +218,16 @@ EMCP Tools works on your own site. It contacts the services below only in the si
 2. Connection configuration page with copy-paste configs.
 
 == Changelog ==
+
+= 3.21.5 =
+
+Fixes from user reports: MCP clients that check output schemas, snippet tools on W3 Total Cache with Valkey, global typography, Elementor Pro theme widgets and the collapsing admin menu.
+
+* Fixed: get-element-settings, get-post and other tools sent an empty list where their output schema declares an object, so MCP clients that check the schema rejected the answer.
+* Fixed: PHP snippet tools showed empty values on sites with W3 Total Cache's object cache on Valkey. They now read snippet settings straight from the database.
+* Fixed: update-global-typography added a duplicate global for a system typography id. System ids are now refused with a pointer to the right tool, and custom ids update in place.
+* Fixed: Post Title, Post Excerpt and other Elementor Pro theme widgets added with add-pro-widget or build-page showed placeholder text. They now get the same default dynamic tag the editor gives them.
+* Fixed: The WordPress admin menu collapsed every time an EMCP screen opened. It now follows WordPress's own setting.
 
 = 3.21.4 =
 

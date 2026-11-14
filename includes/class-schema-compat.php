@@ -67,7 +67,8 @@ class EMCP_Tools_Schema_Compat {
 
 		if ( isset( $args['execute_callback'] ) && is_callable( $args['execute_callback'] ) ) {
 			$readonly = ! empty( $args['meta']['annotations']['readonly'] );
-			$args['execute_callback'] = self::wrap_execute_callback( $args['execute_callback'], $name, $readonly );
+			$output   = ( isset( $args['output_schema'] ) && is_array( $args['output_schema'] ) ) ? $args['output_schema'] : null;
+			$args['execute_callback'] = self::wrap_execute_callback( $args['execute_callback'], $name, $readonly, $output );
 		}
 
 		return wp_register_ability( $name, $args );
@@ -141,11 +142,12 @@ class EMCP_Tools_Schema_Compat {
 	 *
 	 * @param callable $callback The ability's execute callback.
 	 * @param string   $name     Ability name (e.g. emcp-tools/delete-media).
-	 * @param bool     $readonly Whether the ability is read-only (no write veto).
+	 * @param bool       $readonly      Whether the ability is read-only (no write veto).
+	 * @param array|null $output_schema The ability's output schema, used to keep empty maps JSON objects (#184).
 	 * @return callable
 	 */
-	protected static function wrap_execute_callback( callable $callback, string $name = '', bool $readonly = false ): callable {
-		return static function () use ( $callback, $name, $readonly ) {
+	protected static function wrap_execute_callback( callable $callback, string $name = '', bool $readonly = false, ?array $output_schema = null ): callable {
+		return static function () use ( $callback, $name, $readonly, $output_schema ) {
 			$call_args = func_get_args();
 			if ( ! $readonly && function_exists( 'apply_filters' ) ) {
 				$input = ( isset( $call_args[0] ) && is_array( $call_args[0] ) ) ? $call_args[0] : array();
@@ -165,11 +167,67 @@ class EMCP_Tools_Schema_Compat {
 			}
 			++self::$depth;
 			try {
-				return self::normalize_result( $callback( ...$call_args ) );
+				$result = self::normalize_result( $callback( ...$call_args ) );
+				return null === $output_schema ? $result : self::coerce_empty_objects( $result, $output_schema );
 			} finally {
 				--self::$depth;
 			}
 		};
+	}
+
+	/**
+	 * Turns empty PHP arrays into empty objects wherever the output schema declares a JSON object.
+	 *
+	 * PHP has one empty array for both `[]` and `{}`, and json_encode() writes it as `[]`. The
+	 * adapter sends a tool result as `structuredContent`, and clients that check it against the
+	 * declared output schema (Claude Code does) reject `"settings": []` with "data/settings must
+	 * be object", while WordPress's own output check accepts it because rest_is_object() takes
+	 * any array (#184: get-element-settings on a widget saved with no settings).
+	 *
+	 * Only an empty array at a position whose schema type is `object` (and not also `array`)
+	 * changes; non-empty values are walked through `properties`, `additionalProperties` and
+	 * `items` and otherwise left as they are. WP_Error and objects pass through untouched.
+	 *
+	 * @since 3.21.5
+	 *
+	 * @param mixed $value  The value (a tool result or part of it).
+	 * @param array $schema The JSON Schema for that value.
+	 * @return mixed
+	 */
+	public static function coerce_empty_objects( $value, array $schema ) {
+		if ( ! is_array( $value ) ) {
+			return $value;
+		}
+
+		$types      = isset( $schema['type'] ) ? (array) $schema['type'] : array();
+		$is_object  = in_array( 'object', $types, true );
+		$is_array   = in_array( 'array', $types, true );
+		$has_object = $is_object || ( empty( $types ) && ( isset( $schema['properties'] ) || isset( $schema['additionalProperties'] ) ) );
+
+		if ( array() === $value ) {
+			return ( $is_object && ! $is_array ) ? new stdClass() : $value;
+		}
+
+		if ( $has_object && ! array_is_list( $value ) ) {
+			$properties = ( isset( $schema['properties'] ) && is_array( $schema['properties'] ) ) ? $schema['properties'] : array();
+			$additional = ( isset( $schema['additionalProperties'] ) && is_array( $schema['additionalProperties'] ) ) ? $schema['additionalProperties'] : null;
+			foreach ( $value as $key => $item ) {
+				if ( isset( $properties[ $key ] ) && is_array( $properties[ $key ] ) ) {
+					$value[ $key ] = self::coerce_empty_objects( $item, $properties[ $key ] );
+				} elseif ( null !== $additional ) {
+					$value[ $key ] = self::coerce_empty_objects( $item, $additional );
+				}
+			}
+			return $value;
+		}
+
+		if ( ( $is_array || empty( $types ) ) && array_is_list( $value ) && isset( $schema['items'] ) && is_array( $schema['items'] ) && ! array_is_list( $schema['items'] ) ) {
+			foreach ( $value as $index => $item ) {
+				$value[ $index ] = self::coerce_empty_objects( $item, $schema['items'] );
+			}
+		}
+
+		return $value;
 	}
 
 	/** @var int How many EMCP tool callbacks are running (nested calls count). */

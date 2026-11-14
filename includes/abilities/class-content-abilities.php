@@ -686,8 +686,11 @@ class EMCP_Tools_Content_Abilities {
 			'permalink'      => (string) get_permalink( $post_id ),
 			'edit_link'      => admin_url( 'post.php?post=' . $post_id . '&action=edit' ),
 			'author'         => array( 'id' => $author_id, 'name' => $author_obj ? (string) $author_obj->display_name : '' ),
-			'terms'          => $terms,
-			'meta'           => $meta,
+			// The output schema declares both as objects. json_encode writes an
+			// empty PHP array as [] (and a list-like one as a list), which MCP
+			// clients reject, so both always go out as JSON objects (#185).
+			'terms'          => (object) $terms,
+			'meta'           => (object) $meta,
 			'featured_image' => $featured,
 			'is_elementor'   => 'builder' === get_post_meta( $post_id, '_elementor_edit_mode', true ),
 		);

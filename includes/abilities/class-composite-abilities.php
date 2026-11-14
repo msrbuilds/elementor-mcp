@@ -546,6 +546,11 @@ class EMCP_Tools_Composite_Abilities {
 			return $element;
 		}
 
+		// Bind the default dynamic tag the editor would add, as add-pro-widget does (#183).
+		if ( class_exists( 'EMCP_Tools_Widget_Abilities' ) ) {
+			$settings = EMCP_Tools_Widget_Abilities::with_dynamic_defaults( $widget_type, $settings );
+		}
+
 		return $this->factory->create_widget( $widget_type, $settings );
 	}
 

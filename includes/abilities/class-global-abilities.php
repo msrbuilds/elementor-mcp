@@ -27,6 +27,13 @@ class EMCP_Tools_Global_Abilities {
 	const SYSTEM_COLOR_IDS = array( 'primary', 'secondary', 'text', 'accent' );
 
 	/**
+	 * The four `system_typography` slot ids. Writing them into
+	 * `custom_typography` adds a second global with the same id instead of
+	 * changing the system one (#186).
+	 */
+	const SYSTEM_TYPOGRAPHY_IDS = array( 'primary', 'secondary', 'text', 'accent' );
+
+	/**
 	 * @var EMCP_Tools_Data
 	 */
 	private $data;
@@ -122,6 +129,19 @@ class EMCP_Tools_Global_Abilities {
 					'type'       => 'object',
 					'properties' => array(
 						'success' => array( 'type' => 'boolean' ),
+						'target'  => array( 'type' => 'string' ),
+						'written' => array(
+							'type'  => 'array',
+							'items' => array( 'type' => 'string' ),
+						),
+						'updated' => array(
+							'type'  => 'array',
+							'items' => array( 'type' => 'string' ),
+						),
+						'added'   => array(
+							'type'  => 'array',
+							'items' => array( 'type' => 'string' ),
+						),
 					),
 				),
 				'meta'                => array(
@@ -137,13 +157,40 @@ class EMCP_Tools_Global_Abilities {
 	}
 
 	/**
-	 * Executes the update-global-colors ability.
+	 * Reads the kit settings as stored now.
 	 *
-	 * @since 1.0.0
+	 * The document's get_settings() is read once per document object and never
+	 * refreshed, while update_settings() merges into the stored meta. A long-lived
+	 * MCP process (WP-CLI stdio) that called these tools twice therefore rebuilt
+	 * the second list from the first call's stale copy and undid it. Read the
+	 * meta instead, which update_post_meta() keeps current.
 	 *
-	 * @param array $input The input parameters.
-	 * @return array|\WP_Error
+	 * @param object $kit Active Elementor kit document.
+	 * @return array
 	 */
+	private function stored_kit_settings( $kit ): array {
+		$settings = method_exists( $kit, 'get_meta' )
+			? $kit->get_meta( '_elementor_page_settings' )
+			: $kit->get_settings();
+		return is_array( $settings ) ? $settings : array();
+	}
+
+	/**
+	 * Maps each `_id` in a stored globals list to its first position.
+	 *
+	 * @param mixed $items Stored list.
+	 * @return array<string,int>
+	 */
+	private static function id_positions( $items ): array {
+		$map = array();
+		foreach ( is_array( $items ) ? $items : array() as $index => $item ) {
+			if ( is_array( $item ) && isset( $item['_id'] ) && is_scalar( $item['_id'] ) && ! isset( $map[ (string) $item['_id'] ] ) ) {
+				$map[ (string) $item['_id'] ] = $index;
+			}
+		}
+		return $map;
+	}
+
 	/**
 	 * Snapshot the kit's stored settings meta so a global change can be rolled back.
 	 *
@@ -175,6 +222,14 @@ class EMCP_Tools_Global_Abilities {
 		}
 	}
 
+	/**
+	 * Executes the update-global-colors ability.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param array $input The input parameters.
+	 * @return array|\WP_Error
+	 */
 	public function execute_update_global_colors( $input ) {
 		$colors = $input['colors'] ?? array();
 
@@ -211,20 +266,15 @@ class EMCP_Tools_Global_Abilities {
 			);
 		}
 
-		// Get current kit settings.
-		$kit_settings = $kit->get_settings();
-
 		// Merge colors: update existing by _id, add new ones.
-		$existing_colors = $kit_settings['custom_colors'] ?? array();
-		$existing_map    = array();
-
-		foreach ( $existing_colors as $index => $existing ) {
-			if ( isset( $existing['_id'] ) ) {
-				$existing_map[ $existing['_id'] ] = $index;
-			}
-		}
+		$kit_settings    = $this->stored_kit_settings( $kit );
+		// Keep the stored keys: update_settings() merges list entries by key.
+		$existing_colors = is_array( $kit_settings['custom_colors'] ?? null ) ? $kit_settings['custom_colors'] : array();
+		$existing_map    = self::id_positions( $existing_colors );
 
 		$written = array();
+		$updated = array();
+		$added   = array();
 		foreach ( $colors as $color ) {
 			$color_id = sanitize_text_field( $color['_id'] ?? '' );
 			if ( empty( $color_id ) ) {
@@ -240,8 +290,15 @@ class EMCP_Tools_Global_Abilities {
 
 			if ( isset( $existing_map[ $color_id ] ) ) {
 				$existing_colors[ $existing_map[ $color_id ] ] = $color_entry;
+				if ( ! in_array( $color_id, $added, true ) ) {
+					$updated[] = $color_id;
+				}
 			} else {
-				$existing_colors[] = $color_entry;
+				// Remember the new position so a repeated id in the same call
+				// updates this entry instead of adding a second one.
+				$existing_colors[]         = $color_entry;
+				$existing_map[ $color_id ] = array_key_last( $existing_colors );
+				$added[]                   = $color_id;
 			}
 		}
 
@@ -252,7 +309,9 @@ class EMCP_Tools_Global_Abilities {
 		return array(
 			'success' => true,
 			'target'  => 'custom_colors',
-			'written' => $written,
+			'written' => array_values( array_unique( $written ) ),
+			'updated' => array_values( array_unique( $updated ) ),
+			'added'   => array_values( array_unique( $added ) ),
 		);
 	}
 
@@ -269,7 +328,7 @@ class EMCP_Tools_Global_Abilities {
 			'emcp-tools/update-global-typography',
 			array(
 				'label'               => __( 'Update Global Typography', 'emcp-tools' ),
-				'description'         => __( 'Updates the site-wide typography settings in the Elementor kit.', 'emcp-tools' ),
+				'description'         => __( 'Adds or updates entries in the Elementor kit CUSTOM typography list (settings.custom_typography), matched by _id: an existing _id is updated in place (only the fields you pass change), an unknown _id is added. The four system slots (primary, secondary, text, accent, and any other id in system_typography) are refused here; use replace-system-typography (Pro) or the Elementor Site Settings UI for those. Returns the ids updated and the ids added.', 'emcp-tools' ),
 				'category'            => 'emcp-tools',
 				'execute_callback'    => array( $this, 'execute_update_global_typography' ),
 				'permission_callback' => array( $this, 'check_manage_permission' ),
@@ -284,7 +343,7 @@ class EMCP_Tools_Global_Abilities {
 								'properties' => array(
 									'_id'                      => array(
 										'type'        => 'string',
-										'description' => __( 'Unique typography ID (e.g. "primary").', 'emcp-tools' ),
+										'description' => __( 'Unique custom typography ID (e.g. "body-copy"). primary, secondary, text and accent are reserved system slots and are refused.', 'emcp-tools' ),
 									),
 									'title'                    => array(
 										'type'        => 'string',
@@ -357,6 +416,19 @@ class EMCP_Tools_Global_Abilities {
 					'type'       => 'object',
 					'properties' => array(
 						'success' => array( 'type' => 'boolean' ),
+						'target'  => array( 'type' => 'string' ),
+						'written' => array(
+							'type'  => 'array',
+							'items' => array( 'type' => 'string' ),
+						),
+						'updated' => array(
+							'type'  => 'array',
+							'items' => array( 'type' => 'string' ),
+						),
+						'added'   => array(
+							'type'  => 'array',
+							'items' => array( 'type' => 'string' ),
+						),
 					),
 				),
 				'meta'                => array(
@@ -392,15 +464,42 @@ class EMCP_Tools_Global_Abilities {
 			return new \WP_Error( 'kit_not_found', __( 'Active Elementor kit not found.', 'emcp-tools' ) );
 		}
 
-		$kit_settings      = $kit->get_settings();
-		$existing_typo     = $kit_settings['custom_typography'] ?? array();
-		$existing_map      = array();
+		$kit_settings = $this->stored_kit_settings( $kit );
 
-		foreach ( $existing_typo as $index => $existing ) {
-			if ( isset( $existing['_id'] ) ) {
-				$existing_map[ $existing['_id'] ] = $index;
+		// System globals live in `system_typography`; upserting one of their ids
+		// into `custom_typography` added a second global with the same id and
+		// left the real one unchanged while reporting success (#186). Refuse the
+		// whole call, as update-global-colors does for system colors (#145).
+		$system_ids = array_merge(
+			self::SYSTEM_TYPOGRAPHY_IDS,
+			array_map( 'strval', array_keys( self::id_positions( $kit_settings['system_typography'] ?? array() ) ) )
+		);
+		$reserved   = array();
+		foreach ( $typography as $typo ) {
+			$id = sanitize_text_field( is_array( $typo ) ? ( $typo['_id'] ?? '' ) : '' );
+			if ( '' !== $id && in_array( $id, $system_ids, true ) ) {
+				$reserved[] = $id;
 			}
 		}
+		if ( $reserved ) {
+			return new \WP_Error(
+				'reserved_typography_id',
+				sprintf(
+					/* translators: %s: comma-separated list of reserved ids */
+					__( 'These ids are Elementor system typography slots and cannot be written as custom typography: %s. Use replace-system-typography (Pro) or Elementor Site Settings to change system typography.', 'emcp-tools' ),
+					implode( ', ', array_unique( $reserved ) )
+				),
+				array( 'reserved' => array_values( array_unique( $reserved ) ) )
+			);
+		}
+
+		// Keep the stored keys: Kit::update_settings() merges with
+		// array_replace_recursive(), which matches list entries by key, so a
+		// reindexed list would merge entries into the wrong stored ones.
+		$existing_typo = is_array( $kit_settings['custom_typography'] ?? null ) ? $kit_settings['custom_typography'] : array();
+		$existing_map  = self::id_positions( $existing_typo );
+		$updated       = array();
+		$added         = array();
 
 		$allowed_keys = array(
 			'_id', 'title', 'typography_typography',
@@ -414,6 +513,9 @@ class EMCP_Tools_Global_Abilities {
 		);
 
 		foreach ( $typography as $typo ) {
+			if ( ! is_array( $typo ) ) {
+				continue;
+			}
 			$typo_id = sanitize_text_field( $typo['_id'] ?? '' );
 			if ( empty( $typo_id ) ) {
 				continue;
@@ -429,14 +531,22 @@ class EMCP_Tools_Global_Abilities {
 
 			// Ensure typography_typography is set to 'custom' to activate overrides.
 			$typo_entry['typography_typography'] = 'custom';
+			$typo_entry['_id']                   = $typo_id;
 
 			if ( isset( $existing_map[ $typo_id ] ) ) {
 				$existing_typo[ $existing_map[ $typo_id ] ] = array_merge(
 					$existing_typo[ $existing_map[ $typo_id ] ],
 					$typo_entry
 				);
+				if ( ! in_array( $typo_id, $added, true ) ) {
+					$updated[] = $typo_id;
+				}
 			} else {
-				$existing_typo[] = $typo_entry;
+				// Store the sanitized id and remember the new position so a
+				// repeated id in the same call updates this entry.
+				$existing_typo[]          = $typo_entry;
+				$existing_map[ $typo_id ] = array_key_last( $existing_typo );
+				$added[]                  = $typo_id;
 			}
 		}
 
@@ -444,6 +554,11 @@ class EMCP_Tools_Global_Abilities {
 		$kit->update_settings( array( 'custom_typography' => $existing_typo ) );
 		$this->record_kit_change( $emcp_kit_snap, 'Updated global typography' );
 
-		return array( 'success' => true );
+		return array(
+			'success' => true,
+			'target'  => 'custom_typography',
+			'updated' => array_values( array_unique( $updated ) ),
+			'added'   => array_values( array_unique( $added ) ),
+		);
 	}
 }

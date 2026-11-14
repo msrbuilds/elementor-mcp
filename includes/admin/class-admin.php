@@ -612,7 +612,7 @@ class EMCP_Tools_Admin {
 		if ( ! $this->is_frame_hook( $hook ) ) {
 			return $classes;
 		}
-		return EMCP_Tools_Admin_Frame::body_class( $classes, (string) get_user_setting( 'mfold', '' ) );
+		return EMCP_Tools_Admin_Frame::body_class( $classes );
 	}
 
 	/**
