@@ -103,6 +103,7 @@ final class EMCP_Tools_Pro_Loader {
 		'includes/abilities/mailpoet/class-mailpoet-history.php',
 		// Bricks templates (3.22.0): History undoes an apply outside the Templates screen.
 		'includes/admin/bricks-templates/class-bricks-template-merge.php',
+		'includes/admin/bricks-templates/class-bricks-template-history.php',
 	);
 
 	/**
@@ -433,6 +434,7 @@ final class EMCP_Tools_Pro_Loader {
 		if ( class_exists( 'EMCP_Tools_Flatsome_Writer' ) ) { EMCP_Tools_Flatsome_Writer::boot(); }
 		if ( class_exists( 'EMCP_Tools_Ultimate_Member_Writer' ) ) { EMCP_Tools_Ultimate_Member_Writer::boot(); }
 		if ( class_exists( 'EMCP_Tools_Flamingo_Writer' ) ) { EMCP_Tools_Flamingo_Writer::boot(); }
+		if ( class_exists( 'EMCP_Tools_Bricks_Template_History' ) ) { EMCP_Tools_Bricks_Template_History::boot(); }
 		// AI Chat runtime wiring now lives in EMCP_Tools_AI_Chat_Module::register(),
 		// booted by the modules registry only when the module is active.
 
