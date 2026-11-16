@@ -101,6 +101,8 @@ final class EMCP_Tools_Pro_Loader {
 		'includes/abilities/fluentcrm/class-fluentcrm-history.php',
 		// MailPoet (3.19.0): History undoes, redacts on MailPoet's deletes and on privacy erasures, outside the MCP surface.
 		'includes/abilities/mailpoet/class-mailpoet-history.php',
+		// Bricks templates (3.22.0): History undoes an apply outside the Templates screen.
+		'includes/admin/bricks-templates/class-bricks-template-merge.php',
 	);
 
 	/**
