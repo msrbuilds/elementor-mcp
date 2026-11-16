@@ -258,6 +258,8 @@ final class EMCP_Tools_Pro_Loader {
 		'includes/ai-chat/class-ai-chat-relay.php',
 		'includes/ai-chat/class-ai-chat-suggestions.php',
 		'includes/ai-chat/class-ai-chat-controller.php',
+		// Bricks templates (3.22.0): image import and the importer, used by the Templates apply route.
+		'includes/admin/bricks-templates/class-bricks-template-assets.php',
 		// Admin screens served over REST (3.18.0 redesign).
 		'includes/admin/data/class-admin-templates-data.php',
 		'includes/admin/rest/class-admin-rest-templates.php',
