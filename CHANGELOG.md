@@ -2,6 +2,10 @@
 
 All notable changes to MCP Tools for WordPress & Page Builders are documented in this file.
 
+## [Unreleased]
+
+- New in Pro: **Bricks templates.** Ten Bricks designs join the Templates library, next to the Elementor templates, with a Builder switch to show one or the other. Create page makes a draft page that looks like the demo: the template's global classes and variables are added to the site (classes and variables you already have are never changed), its images are copied into the Media Library, and its fonts and theme style apply to that page only. Add to library puts the layout in Bricks templates instead. Needs Bricks 2.4 or later. Each apply can be undone from History, which removes the page and whatever the apply added, unless another page still uses it.
+
 ## [3.21.5] - 2026-11-14
 
 > Fixes from user reports: MCP clients that check output schemas, snippet tools on W3 Total Cache with Valkey, global typography, Elementor Pro theme widgets and the collapsing admin menu.
