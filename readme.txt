@@ -219,6 +219,12 @@ EMCP Tools works on your own site. It contacts the services below only in the si
 
 == Changelog ==
 
+= 3.22.0 =
+
+Bricks templates join the Templates library.
+
+* New in Pro: Bricks templates. Ten Bricks designs join the Templates library next to the Elementor templates, with a Builder switch to show one or the other. Create page makes a draft page that looks like the demo, with its classes, variables, images and fonts; Add to library saves the layout to Bricks templates. Needs Bricks 2.4 or later. Each apply can be undone from History.
+
 = 3.21.5 =
 
 Fixes from user reports: MCP clients that check output schemas, snippet tools on W3 Total Cache with Valkey, global typography, Elementor Pro theme widgets and the collapsing admin menu.
