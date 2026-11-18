@@ -230,6 +230,8 @@ final class EMCP_Tools_Pro_Loader {
 		'includes/abilities/class-visual-composer-integration.php',
 		'includes/abilities/class-otter-integration.php',
 		'includes/wpbakery/class-wpbakery-document.php',
+		'includes/wpbakery/class-wpbakery-native.php',
+		'includes/wpbakery/class-wpbakery-saver.php',
 		'includes/abilities/class-wpbakery-integration.php',
 		'includes/kirki/class-kirki-document.php',
 		'includes/abilities/class-kirki-integration.php',

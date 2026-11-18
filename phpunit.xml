@@ -201,6 +201,9 @@
         <testsuite name="Migrate">
             <directory>pro/tests/unit/migrate</directory>
         </testsuite>
+        <testsuite name="WPBakery">
+            <directory>pro/tests/unit/wpbakery</directory>
+        </testsuite>
     </testsuites>
 
     <source>

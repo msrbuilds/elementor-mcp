@@ -6,6 +6,7 @@ All notable changes to MCP Tools for WordPress & Page Builders are documented in
 
 > Bricks templates join the Templates library.
 
+- Fixed (Pro): **WPBakery page saves on Uncode sites changed the page and then reported an error.** Uncode's copy of WPBakery names the optimized-asset step differently, so the save stopped after writing the page: the element CSS was not rebuilt and the result was not checked. Saves now use whichever step this WPBakery has, and if anything fails after the first change, the page, its WPBakery settings and its recovery snapshots are put back exactly. A failed save no longer drops the oldest recovery snapshot.
 - New in Pro: **Bricks templates.** Ten Bricks designs join the Templates library, next to the Elementor templates, with a Builder switch to show one or the other. Create page makes a draft page that looks like the demo: the template's global classes and variables are added to the site (classes and variables you already have are never changed), its images are copied into the Media Library, and its fonts and theme style apply to that page only. Add to library puts the layout in Bricks templates instead. Needs Bricks 2.4 or later. Each apply can be undone from History, which removes the page and whatever the apply added, unless another page still uses it.
 
 ## [3.21.5] - 2026-11-14
