@@ -1718,6 +1718,30 @@ trait EMCP_Tools_Admin_Catalog_Trait {
 					),
 				),
 			),
+			'theme_uncode'     => array(
+				'platform' => 'themes',
+				'pro'      => true,
+				'label'    => __( 'Uncode', 'emcp-tools' ),
+				'note'     => __( 'Uncode (Undsgn): theme options and Uncode Wireframes. Pages and Content Blocks are built with the WPBakery tools, which accept Uncode\'s own elements while Uncode is active. Enabled only when Uncode is the active theme (a child theme counts).', 'emcp-tools' ),
+				'tools'    => array(
+					'emcp-tools/uncode-read'  => array(
+						'label'       => __( 'Uncode Read', 'emcp-tools' ),
+						'description' => __( 'Read the Uncode context, theme option sections and values with their types and choices, and the Wireframes catalog with per-Wireframe readiness.', 'emcp-tools' ),
+						'badges'      => array( 'read-only', 'pro' ),
+						'operations'  => array( 'get-context', 'list-option-sections', 'get-options', 'get-option-schema', 'list-wireframes', 'get-wireframe' ),
+						'available'   => class_exists( 'EMCP_Tools_Uncode_Options' ) && EMCP_Tools_Uncode_Options::supported(),
+						'requires'    => array( 'name' => 'Uncode and Uncode Core 2.12.8 or later', 'kind' => 'theme' ),
+					),
+					'emcp-tools/uncode-write' => array(
+						'label'       => __( 'Uncode Write', 'emcp-tools' ),
+						'description' => __( 'Change Uncode theme options (type-checked, CSS rebuilt, undo from History) and prepare Wireframes placeholders.', 'emcp-tools' ),
+						'badges'      => array( 'pro' ),
+						'operations'  => array( 'update-options', 'prepare-wireframes' ),
+						'available'   => class_exists( 'EMCP_Tools_Uncode_Options' ) && EMCP_Tools_Uncode_Options::supported(),
+						'requires'    => array( 'name' => 'Uncode and Uncode Core 2.12.8 or later', 'kind' => 'theme' ),
+					),
+				),
+			),
 			'theme_blocksy'    => array(
 				'platform' => 'themes',
 				'label'    => __( 'Blocksy', 'emcp-tools' ),

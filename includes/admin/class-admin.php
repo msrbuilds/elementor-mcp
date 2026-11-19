@@ -397,7 +397,7 @@ class EMCP_Tools_Admin {
 	 *
 	 * @since 1.8.0
 	 */
-	const DEFAULTS_VERSION = 74;
+	const DEFAULTS_VERSION = 75;
 
 	/**
 	 * '1' when updates should leave new tools on: the defaults seeding then

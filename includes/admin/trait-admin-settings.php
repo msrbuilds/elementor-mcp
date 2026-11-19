@@ -406,6 +406,9 @@ trait EMCP_Tools_Admin_Settings_Trait {
 		if ( $applied < 67 ) {
 			$add[] = 'emcp-tools/cptui-write';
 		}
+		if ( $applied < 75 ) {
+			$add[] = 'emcp-tools/uncode-write';
+		}
 		if ( $applied < 74 ) {
 			foreach (array('create-page','set-page-tree','patch-page','update-page-settings','publish-page','create-pattern','insert-pattern','theme-write') as $operation) { $add[] = 'emcp-tools/flatsome-' . $operation; }
 		}

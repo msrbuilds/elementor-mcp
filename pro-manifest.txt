@@ -140,6 +140,8 @@ includes/wpbakery/uncode-vocabulary.php
 includes/wpbakery/class-wpbakery-history.php
 includes/uncode/class-uncode-wireframes.php
 includes/uncode/class-uncode-wireframes-import.php
+includes/uncode/class-uncode-options.php
+includes/abilities/class-uncode-integration.php
 includes/abilities/class-wpbakery-integration.php
 
 includes/beaver/class-beaver-document.php

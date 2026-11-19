@@ -410,6 +410,8 @@ trait EMCP_Tools_Admin_Tool_Groups_Trait {
 			'emcp-tools/blocksy-blocks-write',
 			'emcp-tools/betheme-read',
 			'emcp-tools/betheme-write',
+			'emcp-tools/uncode-read',
+			'emcp-tools/uncode-write',
 			'emcp-tools/blocksy-extensions-read',
 			'emcp-tools/blocksy-extensions-write',
 			'emcp-tools/blocksy-theme-read',

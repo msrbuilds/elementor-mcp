@@ -571,6 +571,10 @@ class EMCP_Tools_Ability_Registrar {
 		if ( class_exists( 'EMCP_Tools_BeTheme_Integration' ) ) {
 			$theme_integrations[] = new EMCP_Tools_BeTheme_Integration();
 		}
+		// Uncode (Pro): theme options and Wireframes; pages are built with the WPBakery tools.
+		if ( class_exists( 'EMCP_Tools_Uncode_Integration' ) ) {
+			$theme_integrations[] = new EMCP_Tools_Uncode_Integration();
+		}
 		// Blocksy blocks register independently above; theme and Companion have separate tools.
 		if ( class_exists( 'EMCP_Tools_Blocksy_Theme_Integration' ) ) {
 			$theme_integrations[] = new EMCP_Tools_Blocksy_Theme_Integration();
