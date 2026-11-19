@@ -164,14 +164,34 @@ class EMCP_Tools_OAuth_Token {
 				return self::error( 'invalid_target', 'Refresh token was not issued for this MCP server.' );
 			}
 
-			// Rotate: retire the old refresh token, but (a) leave its bound access
-			// token to expire on its own TTL so in-flight requests aren't 401'd
-			// mid-chat, and (b) keep the retired refresh token usable for a short
-			// grace window so a lost-response retry re-rotates instead of 401'ing.
-			EMCP_Tools_OAuth_Store::rotate_out_refresh( (int) $row['id'], self::refresh_grace() );
-			$pair = self::issue_pair( $client_id, (int) $row['user_id'], (string) $row['scopes'], $bound_resource );
-			if ( '' === $pair['access'] || '' === $pair['refresh'] ) {
-				return self::error( 'server_error', 'The authorization server could not persist the rotated token. Please try again; if it persists, check the database and the site error log.', 500 );
+			$row_id = (int) $row['id'];
+			if ( self::is_gateway_family( $client_id, (string) $row['scopes'] ) ) {
+				// The Gateway can give up on a slow response after this rotation
+				// commits (ticket 155), so it may present this token again at any
+				// later renewal. A retired token keeps working until its successor
+				// is first used: a re-presented retired token replaces the unused
+				// successor, and using a successor removes what it replaced.
+				$successor = (int) ( $row['refresh_of'] ?? 0 );
+				if ( $successor > 0 ) {
+					EMCP_Tools_OAuth_Store::drop_unused_successor( $successor );
+				} else {
+					EMCP_Tools_OAuth_Store::drop_retired_predecessors( $row_id );
+				}
+				$pair = self::issue_pair( $client_id, (int) $row['user_id'], (string) $row['scopes'], $bound_resource );
+				if ( '' === $pair['access'] || '' === $pair['refresh'] ) {
+					return self::error( 'server_error', 'The authorization server could not persist the rotated token. Please try again; if it persists, check the database and the site error log.', 500 );
+				}
+				EMCP_Tools_OAuth_Store::retire_refresh_until_successor_used( $row_id, $pair['refresh_id'], EMCP_Tools_Gateway_Credential::RETIRED_REFRESH_TTL );
+			} else {
+				// Rotate: retire the old refresh token, but (a) leave its bound access
+				// token to expire on its own TTL so in-flight requests aren't 401'd
+				// mid-chat, and (b) keep the retired refresh token usable for a short
+				// grace window so a lost-response retry re-rotates instead of 401'ing.
+				EMCP_Tools_OAuth_Store::rotate_out_refresh( $row_id, self::refresh_grace() );
+				$pair = self::issue_pair( $client_id, (int) $row['user_id'], (string) $row['scopes'], $bound_resource );
+				if ( '' === $pair['access'] || '' === $pair['refresh'] ) {
+					return self::error( 'server_error', 'The authorization server could not persist the rotated token. Please try again; if it persists, check the database and the site error log.', 500 );
+				}
 			}
 
 			return new WP_REST_Response(
@@ -284,18 +304,32 @@ class EMCP_Tools_OAuth_Token {
 	 * @param int    $user_id   User the tokens act as.
 	 * @param string $scope     Granted scope.
 	 * @param string $resource  Canonical MCP resource.
-	 * @return array{access:string,refresh:string}
+	 * @return array{access:string,refresh:string,refresh_id:int}
 	 */
 	private static function issue_pair( string $client_id, int $user_id, string $scope, string $resource ): array {
+		$failed  = array( 'access' => '', 'refresh' => '', 'refresh_id' => 0 );
 		$refresh = EMCP_Tools_OAuth_Store::issue_token( 'refresh', $client_id, $user_id, $scope, self::refresh_ttl( $client_id, $scope ), null, $resource );
 		if ( '' === $refresh['token'] ) {
-			return array( 'access' => '', 'refresh' => '' );
+			return $failed;
 		}
-		$access  = EMCP_Tools_OAuth_Store::issue_token( 'access', $client_id, $user_id, $scope, self::access_ttl(), (int) $refresh['id'], $resource );
+		$access = EMCP_Tools_OAuth_Store::issue_token( 'access', $client_id, $user_id, $scope, self::access_ttl(), (int) $refresh['id'], $resource );
 		if ( '' === $access['token'] ) {
-			return array( 'access' => '', 'refresh' => '' );
+			return $failed;
 		}
-		return array( 'access' => $access['token'], 'refresh' => $refresh['token'] );
+		return array( 'access' => $access['token'], 'refresh' => $refresh['token'], 'refresh_id' => (int) $refresh['id'] );
+	}
+
+	/**
+	 * Whether a token belongs to the EMCP Gateway's credential family.
+	 *
+	 * @param string $client_id Client id.
+	 * @param string $scope     Granted scope.
+	 * @return bool
+	 */
+	private static function is_gateway_family( string $client_id, string $scope ): bool {
+		return class_exists( 'EMCP_Tools_Gateway_Credential' )
+			&& EMCP_Tools_Gateway_Credential::SCOPE === $scope
+			&& EMCP_Tools_Gateway_Credential::is_gateway_client( $client_id );
 	}
 
 	/**
@@ -309,8 +343,7 @@ class EMCP_Tools_OAuth_Token {
 	 * @return int Seconds.
 	 */
 	private static function refresh_ttl( string $client_id, string $scope ): int {
-		$gateway = EMCP_Tools_Gateway_Credential::SCOPE === $scope && EMCP_Tools_Gateway_Credential::is_gateway_client( $client_id );
-		return $gateway ? EMCP_Tools_Gateway_Credential::REFRESH_TTL : self::REFRESH_TTL;
+		return self::is_gateway_family( $client_id, $scope ) ? EMCP_Tools_Gateway_Credential::REFRESH_TTL : self::REFRESH_TTL;
 	}
 
 	/**

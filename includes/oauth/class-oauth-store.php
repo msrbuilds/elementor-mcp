@@ -521,8 +521,65 @@ class EMCP_Tools_OAuth_Store {
 	}
 
 	/**
+	 * Retire a refresh token until its successor is first used (ticket 155).
+	 *
+	 * The Gateway can give up on a slow token response after WordPress has
+	 * already rotated, so it never sees the successor and presents the retired
+	 * token again, often much later than any short grace. The retired row keeps
+	 * working until the successor is used (then retired_predecessors are dropped)
+	 * or until $ttl runs out. `refresh_of` on a refresh row names its successor;
+	 * refresh rows never use it otherwise, and revoke_token() of the successor
+	 * removes the retired row with it.
+	 *
+	 * @param int $id           Retired refresh token row id.
+	 * @param int $successor_id The refresh token row issued in its place.
+	 * @param int $ttl          Longest the retired token may stay usable.
+	 * @return bool Whether the update ran.
+	 */
+	public static function retire_refresh_until_successor_used( int $id, int $successor_id, int $ttl ): bool {
+		global $wpdb;
+		$until  = time() + max( 0, $ttl );
+		$result = $wpdb->query(
+			$wpdb->prepare(
+				'UPDATE %i SET refresh_of = %d, expires_at = LEAST(expires_at, %d) WHERE id = %d AND token_type = %s', self::tokens_table(),
+				$successor_id,
+				$until,
+				$id,
+				'refresh'
+			)
+		);
+		return false !== $result;
+	}
+
+	/**
+	 * Remove a successor refresh token that was never used, with its access
+	 * tokens. Called when its retired predecessor is presented again, which
+	 * means the client never received this successor.
+	 *
+	 * @param int $successor_id Refresh token row id.
+	 */
+	public static function drop_unused_successor( int $successor_id ): void {
+		global $wpdb;
+		$table = self::tokens_table();
+		$wpdb->query( $wpdb->prepare( 'DELETE FROM %i WHERE id = %d AND token_type = %s', $table, $successor_id, 'refresh' ) );
+		$wpdb->query( $wpdb->prepare( 'DELETE FROM %i WHERE refresh_of = %d AND token_type = %s', $table, $successor_id, 'access' ) );
+	}
+
+	/**
+	 * Remove the retired refresh tokens a successor replaced, now that the
+	 * successor has been used. Their access tokens live out their own TTL.
+	 *
+	 * @param int $id The refresh token row being used.
+	 */
+	public static function drop_retired_predecessors( int $id ): void {
+		global $wpdb;
+		$wpdb->query( $wpdb->prepare( 'DELETE FROM %i WHERE refresh_of = %d AND token_type = %s', self::tokens_table(), $id, 'refresh' ) );
+	}
+
+	/**
 	 * Move the expiry of a client's live refresh tokens. Tokens at or below
-	 * $floor are skipped: that is where rotate_out_refresh() parks retired ones.
+	 * $floor are skipped: that is where rotate_out_refresh() parks retired ones,
+	 * and so are tokens waiting for a successor's first use (refresh_of set).
 	 *
 	 * @param string $client_id  Client id.
 	 * @param string $scope      Token scope.
@@ -534,7 +591,7 @@ class EMCP_Tools_OAuth_Store {
 		global $wpdb;
 		$result = $wpdb->query(
 			$wpdb->prepare(
-				'UPDATE %i SET expires_at = %d WHERE client_id = %s AND token_type = %s AND scopes = %s AND expires_at > %d', self::tokens_table(),
+				'UPDATE %i SET expires_at = %d WHERE client_id = %s AND token_type = %s AND scopes = %s AND expires_at > %d AND refresh_of IS NULL', self::tokens_table(),
 				$expires_at,
 				$client_id,
 				'refresh',
