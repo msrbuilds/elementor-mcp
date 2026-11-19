@@ -135,6 +135,8 @@ includes/abilities/class-kirki-integration.php
 includes/wpbakery/class-wpbakery-document.php
 includes/wpbakery/class-wpbakery-native.php
 includes/wpbakery/class-wpbakery-saver.php
+includes/wpbakery/class-wpbakery-uncode-pack.php
+includes/wpbakery/uncode-vocabulary.php
 includes/abilities/class-wpbakery-integration.php
 
 includes/beaver/class-beaver-document.php
