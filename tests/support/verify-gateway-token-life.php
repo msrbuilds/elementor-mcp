@@ -50,17 +50,40 @@ try {
 	$data   = $res->get_data();
 	$second = (string) ( $data['refresh_token'] ?? '' );
 	$check( $life( $second ) > 9 * YEAR_IN_SECONDS, 'rotated token keeps its long life' );
-	$check( $life( $first['token'] ) <= EMCP_Tools_OAuth_Token::refresh_grace(), 'old token sits in its rotation grace' );
+	$retired = $life( $first['token'] );
+	$check( $retired > EMCP_Tools_OAuth_Token::refresh_grace() && $retired <= EMCP_Tools_Gateway_Credential::RETIRED_REFRESH_TTL, 'retired Gateway token waits for its successor (30 days at most)' );
 
-	// A token left at 30 days by an older version gets its life back.
+	// A token left at 30 days by an older version gets its life back; a retired one does not.
 	$wpdb->query( $wpdb->prepare( 'UPDATE %i SET expires_at = %d WHERE token_hash = %s', $table, time() + 86400, EMCP_Tools_OAuth_Util::hash_token( $second ) ) );
 	$check( true === EMCP_Tools_Gateway_Credential::extend_existing_tokens(), 'extension reports success' );
 	$check( $life( $second ) > 9 * YEAR_IN_SECONDS, 'short live token extended' );
-	$check( $life( $first['token'] ) <= EMCP_Tools_OAuth_Token::refresh_grace(), 'token in grace stays retired' );
+	$check( $life( $first['token'] ) <= EMCP_Tools_Gateway_Credential::RETIRED_REFRESH_TTL, 'retired token stays retired' );
+
+	// Ticket 155: the Gateway gave up before reading $second, and presents $first again hours later.
+	// An hour passes: move the retired token's expiry back as the clock would.
+	$wpdb->query( $wpdb->prepare( 'UPDATE %i SET expires_at = expires_at - 3600 WHERE token_hash = %s', $table, EMCP_Tools_OAuth_Util::hash_token( $first['token'] ) ) );
+	$res   = $rotate( $first['token'], $client );
+	$check( 200 === $res->get_status(), 'a retired token presented again still renews' );
+	$third = (string) ( $res->get_data()['refresh_token'] ?? '' );
+	$check( '' !== $third && $third !== $second, 'it gets a new successor' );
+	$check( 400 === $rotate( $second, $client )->get_status(), 'the never-received successor is gone' );
+	$check( $life( $first['token'] ) > 0, 'the retired token still works until the new successor is used' );
+
+	// The Gateway now uses its new token: what it replaced stops working.
+	$res    = $rotate( $third, $client );
+	$check( 200 === $res->get_status(), 'the successor renews' );
+	$fourth = (string) ( $res->get_data()['refresh_token'] ?? '' );
+	$denied = $rotate( $first['token'], $client );
+	$check( 400 === $denied->get_status() && 'invalid_grant' === ( $denied->get_data()['error'] ?? '' ), 'the original token is refused once its successor was used' );
+	$check( $life( $third ) > 0 && $life( $fourth ) > 9 * YEAR_IN_SECONDS, 'the chain continues from the used successor' );
+	$check( 200 === $rotate( $fourth, $client )->get_status(), 'the newest token renews' );
+	$check( 400 === $rotate( $third, $client )->get_status(), 'and the one it replaced is refused' );
 
 	$other = 'emcp_smoke_' . wp_generate_password( 12, false );
 	$row   = EMCP_Tools_OAuth_Store::issue_token( 'refresh', $other, 1, 'mcp', EMCP_Tools_OAuth_Token::REFRESH_TTL );
 	$check( $life( $row['token'] ) <= EMCP_Tools_OAuth_Token::REFRESH_TTL, 'ordinary client stays on 30 days' );
+	$check( 200 === $rotate( $row['token'], $other )->get_status(), 'ordinary client rotates' );
+	$check( $life( $row['token'] ) <= EMCP_Tools_OAuth_Token::refresh_grace(), 'ordinary client keeps the short rotation grace' );
 	$check( '' === $wpdb->last_error, 'no database error' );
 } finally {
 	EMCP_Tools_OAuth_Store::delete_client( $client );

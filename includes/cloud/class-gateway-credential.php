@@ -19,6 +19,10 @@ class EMCP_Tools_Gateway_Credential {
 	const CLIENT_NAME  = 'EMCP Gateway';
 	const SCOPE        = 'gateway'; // provenance/revocation label.
 	const REFRESH_TTL  = 315360000; // 10y — effectively non-expiring; store computes expires_at = now+ttl (no 0-sentinel), and each gateway refresh rotates a fresh token resetting the clock. 0 would expire immediately (find_token filters expires_at > now).
+	// A rotated Gateway refresh token stays usable until its successor is first
+	// used, at most this long (ticket 155: the Gateway may never have received the
+	// successor). The Gateway renews at least hourly while a site is in use.
+	const RETIRED_REFRESH_TTL = 2592000; // 30 days.
 	const OPTION_FLAG  = 'emcp_tools_gateway_provisioned';
 
 	/** @return string[] Stable registration redirect URIs. */

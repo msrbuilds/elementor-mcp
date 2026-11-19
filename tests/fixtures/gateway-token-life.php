@@ -34,7 +34,7 @@ class EMCP_Tools_OAuth_Store {
 	public static function issue_token( $type, $client_id, $user_id, $scopes, $ttl, $refresh_of = null, $resource = '' ) {
 		$id = self::$next++;
 		$token = 'token-' . $id;
-		self::$tokens[ $token ] = array( 'id' => $id, 'token_type' => $type, 'client_id' => $client_id, 'user_id' => $user_id, 'scopes' => $scopes, 'resource' => $resource, 'expires_at' => time() + $ttl );
+		self::$tokens[ $token ] = array( 'id' => $id, 'token_type' => $type, 'client_id' => $client_id, 'user_id' => $user_id, 'scopes' => $scopes, 'resource' => $resource, 'expires_at' => time() + $ttl, 'refresh_of' => $refresh_of );
 		return array( 'token' => $token, 'id' => $id );
 	}
 	public static function find_token( $token, $type ) {
@@ -46,9 +46,32 @@ class EMCP_Tools_OAuth_Store {
 			if ( $id === $row['id'] ) { self::$tokens[ $key ]['expires_at'] = min( $row['expires_at'], time() + $grace ); }
 		}
 	}
+	public static function retire_refresh_until_successor_used( $id, $successor_id, $ttl ) {
+		foreach ( self::$tokens as $key => $row ) {
+			if ( $id === $row['id'] && 'refresh' === $row['token_type'] ) {
+				self::$tokens[ $key ]['refresh_of'] = $successor_id;
+				self::$tokens[ $key ]['expires_at'] = min( $row['expires_at'], time() + $ttl );
+			}
+		}
+		return true;
+	}
+	public static function drop_unused_successor( $successor_id ) {
+		foreach ( self::$tokens as $key => $row ) {
+			if ( ( 'refresh' === $row['token_type'] && $successor_id === $row['id'] ) || ( 'access' === $row['token_type'] && $successor_id === $row['refresh_of'] ) ) {
+				unset( self::$tokens[ $key ] );
+			}
+		}
+	}
+	public static function drop_retired_predecessors( $id ) {
+		foreach ( self::$tokens as $key => $row ) {
+			if ( 'refresh' === $row['token_type'] && $id === $row['refresh_of'] ) {
+				unset( self::$tokens[ $key ] );
+			}
+		}
+	}
 	public static function extend_refresh_tokens( $client_id, $scope, $expires_at, $floor ) {
 		foreach ( self::$tokens as $key => $row ) {
-			if ( 'refresh' === $row['token_type'] && $client_id === $row['client_id'] && $scope === $row['scopes'] && $row['expires_at'] > $floor ) {
+			if ( 'refresh' === $row['token_type'] && $client_id === $row['client_id'] && $scope === $row['scopes'] && $row['expires_at'] > $floor && null === $row['refresh_of'] ) {
 				self::$tokens[ $key ]['expires_at'] = $expires_at;
 			}
 		}
@@ -89,6 +112,26 @@ foreach ( array( array( 'claude', 'mcp' ), array( 'claude', 'gateway' ), array( 
 	check( EMCP_Tools_OAuth_Store::$tokens[ $next ]['expires_at'] <= time() + EMCP_Tools_OAuth_Token::REFRESH_TTL, 'Only the Gateway client with the gateway scope gets the long life: ' . implode( '/', $case ) );
 }
 
+// Ticket 155: the Gateway gave up before reading a rotation's answer and
+// presents the retired token again an hour later. It must still renew, the
+// never-received successor must go, and using the new successor ends the old one.
+EMCP_Tools_OAuth_Store::$tokens = array();
+$a    = EMCP_Tools_OAuth_Store::issue_token( 'refresh', 'gateway-client', 1, 'gateway', EMCP_Tools_Gateway_Credential::REFRESH_TTL );
+$lost = rotate( $a['token'], 'gateway-client' )->data['refresh_token'];
+check( EMCP_Tools_OAuth_Store::$tokens[ $a['token'] ]['expires_at'] > time() + 3600, 'A retired Gateway token must outlast the short grace' );
+EMCP_Tools_OAuth_Store::$tokens[ $a['token'] ]['expires_at'] -= 3600;
+$res = rotate( $a['token'], 'gateway-client' );
+check( 200 === $res->status, 'A retired Gateway token presented an hour later must renew' );
+$b = $res->data['refresh_token'];
+check( ! isset( EMCP_Tools_OAuth_Store::$tokens[ $lost ] ), 'The never-received successor must be removed' );
+check( 200 === rotate( $b, 'gateway-client' )->status, 'The new successor must renew' );
+check( 400 === rotate( $a['token'], 'gateway-client' )->status, 'Once its successor is used, the retired token must be refused' );
+
+// Other clients still get the short grace.
+$c = EMCP_Tools_OAuth_Store::issue_token( 'refresh', 'claude', 1, 'mcp', EMCP_Tools_OAuth_Token::REFRESH_TTL );
+rotate( $c['token'], 'claude' );
+check( EMCP_Tools_OAuth_Store::$tokens[ $c['token'] ]['expires_at'] <= time() + EMCP_Tools_OAuth_Token::refresh_grace(), 'Other clients keep the short grace' );
+
 // Tokens rotated before this fix are extended once, except retired ones.
 EMCP_Tools_OAuth_Store::$tokens = array();
 $live    = EMCP_Tools_OAuth_Store::issue_token( 'refresh', 'gateway-client', 1, 'gateway', 86400 );
@@ -98,6 +141,10 @@ check( true === EMCP_Tools_Gateway_Credential::extend_existing_tokens(), 'Extens
 check( EMCP_Tools_OAuth_Store::$tokens[ $live['token'] ]['expires_at'] > time() + 9 * $year, 'A live Gateway token must be extended' );
 check( EMCP_Tools_OAuth_Store::$tokens[ $retired['token'] ]['expires_at'] <= time() + 60, 'A token in its rotation grace must stay retired' );
 check( EMCP_Tools_OAuth_Store::$tokens[ $other['token'] ]['expires_at'] <= time() + 86400, 'Another client must be left alone' );
+$waiting = EMCP_Tools_OAuth_Store::issue_token( 'refresh', 'gateway-client', 1, 'gateway', 86400 );
+EMCP_Tools_OAuth_Store::retire_refresh_until_successor_used( $waiting['id'], $live['id'], 86400 );
+EMCP_Tools_Gateway_Credential::extend_existing_tokens();
+check( EMCP_Tools_OAuth_Store::$tokens[ $waiting['token'] ]['expires_at'] <= time() + 86400, 'A token waiting for its successor must never be extended' );
 
 // A busy lock is retried later; no Gateway client means nothing to do.
 EMCP_Tools_OAuth_Store::$lock_free = false;
