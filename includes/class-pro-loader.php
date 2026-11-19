@@ -234,6 +234,7 @@ final class EMCP_Tools_Pro_Loader {
 		'includes/wpbakery/class-wpbakery-native.php',
 		'includes/wpbakery/class-wpbakery-saver.php',
 		'includes/wpbakery/class-wpbakery-uncode-pack.php',
+		'includes/uncode/class-uncode-wireframes.php',
 		'includes/abilities/class-wpbakery-integration.php',
 		'includes/kirki/class-kirki-document.php',
 		'includes/abilities/class-kirki-integration.php',

@@ -204,6 +204,9 @@
         <testsuite name="WPBakery">
             <directory>pro/tests/unit/wpbakery</directory>
         </testsuite>
+        <testsuite name="Uncode">
+            <directory>pro/tests/unit/uncode</directory>
+        </testsuite>
     </testsuites>
 
     <source>
