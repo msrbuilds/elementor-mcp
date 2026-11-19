@@ -32,6 +32,7 @@ final class EMCP_Tools_Pro_Loader {
 		'includes/uncode/class-uncode-option-writer.php',
 		'includes/uncode/class-uncode-css-native.php',
 		'includes/uncode/class-uncode-css.php',
+		'includes/uncode/class-uncode-history.php',
 		'includes/abilities/ultimate-member/class-ultimate-member-api.php',
 		'includes/abilities/sitekit/class-sitekit-api.php',
 		'includes/abilities/ultimate-member/class-ultimate-member-writer.php',
@@ -449,6 +450,7 @@ final class EMCP_Tools_Pro_Loader {
 		if ( class_exists( 'EMCP_Tools_WPBakery_History' ) ) { EMCP_Tools_WPBakery_History::boot(); }
 		if ( class_exists( 'EMCP_Tools_Uncode_Wireframes_Import' ) ) { EMCP_Tools_Uncode_Wireframes_Import::wire(); }
 		if ( class_exists( 'EMCP_Tools_Uncode_Receipts' ) && 'uncode' === get_template() ) { EMCP_Tools_Uncode_Receipts::boot(); }
+		if ( class_exists( 'EMCP_Tools_Uncode_History' ) ) { EMCP_Tools_Uncode_History::boot(); }
 		if ( class_exists( 'EMCP_Tools_Ultimate_Member_Writer' ) ) { EMCP_Tools_Ultimate_Member_Writer::boot(); }
 		if ( class_exists( 'EMCP_Tools_Flamingo_Writer' ) ) { EMCP_Tools_Flamingo_Writer::boot(); }
 		if ( class_exists( 'EMCP_Tools_Bricks_Template_History' ) ) { EMCP_Tools_Bricks_Template_History::boot(); }

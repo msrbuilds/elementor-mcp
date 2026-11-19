@@ -147,6 +147,7 @@ includes/uncode/class-uncode-receipts.php
 includes/uncode/class-uncode-option-writer.php
 includes/uncode/class-uncode-css-native.php
 includes/uncode/class-uncode-css.php
+includes/uncode/class-uncode-history.php
 includes/abilities/class-uncode-integration.php
 includes/abilities/class-wpbakery-integration.php
 
