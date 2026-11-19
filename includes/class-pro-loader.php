@@ -27,6 +27,7 @@ final class EMCP_Tools_Pro_Loader {
 		'includes/uncode/class-uncode-wireframes-import.php',
 		'includes/uncode/class-uncode-store.php',
 		'includes/uncode/class-uncode-receipts.php',
+		'includes/uncode/class-uncode-option-writer.php',
 		'includes/abilities/ultimate-member/class-ultimate-member-api.php',
 		'includes/abilities/sitekit/class-sitekit-api.php',
 		'includes/abilities/ultimate-member/class-ultimate-member-writer.php',
