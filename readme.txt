@@ -221,8 +221,10 @@ EMCP Tools works on your own site. It contacts the services below only in the si
 
 = 3.22.0 =
 
-Bricks templates join the Templates library.
+Bricks templates join the Templates library, and EMCP now builds and styles Uncode sites.
 
+* New in Pro: Uncode. Build pages and Content Blocks from Uncode's own elements and Wireframes sections, and change Uncode theme options (type-checked, CSS rebuilt, undo from History). The new uncode-write tool ships switched off. Needs Uncode and Uncode Core 2.12.8 or later.
+* Fixed (Pro): WPBakery page saves on Uncode sites changed the page and then reported an error. Saves now use the right native step and put the page back exactly if anything fails.
 * New in Pro: Bricks templates. Ten Bricks designs join the Templates library next to the Elementor templates, with a Builder switch to show one or the other. Create page makes a draft page that looks like the demo, with its classes, variables, images and fonts; Add to library saves the layout to Bricks templates. Needs Bricks 2.4 or later. Each apply can be undone from History.
 
 = 3.21.5 =
