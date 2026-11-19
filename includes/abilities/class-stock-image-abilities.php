@@ -324,7 +324,7 @@ class EMCP_Tools_Stock_Image_Abilities {
 			'emcp-tools/sideload-image',
 			array(
 				'label'               => __( 'Sideload Image', 'emcp-tools' ),
-				'description'         => __( 'Downloads an external image URL into the WordPress Media Library and returns the local attachment ID and URL. Use this after search-images: pass the EXACT `url` from a search result, never construct, guess, or edit an image URL (a made-up URL 404s, and the Unsplash api.unsplash.com/…/download endpoint needs a key). For stock photos, prefer add-stock-image, which searches, sideloads, and places the image in one call.', 'emcp-tools' ),
+				'description'         => __( 'Downloads an external image URL into the WordPress Media Library and returns the local attachment ID and URL. Use this after search-images: pass the EXACT `url` from a search result, never construct, guess, or edit an image URL (a made-up URL 404s, and the Unsplash api.unsplash.com/…/download endpoint needs a key). For stock photos, prefer add-stock-image, which searches, sideloads, and places the image in one call. Also takes any file type WordPress allows (PDF, video, audio, documents): it streams the download on the server with no request-size limit, so use it instead of upload-media for large files. The file is named from the server\'s Content-Disposition or Content-Type, so download links without an extension work; pass `filename` to choose the name.', 'emcp-tools' ),
 				'category'            => 'emcp-tools',
 				'execute_callback'    => array( $this, 'execute_sideload_image' ),
 				'permission_callback' => array( $this, 'check_upload_permission' ),
@@ -333,7 +333,17 @@ class EMCP_Tools_Stock_Image_Abilities {
 					'properties' => array(
 						'url'         => array(
 							'type'        => 'string',
-							'description' => __( 'The external image URL to download.', 'emcp-tools' ),
+							'description' => __( 'The external URL to download (an image or any other allowed media file).', 'emcp-tools' ),
+						),
+						'filename'    => array(
+							'type'        => 'string',
+							'description' => __( 'Optional file name, with or without an extension. Without one, the extension comes from the file\'s real type.', 'emcp-tools' ),
+						),
+						'timeout'     => array(
+							'type'        => 'integer',
+							'minimum'     => 5,
+							'maximum'     => 300,
+							'description' => __( 'Download timeout in seconds (default 30). Raise it for large files or slow hosts.', 'emcp-tools' ),
 						),
 						'title'       => array(
 							'type'        => 'string',
@@ -379,6 +389,66 @@ class EMCP_Tools_Stock_Image_Abilities {
 	}
 
 	/**
+	 * Name for a downloaded file, from its real type rather than only the URL (#189).
+	 *
+	 * Order: the caller's override, the Content-Disposition filename, the URL
+	 * path. The extension is kept only when WordPress knows it; otherwise it
+	 * comes from the Content-Type, and `.jpg` is the fallback only when nothing
+	 * says what the file is (the old behaviour).
+	 *
+	 * @param string $url      Final download URL.
+	 * @param array  $headers  Response headers, lowercase keys.
+	 * @param string $override Optional filename, with or without an extension.
+	 * @return string Sanitized filename.
+	 */
+	public static function sideload_filename( string $url, array $headers, string $override = '' ): string {
+		$ext_to_mime = array();
+		$mime_to_ext = array();
+		foreach ( wp_get_mime_types() as $exts => $mime ) {
+			$list = explode( '|', $exts );
+			foreach ( $list as $ext ) {
+				$ext_to_mime[ $ext ] = $mime;
+			}
+			if ( ! isset( $mime_to_ext[ $mime ] ) ) {
+				$mime_to_ext[ $mime ] = $list[0];
+			}
+		}
+
+		$ctype     = strtolower( trim( explode( ';', (string) ( $headers['content-type'] ?? '' ) )[0] ) );
+		$ctype_ext = $mime_to_ext[ $ctype ] ?? '';
+
+		$name = trim( $override );
+		if ( '' === $name ) {
+			$disposition = (string) ( $headers['content-disposition'] ?? '' );
+			if ( preg_match( "/filename\\*\\s*=\\s*[^']*'[^']*'([^;]+)/i", $disposition, $m ) ) {
+				$name = rawurldecode( trim( $m[1], " \t\"" ) );
+			} elseif ( preg_match( '/filename\s*=\s*("([^"]*)"|[^;]+)/i', $disposition, $m ) ) {
+				$name = trim( '' !== ( $m[2] ?? '' ) ? $m[2] : $m[1], " \t\"" );
+			}
+		}
+		if ( '' === $name ) {
+			$name = (string) wp_parse_url( $url, PHP_URL_PATH );
+		}
+		$name = basename( str_replace( '\\', '/', $name ) );
+
+		$stem = $name;
+		$ext  = '';
+		if ( preg_match( '/^(.*)\.(\w+)$/', $name, $m ) ) {
+			$stem = $m[1];
+			$ext  = strtolower( $m[2] );
+		}
+		if ( '' === $ext || ! isset( $ext_to_mime[ $ext ] ) ) {
+			$ext = '' !== $ctype_ext ? $ctype_ext : 'jpg';
+		}
+
+		$stem = sanitize_file_name( $stem );
+		if ( '' === trim( $stem, '.-_' ) ) {
+			$stem = 'download';
+		}
+		return $stem . '.' . $ext;
+	}
+
+	/**
 	 * Executes the sideload-image ability.
 	 *
 	 * Downloads a remote image into the WordPress Media Library.
@@ -419,7 +489,9 @@ class EMCP_Tools_Stock_Image_Abilities {
 
 		// Download the file to a temp location (SSRF-guarded: blocks private/
 		// reserved/loopback hosts and re-validates each redirect hop).
-		$tmp_file = EMCP_Tools_Url_Guard::safe_download( $url, 30 );
+		$timeout  = max( 5, min( 300, (int) ( $input['timeout'] ?? 30 ) ) );
+		$headers  = array();
+		$tmp_file = EMCP_Tools_Url_Guard::safe_download( $url, $timeout, $headers );
 
 		if ( is_wp_error( $tmp_file ) ) {
 			// Make the failure actionable so an agent corrects the URL rather than
@@ -443,17 +515,12 @@ class EMCP_Tools_Stock_Image_Abilities {
 			);
 		}
 
-		// Determine filename from URL.
-		$url_path = wp_parse_url( $url, PHP_URL_PATH );
-		$filename = $url_path ? basename( $url_path ) : 'image.jpg';
-
-		// Ensure it has an extension.
-		if ( ! preg_match( '/\.\w+$/', $filename ) ) {
-			$filename .= '.jpg';
-		}
+		// Name the file by its real type (#189): Content-Disposition, then the
+		// URL path, with the extension from Content-Type when the path has none.
+		$filename = self::sideload_filename( $url, $headers, sanitize_text_field( (string) ( $input['filename'] ?? '' ) ) );
 
 		$file_array = array(
-			'name'     => sanitize_file_name( $filename ),
+			'name'     => $filename,
 			'tmp_name' => $tmp_file,
 		);
 

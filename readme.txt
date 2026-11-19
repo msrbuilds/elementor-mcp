@@ -226,6 +226,9 @@ Bricks templates join the Templates library, and EMCP now builds and styles Unco
 * New in Pro: Uncode. Build pages and Content Blocks from Uncode's own elements and Wireframes sections, and change Uncode theme options (type-checked, CSS rebuilt, undo from History). The new uncode-write tool ships switched off. Needs Uncode and Uncode Core 2.12.8 or later.
 * Fixed (Pro): WPBakery page saves on Uncode sites changed the page and then reported an error. Saves now use the right native step and put the page back exactly if anything fails.
 * New in Pro: Bricks templates. Ten Bricks designs join the Templates library next to the Elementor templates, with a Builder switch to show one or the other. Create page makes a draft page that looks like the demo, with its classes, variables, images and fonts; Add to library saves the layout to Bricks templates. Needs Bricks 2.4 or later. Each apply can be undone from History.
+* Fixed: Elementor content added over MCP to a classic page did not show on the front end. Every Elementor save now marks the page as built with Elementor.
+* New: The widget tools follow Elementor's Element Manager. Disabled widgets are marked in list-widgets and get-widget-schema, and the add tools refuse them.
+* Fixed: sideload-image named files from links without an extension as .jpg, so PDFs were refused. Files are now named by their real type, and the tool takes filename and timeout inputs.
 
 = 3.21.5 =
 

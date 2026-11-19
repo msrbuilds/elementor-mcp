@@ -141,6 +141,11 @@ class EMCP_Tools_Atomic_Widget_Abilities {
 			return new \WP_Error( 'missing_widget_type', __( 'widget_type is required.', 'emcp-tools' ) );
 		}
 
+		$disabled = EMCP_Tools_Element_Manager::refusal( $widget_type );
+		if ( $disabled ) {
+			return $disabled;
+		}
+
 		$element = $this->factory->create_atomic_widget( $widget_type, $settings );
 
 		$page_data = $this->data->get_page_data( $post_id );
@@ -267,6 +272,10 @@ class EMCP_Tools_Atomic_Widget_Abilities {
 				'description'         => $description,
 				'category'            => 'emcp-tools',
 				'execute_callback'    => function ( $input ) use ( $widget_type, $settings_fn ) {
+					$disabled = EMCP_Tools_Element_Manager::refusal( $widget_type );
+					if ( $disabled ) {
+						return $disabled;
+					}
 					$settings = $settings_fn( $input );
 					$element  = $this->factory->create_atomic_widget( $widget_type, $settings );
 

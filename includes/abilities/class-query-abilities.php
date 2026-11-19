@@ -188,7 +188,8 @@ class EMCP_Tools_Query_Abilities {
 			? EMCP_Tools_Widget_Catalog::search( $search )
 			: EMCP_Tools_Widget_Catalog::get();
 
-		$rows = array();
+		$disabled = EMCP_Tools_Element_Manager::disabled();
+		$rows     = array();
 		foreach ( $catalog as $type => $entry ) {
 			$entry_tier = $entry['tier'] ?? 'free';
 			if ( 'all' !== $tier && $entry_tier !== $tier ) {
@@ -206,9 +207,18 @@ class EMCP_Tools_Query_Abilities {
 				'param_names' => array_keys( $entry['params'] ?? array() ),
 				'requires'    => $entry['requires'] ?? null,
 			);
+			if ( in_array( $type, $disabled, true ) ) {
+				$rows[ count( $rows ) - 1 ]['disabled'] = true;
+			}
 		}
 
-		return array( 'widgets' => $rows );
+		$out = array( 'widgets' => $rows );
+		if ( $disabled ) {
+			// Every element switched off in Elementor > Element Manager (#188),
+			// atomic and third-party ones included. Elementor will not render them.
+			$out['disabled_in_element_manager'] = $disabled;
+		}
+		return $out;
 	}
 
 	/**
@@ -295,7 +305,7 @@ class EMCP_Tools_Query_Abilities {
 			return new \WP_Error( 'missing_widget_type', __( 'Provide widget_type or types[].', 'emcp-tools' ) );
 		}
 
-		$build = function ( $type ) use ( $full ) {
+		$curated = function ( $type ) use ( $full ) {
 			$entry = EMCP_Tools_Widget_Catalog::get_widget( $type );
 
 			if ( $full ) {
@@ -324,6 +334,15 @@ class EMCP_Tools_Query_Abilities {
 				'required'    => $entry['required'] ?? array(),
 				'defaults'    => $entry['defaults'] ?? array(),
 			);
+		};
+
+		$build = function ( $type ) use ( $curated ) {
+			$out = $curated( $type );
+			if ( EMCP_Tools_Element_Manager::is_disabled( (string) $type ) ) {
+				$out['disabled'] = true;
+				$out['note']     = __( 'Disabled in Elementor > Element Manager: Elementor will not render it, and the add tools refuse it.', 'emcp-tools' );
+			}
+			return $out;
 		};
 
 		// Batch shape when `types[]` was provided (even if it held one entry).

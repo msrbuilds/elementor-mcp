@@ -386,6 +386,11 @@ class EMCP_Tools_Widget_Abilities {
 			return new \WP_Error( 'missing_params', __( 'post_id, parent_id, and widget_type are required.', 'emcp-tools' ) );
 		}
 
+		$disabled = EMCP_Tools_Element_Manager::refusal( $widget_type );
+		if ( $disabled ) {
+			return $disabled;
+		}
+
 		// Validate widget type exists.
 		$widget_instance = \Elementor\Plugin::$instance->widgets_manager->get_widget_types( $widget_type );
 		if ( ! $widget_instance ) {

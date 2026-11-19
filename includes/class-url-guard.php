@@ -121,9 +121,10 @@ class EMCP_Tools_Url_Guard {
 	 *
 	 * @param string $url     The URL to download.
 	 * @param int    $timeout Timeout in seconds.
+	 * @param array|null $headers Filled with the final response's headers (lowercase keys) on success.
 	 * @return string|\WP_Error Temp file path, or WP_Error on unsafe URL / failure.
 	 */
-	public static function safe_download( string $url, int $timeout = 30 ) {
+	public static function safe_download( string $url, int $timeout = 30, ?array &$headers = null ) {
 		if ( ! self::is_safe_remote_url( $url ) ) {
 			return new \WP_Error(
 				'unsafe_url',
@@ -190,6 +191,10 @@ class EMCP_Tools_Url_Guard {
 				);
 			}
 
+			$headers = array();
+			foreach ( wp_remote_retrieve_headers( $response ) as $key => $value ) {
+				$headers[ strtolower( (string) $key ) ] = is_array( $value ) ? (string) end( $value ) : (string) $value;
+			}
 			return $tmp;
 		}
 	}

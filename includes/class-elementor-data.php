@@ -15,6 +15,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 // Every save below consults the editor sync bridge; load it with the data layer.
 require_once __DIR__ . '/class-elementor-editor-sync.php';
+require_once __DIR__ . '/class-element-manager.php';
 
 /**
  * Data access layer wrapping Elementor's internal APIs.
@@ -416,6 +417,18 @@ class EMCP_Tools_Data {
 				// sent that did not land forces the direct write, which keeps every
 				// element byte for byte.
 				$needs_fallback = true;
+			}
+		}
+
+		if ( ! $needs_fallback && 'builder' !== get_post_meta( $post_id, '_elementor_edit_mode', true ) ) {
+			// Elementor's Document::save() never sets the builder flag (only
+			// opening the editor does), so a classic page that received Elementor
+			// data here kept rendering as a classic page (#187).
+			if ( method_exists( $document, 'set_is_built_with_elementor' ) ) {
+				$document->set_is_built_with_elementor( true );
+			}
+			if ( 'builder' !== get_post_meta( $post_id, '_elementor_edit_mode', true ) ) {
+				update_post_meta( $post_id, '_elementor_edit_mode', 'builder' );
 			}
 		}
 
