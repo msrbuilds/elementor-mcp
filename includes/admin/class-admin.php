@@ -313,6 +313,8 @@ class EMCP_Tools_Admin {
 		add_action( 'admin_init', array( $this, 'maybe_apply_default_disabled_tools' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_assets' ) );
 		add_filter( 'admin_body_class', array( $this, 'admin_body_class' ) );
+		add_filter( 'screen_options_show_screen', array( $this, 'screen_options_show_screen' ), 99 );
+		add_action( 'admin_head', fn() => $this->hide_help_tabs( get_current_screen() ), 99 );
 		EMCP_Tools_Admin_Locked::register_screen();
 		EMCP_Tools_Admin_REST_Tools::register_screen( $this );
 		EMCP_Tools_Admin_REST_Builders::register_screen();
@@ -597,6 +599,33 @@ class EMCP_Tools_Admin {
 	 */
 	public function is_frame_hook( string $hook ): bool {
 		return in_array( $hook, $this->hook_suffixes, true );
+	}
+
+	/**
+	 * No Screen Options tab on EMCP screens. They have no screen options, but a
+	 * plugin or theme that registers meta boxes on every screen made WordPress
+	 * show an empty tab on top of the frame's promo bar.
+	 *
+	 * @since 3.22.0
+	 *
+	 * @param bool $show Whether WordPress would show the tab.
+	 */
+	public function screen_options_show_screen( $show ): bool {
+		return $this->is_frame_hook( (string) ( $GLOBALS['hook_suffix'] ?? '' ) ) ? false : (bool) $show;
+	}
+
+	/**
+	 * No core Help tab on EMCP screens: the frame has its own help button, and
+	 * core's tab would sit on top of the promo bar.
+	 *
+	 * @since 3.22.0
+	 *
+	 * @param object $screen WP_Screen.
+	 */
+	public function hide_help_tabs( $screen ): void {
+		if ( is_object( $screen ) && method_exists( $screen, 'remove_help_tabs' ) && $this->is_frame_hook( (string) ( $GLOBALS['hook_suffix'] ?? '' ) ) ) {
+			$screen->remove_help_tabs();
+		}
 	}
 
 	/**
