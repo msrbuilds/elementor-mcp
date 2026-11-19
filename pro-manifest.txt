@@ -141,6 +141,7 @@ includes/wpbakery/class-wpbakery-history.php
 includes/uncode/class-uncode-wireframes.php
 includes/uncode/class-uncode-wireframes-import.php
 includes/uncode/class-uncode-options.php
+includes/uncode/class-uncode-option-validator.php
 includes/abilities/class-uncode-integration.php
 includes/abilities/class-wpbakery-integration.php
 
