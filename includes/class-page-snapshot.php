@@ -547,6 +547,18 @@ class EMCP_Tools_Page_Snapshot {
 				);
 			}
 
+			// Headings written as markup inside HTML and text-editor widgets count
+			// too, or a page whose H1 lives there reports a false "no H1".
+			if ( 'html' === $wt || 'text-editor' === $wt ) {
+				$markup = $s[ 'html' === $wt ? 'html' : 'editor' ] ?? '';
+				if ( is_string( $markup ) && '' !== $markup ) {
+					foreach ( self::markup_headings( $markup ) as $h ) {
+						$h['element_id']   = isset( $el['id'] ) ? (string) $el['id'] : '';
+						$acc['headings'][] = $h;
+					}
+				}
+			}
+
 			// Word count from common text fields.
 			foreach ( array( 'title', 'editor', 'text', 'description_text', 'testimonial_content' ) as $tk ) {
 				if ( ! empty( $s[ $tk ] ) && is_string( $s[ $tk ] ) ) {
@@ -612,6 +624,27 @@ class EMCP_Tools_Page_Snapshot {
 				self::walk_content( $el['elements'], $acc );
 			}
 		}
+	}
+
+	/**
+	 * Headings in a fragment of markup, in document order. Script, style and
+	 * comment text is ignored, so a heading tag inside code does not count.
+	 *
+	 * @param string $markup HTML.
+	 * @return array<int,array{tag:string,text:string}>
+	 */
+	private static function markup_headings( string $markup ): array {
+		$markup = (string) preg_replace( '#<(script|style)\b[^>]*>.*?</\1\s*>|<!--.*?-->#is', '', $markup );
+		$out    = array();
+		if ( preg_match_all( '#<h([1-6])\b[^>]*>(.*?)</h\1\s*>#is', $markup, $m, PREG_SET_ORDER ) ) {
+			foreach ( $m as $h ) {
+				$text = trim( (string) preg_replace( '/\s+/', ' ', html_entity_decode( (string) preg_replace( '/<[^>]*>/', '', $h[2] ), ENT_QUOTES ) ) );
+				if ( '' !== $text ) {
+					$out[] = array( 'tag' => 'h' . $h[1], 'text' => self::snippet( $text, 120 ) );
+				}
+			}
+		}
+		return $out;
 	}
 
 	/**
