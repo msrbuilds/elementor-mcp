@@ -21,6 +21,7 @@ final class EMCP_Tools_Pro_Loader {
 
 	/** Pro class files, in load order. Relative to the Pro root. */
 	private const FILES = array(
+		'includes/class-schema-head.php',
 		'includes/flatsome/class-flatsome-native.php',
 		'includes/flatsome/class-flatsome-writer.php',
 		'includes/wpbakery/class-wpbakery-history.php',
@@ -133,6 +134,7 @@ final class EMCP_Tools_Pro_Loader {
 		'includes/class-color-contrast.php',
 		'includes/class-content-extractor.php',
 		'includes/class-seo-meta.php',
+		'includes/class-schema-inspector.php',
 		'includes/class-block-generator.php',
 		'includes/abilities/class-memory-abilities.php',
 		'includes/abilities/class-migrate-abilities.php',
@@ -462,6 +464,7 @@ final class EMCP_Tools_Pro_Loader {
 	}
 
 	public static function wire_runtime_hooks(): void {
+		if ( class_exists( 'EMCP_Tools_Schema_Head' ) ) { EMCP_Tools_Schema_Head::boot(); }
 		if ( class_exists( 'EMCP_Tools_Flatsome_Writer' ) ) { EMCP_Tools_Flatsome_Writer::boot(); }
 		if ( class_exists( 'EMCP_Tools_WPBakery_History' ) ) { EMCP_Tools_WPBakery_History::boot(); }
 		if ( class_exists( 'EMCP_Tools_Uncode_Wireframes_Import' ) ) { EMCP_Tools_Uncode_Wireframes_Import::wire(); }

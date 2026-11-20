@@ -2535,8 +2535,13 @@ trait EMCP_Tools_Admin_Catalog_Trait {
 					),
 					'emcp-tools/generate-schema-markup'        => array(
 						'label'       => __( 'Generate Schema Markup', 'emcp-tools' ),
-						'description' => __( 'Generates (apply:true injects) JSON-LD structured data (Article, LocalBusiness, FAQPage, etc.). Dry-run by default.', 'emcp-tools' ),
+						'description' => __( 'Generates (apply:true writes) JSON-LD structured data (Article, LocalBusiness, FAQPage, VacationRental, etc.) for any post type, in the page head or an Elementor widget, after checking the page for duplicates. Dry-run by default.', 'emcp-tools' ),
 						'badges'      => array( 'pro' ),
+					),
+					'emcp-tools/list-page-schema'              => array(
+						'label'       => __( 'List Page Schema', 'emcp-tools' ),
+						'description' => __( 'Lists the JSON-LD on a published page, with its types, rating markup and where it comes from, so new schema is not added twice. Read-only.', 'emcp-tools' ),
+						'badges'      => array( 'pro', 'read-only' ),
 					),
 					'emcp-tools/set-social-image'              => array(
 						'label'       => __( 'Set Social Image', 'emcp-tools' ),

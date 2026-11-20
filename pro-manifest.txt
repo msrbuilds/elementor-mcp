@@ -10,6 +10,8 @@ includes/abilities/class-system-kit-abilities.php
 includes/class-color-contrast.php
 includes/class-content-extractor.php
 includes/class-seo-meta.php
+includes/class-schema-head.php
+includes/class-schema-inspector.php
 includes/class-page-snapshot-pro.php
 includes/class-widget-generator.php
 includes/class-widget-query.php
