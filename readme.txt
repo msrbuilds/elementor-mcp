@@ -221,18 +221,18 @@ EMCP Tools works on your own site. It contacts the services below only in the si
 
 = 3.22.0 =
 
-Bricks templates join the Templates library, and EMCP now builds and styles Uncode sites.
+EMCP now builds and styles Uncode sites, Bricks templates join the library, and Pro adds rental structured data and Rank Math redirects. Plus partial edits for large database values and fixes from GitHub issues and a support ticket.
 
 * New in Pro: Uncode. Build pages and Content Blocks from Uncode's own elements and Wireframes sections, and change Uncode theme options (type-checked, CSS rebuilt, undo from History). The new uncode-write tool ships switched off. Needs Uncode and Uncode Core 2.12.8 or later.
-* Fixed (Pro): WPBakery page saves on Uncode sites changed the page and then reported an error. Saves now use the right native step and put the page back exactly if anything fails.
 * New in Pro: Bricks templates. Ten Bricks designs join the Templates library next to the Elementor templates, with a Builder switch to show one or the other. Create page makes a draft page that looks like the demo, with its classes, variables, images and fonts; Add to library saves the layout to Bricks templates. Needs Bricks 2.4 or later. Each apply can be undone from History.
-* Fixed: EMCP Cloud Gateway connections stopped renewing on slow hosts. The previous renewal token now keeps working for the Gateway until its replacement is used. Sites already affected need one reconnect.
-* Fixed: Elementor content added over MCP to a classic page did not show on the front end. Every Elementor save now marks the page as built with Elementor.
 * New: The widget tools follow Elementor's Element Manager. Disabled widgets are marked in list-widgets and get-widget-schema, and the add tools refuse them.
-* Fixed: sideload-image named files from links without an extension as .jpg, so PDFs were refused. Files are now named by their real type, and the tool takes filename and timeout inputs.
 * New (Pro): VacationRental structured data, schema in the page head for any post type, a duplicate check against markup already on the page, and the new list-page-schema tool.
 * New (Pro): Rank Math redirects (create, update, delete) and robots defaults per post type, each undoable from History.
 * New: update-rows takes find-and-replace edits for a column, so a one-line change in a large value is not sent back whole. Edits check how often the text occurs and can refuse a value that changed since it was read.
+* Fixed (Pro): WPBakery page saves on Uncode sites changed the page and then reported an error. Saves now use the right native step and put the page back exactly if anything fails.
+* Fixed: EMCP Cloud Gateway connections stopped renewing on slow hosts. The previous renewal token now keeps working for the Gateway until its replacement is used. Sites already affected need one reconnect.
+* Fixed: Elementor content added over MCP to a classic page did not show on the front end. Every Elementor save now marks the page as built with Elementor.
+* Fixed: sideload-image named files from links without an extension as .jpg, so PDFs were refused. Files are now named by their real type, and the tool takes filename and timeout inputs.
 * Fixed: get-page-snapshot reported no H1 when the H1 was in an HTML or Text Editor widget. Headings in their markup now count.
 * Fixed: An empty Screen Options tab covered the promo bar on EMCP screens when another plugin or theme registered meta boxes everywhere.
 
