@@ -2,7 +2,7 @@
 
 All notable changes to MCP Tools for WordPress & Page Builders are documented in this file.
 
-## [3.22.0] - 2026-11-18
+## [3.22.0] - 2026-11-20
 
 > Bricks templates join the Templates library, and EMCP now builds and styles Uncode sites.
 
