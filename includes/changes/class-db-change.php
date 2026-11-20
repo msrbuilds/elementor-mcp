@@ -217,7 +217,7 @@ class EMCP_Tools_DB_Change {
 			}
 			$ref_keys[]    = $key;
 			$before_rows[] = $was;
-			$after[]       = self::hash_row( $now );
+			$after[]       = self::hash_row( $now, (array) ( $args['volatile'] ?? array() ) );
 		}
 		if ( empty( $ref_keys ) && 'insert' !== $op ) {
 			return self::nothing_changed();
@@ -236,6 +236,11 @@ class EMCP_Tools_DB_Change {
 			'after'         => $after,
 			'cap'           => (string) ( $args['cap'] ?? 'manage_options' ),
 		);
+		if ( ! empty( $args['volatile'] ) ) {
+			// Columns that change on their own (a visit counter): left out of the
+			// fingerprint and kept as they are when the row is put back.
+			$rb['volatile'] = array_values( array_map( 'strval', (array) $args['volatile'] ) );
+		}
 		if ( ! empty( $args['post_id'] ) ) {
 			$rb['post_id'] = (int) $args['post_id'];
 		}
@@ -267,7 +272,8 @@ class EMCP_Tools_DB_Change {
 		$table  = (string) ( $rb['table'] ?? '' );
 		$keys   = (array) ( $rb['keys'] ?? array() );
 		$after  = (array) ( $rb['after'] ?? array() );
-		$before = (array) ( $rb['before_rows'] ?? array() );
+		$before   = (array) ( $rb['before_rows'] ?? array() );
+		$volatile = (array) ( $rb['volatile'] ?? array() );
 		if ( '' === $table || count( $keys ) !== count( $after ) || count( $keys ) !== count( $before ) ) {
 			return new WP_Error( 'snapshot_incomplete', __( 'This database snapshot is incomplete and cannot restore the change.', 'emcp-tools' ) );
 		}
@@ -275,7 +281,7 @@ class EMCP_Tools_DB_Change {
 		$current = array();
 		foreach ( $keys as $i => $key ) {
 			$current[ $i ] = $rows->select( $table, (array) $key, 1, true )[0] ?? null;
-			if ( ! $force && ! hash_equals( (string) $after[ $i ], self::hash_row( $current[ $i ] ) ) ) {
+			if ( ! $force && ! hash_equals( (string) $after[ $i ], self::hash_row( $current[ $i ], $volatile ) ) ) {
 				return new WP_Error( 'conflict', __( 'A row this change wrote has changed since (or another row now uses its key). Roll back anyway with force to overwrite the newer state.', 'emcp-tools' ) );
 			}
 		}
@@ -288,7 +294,7 @@ class EMCP_Tools_DB_Change {
 			} elseif ( null === $current[ $i ] ) {
 				$ok = $rows->insert( $table, $was );
 			} else {
-				$ok = $rows->update( $table, $was, $key );
+				$ok = $rows->update( $table, array_diff_key( $was, array_flip( $volatile ) ), $key );
 			}
 			if ( false === $ok ) {
 				$why = $rows->last_error();
@@ -298,7 +304,7 @@ class EMCP_Tools_DB_Change {
 
 		foreach ( $keys as $i => $key ) {
 			$now = $rows->select( $table, (array) $key, 1, true )[0] ?? null;
-			if ( ! hash_equals( self::hash_row( is_array( $before[ $i ] ) ? $before[ $i ] : null ), self::hash_row( $now ) ) ) {
+			if ( ! hash_equals( self::hash_row( is_array( $before[ $i ] ) ? $before[ $i ] : null, $volatile ), self::hash_row( $now, $volatile ) ) ) {
 				return new WP_Error( 'rollback_failed', __( 'A row did not read back as it was before the change, so the undo was cancelled and nothing changed.', 'emcp-tools' ) );
 			}
 		}
@@ -320,12 +326,16 @@ class EMCP_Tools_DB_Change {
 	 *
 	 * @param array|null $row Row.
 	 */
-	public static function hash_row( ?array $row ): string {
+	public static function hash_row( ?array $row, array $volatile = array() ): string {
 		if ( null === $row ) {
 			return '';
 		}
+		$skip = array_flip( array_map( 'strtolower', $volatile ) );
 		$norm = array();
 		foreach ( $row as $col => $val ) {
+			if ( isset( $skip[ strtolower( (string) $col ) ] ) ) {
+				continue;
+			}
 			$norm[ strtolower( (string) $col ) ] = null === $val ? null : (string) $val;
 		}
 		ksort( $norm );

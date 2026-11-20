@@ -351,6 +351,10 @@ class EMCP_Tools_Database_Abilities {
 								/* translators: %s: column name. */
 								return new \WP_Error( 'not_text', sprintf( __( 'Column %s holds no text in a matched row, so edits cannot apply.', 'emcp-tools' ), $col ), array( 'status' => 400, 'key' => $key ) );
 							}
+							if ( is_serialized( $value ) ) {
+								/* translators: %s: column name. */
+								return new \WP_Error( 'serialized_value', sprintf( __( 'Column %s holds PHP-serialized data; a text edit would break its stored lengths. Send the whole new value in data instead.', 'emcp-tools' ), $col ), array( 'status' => 400, 'key' => $key ) );
+							}
 							if ( isset( $edits['md5'][ $col ] ) && md5( $value ) !== $edits['md5'][ $col ] ) {
 								/* translators: %s: column name. */
 								return new \WP_Error( 'value_changed', sprintf( __( 'Column %s changed since it was read (its MD5 no longer matches if_md5); nothing was written.', 'emcp-tools' ), $col ), array( 'status' => 409, 'key' => $key, 'md5' => md5( $value ) ) );
@@ -372,13 +376,27 @@ class EMCP_Tools_Database_Abilities {
 								'after'  => array( 'length' => strlen( $new ), 'md5' => md5( $new ) ),
 							);
 						}
-						$plan[] = array( $set, $key );
+						$same = true;
+						foreach ( $set as $col => $val ) {
+							if ( (string) ( $row[ $col ] ?? '' ) !== (string) $val || ! array_key_exists( $col, $row ) ) {
+								$same = false;
+							}
+						}
+						if ( ! $same ) {
+							// Compare and swap: the write also matches the values the edits were
+							// computed from, so a save in between is never overwritten (where
+							// History has no transaction, nothing else locks the row).
+							$plan[] = array( $set, $key + array_intersect_key( $row, $edits['columns'] ) );
+						}
 					}
 					$affected = 0;
-					foreach ( $plan as [ $set, $key ] ) {
-						$n = $rows->update( $table, $set, $key );
+					foreach ( $plan as [ $set, $guard ] ) {
+						$n = $rows->update( $table, $set, $guard );
 						if ( false === $n ) {
 							return false;
+						}
+						if ( 0 === (int) $n ) {
+							return new \WP_Error( 'value_changed', __( 'A row changed after the edits read it, so it was not written. Read it again and retry.', 'emcp-tools' ), array( 'status' => 409, 'key' => array_diff_key( $guard, $edits['columns'] ) ) );
 						}
 						$affected += (int) $n;
 					}
