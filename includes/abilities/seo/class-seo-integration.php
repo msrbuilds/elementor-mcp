@@ -229,7 +229,11 @@ abstract class EMCP_Tools_SEO_Integration {
 				array( 'status' => 400 )
 			);
 		}
-		unset( $args['confirm'] );
+		// Operations that check confirm themselves (only for some of their inputs, such as
+		// Rank Math's permanent delete) still receive it.
+		if ( ! empty( $op['confirm'] ) ) {
+			unset( $args['confirm'] );
+		}
 
 		// Write ops over a post/term auto-record an undoable change (before-image
 		// of the integration's meta keys for that object type). Non-write ops,

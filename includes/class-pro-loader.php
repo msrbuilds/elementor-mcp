@@ -201,6 +201,7 @@ final class EMCP_Tools_Pro_Loader {
 		'includes/abilities/addons/class-premium-addons-integration.php',
 		'includes/abilities/addons/class-uae-integration.php',
 		'includes/abilities/seo/class-yoast-integration.php',
+		'includes/abilities/seo/class-rankmath-redirects.php',
 		'includes/abilities/seo/class-rankmath-integration.php',
 		'includes/abilities/seo/class-aioseo-integration.php',
 		'includes/abilities/seo/class-seopress-integration.php',
@@ -445,6 +446,21 @@ final class EMCP_Tools_Pro_Loader {
 		}
 	}
 
+	public static function rankmath_rows_restored( $table, $rb = array() ): void {
+		if ( 'rank_math_redirections' !== substr( (string) $table, -22 ) || ! class_exists( '\RankMath\Redirections\Cache' ) ) {
+			return;
+		}
+		$ids = array();
+		foreach ( (array) ( $rb['keys'] ?? array() ) as $key ) {
+			if ( isset( $key['id'] ) ) {
+				$ids[] = (int) $key['id'];
+			}
+		}
+		if ( $ids ) {
+			\RankMath\Redirections\Cache::purge( $ids );
+		}
+	}
+
 	public static function wire_runtime_hooks(): void {
 		if ( class_exists( 'EMCP_Tools_Flatsome_Writer' ) ) { EMCP_Tools_Flatsome_Writer::boot(); }
 		if ( class_exists( 'EMCP_Tools_WPBakery_History' ) ) { EMCP_Tools_WPBakery_History::boot(); }
@@ -460,6 +476,9 @@ final class EMCP_Tools_Pro_Loader {
 		// All in One SEO (3.20.0): AIOSEO keeps query results in memory for the request, so after
 		// History puts aioseo_posts rows back its cache is cleared, or AIOSEO reads the old values.
 		add_action( 'emcp_tools_db_rows_restored', array( __CLASS__, 'aioseo_rows_restored' ) );
+		// Rank Math (3.22.0): after History puts redirect rows back, drop Rank Math's cached
+		// source lookups for them so requests match the restored rows.
+		add_action( 'emcp_tools_db_rows_restored', array( __CLASS__, 'rankmath_rows_restored' ), 10, 2 );
 
 		// FunnelKit History (3.19.0): undo handlers and the import-job cron on every request, since an
 		// undo runs in a later admin or MCP request. History is runtime; the write tool is in the

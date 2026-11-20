@@ -230,6 +230,7 @@ Bricks templates join the Templates library, and EMCP now builds and styles Unco
 * Fixed: Elementor content added over MCP to a classic page did not show on the front end. Every Elementor save now marks the page as built with Elementor.
 * New: The widget tools follow Elementor's Element Manager. Disabled widgets are marked in list-widgets and get-widget-schema, and the add tools refuse them.
 * Fixed: sideload-image named files from links without an extension as .jpg, so PDFs were refused. Files are now named by their real type, and the tool takes filename and timeout inputs.
+* New (Pro): Rank Math redirects (create, update, delete) and robots defaults per post type, each undoable from History.
 * New: update-rows takes find-and-replace edits for a column, so a one-line change in a large value is not sent back whole. Edits check how often the text occurs and can refuse a value that changed since it was read.
 * Fixed: get-page-snapshot reported no H1 when the H1 was in an HTML or Text Editor widget. Headings in their markup now count.
 * Fixed: An empty Screen Options tab covered the promo bar on EMCP screens when another plugin or theme registered meta boxes everywhere.

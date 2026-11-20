@@ -87,6 +87,7 @@ includes/abilities/addons/class-premium-addons-integration.php
 includes/abilities/addons/class-uae-integration.php
 includes/abilities/seo/class-yoast-integration.php
 includes/abilities/seo/class-rankmath-integration.php
+includes/abilities/seo/class-rankmath-redirects.php
 includes/abilities/seo/class-aioseo-integration.php
 includes/abilities/seo/class-seopress-integration.php
 includes/abilities/seo/class-seoframework-integration.php
