@@ -33,9 +33,9 @@ EMCP Tools is a WordPress plugin that exposes your site as **[MCP](https://model
 
 ## What it does
 
-**244 Free tools, 596 total with Pro.** These are catalog totals across all supported integrations, including 352 Pro tools. The tools available to your AI client depend on your installed plugins, selected builder, and enabled tools. See the [tool catalog](https://emcptools.com/tools/) for every tool and what it needs.
+**244 Free tools, 598 total with Pro.** These are catalog totals across all supported integrations, including 354 Pro tools. The tools available to your AI client depend on your installed plugins, selected builder, and enabled tools. See the [tool catalog](https://emcptools.com/tools/) for every tool and what it needs.
 
-**Build pages.** Dedicated integrations cover Elementor, Bricks, Breakdance, Avada, Divi 5, Thrive Architect, Oxygen, Kirki, WPBakery, Beaver Builder, BeBuilder, Visual Composer and Flatsome. Select one standalone builder while Gutenberg stays available. Spectra, Kadence Blocks, GenerateBlocks, Blocksy Blocks and Otter Blocks have independent toggles. Pro adapters expose native features verified on their tested vendor versions and accept later releases; see each bundled skill for scope and limitations.
+**Build pages.** Dedicated integrations cover Elementor, Bricks, Breakdance, Avada, Divi 5, Thrive Architect, Oxygen, Kirki, WPBakery, Beaver Builder, BeBuilder, Visual Composer and Flatsome, and in 3.22.0 the Uncode theme, with its own elements, Wireframes sections and theme options. Select one standalone builder while Gutenberg stays available. Spectra, Kadence Blocks, GenerateBlocks, Blocksy Blocks and Otter Blocks have independent toggles. Pro adapters expose native features verified on their tested vendor versions and accept later releases; see each bundled skill for scope and limitations. The Pro Templates library offers ready-made Elementor and, from 3.22.0, Bricks page designs.
 
 **Run the site.** Content and taxonomies, media, users, settings, plugins and themes, nav menus, the filesystem, and the database, all over MCP.
 
