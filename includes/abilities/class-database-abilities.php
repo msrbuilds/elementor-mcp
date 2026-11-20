@@ -208,13 +208,23 @@ class EMCP_Tools_Database_Abilities {
 	}
 
 	private function register_update_rows(): void {
-		$this->ability( 'emcp-tools/update-rows', __( 'Update Rows', 'emcp-tools' ), __( 'Update rows matching an equality WHERE (required, non-empty). Parameterized; refuses protected tables. Undoable from History when the table has a primary key, is InnoDB and the update leaves primary key values alone (the answer says undoable, or why not). Refused with too_many_rows when it would change more than 500 rows. Disabled by default.', 'emcp-tools' ), 'execute_update_rows', array( 'table' => array( 'type' => 'string' ), 'data' => array( 'type' => 'object' ), 'where' => array( 'type' => 'object' ) ), array( 'table', 'data', 'where' ), false );
+		$this->ability( 'emcp-tools/update-rows', __( 'Update Rows', 'emcp-tools' ), __( 'Update rows matching an equality WHERE (required, non-empty). Parameterized; refuses protected tables. Undoable from History when the table has a primary key, is InnoDB and the update leaves primary key values alone (the answer says undoable, or why not). Refused with too_many_rows when it would change more than 500 rows. To change part of a large text value without sending it back, pass edits instead of (or beside) data: { column: [ { find, replace, expect } ] } applies in order to each matched row\'s current value; the call is refused unless find occurs exactly expect times (default 1), and if_md5 { column: md5 } refuses a value that changed since you read it. The answer lists each edited value\'s length and MD5 before and after. Disabled by default.', 'emcp-tools' ), 'execute_update_rows', array( 'table' => array( 'type' => 'string' ), 'data' => array( 'type' => 'object', 'description' => __( 'New column values. Optional when edits is given.', 'emcp-tools' ) ), 'where' => array( 'type' => 'object' ), 'edits' => array( 'type' => 'object', 'description' => __( 'Find-and-replace edits per column, applied in order to the current value: { "column": [ { "find": "old", "replace": "new", "expect": 1 } ] }.', 'emcp-tools' ), 'additionalProperties' => array( 'type' => 'array', 'items' => array( 'type' => 'object', 'properties' => array( 'find' => array( 'type' => 'string' ), 'replace' => array( 'type' => 'string' ), 'expect' => array( 'type' => 'integer', 'minimum' => 1 ) ), 'required' => array( 'find', 'replace' ) ) ) ), 'if_md5' => array( 'type' => 'object', 'description' => __( 'Optional { "column": "md5 of the value you read" }; refuses the write if that value changed.', 'emcp-tools' ), 'additionalProperties' => array( 'type' => 'string' ) ) ), array( 'table', 'where' ), false );
 	}
 	public function execute_update_rows( $input ) {
 		$data  = (array) ( $input['data'] ?? array() );
 		$where = (array) ( $input['where'] ?? array() );
-		if ( empty( $data ) ) {
-			return new \WP_Error( 'no_data', __( 'A non-empty data object is required.', 'emcp-tools' ) );
+		$edits = self::parse_edits( $input['edits'] ?? null, $input['if_md5'] ?? null );
+		if ( is_wp_error( $edits ) ) {
+			return $edits;
+		}
+		if ( empty( $data ) && empty( $edits['columns'] ) ) {
+			return new \WP_Error( 'no_data', __( 'A non-empty data object, or edits, is required.', 'emcp-tools' ) );
+		}
+		if ( array_intersect( array_keys( $data ), array_keys( $edits['columns'] ) ) ) {
+			return new \WP_Error( 'edit_overlap', __( 'A column cannot be in both data and edits.', 'emcp-tools' ) );
+		}
+		if ( ! empty( $edits['columns'] ) ) {
+			return $this->update_rows_with_edits( $input, $data, $where, $edits );
 		}
 		if ( empty( $where ) ) {
 			return new \WP_Error( 'where_required', __( 'A non-empty where object is required for update.', 'emcp-tools' ) );
@@ -254,6 +264,145 @@ class EMCP_Tools_Database_Abilities {
 			return $out;
 		}
 		return array( 'table' => $table, 'affected' => (int) $out['result'], 'before_image_rows' => (int) $out['rows'] ) + self::undo_fields( $out );
+	}
+
+	/**
+	 * Validate `edits` ({ column: [ { find, replace, expect? } ] }) and `if_md5`
+	 * ({ column: md5 }). Returns { columns, md5 } or a WP_Error (#191).
+	 *
+	 * @param mixed $raw_edits Edits input.
+	 * @param mixed $raw_md5   if_md5 input.
+	 * @return array|\WP_Error
+	 */
+	private static function parse_edits( $raw_edits, $raw_md5 ) {
+		$out = array( 'columns' => array(), 'md5' => array() );
+		if ( null === $raw_edits || array() === $raw_edits ) {
+			return $out;
+		}
+		$bad = static fn( string $why ) => new \WP_Error( 'invalid_edit', $why, array( 'status' => 400 ) );
+		if ( ! is_array( $raw_edits ) ) {
+			return $bad( __( 'edits must be an object of column names to lists of { find, replace, expect }.', 'emcp-tools' ) );
+		}
+		foreach ( $raw_edits as $col => $list ) {
+			if ( ! is_string( $col ) || '' === $col || ! is_array( $list ) || array() === $list || array_values( $list ) !== $list ) {
+				return $bad( __( 'Each edits entry must be a column name with a non-empty list of edits.', 'emcp-tools' ) );
+			}
+			foreach ( $list as $edit ) {
+				$find    = is_array( $edit ) ? ( $edit['find'] ?? null ) : null;
+				$replace = is_array( $edit ) ? ( $edit['replace'] ?? null ) : null;
+				$expect  = is_array( $edit ) ? ( $edit['expect'] ?? 1 ) : null;
+				if ( ! is_string( $find ) || '' === $find || ! is_string( $replace ) || ! is_int( $expect ) || $expect < 1 ) {
+					return $bad( __( 'Each edit needs a non-empty find string, a replace string, and an optional expect count of at least 1.', 'emcp-tools' ) );
+				}
+				$out['columns'][ $col ][] = array( 'find' => $find, 'replace' => $replace, 'expect' => $expect );
+			}
+		}
+		foreach ( (array) ( $raw_md5 ?? array() ) as $col => $md5 ) {
+			if ( ! isset( $out['columns'][ $col ] ) || ! is_string( $md5 ) || ! preg_match( '/^[a-f0-9]{32}$/i', $md5 ) ) {
+				return $bad( __( 'if_md5 must map edited columns to 32-character MD5 hashes.', 'emcp-tools' ) );
+			}
+			$out['md5'][ $col ] = strtolower( $md5 );
+		}
+		return $out;
+	}
+
+	/**
+	 * update-rows with server-side find-and-replace edits (#191). The edits run on
+	 * the locked current value of each matched row inside the History write, so a
+	 * one-line change never resends a whole field.
+	 */
+	private function update_rows_with_edits( array $input, array $data, array $where, array $edits ) {
+		if ( empty( $where ) ) {
+			return new \WP_Error( 'where_required', __( 'A non-empty where object is required for update.', 'emcp-tools' ) );
+		}
+		$table = EMCP_Tools_Database_Guard::valid_table( (string) ( $input['table'] ?? '' ) );
+		if ( is_wp_error( $table ) ) {
+			return $table;
+		}
+		if ( EMCP_Tools_Database_Guard::is_protected( $table ) ) {
+			return new \WP_Error( 'protected_table', __( 'Writes to this table are not allowed.', 'emcp-tools' ) );
+		}
+		$unknown = EMCP_Tools_Database_Guard::unknown_column( $table, array_merge( array_keys( $data ), array_keys( $edits['columns'] ), array_keys( $where ) ) );
+		if ( $unknown ) {
+			return $unknown;
+		}
+		$rows   = EMCP_Tools_DB_Rows::driver();
+		$edited = array();
+		$out    = EMCP_Tools_DB_Change::write(
+			array(
+				'table' => $table,
+				'op'    => 'update',
+				'where' => $where,
+				'data'  => $data + array_fill_keys( array_keys( $edits['columns'] ), '' ),
+				'run'   => static function () use ( $rows, $table, $data, $where, $edits, &$edited ) {
+					$pk      = $rows->primary_key( $table );
+					$matched = $rows->select( $table, $where, EMCP_Tools_DB_Change::CAP + 1, true );
+					if ( empty( $pk ) && count( $matched ) > 1 ) {
+						return new \WP_Error( 'no_primary_key', __( 'Edits on a table without a primary key need a where that matches one row.', 'emcp-tools' ) );
+					}
+					// Work out every row's new values before writing any of them.
+					$plan = array();
+					foreach ( $matched as $row ) {
+						$key = empty( $pk ) ? $where : array_intersect_key( $row, array_flip( $pk ) );
+						$set = $data;
+						foreach ( $edits['columns'] as $col => $list ) {
+							$value = $row[ $col ] ?? null;
+							if ( ! is_string( $value ) ) {
+								/* translators: %s: column name. */
+								return new \WP_Error( 'not_text', sprintf( __( 'Column %s holds no text in a matched row, so edits cannot apply.', 'emcp-tools' ), $col ), array( 'status' => 400, 'key' => $key ) );
+							}
+							if ( isset( $edits['md5'][ $col ] ) && md5( $value ) !== $edits['md5'][ $col ] ) {
+								/* translators: %s: column name. */
+								return new \WP_Error( 'value_changed', sprintf( __( 'Column %s changed since it was read (its MD5 no longer matches if_md5); nothing was written.', 'emcp-tools' ), $col ), array( 'status' => 409, 'key' => $key, 'md5' => md5( $value ) ) );
+							}
+							$new = $value;
+							foreach ( $list as $i => $edit ) {
+								$found = substr_count( $new, $edit['find'] );
+								if ( $found !== $edit['expect'] ) {
+									/* translators: 1: edit number, 2: column, 3: times found, 4: times expected. */
+									return new \WP_Error( 'edit_count_mismatch', sprintf( __( 'Edit %1$d on column %2$s: find occurs %3$d time(s), expected %4$d. Nothing was written.', 'emcp-tools' ), $i + 1, $col, $found, $edit['expect'] ), array( 'status' => 409, 'key' => $key, 'column' => $col, 'edit' => $i, 'found' => $found, 'expect' => $edit['expect'] ) );
+								}
+								$new = str_replace( $edit['find'], $edit['replace'], $new );
+							}
+							$set[ $col ] = $new;
+							$edited[]    = array(
+								'key'    => $key,
+								'column' => $col,
+								'before' => array( 'length' => strlen( $value ), 'md5' => md5( $value ) ),
+								'after'  => array( 'length' => strlen( $new ), 'md5' => md5( $new ) ),
+							);
+						}
+						$plan[] = array( $set, $key );
+					}
+					$affected = 0;
+					foreach ( $plan as [ $set, $key ] ) {
+						$n = $rows->update( $table, $set, $key );
+						if ( false === $n ) {
+							return false;
+						}
+						$affected += (int) $n;
+					}
+					return $affected;
+				},
+				'entry' => array(
+					'domain'  => 'database',
+					'action'  => 'update',
+					'target'  => $table,
+					'summary' => static function ( $affected ) use ( $table ) {
+						return sprintf( 'Edited %d row(s) in %s', (int) $affected, $table );
+					},
+				),
+			)
+		);
+		if ( is_wp_error( $out ) ) {
+			return $out;
+		}
+		return array(
+			'table'             => $table,
+			'affected'          => (int) $out['result'],
+			'before_image_rows' => (int) $out['rows'],
+			'edited'            => $edited,
+		) + self::undo_fields( $out );
 	}
 
 	private function register_delete_rows(): void {
