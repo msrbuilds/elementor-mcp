@@ -15,7 +15,7 @@ return array(
 		'path'    => array( $vendorDir . '/wordpress/php-mcp-schema/src' )
 	),
 	'WP\\MCP\\' => array(
-		'version' => '0.7.1.0',
+		'version' => '0.7.2.0',
 		'path'    => array( $vendorDir . '/wordpress/mcp-adapter/includes' )
 	),
 	'Automattic\\Jetpack\\Autoloader\\' => array(

@@ -234,6 +234,7 @@ EMCP now builds and styles Uncode sites, Bricks templates join the library, and 
 * Fixed: Elementor content added over MCP to a classic page did not show on the front end. Every Elementor save now marks the page as built with Elementor.
 * Fixed: sideload-image named files from links without an extension as .jpg, so PDFs were refused. Files are now named by their real type, and the tool takes filename and timeout inputs.
 * Fixed: get-page-snapshot reported no H1 when the H1 was in an HTML or Text Editor widget. Headings in their markup now count.
+* Changed: The built-in MCP Adapter is updated to 0.7.2.
 * Fixed: An empty Screen Options tab covered the promo bar on EMCP screens when another plugin or theme registered meta boxes everywhere.
 
 = 3.21.5 =

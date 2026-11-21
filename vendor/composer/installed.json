@@ -39,7 +39,7 @@
                     "::VERSION": "src/AutoloadGenerator.php"
                 }
             },
-            "installation-source": "source",
+            "installation-source": "dist",
             "autoload": {
                 "psr-4": {
                     "Automattic\\Jetpack\\Autoloader\\": "src"
@@ -91,7 +91,7 @@
             },
             "time": "2025-08-12T10:13:48+00:00",
             "type": "library",
-            "installation-source": "source",
+            "installation-source": "dist",
             "autoload": {
                 "psr-4": {
                     "enshrined\\svgSanitize\\": "src"
@@ -116,17 +116,17 @@
         },
         {
             "name": "wordpress/mcp-adapter",
-            "version": "v0.7.1",
-            "version_normalized": "0.7.1.0",
+            "version": "v0.7.2",
+            "version_normalized": "0.7.2.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/WordPress/mcp-adapter.git",
-                "reference": "5bdb40b49c307e517413f77f9157272d46d52e07"
+                "reference": "6f10591a6415cc2d29a13f488348ce12b635a685"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/WordPress/mcp-adapter/zipball/5bdb40b49c307e517413f77f9157272d46d52e07",
-                "reference": "5bdb40b49c307e517413f77f9157272d46d52e07",
+                "url": "https://api.github.com/repos/WordPress/mcp-adapter/zipball/6f10591a6415cc2d29a13f488348ce12b635a685",
+                "reference": "6f10591a6415cc2d29a13f488348ce12b635a685",
                 "shasum": ""
             },
             "require": {
@@ -141,8 +141,8 @@
                 "php-stubs/wp-cli-stubs": "^2.12",
                 "phpcompatibility/phpcompatibility-wp": "^3.0.0-alpha",
                 "phpstan/extension-installer": "^1.3",
-                "phpstan/php-8-stubs": "^0.4.43",
-                "phpstan/phpstan": "^2.2.16",
+                "phpstan/php-8-stubs": "^0.4.44",
+                "phpstan/phpstan": "^2.3.5",
                 "phpstan/phpstan-deprecation-rules": "^2.0.5",
                 "phpunit/phpunit": "^9.6",
                 "slevomat/coding-standard": "^8.0",
@@ -150,9 +150,9 @@
                 "wp-phpunit/wp-phpunit": "^7.1",
                 "yoast/phpunit-polyfills": "^4.0"
             },
-            "time": "2026-10-16T08:58:28+00:00",
+            "time": "2026-11-19T16:20:25+00:00",
             "type": "wordpress-plugin",
-            "installation-source": "source",
+            "installation-source": "dist",
             "autoload": {
                 "psr-4": {
                     "WP\\MCP\\": "includes/"
@@ -213,7 +213,7 @@
             },
             "time": "2026-09-11T10:17:52+00:00",
             "type": "library",
-            "installation-source": "source",
+            "installation-source": "dist",
             "autoload": {
                 "psr-4": {
                     "WP\\McpSchema\\": "src/"

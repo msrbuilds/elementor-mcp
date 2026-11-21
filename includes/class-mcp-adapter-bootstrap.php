@@ -64,7 +64,7 @@ final class EMCP_Tools_Adapter_Bootstrap {
 	 * Version of the bundled copy at the last update; bundled_version() reads
 	 * the copied source itself.
 	 */
-	const BUNDLED_VERSION = '0.7.1';
+	const BUNDLED_VERSION = '0.7.2';
 
 	/** Root namespace of the MCP Adapter, with trailing separator. */
 	const ADAPTER_NAMESPACE = 'WP\\MCP\\';

@@ -101,8 +101,8 @@ final class AdapterStandaloneTest extends TestCase {
 		$this->assertFalse( class_exists( 'Other\\Vendor\\Thing', false ) );
 	}
 
-	public function test_the_bundled_fallback_is_0_7_1(): void {
-		$this->assertSame( '0.7.1', EMCP_Tools_Adapter_Bootstrap::bundled_version() );
+	public function test_the_bundled_fallback_is_0_7_2(): void {
+		$this->assertSame( '0.7.2', EMCP_Tools_Adapter_Bootstrap::bundled_version() );
 		$this->assertSame( EMCP_Tools_Adapter_Bootstrap::BUNDLED_VERSION, EMCP_Tools_Adapter_Bootstrap::bundled_version() );
 		$this->assertFileExists( EMCP_TOOLS_DIR . 'vendor/wordpress/php-mcp-schema/src/Record.php', 'its schema package ships too' );
 	}
