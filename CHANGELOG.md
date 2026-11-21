@@ -2,7 +2,7 @@
 
 All notable changes to MCP Tools for WordPress & Page Builders are documented in this file.
 
-## [3.22.0] - 2026-11-20
+## [3.22.0] - 2026-11-22
 
 > EMCP now builds and styles Uncode sites, Bricks templates join the library, and Pro adds rental structured data and Rank Math redirects. Plus partial edits for large database values and fixes from GitHub issues and a support ticket.
 
