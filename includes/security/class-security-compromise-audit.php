@@ -62,7 +62,7 @@ class EMCP_Tools_Security_Compromise_Audit {
 	const BACKUP_DIRS = array(
 		'ai1wm-backups', 'updraft', 'backups', 'backup', 'backupbuddy_backups',
 		'wpvivid_backup', 'backups-dup-lite', 'uploads/backwpup*', 'uploads/backup*',
-		'emcp-backups*',
+		'emcp-backups*', 'emcp-fs-backups*',
 	);
 
 	const BACKUP_EXT_RE      = '/\.(wpress|sql|sql\.gz|gz|zip|tar|tar\.gz|tgz|bak|tmp)$/i';

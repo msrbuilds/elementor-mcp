@@ -36,6 +36,8 @@ class EMCP_Tools_Filesystem_Abilities {
 		$this->register_list_quarantine();
 		$this->register_quarantine_file();
 		$this->register_restore_quarantined_file();
+		$this->register_list_fs_backups();
+		$this->register_purge_fs_backups();
 	}
 
 	/** All filesystem tools require manage_options (reads can expose secrets). */
@@ -623,6 +625,129 @@ class EMCP_Tools_Filesystem_Abilities {
 		$status  = in_array( $status, array( 'quarantined', 'restored' ), true ) ? $status : '';
 		$entries = EMCP_Tools_File_Quarantine::entries( $status );
 		return array( 'entries' => $entries, 'count' => count( $entries ) );
+	}
+
+	// ---- list-fs-backups / purge-fs-backups (#196) -----------------------
+
+	private function register_list_fs_backups(): void {
+		$this->ability_names[] = 'emcp-tools/list-fs-backups';
+		emcp_tools_register_ability(
+			'emcp-tools/list-fs-backups',
+			array(
+				'label'               => __( 'List Filesystem Backups', 'emcp-tools' ),
+				'description'         => __( 'Lists the copies write-file, edit-file and delete-file keep before each change: name, size and time, newest first, with the total size and the retention setting. Read-only.', 'emcp-tools' ),
+				'category'            => 'emcp-tools',
+				'execute_callback'    => array( $this, 'execute_list_fs_backups' ),
+				'permission_callback' => array( $this, 'check_permission' ),
+				'input_schema'        => array( 'type' => 'object', 'properties' => array() ),
+				'output_schema'       => array( 'type' => 'object' ),
+				'meta'                => array( 'annotations' => array( 'readonly' => true, 'destructive' => false ), 'show_in_rest' => true ),
+			)
+		);
+	}
+
+	/**
+	 * @param array $input
+	 * @return array
+	 */
+	public function execute_list_fs_backups( $input ) {
+		EMCP_Tools_FS_Backup_Store::migrate_legacy();
+		$all   = EMCP_Tools_FS_Backup_Store::entries();
+		$shown = array_slice( $all, 0, EMCP_Tools_FS_Backup_Store::MAX_LIST );
+		foreach ( $shown as &$e ) {
+			$e['time'] = gmdate( 'c', $e['time'] );
+		}
+		unset( $e );
+		return array(
+			'backups'     => $shown,
+			'count'       => count( $all ),
+			'total_bytes' => (int) array_sum( array_column( $all, 'size' ) ),
+			'retention'   => EMCP_Tools_FS_Backup_Store::retention(),
+		);
+	}
+
+	private function register_purge_fs_backups(): void {
+		$this->ability_names[] = 'emcp-tools/purge-fs-backups';
+		emcp_tools_register_ability(
+			'emcp-tools/purge-fs-backups',
+			array(
+				'label'               => __( 'Purge Filesystem Backups', 'emcp-tools' ),
+				'description'         => __( 'Deletes filesystem backups (the copies the file tools keep before each change): those older than older_than_days, the oldest beyond max_mb, or the names given. Returns what it removed, the space freed and which History entries lose their undo. dry_run: true lists them without deleting. Deleting needs confirm: true and cannot be undone. Disabled by default.', 'emcp-tools' ),
+				'category'            => 'emcp-tools',
+				'execute_callback'    => array( $this, 'execute_purge_fs_backups' ),
+				'permission_callback' => array( $this, 'check_permission' ),
+				'input_schema'        => array(
+					'type'       => 'object',
+					'properties' => array(
+						'older_than_days' => array( 'type' => 'integer', 'description' => __( 'Remove copies older than this many days.', 'emcp-tools' ) ),
+						'max_mb'          => array( 'type' => 'integer', 'description' => __( 'Remove the oldest copies until the rest fit in this many MB.', 'emcp-tools' ) ),
+						'names'           => array( 'type' => 'array', 'items' => array( 'type' => 'string' ), 'description' => __( 'Remove these copies by name (from list-fs-backups).', 'emcp-tools' ) ),
+						'dry_run'         => array( 'type' => 'boolean', 'description' => __( 'List what would be removed without deleting. Default false.', 'emcp-tools' ) ),
+						'confirm'         => array( 'type' => 'boolean', 'description' => __( 'Must be true to delete.', 'emcp-tools' ) ),
+					),
+				),
+				'output_schema'       => array( 'type' => 'object' ),
+				'meta'                => array( 'annotations' => array( 'readonly' => false, 'destructive' => true ), 'show_in_rest' => true ),
+			)
+		);
+	}
+
+	/**
+	 * @param array $input
+	 * @return array|WP_Error
+	 */
+	public function execute_purge_fs_backups( $input ) {
+		$days  = isset( $input['older_than_days'] ) ? max( 0, (int) $input['older_than_days'] ) : 0;
+		$mb    = isset( $input['max_mb'] ) ? max( 0, (int) $input['max_mb'] ) : 0;
+		$names = array_values( array_filter( array_map( 'strval', (array) ( $input['names'] ?? array() ) ), array( 'EMCP_Tools_FS_Backup_Store', 'is_copy_name' ) ) );
+		if ( 0 === $days && 0 === $mb && empty( $names ) ) {
+			return new WP_Error( 'missing_params', __( 'Send older_than_days, max_mb or names.', 'emcp-tools' ) );
+		}
+		$dry = ! empty( $input['dry_run'] );
+		if ( ! $dry && true !== ( $input['confirm'] ?? null ) ) {
+			return new WP_Error( 'confirm_required', __( 'Deleting backups cannot be undone. Pass confirm: true, or dry_run: true to see what would go.', 'emcp-tools' ) );
+		}
+		EMCP_Tools_FS_Backup_Store::migrate_legacy();
+		$entries = EMCP_Tools_FS_Backup_Store::entries();
+		$known   = array_column( $entries, 'size', 'name' );
+		$targets = array_values(
+			array_unique(
+				array_merge(
+					array_values( array_intersect( $names, array_keys( $known ) ) ),
+					( $days || $mb ) ? EMCP_Tools_FS_Backup_Store::to_prune( $entries, $days, $mb, time() ) : array()
+				)
+			)
+		);
+		$history = EMCP_Tools_FS_Backup_Store::history_using( $targets );
+		if ( $dry ) {
+			return array(
+				'dry_run'             => true,
+				'would_remove'        => $targets,
+				'bytes'               => (int) array_sum( array_intersect_key( $known, array_flip( $targets ) ) ),
+				'history_losing_undo' => $history,
+			);
+		}
+		$res = EMCP_Tools_FS_Backup_Store::delete( $targets );
+		if ( ! empty( $res['removed'] ) && class_exists( 'EMCP_Tools_Change_Log' ) ) {
+			EMCP_Tools_Change_Log::record(
+				array(
+					'domain'   => 'filesystem',
+					'action'   => 'purge-fs-backups',
+					'target'   => sprintf( '%d backups', count( $res['removed'] ) ),
+					/* translators: %d: number of copies. */
+					'summary'  => sprintf( __( 'Deleted %d filesystem backups', 'emcp-tools' ), count( $res['removed'] ) ),
+					'rollback' => array(
+						'type'   => 'irreversible',
+						'reason' => __( 'The backup copies were deleted.', 'emcp-tools' ),
+					),
+				)
+			);
+		}
+		return array(
+			'removed'             => $res['removed'],
+			'bytes_freed'         => $res['bytes_freed'],
+			'history_losing_undo' => $history,
+		);
 	}
 
 	// ---- quarantine-file -----------------------------------------------

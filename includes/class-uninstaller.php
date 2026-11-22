@@ -202,6 +202,12 @@ class EMCP_Tools_Uninstaller {
 				}
 			}
 		}
+		// Since 3.22.1 filesystem tool backups live in wp-content/emcp-fs-backups-{hex}.
+		foreach ( (array) glob( rtrim( wp_normalize_path( WP_CONTENT_DIR ), '/' ) . '/emcp-fs-backups-*', GLOB_ONLYDIR ) as $emcp_dir ) {
+			if ( is_file( $emcp_dir . '/.emcp-fs-backups' ) ) {
+				EMCP_Tools_Static_Site_Files::remove_tree( $emcp_dir );
+			}
+		}
 
 		// History, redirects, search index and Backup & Migrate (its paired
 		// targets hold connector secrets). OAuth's tables went with its store.

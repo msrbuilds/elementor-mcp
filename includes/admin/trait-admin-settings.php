@@ -410,6 +410,7 @@ trait EMCP_Tools_Admin_Settings_Trait {
 			// 3.22.1: tools that delete or purge (#199, #197, #196).
 			$add[] = 'emcp-tools/delete-backup';
 			$add[] = 'emcp-tools/delete-code-snippet';
+			$add[] = 'emcp-tools/purge-fs-backups';
 		}
 		if ( $applied < 75 ) {
 			$add[] = 'emcp-tools/uncode-write';

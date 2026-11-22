@@ -380,6 +380,8 @@ trait EMCP_Tools_Admin_Catalog_Trait {
 					'emcp-tools/delete-file'    => array( 'label' => __( 'Delete File', 'emcp-tools' ),    'description' => __( 'Delete a file (backs up; needs confirm). Disabled by default.', 'emcp-tools' ),     'badges' => array() ),
 					'emcp-tools/list-quarantine'           => array( 'label' => __( 'List Quarantine', 'emcp-tools' ),           'description' => __( 'List files and folders held in quarantine, with their manifests.', 'emcp-tools' ), 'badges' => array( 'read-only' ) ),
 					'emcp-tools/quarantine-file'           => array( 'label' => __( 'Quarantine File', 'emcp-tools' ),           'description' => __( 'Move a suspicious file or folder out of the web root (manifest kept, undoable; needs confirm). Disabled by default.', 'emcp-tools' ), 'badges' => array() ),
+					'emcp-tools/list-fs-backups'           => array( 'label' => __( 'List Filesystem Backups', 'emcp-tools' ),   'description' => __( 'List the copies the file tools keep before each change, with size and retention.', 'emcp-tools' ), 'badges' => array( 'read-only' ) ),
+					'emcp-tools/purge-fs-backups'          => array( 'label' => __( 'Purge Filesystem Backups', 'emcp-tools' ),  'description' => __( 'Delete old or named filesystem backups and report the space freed and the undos lost (needs confirm). Disabled by default.', 'emcp-tools' ), 'badges' => array( 'destructive' ) ),
 					'emcp-tools/restore-quarantined-file'  => array( 'label' => __( 'Restore Quarantined File', 'emcp-tools' ),  'description' => __( 'Move a quarantined item back to its original path (needs confirm). Disabled by default.', 'emcp-tools' ), 'badges' => array() ),
 				),
 			),

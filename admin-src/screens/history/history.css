@@ -183,3 +183,34 @@
 		justify-content: flex-end;
 	}
 }
+
+/* File backups drawer (#196). */
+.emcp-fs-backups {
+	display: flex;
+	flex-direction: column;
+	gap: var(--emcp-space-3, 12px);
+}
+
+.emcp-fs-backups__total {
+	font-weight: 600;
+	margin: 0;
+}
+
+.emcp-fs-backups__retention {
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--emcp-space-3, 12px);
+	align-items: flex-end;
+}
+
+.emcp-fs-backups__retention .eui-field {
+	flex: 1 1 10rem;
+	margin: 0;
+}
+
+.emcp-fs-backups__actions {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	gap: var(--emcp-space-3, 12px);
+}

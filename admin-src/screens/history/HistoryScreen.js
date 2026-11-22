@@ -15,6 +15,7 @@ import {
 	useToast,
 } from '@emcp/ui';
 import { DiffView } from './DiffView';
+import { FsBackups } from './FsBackups';
 import { SessionGroup } from './SessionGroup';
 import { Toolbar } from './Toolbar';
 import { sessionResultMessage, toQuery, writeBody } from './lib';
@@ -37,6 +38,7 @@ export function HistoryScreen( { data } ) {
 	const [ loading, setLoading ] = useState( false );
 	const [ busy, setBusy ] = useState( '' );
 	const [ diff, setDiff ] = useState( null );
+	const [ files, setFiles ] = useState( false );
 	const toast = useToast();
 	const confirm = useConfirm();
 	const first = useRef( true );
@@ -335,6 +337,9 @@ export function HistoryScreen( { data } ) {
 							value={ String( state.retention ) }
 							onChange={ saveRetention }
 						/>
+						<Button onClick={ () => setFiles( true ) }>
+							{ __( 'File backups', 'emcp-tools' ) }
+						</Button>
 						<Button
 							variant="danger"
 							onClick={ clearAll }
@@ -427,6 +432,13 @@ export function HistoryScreen( { data } ) {
 					/>
 				) }
 				{ diff && diff.data && <DiffView diff={ diff.data } /> }
+			</Drawer>
+			<Drawer
+				open={ files }
+				title={ __( 'File backups', 'emcp-tools' ) }
+				onClose={ () => setFiles( false ) }
+			>
+				{ files && <FsBackups /> }
 			</Drawer>
 		</div>
 	);

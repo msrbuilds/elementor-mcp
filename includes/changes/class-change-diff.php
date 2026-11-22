@@ -57,7 +57,11 @@ final class EMCP_Tools_Change_Diff {
 			case 'meta-before-image':
 				return self::meta( (string) ( $rb['object'] ?? 'post' ), (int) ( $rb['id'] ?? 0 ), (array) ( $rb['before'] ?? array() ) );
 			case 'file-backup':
-				return self::files( (string) ( $rb['backup_path'] ?? '' ), (string) ( $rb['target_path'] ?? '' ) );
+				$copy = (string) ( $rb['backup_path'] ?? '' );
+				if ( '' !== $copy && class_exists( 'EMCP_Tools_FS_Backup_Store' ) ) {
+					$copy = EMCP_Tools_FS_Backup_Store::resolve( $copy ) ?: $copy; // The copy may have moved (#196).
+				}
+				return self::files( $copy, (string) ( $rb['target_path'] ?? '' ) );
 			default: // file-create: nothing existed before.
 				return self::files( '', (string) ( $rb['target_path'] ?? '' ) );
 		}

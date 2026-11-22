@@ -1018,6 +1018,9 @@ class EMCP_Tools_Change_Log {
 	private static function rollback_file_restore( array $rb ) {
 		$target = (string) ( $rb['target_path'] ?? '' );
 		$backup = (string) ( $rb['backup_path'] ?? '' );
+		if ( class_exists( 'EMCP_Tools_FS_Backup_Store' ) ) {
+			$backup = EMCP_Tools_FS_Backup_Store::resolve( $backup ); // The copy may have moved (#196).
+		}
 		if ( '' === $target || '' === $backup || ! is_file( $backup ) ) {
 			return new WP_Error( 'rollback_failed', __( 'Backup is unavailable.', 'emcp-tools' ) );
 		}

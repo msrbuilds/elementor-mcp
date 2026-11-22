@@ -209,7 +209,8 @@ class EMCP_Tools_Filesystem_Guard {
 	}
 
 	/**
-	 * Copy a file to a timestamped backup under uploads/emcp-fs-backups/.
+	 * Copy a file to a timestamped backup (EMCP_Tools_FS_Backup_Store; the
+	 * uploads/emcp-fs-backups/ path below is only a fallback).
 	 * Returns the backup absolute path, '' if the source doesn't exist yet
 	 * (a create, not an overwrite), or WP_Error on failure.
 	 *
@@ -219,6 +220,10 @@ class EMCP_Tools_Filesystem_Guard {
 	public static function backup( string $abs ) {
 		if ( ! is_file( $abs ) ) {
 			return '';
+		}
+		if ( class_exists( 'EMCP_Tools_FS_Backup_Store' ) ) {
+			// 3.22.1: a protected folder outside uploads, copies end in .bak (#196).
+			return EMCP_Tools_FS_Backup_Store::store( $abs );
 		}
 		$uploads = wp_upload_dir();
 		if ( ! empty( $uploads['error'] ) ) {

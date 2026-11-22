@@ -562,6 +562,8 @@ class EMCP_Update_Runtime {
 		}
 		// Backups moved to wp-content/emcp-backups-{random} in 3.20.0.
 		if ( 1 === preg_match( '#^wp-content/emcp-backups-[a-f0-9]+(/|$)#', $relative ) ) { return false; }
+		// Filesystem tool backups moved to wp-content/emcp-fs-backups-{hex} in 3.22.1.
+		if ( 1 === preg_match( '#^wp-content/emcp-fs-backups-[a-f0-9]+(/|$)#', $relative ) ) { return false; }
 		return true;
 	}
 	/** Up to 20 in-scope paths the last scan could not read or write, so the refusal can name them. */

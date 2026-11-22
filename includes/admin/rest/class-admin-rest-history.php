@@ -24,6 +24,9 @@ final class EMCP_Tools_Admin_REST_History extends EMCP_Tools_Admin_REST_Controll
 		$this->route( 'history/sessions/rows', array( 'methods' => 'GET', 'callback' => array( $this, 'session_rows' ) ) );
 		$this->route( 'history/retention', array( 'methods' => 'POST', 'callback' => array( $this, 'retention' ) ) );
 		$this->route( 'history/banners/(?P<banner>unrecorded|stray)/dismiss', array( 'methods' => 'POST', 'callback' => array( $this, 'dismiss_banner' ) ) );
+		$this->route( 'history/fs-backups', array( 'methods' => 'GET', 'callback' => array( $this, 'fs_backups' ) ) );
+		$this->route( 'history/fs-backups/delete', array( 'methods' => 'POST', 'callback' => array( $this, 'fs_backups_delete' ) ) );
+		$this->route( 'history/fs-backups/retention', array( 'methods' => 'POST', 'callback' => array( $this, 'fs_backups_retention' ) ) );
 		$this->route(
 			'history',
 			array(
@@ -213,6 +216,59 @@ final class EMCP_Tools_Admin_REST_History extends EMCP_Tools_Admin_REST_Controll
 		}
 		update_option( EMCP_Tools_Change_Names::retention(), $days, false );
 		return self::done( $request, array( 'days' => $days ) );
+	}
+
+	/**
+	 * Filesystem tool backups (#196): the copies, their total and the retention.
+	 *
+	 * @return array
+	 */
+	private static function fs_payload(): array {
+		EMCP_Tools_FS_Backup_Store::migrate_legacy();
+		$all = EMCP_Tools_FS_Backup_Store::entries();
+		return array(
+			'backups'    => array_map(
+				static fn( $e ) => array(
+					'name' => $e['name'],
+					'size' => $e['size'],
+					'time' => gmdate( 'c', $e['time'] ),
+				),
+				array_slice( $all, 0, EMCP_Tools_FS_Backup_Store::MAX_LIST )
+			),
+			'count'      => count( $all ),
+			'totalBytes' => (int) array_sum( array_column( $all, 'size' ) ),
+			'retention'  => EMCP_Tools_FS_Backup_Store::retention(),
+		);
+	}
+
+	public function fs_backups( $request ) {
+		return new WP_REST_Response( self::fs_payload() );
+	}
+
+	public function fs_backups_delete( $request ) {
+		$names = array_values( array_filter( array_map( 'strval', (array) $request->get_param( 'names' ) ), array( 'EMCP_Tools_FS_Backup_Store', 'is_copy_name' ) ) );
+		if ( empty( $names ) ) {
+			return new WP_Error( 'missing_params', __( 'Choose at least one backup.', 'emcp-tools' ), array( 'status' => 400 ) );
+		}
+		if ( true === rest_sanitize_boolean( $request->get_param( 'dry_run' ) ) ) {
+			return new WP_REST_Response( array( 'historyLosingUndo' => EMCP_Tools_FS_Backup_Store::history_using( $names ) ) );
+		}
+		if ( true !== rest_sanitize_boolean( $request->get_param( 'confirm' ) ) ) {
+			return new WP_Error( 'confirm_required', __( 'Confirm this action to continue.', 'emcp-tools' ), array( 'status' => 400 ) );
+		}
+		$res = EMCP_Tools_FS_Backup_Store::delete( $names );
+		return new WP_REST_Response(
+			array(
+				'removed'    => $res['removed'],
+				'bytesFreed' => $res['bytes_freed'],
+				'fsBackups'  => self::fs_payload(),
+			)
+		);
+	}
+
+	public function fs_backups_retention( $request ) {
+		EMCP_Tools_FS_Backup_Store::save_retention( (int) $request->get_param( 'days' ), (int) $request->get_param( 'max_mb' ) );
+		return new WP_REST_Response( self::fs_payload() );
 	}
 
 	public function dismiss_banner( $request ) {
