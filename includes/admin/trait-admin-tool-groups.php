@@ -253,7 +253,9 @@ trait EMCP_Tools_Admin_Tool_Groups_Trait {
 	public static function migrate_tool_slugs(): array {
 		return array(
 			'emcp-tools/create-backup',
+			'emcp-tools/get-backup-status',
 			'emcp-tools/list-backups',
+			'emcp-tools/delete-backup',
 			'emcp-tools/migrate-site',
 			'emcp-tools/sync-to-live',
 			'emcp-tools/list-syncable-changes',

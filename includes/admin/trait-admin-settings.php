@@ -406,6 +406,10 @@ trait EMCP_Tools_Admin_Settings_Trait {
 		if ( $applied < 67 ) {
 			$add[] = 'emcp-tools/cptui-write';
 		}
+		if ( $applied < 76 ) {
+			// 3.22.1: tools that delete or purge (#199, #197, #196).
+			$add[] = 'emcp-tools/delete-backup';
+		}
 		if ( $applied < 75 ) {
 			$add[] = 'emcp-tools/uncode-write';
 		}

@@ -112,8 +112,18 @@ trait EMCP_Tools_Admin_Catalog_Trait {
 				'tools' => array(
 					'emcp-tools/create-backup' => array(
 						'label'       => __( 'Create Backup', 'emcp-tools' ),
-						'description' => __( 'Creates a portable .emcp backup (full/database/files) and returns its id + size. Non-destructive.', 'emcp-tools' ),
+						'description' => __( 'Creates a portable .emcp backup (full/database/files). Small backups finish in the call; larger ones continue in the background. Non-destructive.', 'emcp-tools' ),
 						'badges'      => array(),
+					),
+					'emcp-tools/get-backup-status' => array(
+						'label'       => __( 'Get Backup Status', 'emcp-tools' ),
+						'description' => __( 'Reports a backup status, progress and size, and moves a running backup forward on each call.', 'emcp-tools' ),
+						'badges'      => array(),
+					),
+					'emcp-tools/delete-backup' => array(
+						'label'       => __( 'Delete Backup', 'emcp-tools' ),
+						'description' => __( 'Permanently deletes a backup and its files, including failed and stuck ones. Requires confirm. Disabled by default.', 'emcp-tools' ),
+						'badges'      => array( 'destructive' ),
 					),
 					'emcp-tools/list-backups'  => array(
 						'label'       => __( 'List Backups', 'emcp-tools' ),
