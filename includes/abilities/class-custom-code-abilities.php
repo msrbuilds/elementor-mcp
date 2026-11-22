@@ -183,6 +183,7 @@ class EMCP_Tools_Custom_Code_Abilities {
 							'type'        => 'boolean',
 							'description' => __( 'If true, replaces existing custom CSS instead of appending. Default: false.', 'emcp-tools' ),
 						),
+						'clear_cache' => self::cache_flag(),
 					),
 					'required'   => array( 'post_id', 'css' ),
 				),
@@ -275,11 +276,11 @@ class EMCP_Tools_Custom_Code_Abilities {
 				return $result;
 			}
 
-			return array(
+			return self::with_cache( $input, array(
 				'success' => true,
 				'target'  => 'element:' . $element_id,
 				'css'     => $new_css,
-			);
+			) );
 		}
 
 		// Page-level custom CSS.
@@ -301,11 +302,11 @@ class EMCP_Tools_Custom_Code_Abilities {
 			return $result;
 		}
 
-		return array(
+		return self::with_cache( $input, array(
 			'success' => true,
 			'target'  => 'page:' . $post_id,
 			'css'     => $new_css,
-		);
+		) );
 	}
 
 	// -------------------------------------------------------------------------
@@ -351,6 +352,7 @@ class EMCP_Tools_Custom_Code_Abilities {
 							'type'        => 'boolean',
 							'description' => __( 'Wrap the code in a DOMContentLoaded listener. Default: false.', 'emcp-tools' ),
 						),
+						'clear_cache' => self::cache_flag(),
 					),
 					'required'   => array( 'post_id', 'parent_id', 'js' ),
 				),
@@ -429,10 +431,10 @@ class EMCP_Tools_Custom_Code_Abilities {
 			return $result;
 		}
 
-		return array(
+		return self::with_cache( $input, array(
 			'element_id' => $widget['id'],
 			'post_id'    => $post_id,
-		);
+		) );
 	}
 
 	// -------------------------------------------------------------------------
@@ -484,6 +486,7 @@ class EMCP_Tools_Custom_Code_Abilities {
 							'type'        => 'boolean',
 							'description' => __( 'If true, ensures jQuery is loaded before this snippet runs. Default: false.', 'emcp-tools' ),
 						),
+						'clear_cache' => self::cache_flag(),
 					),
 					'required'   => array( 'title', 'code' ),
 				),
@@ -582,14 +585,34 @@ class EMCP_Tools_Custom_Code_Abilities {
 
 		$edit_url = admin_url( 'post.php?post=' . $post_id . '&action=edit' );
 
-		return array(
+		return self::with_cache( $input, array(
 			'snippet_id' => $post_id,
 			'title'      => $title,
 			'location'   => $location_key,
 			'priority'   => $priority,
 			'status'     => $status,
 			'edit_url'   => $edit_url,
-		);
+		) );
+	}
+
+	/**
+	 * The clear_cache input property (#201).
+	 *
+	 * @return array
+	 */
+	private static function cache_flag(): array {
+		return class_exists( 'EMCP_Tools_Cache_Abilities' ) ? EMCP_Tools_Cache_Abilities::flag_schema() : array( 'type' => 'boolean' );
+	}
+
+	/**
+	 * Clear caches after a successful write when the input asked for it (#201).
+	 *
+	 * @param array $input  Tool input.
+	 * @param array $result Tool result.
+	 * @return array
+	 */
+	private static function with_cache( array $input, array $result ): array {
+		return class_exists( 'EMCP_Tools_Cache_Abilities' ) ? EMCP_Tools_Cache_Abilities::after_write( $input, $result ) : $result;
 	}
 
 	/**
@@ -820,6 +843,7 @@ class EMCP_Tools_Custom_Code_Abilities {
 						'priority'      => array( 'type' => 'integer', 'description' => __( '1-10, lower runs earlier.', 'emcp-tools' ) ),
 						'status'        => array( 'type' => 'string', 'enum' => array( 'publish', 'draft' ), 'description' => __( 'publish = active on the site, draft = inactive.', 'emcp-tools' ) ),
 						'ensure_jquery' => array( 'type' => 'boolean' ),
+						'clear_cache' => self::cache_flag(),
 					),
 					'required'   => array( 'snippet_id' ),
 				),
@@ -928,7 +952,7 @@ class EMCP_Tools_Custom_Code_Abilities {
 
 		$fresh     = get_post( $id );
 		$locations = array_flip( self::SNIPPET_LOCATIONS );
-		return array(
+		return self::with_cache( $input, array(
 			'snippet_id'    => $id,
 			'title'         => (string) $fresh->post_title,
 			'status'        => (string) $fresh->post_status,
@@ -937,7 +961,7 @@ class EMCP_Tools_Custom_Code_Abilities {
 			'ensure_jquery' => in_array( 'ensure_jquery', (array) get_post_meta( $id, '_elementor_extra_options', true ), true ),
 			'updated'       => array_values( array_merge( array_keys( $fields ), array_keys( $meta ) ) ),
 			'change_id'     => (string) $change_id,
-		);
+		) );
 	}
 
 	/**

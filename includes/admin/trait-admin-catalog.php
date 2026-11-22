@@ -325,6 +325,11 @@ trait EMCP_Tools_Admin_Catalog_Trait {
 				'platform' => 'wordpress',
 				'label' => __( 'Performance & Security', 'emcp-tools' ),
 				'tools' => array(
+					'emcp-tools/clear-cache' => array(
+						'label'       => __( 'Clear Cache', 'emcp-tools' ),
+						'description' => __( 'Clears Elementor CSS and the page caches this site uses (WP Rocket, LiteSpeed, W3 Total Cache, WP Super Cache, Kinsta and more), with a result per layer.', 'emcp-tools' ),
+						'badges'      => array(),
+					),
 					'emcp-tools/analyze-performance' => array(
 						'label'       => __( 'Analyze Performance', 'emcp-tools' ),
 						'description' => __( 'Audits server config, WordPress internals, and a target page; returns a scored report with recommendations.', 'emcp-tools' ),

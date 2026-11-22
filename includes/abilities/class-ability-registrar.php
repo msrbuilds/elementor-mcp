@@ -643,6 +643,11 @@ class EMCP_Tools_Ability_Registrar {
 		$performance->register();
 		$this->ability_names = array_merge( $this->ability_names, $performance->get_ability_names() );
 
+		// Clear cache (#201).
+		$cache = new EMCP_Tools_Cache_Abilities();
+		$cache->register();
+		$this->ability_names = array_merge( $this->ability_names, $cache->get_ability_names() );
+
 		// Filesystem abilities (writes disabled-by-default).
 		$filesystem = new EMCP_Tools_Filesystem_Abilities();
 		$filesystem->register();

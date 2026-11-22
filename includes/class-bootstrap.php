@@ -549,6 +549,8 @@ class EMCP_Tools_Bootstrap {
 		require_once EMCP_TOOLS_DIR . 'includes/performance/class-performance-page-audit.php';
 		require_once EMCP_TOOLS_DIR . 'includes/performance/class-performance-analyzer.php';
 		require_once EMCP_TOOLS_DIR . 'includes/abilities/class-performance-abilities.php';
+		require_once EMCP_TOOLS_DIR . 'includes/class-cache-clearer.php';
+		require_once EMCP_TOOLS_DIR . 'includes/abilities/class-cache-abilities.php';
 		require_once EMCP_TOOLS_DIR . 'includes/class-filesystem-guard.php';
 		require_once EMCP_TOOLS_DIR . 'includes/class-file-mover.php';
 		require_once EMCP_TOOLS_DIR . 'includes/class-file-quarantine.php';
