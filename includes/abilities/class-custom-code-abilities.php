@@ -75,6 +75,8 @@ class EMCP_Tools_Custom_Code_Abilities {
 			$this->register_add_custom_css();
 			$this->register_add_code_snippet();
 			$this->register_list_code_snippets();
+			$this->register_update_code_snippet();
+			$this->register_delete_code_snippet();
 		}
 	}
 
@@ -754,5 +756,288 @@ class EMCP_Tools_Custom_Code_Abilities {
 			'snippets' => $snippets,
 			'count'    => count( $snippets ),
 		);
+	}
+
+	// -------------------------------------------------------------------------
+	// update-code-snippet / delete-code-snippet (Pro only, #197)
+	// -------------------------------------------------------------------------
+
+	/** Tool locations to Elementor's stored values. */
+	const SNIPPET_LOCATIONS = array(
+		'head'       => 'elementor_head',
+		'body_start' => 'elementor_body_start',
+		'body_end'   => 'elementor_body_end',
+	);
+
+	/**
+	 * A snippet post by id, or an error naming why it cannot be used.
+	 *
+	 * @param mixed $id Snippet id.
+	 * @return \WP_Post|\WP_Error
+	 */
+	private static function snippet_post( $id ) {
+		$post = get_post( absint( $id ) );
+		if ( ! $post || 'elementor_snippet' !== $post->post_type ) {
+			return new \WP_Error( 'not_found', __( 'Code snippet not found. Use list-code-snippets for ids.', 'emcp-tools' ) );
+		}
+		return $post;
+	}
+
+	/** Rebuild Elementor Pro's conditions cache, which decides where snippets print. */
+	private static function refresh_snippet_conditions(): void {
+		if ( ! class_exists( '\ElementorPro\Plugin' ) ) {
+			return;
+		}
+		$theme_builder = \ElementorPro\Plugin::instance()->modules_manager->get_modules( 'theme-builder' );
+		if ( $theme_builder && method_exists( $theme_builder, 'get_conditions_manager' ) ) {
+			$theme_builder->get_conditions_manager()->get_cache()->regenerate();
+		}
+	}
+
+	/**
+	 * Registers the update-code-snippet ability.
+	 *
+	 * @since 3.22.1
+	 */
+	private function register_update_code_snippet(): void {
+		$this->ability_names[] = 'emcp-tools/update-code-snippet';
+
+		emcp_tools_register_ability(
+			'emcp-tools/update-code-snippet',
+			array(
+				'label'               => __( 'Update Code Snippet', 'emcp-tools' ),
+				'description'         => __( 'Changes an existing Elementor Pro Custom Code snippet by snippet_id: code, title, location (head, body_start, body_end), priority (1-10), status (publish = active, draft = inactive) and ensure_jquery. Only the fields you send change. Code is stored exactly as sent and read back. Undo from History. Requires Elementor Pro.', 'emcp-tools' ),
+				'category'            => 'emcp-tools',
+				'execute_callback'    => array( $this, 'execute_update_code_snippet' ),
+				'permission_callback' => array( $this, 'check_snippet_permission' ),
+				'input_schema'        => array(
+					'type'       => 'object',
+					'properties' => array(
+						'snippet_id'    => array( 'type' => 'integer', 'description' => __( 'Snippet id from list-code-snippets.', 'emcp-tools' ) ),
+						'title'         => array( 'type' => 'string' ),
+						'code'          => array( 'type' => 'string', 'description' => __( 'The full code. Include <script>, <style> or <meta> tags as needed.', 'emcp-tools' ) ),
+						'location'      => array( 'type' => 'string', 'enum' => array( 'head', 'body_start', 'body_end' ) ),
+						'priority'      => array( 'type' => 'integer', 'description' => __( '1-10, lower runs earlier.', 'emcp-tools' ) ),
+						'status'        => array( 'type' => 'string', 'enum' => array( 'publish', 'draft' ), 'description' => __( 'publish = active on the site, draft = inactive.', 'emcp-tools' ) ),
+						'ensure_jquery' => array( 'type' => 'boolean' ),
+					),
+					'required'   => array( 'snippet_id' ),
+				),
+				'output_schema'       => array( 'type' => 'object' ),
+				'meta'                => array(
+					'annotations'  => array(
+						'readonly'    => false,
+						'destructive' => false,
+						'idempotent'  => true,
+					),
+					'show_in_rest' => true,
+				),
+			)
+		);
+	}
+
+	/**
+	 * Executes the update-code-snippet ability.
+	 *
+	 * @since 3.22.1
+	 *
+	 * @param array $input The input parameters.
+	 * @return array|\WP_Error
+	 */
+	public function execute_update_code_snippet( $input ) {
+		$post = self::snippet_post( $input['snippet_id'] ?? 0 );
+		if ( is_wp_error( $post ) ) {
+			return $post;
+		}
+		if ( 'trash' === $post->post_status ) {
+			return new \WP_Error( 'snippet_trashed', __( 'This snippet is in the trash. Undo the delete from History first.', 'emcp-tools' ) );
+		}
+		$id = (int) $post->ID;
+
+		$fields = array();
+		if ( array_key_exists( 'title', $input ) ) {
+			$title = sanitize_text_field( (string) $input['title'] );
+			if ( '' === $title ) {
+				return new \WP_Error( 'invalid_title', __( 'title cannot be empty.', 'emcp-tools' ) );
+			}
+			$fields['post_title'] = $title;
+		}
+		if ( array_key_exists( 'status', $input ) ) {
+			if ( ! in_array( $input['status'], array( 'publish', 'draft' ), true ) ) {
+				return new \WP_Error( 'invalid_status', __( 'status must be publish or draft.', 'emcp-tools' ) );
+			}
+			$fields['post_status'] = $input['status'];
+		}
+
+		$meta = array();
+		if ( array_key_exists( 'code', $input ) ) {
+			if ( '' === (string) $input['code'] ) {
+				return new \WP_Error( 'invalid_code', __( 'code cannot be empty. Use delete-code-snippet to remove a snippet.', 'emcp-tools' ) );
+			}
+			$meta['_elementor_code'] = (string) $input['code'];
+		}
+		if ( array_key_exists( 'location', $input ) ) {
+			if ( ! isset( self::SNIPPET_LOCATIONS[ $input['location'] ] ) ) {
+				return new \WP_Error( 'invalid_location', __( 'location must be head, body_start or body_end.', 'emcp-tools' ) );
+			}
+			$meta['_elementor_location'] = self::SNIPPET_LOCATIONS[ $input['location'] ];
+		}
+		if ( array_key_exists( 'priority', $input ) ) {
+			$meta['_elementor_priority'] = max( 1, min( 10, absint( $input['priority'] ) ) );
+		}
+		if ( array_key_exists( 'ensure_jquery', $input ) ) {
+			$meta['_elementor_extra_options'] = ! empty( $input['ensure_jquery'] ) ? array( 'ensure_jquery' ) : array();
+		}
+		if ( empty( $fields ) && empty( $meta ) ) {
+			return new \WP_Error( 'nothing_to_update', __( 'Send at least one of title, code, location, priority, status or ensure_jquery.', 'emcp-tools' ) );
+		}
+
+		$before = array( 'fields' => array(), 'meta' => array() );
+		foreach ( $fields as $key => $unused ) {
+			$before['fields'][ $key ] = (string) $post->$key;
+		}
+		foreach ( $meta as $key => $unused ) {
+			$before['meta'][ $key ] = metadata_exists( 'post', $id, $key ) ? get_post_meta( $id, $key, true ) : '__DELETE__';
+		}
+
+		if ( ! empty( $fields ) ) {
+			$res = wp_update_post( wp_slash( array( 'ID' => $id ) + $fields ), true );
+			if ( is_wp_error( $res ) ) {
+				return $res;
+			}
+		}
+		foreach ( $meta as $key => $value ) {
+			if ( '_elementor_code' === $key ) {
+				$stored = self::store_code( $id, $value );
+				if ( is_wp_error( $stored ) ) {
+					$this->put_back_snippet( $id, $before );
+					return new \WP_Error( 'code_not_saved', __( 'The code was not stored exactly as sent, so the snippet was put back as it was.', 'emcp-tools' ) );
+				}
+				continue;
+			}
+			update_post_meta( $id, $key, wp_slash( $value ) );
+		}
+		self::refresh_snippet_conditions();
+
+		$change_id = '';
+		if ( class_exists( 'EMCP_Tools_Change_Recorder' ) ) {
+			/* translators: %s: snippet title. */
+			$summary   = sprintf( __( 'Updated code snippet "%s"', 'emcp-tools' ), get_the_title( $id ) );
+			$change_id = EMCP_Tools_Change_Recorder::record_post_fields( $id, $before, $summary, get_the_title( $id ), 'code', 'update-code-snippet' );
+		}
+
+		$fresh     = get_post( $id );
+		$locations = array_flip( self::SNIPPET_LOCATIONS );
+		return array(
+			'snippet_id'    => $id,
+			'title'         => (string) $fresh->post_title,
+			'status'        => (string) $fresh->post_status,
+			'location'      => $locations[ (string) get_post_meta( $id, '_elementor_location', true ) ] ?? 'head',
+			'priority'      => max( 1, absint( get_post_meta( $id, '_elementor_priority', true ) ) ),
+			'ensure_jquery' => in_array( 'ensure_jquery', (array) get_post_meta( $id, '_elementor_extra_options', true ), true ),
+			'updated'       => array_values( array_merge( array_keys( $fields ), array_keys( $meta ) ) ),
+			'change_id'     => (string) $change_id,
+		);
+	}
+
+	/**
+	 * Put a snippet back to its before-image after a failed update.
+	 *
+	 * @param int   $id     Snippet id.
+	 * @param array $before Before-image.
+	 */
+	private function put_back_snippet( int $id, array $before ): void {
+		if ( ! empty( $before['fields'] ) ) {
+			wp_update_post( wp_slash( array( 'ID' => $id ) + $before['fields'] ) );
+		}
+		foreach ( $before['meta'] as $key => $value ) {
+			if ( '__DELETE__' === $value ) {
+				delete_post_meta( $id, $key );
+			} else {
+				update_post_meta( $id, $key, wp_slash( $value ) );
+			}
+		}
+	}
+
+	/**
+	 * Registers the delete-code-snippet ability.
+	 *
+	 * @since 3.22.1
+	 */
+	private function register_delete_code_snippet(): void {
+		$this->ability_names[] = 'emcp-tools/delete-code-snippet';
+
+		emcp_tools_register_ability(
+			'emcp-tools/delete-code-snippet',
+			array(
+				'label'               => __( 'Delete Code Snippet', 'emcp-tools' ),
+				'description'         => __( 'Moves an Elementor Pro Custom Code snippet to the trash by snippet_id, so it stops running; undo from History brings it back with its status. Deletes it permanently only with permanent: true and confirm: true (also undoable from History). Disabled by default. Requires Elementor Pro.', 'emcp-tools' ),
+				'category'            => 'emcp-tools',
+				'execute_callback'    => array( $this, 'execute_delete_code_snippet' ),
+				'permission_callback' => array( $this, 'check_snippet_permission' ),
+				'input_schema'        => array(
+					'type'       => 'object',
+					'properties' => array(
+						'snippet_id' => array( 'type' => 'integer', 'description' => __( 'Snippet id from list-code-snippets.', 'emcp-tools' ) ),
+						'permanent'  => array( 'type' => 'boolean', 'description' => __( 'Delete permanently instead of trashing. Needs confirm: true.', 'emcp-tools' ) ),
+						'confirm'    => array( 'type' => 'boolean' ),
+					),
+					'required'   => array( 'snippet_id' ),
+				),
+				'output_schema'       => array( 'type' => 'object' ),
+				'meta'                => array(
+					'annotations'  => array(
+						'readonly'    => false,
+						'destructive' => true,
+						'idempotent'  => false,
+					),
+					'show_in_rest' => true,
+				),
+			)
+		);
+	}
+
+	/**
+	 * Executes the delete-code-snippet ability.
+	 *
+	 * @since 3.22.1
+	 *
+	 * @param array $input The input parameters.
+	 * @return array|\WP_Error
+	 */
+	public function execute_delete_code_snippet( $input ) {
+		$post = self::snippet_post( $input['snippet_id'] ?? 0 );
+		if ( is_wp_error( $post ) ) {
+			return $post;
+		}
+		$id        = (int) $post->ID;
+		$permanent = ! empty( $input['permanent'] );
+		$title     = (string) $post->post_title;
+		$recorder  = class_exists( 'EMCP_Tools_Change_Recorder' );
+
+		if ( $permanent ) {
+			if ( true !== ( $input['confirm'] ?? null ) ) {
+				return new \WP_Error( 'confirm_required', __( 'Permanent delete needs confirm: true.', 'emcp-tools' ) );
+			}
+			$snapshot = $recorder ? EMCP_Tools_Change_Recorder::snapshot_post( $id ) : array();
+			if ( ! wp_delete_post( $id, true ) ) {
+				return new \WP_Error( 'delete_failed', __( 'The snippet could not be deleted.', 'emcp-tools' ) );
+			}
+			self::refresh_snippet_conditions();
+			/* translators: %s: snippet title. */
+			$change_id = $recorder ? EMCP_Tools_Change_Recorder::record_post_delete( $id, $snapshot, true, sprintf( __( 'Deleted code snippet "%s"', 'emcp-tools' ), $title ), $title ) : '';
+			return array( 'snippet_id' => $id, 'deleted' => true, 'trashed' => false, 'change_id' => (string) $change_id );
+		}
+
+		if ( 'trash' === $post->post_status ) {
+			return new \WP_Error( 'already_trashed', __( 'This snippet is already in the trash.', 'emcp-tools' ) );
+		}
+		if ( ! wp_trash_post( $id ) ) {
+			return new \WP_Error( 'delete_failed', __( 'The snippet could not be moved to the trash.', 'emcp-tools' ) );
+		}
+		self::refresh_snippet_conditions();
+		/* translators: %s: snippet title. */
+		$change_id = $recorder ? EMCP_Tools_Change_Recorder::record_post_delete( $id, array(), false, sprintf( __( 'Trashed code snippet "%s"', 'emcp-tools' ), $title ), $title ) : '';
+		return array( 'snippet_id' => $id, 'deleted' => false, 'trashed' => true, 'change_id' => (string) $change_id );
 	}
 }

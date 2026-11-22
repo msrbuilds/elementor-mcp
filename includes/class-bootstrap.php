@@ -297,6 +297,7 @@ class EMCP_Tools_Bootstrap {
 		require_once EMCP_TOOLS_DIR . 'includes/redirects/class-redirect-handler.php';
 		// Site hardening toggles (harden-site): read on every request, hooks only what is on.
 		require_once EMCP_TOOLS_DIR . 'includes/security/class-site-hardening.php';
+		require_once EMCP_TOOLS_DIR . 'includes/class-snippet-save-guard.php';
 		require_once EMCP_TOOLS_DIR . 'includes/class-content-mirror.php';
 		require_once EMCP_TOOLS_DIR . 'includes/class-admin-bar.php';
 		require_once EMCP_TOOLS_DIR . 'includes/class-github-updater.php';
@@ -663,6 +664,7 @@ class EMCP_Tools_Bootstrap {
 		// Hardening toggles first, so a disabled XML-RPC request stops before other work.
 		// Does nothing when no toggle is on; never runs for WP-CLI or cron.
 		EMCP_Tools_Site_Hardening::init();
+		EMCP_Tools_Snippet_Save_Guard::init();
 		EMCP_Tools_Management_Access::init();
 		EMCP_Tools_Attention::init();
 		// structuredContent must be a JSON object; the adapter assigns a tool's

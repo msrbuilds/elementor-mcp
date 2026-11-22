@@ -2063,6 +2063,16 @@ trait EMCP_Tools_Admin_Catalog_Trait {
 						'description' => __( 'Lists all existing Custom Code snippets.', 'emcp-tools' ),
 						'badges'      => array( 'elementor-pro', 'read-only' ),
 					),
+					'emcp-tools/update-code-snippet' => array(
+						'label'       => __( 'Update Code Snippet', 'emcp-tools' ),
+						'description' => __( 'Changes the code, title, location, priority, status or jQuery option of a Custom Code snippet. Undo from History.', 'emcp-tools' ),
+						'badges'      => array( 'elementor-pro' ),
+					),
+					'emcp-tools/delete-code-snippet' => array(
+						'label'       => __( 'Delete Code Snippet', 'emcp-tools' ),
+						'description' => __( 'Moves a Custom Code snippet to the trash, or deletes it permanently with confirm. Undo from History. Disabled by default.', 'emcp-tools' ),
+						'badges'      => array( 'elementor-pro', 'destructive' ),
+					),
 				),
 			),
 		);
