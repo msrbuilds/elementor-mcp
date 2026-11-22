@@ -211,6 +211,18 @@ class AcfAbilitiesTest extends TestCase {
 		$this->assertSame( array( 'field_headline', 'Hello World', 10 ), $GLOBALS['emcp_test']['update_field_calls'][0] );
 	}
 
+	public function test_update_keeps_backslashes(): void {
+		$this->seed_post_with_group();
+		$value  = 'C:\\temp \\d+ "q\\"';
+		$result = $this->abilities->execute_update_fields( array(
+			'post_id' => 10,
+			'fields'  => array( 'headline' => $value ),
+		) );
+
+		$this->assertSame( array( 'headline' ), $result['updated'] );
+		$this->assertSame( $value, $GLOBALS['emcp_test']['values']['10']['field_headline'] );
+	}
+
 	public function test_update_accepts_field_keys_directly(): void {
 		$this->seed_post_with_group();
 		$GLOBALS['emcp_test']['fields_by_key']['field_headline'] = $GLOBALS['emcp_test']['group_fields']['group_demo'][0];

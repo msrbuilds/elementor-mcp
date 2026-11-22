@@ -562,13 +562,20 @@ class EMCP_Tools_Custom_Code_Abilities {
 		// Set the custom code meta fields (matching Elementor Pro's Custom Code module).
 		update_post_meta( $post_id, '_elementor_location', $elementor_location );
 		update_post_meta( $post_id, '_elementor_priority', $priority );
-		update_post_meta( $post_id, '_elementor_code', $code );
+		$stored = self::store_code( $post_id, $code );
 		update_post_meta( $post_id, '_elementor_template_type', 'code_snippet' );
 		update_post_meta( $post_id, '_elementor_edit_mode', 'builder' );
 
 		// Set ensure_jquery extra option if requested.
 		if ( $ensure_jquery ) {
 			update_post_meta( $post_id, '_elementor_extra_options', array( 'ensure_jquery' ) );
+		}
+
+		if ( is_wp_error( $stored ) ) {
+			// Never leave a site-wide snippet live with code other than what was sent.
+			wp_update_post( array( 'ID' => $post_id, 'post_status' => 'draft' ) );
+			$stored->add_data( array( 'snippet_id' => $post_id ) );
+			return $stored;
 		}
 
 		$edit_url = admin_url( 'post.php?post=' . $post_id . '&action=edit' );
@@ -581,6 +588,33 @@ class EMCP_Tools_Custom_Code_Abilities {
 			'status'     => $status,
 			'edit_url'   => $edit_url,
 		);
+	}
+
+	/**
+	 * Store a snippet's code exactly as sent and read it back (#198).
+	 *
+	 * update_post_meta() unslashes its value, so code is slashed first; without
+	 * that, regex escapes, "\n" in strings and escaped quotes were silently lost.
+	 *
+	 * @since 3.22.1
+	 *
+	 * @param int    $post_id Snippet post id.
+	 * @param string $code    Code as sent.
+	 * @return true|\WP_Error
+	 */
+	public static function store_code( int $post_id, string $code ) {
+		update_post_meta( $post_id, '_elementor_code', wp_slash( $code ) );
+		if ( function_exists( 'wp_cache_delete' ) ) {
+			wp_cache_delete( $post_id, 'post_meta' );
+		}
+		$saved = get_post_meta( $post_id, '_elementor_code', true );
+		if ( $saved !== $code ) {
+			return new \WP_Error(
+				'code_not_saved',
+				__( 'The snippet code was not stored exactly as sent, so the snippet was saved as a draft. Nothing runs on the site until the code matches.', 'emcp-tools' )
+			);
+		}
+		return true;
 	}
 
 	// -------------------------------------------------------------------------

@@ -225,7 +225,7 @@ class EMCP_Tools_Visibility_Integration extends EMCP_Tools_SEO_Integration {
 			} elseif ( 'int' === $spec['type'] ) {
 				update_post_meta( $id, $spec['key'], absint( $args[ $field ] ) );
 			} else {
-				update_post_meta( $id, $spec['key'], is_scalar( $args[ $field ] ) ? (string) $args[ $field ] : '' );
+				update_post_meta( $id, $spec['key'], wp_slash( is_scalar( $args[ $field ] ) ? (string) $args[ $field ] : '' ) );
 			}
 		}
 	}

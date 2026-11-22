@@ -984,7 +984,8 @@ class EMCP_Tools_ACF_Abilities {
 
 			// Always write by field KEY: update_field() by name silently fails on
 			// targets that have no stored value for the field yet.
-			update_field( $field['key'], $value, $target );
+			// ACF stores through update_metadata(), which unslashes (#198).
+			update_field( $field['key'], wp_slash( $value ), $target );
 
 			// update_field() also returns false on a no-op (identical value), so
 			// success is confirmed by re-reading instead of trusting the return.

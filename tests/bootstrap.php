@@ -349,7 +349,20 @@ function get_field_object( $name, $target = false, $format = true, $load_value =
 	return $objects[ $name ] ?? false;
 }
 
+if ( ! function_exists( 'wp_slash' ) ) {
+	function wp_slash( $value ) {
+		return is_array( $value ) ? array_map( 'wp_slash', $value ) : ( is_string( $value ) ? addslashes( $value ) : $value );
+	}
+}
+if ( ! function_exists( 'wp_unslash' ) ) {
+	function wp_unslash( $value ) {
+		return is_array( $value ) ? array_map( 'wp_unslash', $value ) : ( is_string( $value ) ? stripslashes( $value ) : $value );
+	}
+}
+
+// Like ACF: values are stored through update_metadata(), which unslashes.
 function update_field( $key, $value, $target = false ): bool {
+	$value                                                          = wp_unslash( $value );
 	$GLOBALS['emcp_test']['update_field_calls'][]                    = array( $key, $value, $target );
 	$GLOBALS['emcp_test']['values'][ (string) $target ][ $key ] = $value;
 	return true;

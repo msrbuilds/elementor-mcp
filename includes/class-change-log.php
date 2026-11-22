@@ -1195,7 +1195,7 @@ class EMCP_Tools_Change_Log {
 			return new WP_Error( 'rollback_failed', __( 'No ACF values to restore.', 'emcp-tools' ) );
 		}
 		foreach ( $before as $key => $value ) {
-			update_field( (string) $key, $value, $target );
+			update_field( (string) $key, wp_slash( $value ), $target );
 			if ( ! function_exists( 'get_field' ) || maybe_serialize( get_field( (string) $key, $target, false ) ) !== maybe_serialize( $value ) ) {
 				return new WP_Error( 'rollback_failed', __( 'Could not restore an ACF field value.', 'emcp-tools' ) );
 			}

@@ -371,7 +371,7 @@ class EMCP_Tools_Content_Abilities {
 		}
 		if ( isset( $input['meta'] ) && is_array( $input['meta'] ) ) {
 			foreach ( $input['meta'] as $key => $value ) {
-				update_post_meta( $post_id, sanitize_key( $key ), $value );
+				update_post_meta( $post_id, sanitize_key( $key ), wp_slash( $value ) );
 			}
 		}
 		if ( array_key_exists( 'featured_image', $input ) ) {
