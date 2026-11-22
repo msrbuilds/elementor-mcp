@@ -3,7 +3,7 @@ Contributors: mianshahzadraza
 Tags: elementor, mcp, ai, page-builder, automation
 Requires at least: 6.9
 Tested up to: 7.1
-Stable tag: 3.22.0
+Stable tag: 3.22.1
 Requires PHP: 8.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -218,6 +218,18 @@ EMCP Tools works on your own site. It contacts the services below only in the si
 2. Connection configuration page with copy-paste configs.
 
 == Changelog ==
+
+= 3.22.1 =
+
+Fixes and additions from six GitHub issues: snippet code keeps its backslashes, full backups finish on hosts that cut long requests off, code snippets can be edited and deleted, a clear-cache tool, and protected, self-cleaning filesystem backups.
+
+* New: update-code-snippet and delete-code-snippet for Elementor Pro code snippets, both undoable from History.
+* New: clear-cache clears Elementor CSS and the page caches of WP Rocket, LiteSpeed, W3 Total Cache, WP Super Cache, Kinsta and more, with a result per layer. The code tools take clear_cache: true.
+* New (Pro): get-backup-status and delete-backup. Full backups now continue in the background instead of timing out on hosts that cut long requests off.
+* New: Filesystem backups live in a protected folder, end in .bak and are removed after 30 days, with list-fs-backups, purge-fs-backups and a File backups panel in History.
+* Fixed: Backslashes were removed from snippet code, custom fields, ACF values and SEO fields.
+* Fixed: Undoing a deleted post restores its previous status instead of draft.
+* Fixed: Saving an Elementor Pro snippet from code cleared its jQuery option.
 
 = 3.22.0 =
 
