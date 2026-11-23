@@ -101,7 +101,11 @@ class EMCP_Tools_Bootstrap {
 
 		// Fallback legacy-data migration (the primary snapshot happens in the
 		// legacy guard while the old plugin is still present). Idempotent.
-		EMCP_Tools_Migration::migrate();
+		// Runs on init 0, never on plugins_loaded: option writes fire other
+		// plugins' update hooks, and $wp_rewrite does not exist until after
+		// plugins_loaded, so a hook calling rest_url() there fatals every request
+		// (Lumios Agent Markdown Mirror did, on a customer site).
+		add_action( 'init', array( 'EMCP_Tools_Migration', 'migrate' ), 0 );
 
 		// Boot the MCP Adapter: the official plugin when active, else EMCP's
 		// bundled fallback copy. The banner recommends the official plugin.
@@ -121,9 +125,10 @@ class EMCP_Tools_Bootstrap {
 		self::load_classes();
 
 		// Relocate the sandbox from the legacy uploads/emcp-widgets location to
-		// wp-content/emcp-sandbox once. Runs here (plugins_loaded) so it completes
-		// before the artifact loaders fire on `init`. Idempotent, option-gated.
-		EMCP_Tools_Sandbox_Paths::maybe_migrate();
+		// wp-content/emcp-sandbox once. Runs on init 0 so it completes before the
+		// artifact loaders (init 5 and later) and writes its option only once
+		// $wp_rewrite exists (see the migration note above). Idempotent.
+		add_action( 'init', array( 'EMCP_Tools_Sandbox_Paths', 'maybe_migrate' ), 0 );
 
 		self::wire_hooks();
 
@@ -739,7 +744,10 @@ class EMCP_Tools_Bootstrap {
 		$emcp_modules->register( new EMCP_Tools_Cloud_Module() );
 		EMCP_Tools_Pro_Loader::register_modules( $emcp_modules );
 		do_action( 'emcp_tools_register_modules', $emcp_modules );
-		$emcp_modules->apply_defaults();
+		// Seed module defaults on init 0, never on plugins_loaded: option writes
+		// fire other plugins' update hooks before $wp_rewrite exists (see the
+		// migration note in boot()).
+		add_action( 'init', array( $emcp_modules, 'apply_defaults' ), 0 );
 		add_action( 'init', array( $emcp_modules, 'boot_active' ), 5 );
 		// AI Chat (Pro): REST routes + weekly model-list refresh cron + saved-
 		// conversation CPT. No-op in the free build (classes absent).
