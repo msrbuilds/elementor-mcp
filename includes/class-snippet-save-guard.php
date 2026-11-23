@@ -31,6 +31,7 @@ final class EMCP_Tools_Snippet_Save_Guard {
 	public static function init(): void {
 		add_action( 'save_post_' . self::POST_TYPE, array( __CLASS__, 'snapshot' ), 9, 1 );
 		add_action( 'save_post_' . self::POST_TYPE, array( __CLASS__, 'restore' ), 11, 1 );
+		add_action( 'emcp_tools_post_rolled_back', array( __CLASS__, 'after_undo' ), 10, 2 );
 	}
 
 	/**
@@ -69,6 +70,34 @@ final class EMCP_Tools_Snippet_Save_Guard {
 		unset( self::$before[ $post_id ] );
 		if ( get_post_meta( $post_id, self::META, true ) !== $value ) {
 			update_post_meta( $post_id, self::META, wp_slash( $value ) );
+		}
+	}
+
+	/**
+	 * An undo writes snippet meta directly, so Elementor Pro's conditions cache
+	 * would still hold the old location rules until the next admin save.
+	 *
+	 * @param int    $post_id   Post id.
+	 * @param string $post_type Post type before the undo.
+	 */
+	public static function after_undo( $post_id, $post_type = '' ): void {
+		if ( self::POST_TYPE === $post_type ) {
+			self::refresh_conditions();
+		}
+	}
+
+	/** Rebuild Elementor Pro's conditions cache (it also lists Custom Code). */
+	public static function refresh_conditions(): void {
+		if ( ! class_exists( '\ElementorPro\Plugin' ) ) {
+			return;
+		}
+		try {
+			$theme_builder = \ElementorPro\Plugin::instance()->modules_manager->get_modules( 'theme-builder' );
+			if ( $theme_builder && method_exists( $theme_builder, 'get_conditions_manager' ) ) {
+				$theme_builder->get_conditions_manager()->get_cache()->regenerate();
+			}
+		} catch ( \Throwable $e ) {
+			unset( $e ); // A cache rebuild must never fail the undo.
 		}
 	}
 }

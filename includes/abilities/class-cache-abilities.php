@@ -88,6 +88,12 @@ class EMCP_Tools_Cache_Abilities {
 		if ( empty( $input['clear_cache'] ) || ! is_array( $result ) || ! class_exists( 'EMCP_Tools_Cache_Clearer' ) ) {
 			return $result;
 		}
+		// Same rule as clear-cache itself: an author editing their own page's CSS
+		// must not be able to purge every cache on the site (3.22.1 review).
+		if ( ! current_user_can( 'manage_options' ) ) {
+			$result['cache'] = array( 'skipped' => __( 'Clearing caches needs the manage_options capability.', 'emcp-tools' ) );
+			return $result;
+		}
 		$result['cache'] = EMCP_Tools_Cache_Clearer::clear();
 		return $result;
 	}

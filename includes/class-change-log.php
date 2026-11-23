@@ -944,11 +944,32 @@ class EMCP_Tools_Change_Log {
 			case 'meta-before-image':
 				return self::rollback_meta( $rb );
 			case 'post-fields':
-				return self::rollback_post_fields( $rb );
 			case 'post-create':
-				return self::rollback_post_create( $rb );
 			case 'post-restore':
-				return self::rollback_post_restore( $rb );
+				$post_id = (int) ( $rb['post_id'] ?? ( $rb['post']['ID'] ?? ( $rb['snapshot']['post']['ID'] ?? 0 ) ) );
+				$current = $post_id > 0 ? get_post( $post_id ) : null;
+				$type    = is_object( $current ) && isset( $current->post_type ) ? (string) $current->post_type : '';
+				if ( '' === $type ) {
+					$type = (string) ( $rb['post']['post_type'] ?? ( $rb['snapshot']['post']['post_type'] ?? '' ) );
+				}
+				if ( 'post-fields' === $rb['type'] ) {
+					$result = self::rollback_post_fields( $rb );
+				} elseif ( 'post-create' === $rb['type'] ) {
+					$result = self::rollback_post_create( $rb );
+				} else {
+					$result = self::rollback_post_restore( $rb );
+				}
+				if ( ! is_wp_error( $result ) && $post_id > 0 && function_exists( 'do_action' ) ) {
+					/**
+					 * A post was put back by an undo (3.22.1). Lets caches keyed on post
+					 * meta, such as Elementor Pro's snippet conditions, rebuild.
+					 *
+					 * @param int    $post_id   Post id.
+					 * @param string $post_type Its post type, read before the undo.
+					 */
+					do_action( 'emcp_tools_post_rolled_back', $post_id, $type );
+				}
+				return $result;
 			case 'option':
 				return self::rollback_option( $rb );
 			case 'attachment-delete':

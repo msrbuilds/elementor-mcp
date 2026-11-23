@@ -808,12 +808,8 @@ class EMCP_Tools_Custom_Code_Abilities {
 
 	/** Rebuild Elementor Pro's conditions cache, which decides where snippets print. */
 	private static function refresh_snippet_conditions(): void {
-		if ( ! class_exists( '\ElementorPro\Plugin' ) ) {
-			return;
-		}
-		$theme_builder = \ElementorPro\Plugin::instance()->modules_manager->get_modules( 'theme-builder' );
-		if ( $theme_builder && method_exists( $theme_builder, 'get_conditions_manager' ) ) {
-			$theme_builder->get_conditions_manager()->get_cache()->regenerate();
+		if ( class_exists( 'EMCP_Tools_Snippet_Save_Guard' ) ) {
+			EMCP_Tools_Snippet_Save_Guard::refresh_conditions();
 		}
 	}
 

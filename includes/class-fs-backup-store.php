@@ -344,7 +344,20 @@ final class EMCP_Tools_FS_Backup_Store {
 	 * @return array{removed: string[], bytes_freed: int}
 	 */
 	public static function prune( int $days, int $max_mb ): array {
-		return self::delete( self::to_prune( self::entries(), $days, $max_mb, time() ) );
+		$drop = self::to_prune( self::entries(), $days, $max_mb, time() );
+		// Automatic retention never removes a copy an undo still needs; those go
+		// when History's own retention drops the entry, or by an explicit purge.
+		$used = array_flip( array_column( self::history_using( $drop ), 'file' ) );
+		$drop = array_values(
+			array_filter(
+				$drop,
+				static function ( $n ) use ( $used ) {
+					$bare = str_ends_with( $n, self::SUFFIX ) ? substr( $n, 0, -strlen( self::SUFFIX ) ) : $n;
+					return ! isset( $used[ $n ] ) && ! isset( $used[ $bare ] );
+				}
+			)
+		);
+		return self::delete( $drop );
 	}
 
 	/** The saved retention setting. */
