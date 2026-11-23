@@ -188,7 +188,7 @@ class EMCP_Tools_SlimSEO_Integration extends EMCP_Tools_SEO_Integration {
 		}
 		$current = get_post_meta( $id, self::META_KEY, true );
 		$merged  = $this->apply( is_array( $current ) ? $current : array(), $args );
-		update_post_meta( $id, self::META_KEY, $merged );
+		update_post_meta( $id, self::META_KEY, wp_slash( $merged ) );
 		return array( 'updated' => true, 'post_id' => $id, 'seo' => $this->read_view( $merged ) );
 	}
 
@@ -203,7 +203,7 @@ class EMCP_Tools_SlimSEO_Integration extends EMCP_Tools_SEO_Integration {
 		}
 		$current = get_term_meta( $id, self::META_KEY, true );
 		$merged  = $this->apply( is_array( $current ) ? $current : array(), $args );
-		update_term_meta( $id, self::META_KEY, $merged );
+		update_term_meta( $id, self::META_KEY, wp_slash( $merged ) );
 		return array( 'updated' => true, 'term_id' => $id, 'seo' => $this->read_view( $merged ) );
 	}
 
