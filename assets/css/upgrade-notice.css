@@ -159,3 +159,253 @@
 	.emcp-upgrade-banner__content { grid-template-columns: 1fr; }
 	.emcp-upgrade-banner__features { grid-template-columns: 1fr; }
 }
+
+/* BFCM 2026 sale banner (render_bfcm), styled after the emcptools.com sale strip. */
+@font-face {
+	font-family: "EMCP Geist";
+	src: url("../fonts/Geist-Variable.woff2") format("woff2");
+	font-weight: 100 900;
+	font-display: swap;
+}
+.emcp-sale {
+	position: relative;
+	box-sizing: border-box;
+	display: block;
+	float: none;
+	clear: both;
+	width: auto;
+	max-width: none;
+	overflow: hidden;
+	margin: 20px 20px 0 2px;
+	border: 1px solid #312e81;
+	border-radius: 14px;
+	background: #1e1b4b;
+	color: #fff;
+	font-family: "EMCP Geist", system-ui, -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+}
+.emcp-sale__grid {
+	position: absolute;
+	top: 0;
+	height: 100%;
+	width: 120px;
+	fill: #2e2a6b;
+	pointer-events: none;
+}
+.emcp-sale__grid--l { display: none; }
+.emcp-sale__grid--r { right: 0; }
+.emcp-sale__grid .b1 { fill: #4338ca; animation: emcp-sale-blink 3.2s steps(1) infinite; }
+.emcp-sale__grid .b2 { fill: #3730a3; animation: emcp-sale-blink 2.6s steps(1) 0.8s infinite; }
+.emcp-sale__grid .b3 { fill: #f5a524; opacity: 0.55; animation: emcp-sale-blink 4s steps(1) 1.6s infinite; }
+
+.emcp-sale__in {
+	position: relative;
+	z-index: 1;
+	display: grid;
+	grid-template-columns: auto auto minmax(0, 1fr) auto;
+	grid-template-areas:
+		"brand badge . deals"
+		"foot foot foot foot";
+	align-items: center;
+	gap: 18px 28px;
+	padding: 20px 140px 20px 28px;
+}
+.emcp-sale__in > * { min-width: 0; }
+.emcp-sale__brand { grid-area: brand; }
+.emcp-sale__badge { grid-area: badge; }
+.emcp-sale__deals { grid-area: deals; }
+.emcp-sale__foot {
+	grid-area: foot;
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	gap: 14px 24px;
+	padding-top: 16px;
+	border-top: 1px solid #312e81;
+}
+.emcp-sale__brand {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	padding-right: 24px;
+	border-right: 1px solid #4338ca;
+}
+.emcp-sale__logo {
+	display: block;
+	width: 44px;
+	height: 44px;
+	border-radius: 11px;
+	box-shadow: 0 0 0 2px #4338ca;
+}
+.emcp-sale__name {
+	display: flex;
+	flex-direction: column;
+	font-size: 20px;
+	font-weight: 900;
+	line-height: 1;
+	letter-spacing: -0.02em;
+}
+.emcp-sale__name small {
+	margin-top: 3px;
+	font-size: 11px;
+	font-weight: 700;
+	letter-spacing: 0.14em;
+	text-transform: uppercase;
+	color: #a5b4fc;
+}
+.emcp-sale__badge { display: flex; align-items: center; gap: 10px; }
+.emcp-sale__bf {
+	display: flex;
+	flex-direction: column;
+	font-size: 19px;
+	font-weight: 800;
+	line-height: 0.95;
+	letter-spacing: -0.02em;
+}
+.emcp-sale__pill {
+	padding: 3px 18px;
+	border-radius: 999px;
+	background: #d9f99d;
+	color: #1e1b4b;
+	font-size: 26px;
+	font-weight: 900;
+	text-transform: uppercase;
+	transform: rotate(-3deg);
+}
+.emcp-sale__flame {
+	width: 28px;
+	height: 35px;
+	transform-origin: 50% 100%;
+	animation: emcp-sale-flicker 1.6s ease-in-out infinite;
+}
+.emcp-sale__flame-out { fill: #f97316; }
+.emcp-sale__flame-in { fill: #fbbf24; }
+.emcp-sale__flame text { font-size: 11px; font-weight: 800; fill: #fff; font-family: inherit; }
+
+.emcp-sale__deals {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 12px 22px;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.emcp-sale__deals li { display: flex; align-items: center; gap: 7px; margin: 0; }
+.emcp-sale__pct {
+	font-size: 40px;
+	font-weight: 900;
+	line-height: 1;
+	letter-spacing: -0.04em;
+	color: #facc15;
+}
+.emcp-sale__pct i { font-size: 0.6em; font-style: normal; }
+.emcp-sale__what {
+	display: flex;
+	flex-direction: column;
+	font-size: 12px;
+	font-weight: 600;
+	line-height: 1.2;
+	color: #e0e7ff;
+}
+.emcp-sale__what b {
+	font-size: 13px;
+	font-weight: 800;
+	text-transform: uppercase;
+	color: #fff;
+}
+.emcp-sale__ltd {
+	padding: 7px 12px;
+	border: 1px dashed #6366f1;
+	border-radius: 10px;
+}
+
+.emcp-sale__clock {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 10px;
+}
+.emcp-sale__ends { font-size: 14px; font-weight: 700; white-space: nowrap; }
+.emcp-sale__digits {
+	display: flex;
+	align-items: center;
+	gap: 5px;
+	font-variant-numeric: tabular-nums;
+}
+.emcp-sale__unit {
+	display: inline-flex;
+	align-items: baseline;
+	gap: 3px;
+	padding: 4px 9px;
+	border: 1px solid #3730a3;
+	border-radius: 7px;
+	background: #0a0a14;
+}
+.emcp-sale__unit span { font-size: 20px; font-weight: 700; }
+.emcp-sale__unit small { font-size: 10px; font-weight: 700; color: #facc15; }
+.emcp-sale__colon { font-weight: 700; color: #a5b4fc; animation: emcp-sale-tick 1s steps(1) infinite; }
+
+.emcp-sale__cta {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	padding: 11px 20px;
+	border-radius: 10px;
+	background: #facc15;
+	color: #1e1b4b;
+	font-size: 15px;
+	font-weight: 800;
+	text-decoration: none;
+	white-space: nowrap;
+}
+.emcp-sale__cta:hover,
+.emcp-sale__cta:focus { background: #fde047; color: #1e1b4b; }
+.emcp-sale__cta:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+.emcp-sale__cta span[aria-hidden] { transition: transform 0.2s; }
+.emcp-sale__cta:hover span[aria-hidden] { transform: translateX(3px); }
+
+.emcp-sale__dismiss { top: 10px; right: 10px; width: 24px; height: 24px; }
+.emcp-sale.is-dismissed {
+	opacity: 0;
+	transform: translateY(-8px);
+	transition: opacity 0.25s ease, transform 0.25s ease;
+	pointer-events: none;
+}
+
+@keyframes emcp-sale-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.15; } }
+@keyframes emcp-sale-tick { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
+@keyframes emcp-sale-flicker {
+	0%, 100% { transform: scale(1, 1) rotate(0deg); }
+	30% { transform: scale(1.04, 0.95) rotate(-2deg); }
+	60% { transform: scale(0.97, 1.05) rotate(2deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+	.emcp-sale__grid rect,
+	.emcp-sale__flame,
+	.emcp-sale__colon { animation: none; }
+}
+@media (max-width: 1200px) {
+	.emcp-sale__grid { display: none; }
+	.emcp-sale__in {
+		grid-template-columns: auto minmax(0, 1fr);
+		grid-template-areas:
+			"brand badge"
+			"deals deals"
+			"foot foot";
+		padding-right: 56px;
+	}
+	.emcp-sale__badge { justify-self: start; }
+}
+@media (max-width: 782px) {
+	.emcp-sale { margin-right: 10px; }
+	.emcp-sale__in {
+		grid-template-columns: minmax(0, 1fr);
+		grid-template-areas: "brand" "badge" "deals" "foot";
+		padding: 16px 44px 18px 18px;
+	}
+	.emcp-sale__brand { border-right: 0; padding-right: 0; }
+	.emcp-sale__cta { flex: 1 1 100%; justify-content: center; }
+	.emcp-sale__pct { font-size: 32px; }
+	.emcp-sale__unit span { font-size: 17px; }
+}

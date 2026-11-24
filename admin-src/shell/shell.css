@@ -41,6 +41,11 @@ html:has(.eui-frame) {
 	--emcp-promo-strong: #9a3412;
 }
 
+.eui-frame-promo[data-tone="bfcm"] {
+	--emcp-promo-bg: #111827;
+	--emcp-promo-strong: #b91c1c;
+}
+
 .eui-frame-promo[data-tone="whatsnew"] {
 	--emcp-promo-bg: #0f766e;
 	--emcp-promo-strong: #115e59;

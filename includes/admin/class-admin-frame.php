@@ -72,22 +72,51 @@ final class EMCP_Tools_Admin_Frame {
 	/**
 	 * Announcements for the promo bar, in display order.
 	 *
-	 * @param bool $show_upgrade Whether the site has no Pro licence.
+	 * During the BFCM sale (EMCP_Tools_Sale) a sale slide leads and replaces
+	 * the Pro and lifetime slides; they come back on their own afterwards.
+	 *
+	 * @param bool     $show_upgrade Whether the site has no Pro licence.
+	 * @param int|null $now          Unix time; defaults to now.
 	 * @return array[]
 	 */
-	public static function announcements( bool $show_upgrade ): array {
-		$list = array(
-			array(
-				'key'   => 'cloud',
-				'badge' => __( 'New', 'emcp-tools' ),
-				'icon'  => 'cloud',
-				'title' => __( 'EMCP Cloud is live.', 'emcp-tools' ),
-				'text'  => __( 'Back up, sync and sell your blocks, widgets and snippets across every site you run.', 'emcp-tools' ),
-				'cta'   => __( 'Explore Cloud', 'emcp-tools' ),
-				'url'   => 'https://emcptools.com/cloud',
-			),
+	public static function announcements( bool $show_upgrade, ?int $now = null ): array {
+		require_once __DIR__ . '/class-sale.php';
+		$sale = EMCP_Tools_Sale::active( $now );
+		$list = array();
+		if ( $sale ) {
+			$list[] = $show_upgrade
+				? array(
+					'key'   => 'bfcm',
+					'badge' => __( 'Black Friday', 'emcp-tools' ),
+					'icon'  => 'tag',
+					/* translators: %d: discount percentage. */
+					'title' => sprintf( __( '%d%% off EMCP Pro.', 'emcp-tools' ), EMCP_Tools_Sale::PLUGIN_PERCENT ),
+					/* translators: %d: discount percentage. */
+					'text'  => sprintf( __( 'Our Black Friday sale is on until December 1, with %d%% off EMCP Cloud and a small batch of lifetime deals.', 'emcp-tools' ), EMCP_Tools_Sale::CLOUD_PERCENT ),
+					'cta'   => __( 'See the deals', 'emcp-tools' ),
+					'url'   => EMCP_Tools_Sale::URL,
+				)
+				: array(
+					'key'   => 'bfcm',
+					'badge' => __( 'Black Friday', 'emcp-tools' ),
+					'icon'  => 'tag',
+					/* translators: %d: discount percentage. */
+					'title' => sprintf( __( '%d%% off EMCP Cloud.', 'emcp-tools' ), EMCP_Tools_Sale::CLOUD_PERCENT ),
+					'text'  => __( 'Back up, sync and sell your blocks, widgets and snippets. The Black Friday sale runs until December 1.', 'emcp-tools' ),
+					'cta'   => __( 'See the deals', 'emcp-tools' ),
+					'url'   => EMCP_Tools_Sale::URL,
+				);
+		}
+		$list[] = array(
+			'key'   => 'cloud',
+			'badge' => __( 'New', 'emcp-tools' ),
+			'icon'  => 'cloud',
+			'title' => __( 'EMCP Cloud is live.', 'emcp-tools' ),
+			'text'  => __( 'Back up, sync and sell your blocks, widgets and snippets across every site you run.', 'emcp-tools' ),
+			'cta'   => __( 'Explore Cloud', 'emcp-tools' ),
+			'url'   => 'https://emcptools.com/cloud',
 		);
-		if ( $show_upgrade ) {
+		if ( $show_upgrade && ! $sale ) {
 			$upgrade = function_exists( 'emcp_tools_upgrade_url' ) ? emcp_tools_upgrade_url() : 'https://emcptools.com/pricing';
 			$list[]  = array(
 				'key'   => 'pro',
