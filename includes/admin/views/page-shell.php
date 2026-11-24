@@ -31,7 +31,7 @@ $emcp_closed    = EMCP_Tools_Admin_Frame::closed_groups(
 <div class="wrap emcp-app eui-frame<?php echo $emcp_collapsed ? ' is-collapsed' : ''; ?>">
 	<?php
 	// Every Frame method returns markup assembled from escaped parts.
-	echo EMCP_Tools_Admin_Frame::promo( EMCP_Tools_Admin_Frame::announcements( ! $emcp_premium ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+	echo EMCP_Tools_Admin_Frame::promo( EMCP_Tools_Admin_Frame::announcements( ! $emcp_premium, null, (bool) get_user_meta( get_current_user_id(), 'emcp_tools_bfcm2026_notice_dismissed', true ) ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 	?>
 	<div class="eui-frame__layout">
 		<?php echo EMCP_Tools_Admin_Frame::sidebar( $emcp_nav, $active_tab, EMCP_TOOLS_VERSION, $emcp_premium, $emcp_closed ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>

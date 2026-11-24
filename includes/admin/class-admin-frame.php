@@ -77,11 +77,13 @@ final class EMCP_Tools_Admin_Frame {
 	 *
 	 * @param bool     $show_upgrade Whether the site has no Pro licence.
 	 * @param int|null $now          Unix time; defaults to now.
+	 * @param bool     $sale_dismissed The user dismissed the sale banner.
 	 * @return array[]
 	 */
-	public static function announcements( bool $show_upgrade, ?int $now = null ): array {
+	public static function announcements( bool $show_upgrade, ?int $now = null, bool $sale_dismissed = false ): array {
 		require_once __DIR__ . '/class-sale.php';
-		$sale = EMCP_Tools_Sale::active( $now );
+		// A user who dismissed the sale banner no longer gets the sale slide.
+		$sale = ! $sale_dismissed && EMCP_Tools_Sale::active( $now );
 		$list = array();
 		if ( $sale ) {
 			$list[] = $show_upgrade

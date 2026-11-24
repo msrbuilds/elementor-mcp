@@ -42,15 +42,21 @@ class EMCP_Tools_Upgrade_Notice {
 	}
 
 	/**
-	 * Which banner to show: 'bfcm' while the sale runs and its banner is not
-	 * dismissed, else 'upgrade' unless that one was dismissed, else ''.
+	 * Which banner to show: nothing once the sale banner was dismissed (it
+	 * stays gone and no other banner replaces it), 'bfcm' while the sale
+	 * runs, else 'upgrade' unless that one was dismissed, else ''.
 	 *
 	 * @param bool     $dismissed      The regular upgrade banner was dismissed.
 	 * @param bool     $sale_dismissed The sale banner was dismissed.
 	 * @param int|null $now            Unix time; defaults to now.
 	 */
 	public static function variant( bool $dismissed, bool $sale_dismissed, ?int $now = null ): string {
-		if ( ! $sale_dismissed && EMCP_Tools_Sale::active( $now ) ) {
+		// A dismissed sale banner stays gone: no other banner takes its place,
+		// during the sale or after it.
+		if ( $sale_dismissed ) {
+			return '';
+		}
+		if ( EMCP_Tools_Sale::active( $now ) ) {
 			return 'bfcm';
 		}
 		return $dismissed ? '' : 'upgrade';

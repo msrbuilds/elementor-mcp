@@ -225,7 +225,7 @@ Two fixes from GitHub issues, and the Black Friday sale notice.
 
 * Fixed: Updating an active PHP snippet said it was saved as an inactive draft, although it stayed active and the new code ran.
 * Fixed (Pro): Site Kit tools stopped working after Site Kit 1.192.0. Site Kit 1.190.0 or later now works.
-* New: A Black Friday sale notice for free installs, shown until December 1, 2026.
+* New: A Black Friday sale notice for free installs, shown until December 1, 2026. Once dismissed it stays gone.
 
 = 3.22.1 =
 
