@@ -437,8 +437,15 @@ class EMCP_Tools_PHP_Snippet_Abilities {
 		}
 
 		$result['success'] = true;
-		$result['note']    = __( 'Saved as an INACTIVE draft. A site administrator must activate it in EMCP Tools → Sandbox before it runs.', 'emcp-tools' );
-		unset( $verb );
+		// The note follows the snippet's real status (#207): updating an active
+		// snippet recompiles it and the new code runs on the next request.
+		if ( isset( $result['status'] ) && 'active' === $result['status'] ) {
+			$result['note'] = __( 'Saved. The snippet is active, so the new code runs from the next request.', 'emcp-tools' );
+		} else {
+			$result['note'] = 'updated' === $verb
+				? __( 'Saved as an INACTIVE draft. It does not run until a site administrator activates it in EMCP Tools → Sandbox.', 'emcp-tools' )
+				: __( 'Saved as an INACTIVE draft. A site administrator must activate it in EMCP Tools → Sandbox before it runs.', 'emcp-tools' );
+		}
 		return $result;
 	}
 }
