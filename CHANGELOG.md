@@ -4,8 +4,9 @@ All notable changes to MCP Tools for WordPress & Page Builders are documented in
 
 ## [3.22.2] - 2026-11-24
 
-> Two fixes from GitHub issues, and the Black Friday sale notice.
+> Three fixes, two of them from GitHub issues, and the Black Friday sale notice.
 
+- Fixed: **Activating EMCP Tools broke every request on some sites.** Some startup steps saved options while WordPress was still loading plugins, before permalinks exist. A plugin that builds REST URLs when options change (seen with Lumios Agent Markdown Mirror, with pretty permalinks on) then crashed every request after activation. The legacy settings migration, the sandbox folder move and the module defaults now run on init.
 - Fixed: **Updating an active PHP snippet said it was saved as an inactive draft** ([#207](https://github.com/msrbuilds/elementor-mcp/issues/207)). `update-php-snippet` added the draft note to every save, so an agent told the user to activate a snippet that was already live. The note now follows the snippet's status: an active snippet's new code runs from the next request.
 - Fixed (Pro): **Site Kit tools stopped working after Site Kit 1.192.0** ([#206](https://github.com/msrbuilds/elementor-mcp/issues/206)). `sitekit-read` accepted only the Site Kit version it was tested with. Site Kit 1.190.0 or later now works, and `status` reports the tested version. Checked live on Site Kit 1.192.0.
 - New: **Black Friday sale notice.** Free installs show a sale notice with a countdown, and the announcement bar leads with the sale, until December 1, 2026. Once dismissed it stays gone, and no other notice takes its place.

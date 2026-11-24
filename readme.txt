@@ -221,8 +221,9 @@ EMCP Tools works on your own site. It contacts the services below only in the si
 
 = 3.22.2 =
 
-Two fixes from GitHub issues, and the Black Friday sale notice.
+Three fixes, two of them from GitHub issues, and the Black Friday sale notice.
 
+* Fixed: Activating EMCP Tools broke every request on sites where another plugin builds REST URLs while options are saved (seen with Lumios Agent Markdown Mirror and pretty permalinks).
 * Fixed: Updating an active PHP snippet said it was saved as an inactive draft, although it stayed active and the new code ran.
 * Fixed (Pro): Site Kit tools stopped working after Site Kit 1.192.0. Site Kit 1.190.0 or later now works.
 * New: A Black Friday sale notice for free installs, shown until December 1, 2026. Once dismissed it stays gone.
