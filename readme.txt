@@ -3,7 +3,7 @@ Contributors: mianshahzadraza
 Tags: elementor, mcp, ai, page-builder, automation
 Requires at least: 6.9
 Tested up to: 7.1
-Stable tag: 3.22.1
+Stable tag: 3.22.2
 Requires PHP: 8.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -218,6 +218,14 @@ EMCP Tools works on your own site. It contacts the services below only in the si
 2. Connection configuration page with copy-paste configs.
 
 == Changelog ==
+
+= 3.22.2 =
+
+Two fixes from GitHub issues, and the Black Friday sale notice.
+
+* Fixed: Updating an active PHP snippet said it was saved as an inactive draft, although it stayed active and the new code ran.
+* Fixed (Pro): Site Kit tools stopped working after Site Kit 1.192.0. Site Kit 1.190.0 or later now works.
+* New: A Black Friday sale notice for free installs, shown until December 1, 2026.
 
 = 3.22.1 =
 

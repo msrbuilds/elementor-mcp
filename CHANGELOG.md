@@ -2,6 +2,14 @@
 
 All notable changes to MCP Tools for WordPress & Page Builders are documented in this file.
 
+## [3.22.2] - 2026-11-24
+
+> Two fixes from GitHub issues, and the Black Friday sale notice.
+
+- Fixed: **Updating an active PHP snippet said it was saved as an inactive draft** ([#207](https://github.com/msrbuilds/elementor-mcp/issues/207)). `update-php-snippet` added the draft note to every save, so an agent told the user to activate a snippet that was already live. The note now follows the snippet's status: an active snippet's new code runs from the next request.
+- Fixed (Pro): **Site Kit tools stopped working after Site Kit 1.192.0** ([#206](https://github.com/msrbuilds/elementor-mcp/issues/206)). `sitekit-read` accepted only the Site Kit version it was tested with. Site Kit 1.190.0 or later now works, and `status` reports the tested version. Checked live on Site Kit 1.192.0.
+- New: **Black Friday sale notice.** Free installs show a sale notice with a countdown, and the announcement bar leads with the sale, until December 1, 2026. The regular upgrade notice returns after the sale.
+
 ## [3.22.1] - 2026-11-23
 
 > Fixes and additions from six GitHub issues: snippet code keeps its backslashes, full backups finish on hosts that cut long requests off, code snippets can be edited and deleted, a clear-cache tool, and protected, self-cleaning filesystem backups.
